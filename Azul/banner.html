@@ -1,0 +1,229 @@
+<script>
+  // --- [DESKTOP] SELETORES ESTÁVEIS ANCORADOS NO PRIMEIRO CARD ---
+  // Estratégia: Ancorar no primeiro card do Banner (PlayStation) que é mais estável
+  // Usar seletores baseados em estrutura HTML e posição, não em classes mutáveis
+
+  // Seletores estáveis baseados APENAS em estrutura HTML (SEM classes mutáveis)
+  var firstCardSelector = 'section > div:first-child > div:first-child > div:first-child'; // Primeiro card do grid
+  var imageSelector = firstCardSelector + ' img'; // Imagem do primeiro card
+  var h2Selector = firstCardSelector + ' h3'; // Título do primeiro card (h3, não h2)
+  var pSelector = firstCardSelector + ' p'; // Parágrafo do primeiro card
+
+  // Seletores alternativos baseados em estrutura HTML estável
+  var alternativeImageSelector = 'section > div:first-child img:first-of-type'; // Primeira imagem da primeira div
+  var alternativeImageSelector2 = 'section img:first-of-type'; // Primeira imagem da seção
+  var alternativeImageSelector3 = 'section > div:first-child > div:first-child img'; // Imagem do segundo nível
+  var alternativeImageSelector4 = 'section > div:first-child > div:first-child > div:first-child > div:first-child img'; // Imagem mais específica
+
+  // Fallbacks usando seletores mais genéricos baseados em estrutura
+  var fallbackImageSelector = 'section img:first-of-type'; // Primeira imagem da seção
+  var fallbackH2Selector = 'section h3:first-of-type'; // Primeiro h3 da seção
+  var fallbackPSelector = 'section p:first-of-type'; // Primeiro parágrafo da seção
+  var fallbackSpanSelector = 'section span:first-of-type'; // Primeiro span da seção
+
+  // Novos conteúdos
+  var newImageUrl = 'https://i.imgur.com/VkD7nzJ.png';
+  var newH2Text = 'Viagem com quem mais entende de Brasil';
+  var newPText = 'Viagens nacionais em até 5x s/ juros.';
+  var newSpanText = 'Passagens Nacionais';
+
+  // --- FUNÇÃO AUXILIAR PARA BUSCAR ELEMENTO COM FALLBACK ---
+  function findElementWithFallback(primarySelector, fallbackSelector) {
+    var element = document.querySelector(primarySelector);
+    if (!element && fallbackSelector) {
+      element = document.querySelector(fallbackSelector);
+    }
+    return element;
+  }
+
+  // Encontra o primeiro elemento que casar dentre uma lista de seletores
+  function findBySelectorsList(selectors) {
+    for (var i = 0; i < selectors.length; i++) {
+      var el = document.querySelector(selectors[i]);
+      if (el) return el;
+    }
+    return null;
+  }
+
+  // --- FUNÇÃO DE DEBUG PARA TESTAR SELETORES ---
+  function debugSelectors() {
+    var selectors = [
+      'section > div:first-child > div:first-child > div:first-child img',
+      'section > div:first-child img:first-of-type',
+      'section img:first-of-type',
+      'section > div:first-child > div:first-child img',
+      'section > div:first-child > div:first-child > div:first-child > div:first-child img'
+    ];
+
+    console.log('[DEBUG] Testando seletores:');
+    selectors.forEach(function (selector, index) {
+      var element = document.querySelector(selector);
+      console.log('[DEBUG] Seletor ' + (index + 1) + ':', selector, element ? '✅ ENCONTRADO' : '❌ NÃO ENCONTRADO');
+      if (element) {
+        console.log('[DEBUG] Elemento encontrado:', element);
+      }
+    });
+  }
+
+  // --- LÓGICA DE ALTERAÇÃO ---
+
+  // Executar debug primeiro para ver quais seletores funcionam
+  debugSelectors();
+
+  // 1. ALTERA A IMAGEM (com múltiplas tentativas de seletores baseados em estrutura)
+  var imageElement = document.querySelector(imageSelector) ||
+    document.querySelector(alternativeImageSelector) ||
+    document.querySelector(alternativeImageSelector2) ||
+    document.querySelector(alternativeImageSelector3) ||
+    document.querySelector(alternativeImageSelector4) ||
+    document.querySelector(fallbackImageSelector);
+
+  if (imageElement) {
+    imageElement.src = newImageUrl;
+    if (imageElement.hasAttribute('srcset')) {
+      imageElement.removeAttribute('srcset');
+    }
+    console.log('[DESKTOP] Adobe Target: Imagem alterada com sucesso. Nova URL:', newImageUrl);
+    console.log('[DESKTOP] Adobe Target: Elemento encontrado:', imageElement);
+  } else {
+    console.log('[DESKTOP] Adobe Target: Imagem não encontrada com os seletores fornecidos.');
+    console.log('[DESKTOP] Adobe Target: Tentando seletores baseados em estrutura:', imageSelector, alternativeImageSelector, alternativeImageSelector2, alternativeImageSelector3, alternativeImageSelector4, fallbackImageSelector);
+  }
+
+  // 1.1 ALTERA O BANNER EXPANDIDO ("Passagens nacionais") SE EXISTIR
+  var expandedBannerSelectors = [
+    'img[alt="Passagens nacionais"]',
+    'section img[alt*="Passagens nacionais"]',
+    'img[src*="Banner Expandido"]',
+    'img.sc-24c0f547-2.hoWogE',
+    'img.sc-24c0f547-2'
+  ];
+  var expandedBannerImg = findBySelectorsList(expandedBannerSelectors);
+  if (expandedBannerImg) {
+    expandedBannerImg.src = newImageUrl;
+    if (expandedBannerImg.hasAttribute('srcset')) {
+      expandedBannerImg.removeAttribute('srcset');
+    }
+    console.log('[DESKTOP] Adobe Target: Banner expandido alterado com sucesso.');
+    console.log('[DESKTOP] Adobe Target: Elemento banner:', expandedBannerImg);
+  } else {
+    console.log('[DESKTOP] Adobe Target: Banner expandido não encontrado com os seletores fornecidos.');
+  }
+
+  // 2. ALTERA O TÍTULO H3 (corrigido para h3 que é usado no Banner)
+  var h3Element = findElementWithFallback(h2Selector, fallbackH2Selector);
+  if (h3Element) {
+    h3Element.innerText = newH2Text;
+    console.log('[DESKTOP] Adobe Target: Título H3 alterado com sucesso.');
+  } else {
+    console.log('[DESKTOP] Adobe Target: H3 não encontrado com os seletores fornecidos.');
+  }
+
+  // 3. ALTERA O PARÁGRAFO P
+  var pElement = findElementWithFallback(pSelector, fallbackPSelector);
+  if (pElement) {
+    pElement.innerText = newPText;
+    console.log('[DESKTOP] Adobe Target: Parágrafo alterado com sucesso.');
+  } else {
+    console.log('[DESKTOP] Adobe Target: Parágrafo não encontrado com os seletores fornecidos.');
+  }
+
+  // 4. ALTERA A LABEL SPAN
+  var spanElement = findElementWithFallback(firstCardSelector + ' span', fallbackSpanSelector);
+  if (spanElement) {
+    spanElement.innerText = newSpanText;
+    console.log('[DESKTOP] Adobe Target: Span alterado com sucesso.');
+  } else {
+    console.log('[DESKTOP] Adobe Target: Span não encontrado com os seletores fornecidos.');
+  }
+
+  // Log final
+  console.log('[DESKTOP] Adobe Target: Script de personalização executado.');
+
+
+
+  // --- [MOBILE] SELETORES ESTÁVEIS ANCORADOS NO PRIMEIRO CARD ---
+  // Estratégia: Usar seletores baseados em estrutura HTML, não em classes mutáveis
+  // Ancorar no primeiro card do Banner que é mais estável
+
+  // Seletores estáveis para mobile baseados APENAS em estrutura HTML (SEM classes mutáveis)
+  var mobileFirstCardSelector = 'section > div:first-child > div:first-child > div:first-child';
+  var mobileImageContainerSelector = mobileFirstCardSelector; // Container da imagem do primeiro card
+  var mobileH3Selector = mobileFirstCardSelector + ' h3'; // Título H3 do primeiro card
+  var mobilePSelector = mobileFirstCardSelector + ' p'; // Parágrafo do primeiro card
+  var mobileSpanSelector = mobileFirstCardSelector + ' span'; // Span do primeiro card
+
+  // Seletores alternativos para mobile baseados em estrutura HTML estável
+  var mobileAlternativeImageSelector = 'section > div:first-child img:first-of-type';
+  var mobileAlternativeImageSelector2 = 'section img:first-of-type';
+  // Novos conteúdos
+  var newImageUrl = 'https://i.imgur.com/uWK7cxY.png';
+  var newH2Text = 'Viagem com quem mais entende de Brasil';
+  var newPText = 'Viagens nacionais em até 5x s/ juros.';
+  var newSpanText = 'Passagens Nacionais';
+  // --- LÓGICA DE ALTERAÇÃO ---
+  // 1. ALTERA A IMAGEM (com múltiplas tentativas de seletores baseados em estrutura)
+  var mobileImageElement = document.querySelector(mobileImageContainerSelector + ' img') ||
+    document.querySelector(mobileAlternativeImageSelector) ||
+    document.querySelector(mobileAlternativeImageSelector2) ||
+    document.querySelector('section img:first-of-type');
+
+  if (mobileImageElement) {
+    mobileImageElement.src = newImageUrl;
+    if (mobileImageElement.hasAttribute('srcset')) {
+      mobileImageElement.removeAttribute('srcset');
+    }
+    console.log('[MOBILE] Adobe Target: Imagem alterada com sucesso. Nova URL:', newImageUrl);
+    console.log('[MOBILE] Adobe Target: Elemento encontrado:', mobileImageElement);
+  } else {
+    console.log('[MOBILE] Adobe Target: Imagem não encontrada com os seletores fornecidos.');
+    console.log('[MOBILE] Adobe Target: Tentando seletores baseados em estrutura:', mobileImageContainerSelector, mobileAlternativeImageSelector, mobileAlternativeImageSelector2);
+  }
+
+  // 1.1 (MOBILE) ALTERA O BANNER EXPANDIDO ("Passagens nacionais") SE EXISTIR
+  var mobileExpandedBannerSelectors = [
+    'img[alt="Passagens nacionais"]',
+    'section img[alt*="Passagens nacionais"]',
+    'img[src*="Banner Expandido"]',
+    'img.sc-24c0f547-2.hoWogE',
+    'img.sc-24c0f547-2'
+  ];
+  var mobileExpandedBannerImg = findBySelectorsList(mobileExpandedBannerSelectors);
+  if (mobileExpandedBannerImg) {
+    mobileExpandedBannerImg.src = newImageUrl;
+    if (mobileExpandedBannerImg.hasAttribute('srcset')) {
+      mobileExpandedBannerImg.removeAttribute('srcset');
+    }
+    console.log('[MOBILE] Adobe Target: Banner expandido alterado com sucesso.');
+    console.log('[MOBILE] Adobe Target: Elemento banner:', mobileExpandedBannerImg);
+  } else {
+    console.log('[MOBILE] Adobe Target: Banner expandido não encontrado com os seletores fornecidos.');
+  }
+  // 2. ALTERA O TÍTULO H3 (usando o seletor estável)
+  var h3Element = document.querySelector(mobileH3Selector);
+  if (h3Element) {
+    h3Element.innerText = newH2Text;
+    console.log('[MOBILE] Adobe Target: Título H3 alterado com sucesso.');
+  } else {
+    console.log('[MOBILE] Adobe Target: H3 não encontrado com o seletor fornecido.');
+  }
+  // 3. ALTERA O PARÁGRAFO P (usando o seletor estável)
+  var pElement = document.querySelector(mobilePSelector);
+  if (pElement) {
+    pElement.innerText = newPText;
+    console.log('[MOBILE] Adobe Target: Parágrafo alterado com sucesso.');
+  } else {
+    console.log('[MOBILE] Adobe Target: Parágrafo (p) não encontrado com o seletor fornecido.');
+  }
+  // 4. ALTERA A LABEL SPAN (usando o seletor estável)
+  var spanElement = document.querySelector(mobileSpanSelector);
+  if (spanElement) {
+    spanElement.innerText = newSpanText;
+    console.log('[MOBILE] Adobe Target: Span alterado com sucesso.');
+  } else {
+    console.log('[MOBILE] Adobe Target: Span não encontrado com o seletor fornecido.');
+  }
+
+  // Log final mobile
+  console.log('[MOBILE] Adobe Target: Script de personalização executado.');
+</script>
