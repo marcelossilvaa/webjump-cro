@@ -1,10 +1,15 @@
 (function () {
-  if (window.campaignProgressBar) {
+  function onTargetPage() {
+    const currentUrl = window.location.pathname;
+    const targetTestUrl = '/payment';
+    return currentUrl.includes(targetTestUrl);
+  }
+
+  if (window.campaignPromoCode || !onTargetPage()) {
     return;
   }
-  window.campaignProgressBar = true;
+  window.campaignPromoCode = true;
 
-  // Detectar se é mobile (menor que 768px)
   const isMobile = window.innerWidth < 768;
 
   const togglePromo = document.querySelector('[data-test-id="fop-promocode-toggle-accordion"]');
@@ -16,7 +21,6 @@
   const acordeaoOriginal = togglePromo.parentElement;
   const formularioParaMover = togglePromo.nextElementSibling?.firstElementChild;
 
-  // Para mobile, encontrar o elemento "Outras formas de pagamento" como ponto de anexo
   let anexoBotao;
   let containerDoBotao;
 
@@ -106,9 +110,10 @@
     formularioParaMover.style.cssText = `
         display: block !important;
         margin-top: 24px;
-        border: 1px solid #e0e0e0;
         border-radius: 8px;
         background-color: #ffffff;
+        border: 1px solid rgb(192, 192, 192);
+        box-shadow: rgba(4, 30, 66, 0.16) 0px 1px 4px 0px;
     `;
   }
 

@@ -4,25 +4,21 @@
   }
   window.campaignProgressBar = true;
 
-  // Função para detectar se é mobile
   function isMobile() {
     return window.innerWidth < 768;
   }
 
-  // Função para desktop (lógica original)
   function handleDesktop() {
     const togglePromo = document.querySelector('[data-test-id="fop-promocode-toggle-accordion"]');
     if (!togglePromo) {
-      console.log(
-        'ℹ️ Acordeão de código promocional não encontrado (provavelmente já foi movido).'
-      );
+      console.log('Acordeão de código promocional não encontrado (provavelmente já foi movido).');
       return false;
     }
     const acordeaoOriginal = togglePromo.parentElement;
     const formularioParaMover = togglePromo.nextElementSibling?.firstElementChild;
 
     if (!acordeaoOriginal || !formularioParaMover) {
-      console.error('❌ Falha ao localizar os componentes do código promocional.');
+      console.error('Falha ao localizar os componentes do código promocional.');
       return false;
     }
 
@@ -98,12 +94,11 @@
     return true;
   }
 
-  // Função para mobile
   function handleMobile() {
     const togglePromo = document.querySelector('[data-test-id="fop-promocode-toggle-accordion"]');
     if (!togglePromo) {
       console.log(
-        'ℹ️ Acordeão de código promocional não encontrado no mobile (provavelmente já foi movido).'
+        'Acordeão de código promocional não encontrado no mobile (provavelmente já foi movido).'
       );
       return false;
     }
@@ -111,45 +106,29 @@
     const formularioParaMover = togglePromo.nextElementSibling?.firstElementChild;
 
     if (!acordeaoOriginal || !formularioParaMover) {
-      console.error('❌ Falha ao localizar os componentes do código promocional no mobile.');
+      console.error('Falha ao localizar os componentes do código promocional no mobile.');
       return false;
     }
 
     // Busca universal pela seção "Taxas e impostos" - não depende de classes específicas
-    console.log('🔍 Procurando por "Taxas e impostos" em toda a página...');
 
     let taxasImpostosDiv = null;
 
     // Busca 1: Procurar por qualquer elemento h4 que contenha "Taxas e impostos"
     const todosH4 = Array.from(document.querySelectorAll('h4'));
-    console.log('📋 Total de elementos h4 encontrados:', todosH4.length);
 
-    // Log de todos os h4 para debug
-    todosH4.forEach((h4, index) => {
-      console.log(`H4 ${index}: "${h4.textContent.trim()}"`);
-    });
-
-    // Buscar pelo h4 que contém "Taxas e impostos"
     const h4Taxas = todosH4.find((h4) => h4.textContent.trim() === 'Taxas e impostos');
 
     if (h4Taxas) {
       taxasImpostosDiv = h4Taxas.closest('div');
-      console.log('✅ Encontrado h4 de taxas:', h4Taxas.textContent.trim());
-      console.log('✅ Container pai encontrado:', taxasImpostosDiv);
     } else {
-      console.log('❌ Não encontrado com texto exato, tentando busca flexível...');
-
-      // Busca flexível
       const h4Flexivel = todosH4.find((h4) =>
         h4.textContent.trim().toLowerCase().includes('taxas')
       );
 
       if (h4Flexivel) {
         taxasImpostosDiv = h4Flexivel.closest('div');
-        console.log('✅ Encontrado com busca flexível:', h4Flexivel.textContent.trim());
       } else {
-        console.log('❌ Busca flexível falhou, tentando busca por qualquer palavra relacionada...');
-
         // Busca por palavras relacionadas
         const palavrasRelacionadas = ['impostos', 'taxa', 'fee', 'charge'];
         let h4Encontrado = null;
@@ -159,7 +138,6 @@
             h4.textContent.trim().toLowerCase().includes(palavra)
           );
           if (h4Encontrado) {
-            console.log(`✅ Encontrado com palavra "${palavra}":`, h4Encontrado.textContent.trim());
             break;
           }
         }
@@ -167,7 +145,7 @@
         if (h4Encontrado) {
           taxasImpostosDiv = h4Encontrado.closest('div');
         } else {
-          console.error('❌ Não foi possível encontrar nenhuma seção relacionada a taxas.');
+          console.error('Não foi possível encontrar nenhuma seção relacionada a taxas.');
           return false;
         }
       }
@@ -175,12 +153,9 @@
 
     // Confirmar que encontramos o elemento
     if (!taxasImpostosDiv) {
-      console.error('❌ CRÍTICO: Não foi possível encontrar nenhum elemento de referência.');
+      console.error('Não foi possível encontrar nenhum elemento de referência.');
       return false;
     }
-
-    console.log('🎯 Elemento de referência encontrado:', taxasImpostosDiv);
-    console.log('🎯 Classes do elemento:', taxasImpostosDiv.className);
 
     // Remover o acordeão original
     acordeaoOriginal.remove();
@@ -188,8 +163,6 @@
     // Criar o novo container - usar classes genéricas para garantir compatibilidade
     const novoContainer = document.createElement('div');
     novoContainer.className = 'promo-cupom-container';
-
-    console.log('📋 Criando container com classes genéricas');
 
     novoContainer.style.cssText = `
       display: flex;
@@ -257,48 +230,33 @@
       }
     });
 
-    console.log('🎉 Componente de cupom criado com sucesso no mobile!');
-    console.log(
-      '🎯 Posicionado após:',
-      taxasImpostosDiv.querySelector('h4')?.textContent || 'elemento não identificado'
-    );
     return true;
   }
 
   // Executar a função apropriada baseada no tamanho da tela
   if (isMobile()) {
-    console.log('📱 Executando versão mobile');
-
     // No mobile, aguardar o clique no botão "Ver detalhes" para executar
     const botaoVerDetalhes = document.querySelector('[data-test-id="breakdown-see-details"]');
 
     if (botaoVerDetalhes) {
-      console.log('🔍 Botão "Ver detalhes" encontrado, aguardando clique...');
-
       // Flag para evitar execução múltipla
       let mobileExecutado = false;
 
       botaoVerDetalhes.addEventListener('click', () => {
         if (mobileExecutado) {
-          console.log('⚠️ handleMobile já foi executado, ignorando clique...');
           return;
         }
 
-        console.log('👆 Botão "Ver detalhes" clicado! Aguardando modal carregar...');
-
         // Aguardar um pouco para o modal ser montado
         setTimeout(() => {
-          console.log('⏰ Executando handleMobile após clique...');
           mobileExecutado = true;
           handleMobile();
         }, 500); // 500ms para o modal carregar
       });
     } else {
-      console.log('⚠️ Botão "Ver detalhes" não encontrado, executando imediatamente...');
       handleMobile();
     }
   } else {
-    console.log('🖥️ Executando versão desktop');
     handleDesktop();
   }
 
