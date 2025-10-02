@@ -1,5 +1,11 @@
 (function () {
-  if (window.campaignPromoCode) {
+  function onTargetPage() {
+    const currentUrl = window.location.pathname;
+    const targetTestUrl = '/payment';
+    return currentUrl.includes(targetTestUrl);
+  }
+
+  if (window.campaignPromoCode || !onTargetPage()) {
     return;
   }
   window.campaignPromoCode = true;
