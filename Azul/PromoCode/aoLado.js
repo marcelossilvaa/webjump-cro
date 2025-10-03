@@ -51,7 +51,12 @@
     p.textContent.includes('Digite o seu código')
   );
   if (textoParaRemover) {
-    textoParaRemover.parentElement.remove();
+    const divParaRemover = textoParaRemover.closest('.sc-5d84be43-11');
+    if (divParaRemover) {
+      divParaRemover.remove();
+    } else {
+      textoParaRemover.parentElement.remove();
+    }
   }
 
   conteudoDoFormulario.style.display = 'none';
