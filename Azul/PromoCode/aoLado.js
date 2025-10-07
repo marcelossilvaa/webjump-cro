@@ -43,21 +43,22 @@
   anexoDiv.after(formularioParaMover);
   acordeaoOriginal.remove();
 
+  // Ocultar o texto "Digite o seu código" antes de mover o formulário
+  const textoParaOcultar = Array.from(formularioParaMover.querySelectorAll('p')).find((p) =>
+    p.textContent.includes('Digite o seu código')
+  );
+  if (textoParaOcultar) {
+    const divParaOcultar = textoParaOcultar.closest('.sc-5d84be43-11');
+    if (divParaOcultar) {
+      divParaOcultar.style.display = 'none';
+    } else {
+      textoParaOcultar.parentElement.style.display = 'none';
+    }
+  }
+
   const childrenOriginais = Array.from(formularioParaMover.children);
   const conteudoDoFormulario = document.createElement('div');
   childrenOriginais.forEach((child) => conteudoDoFormulario.appendChild(child));
-
-  const textoParaRemover = Array.from(conteudoDoFormulario.querySelectorAll('p')).find((p) =>
-    p.textContent.includes('Digite o seu código')
-  );
-  if (textoParaRemover) {
-    const divParaRemover = textoParaRemover.closest('.sc-5d84be43-11');
-    if (divParaRemover) {
-      divParaRemover.remove();
-    } else {
-      textoParaRemover.parentElement.remove();
-    }
-  }
 
   conteudoDoFormulario.style.display = 'none';
   conteudoDoFormulario.style.padding = '4px 0 0 0';

@@ -233,30 +233,104 @@
     return true;
   }
 
+  // Função para aguardar o modal aparecer após o clique
+  function aguardarModal() {
+    console.log('🔍 AguardandoModal: Aguardando modal aparecer...');
+    let tentativas = 0;
+    const maxTentativas = 50; // Limite de segurança
+
+    function procurarModal() {
+      tentativas++;
+      console.log(`🔍 AguardandoModal: Tentativa ${tentativas} - Procurando modal...`);
+
+      // Verificar se o body mudou para overflow: hidden (indicador de modal)
+      const bodyOverflow = document.body.style.overflow;
+      if (bodyOverflow === 'hidden') {
+        console.log(
+          '✅ AguardandoModal: Body com overflow:hidden detectado! Modal deve ter aparecido.'
+        );
+      }
+
+      // Lista de seletores para tentar encontrar o modal
+      const seletoresModal = [
+        '.css-1v3f8k3',
+        '[role="dialog"]',
+        '.modal',
+        '.MuiModal-root',
+        '[data-testid*="modal"]',
+        '[class*="modal"]',
+        '[class*="Modal"]',
+        '[class*="dialog"]',
+        '[class*="Dialog"]',
+        '[class*="css-"]', // Qualquer elemento com classe css-
+      ];
+
+      let modal = null;
+      for (const seletor of seletoresModal) {
+        modal = document.querySelector(seletor);
+        if (modal) {
+          console.log(
+            `✅ AguardandoModal: Modal encontrado com seletor "${seletor}"! Executando handleMobile()...`
+          );
+          handleMobile();
+          return;
+        }
+      }
+
+      // Se o body está com overflow:hidden mas não encontrou modal específico, executar mesmo assim
+      if (bodyOverflow === 'hidden' && tentativas > 5) {
+        console.log(
+          '✅ AguardandoModal: Body com overflow:hidden detectado, executando handleMobile() mesmo sem modal específico...'
+        );
+        handleMobile();
+        return;
+      }
+
+      // Timeout de segurança
+      if (tentativas >= maxTentativas) {
+        console.log('❌ AguardandoModal: Timeout atingido! Executando handleMobile()...');
+        handleMobile();
+        return;
+      }
+
+      // Modal ainda não apareceu, continuar aguardando
+      requestAnimationFrame(procurarModal);
+    }
+
+    procurarModal();
+  }
+
   // Executar a função apropriada baseada no tamanho da tela
   if (isMobile()) {
     // No mobile, aguardar o clique no botão "Ver detalhes" para executar
     const botaoVerDetalhes = document.querySelector('[data-test-id="breakdown-see-details"]');
 
     if (botaoVerDetalhes) {
+      console.log('📱 Mobile: Botão "Ver detalhes" encontrado, adicionando listener...');
       // Flag para evitar execução múltipla
       let mobileExecutado = false;
 
       botaoVerDetalhes.addEventListener('click', () => {
+        console.log('🖱️ Mobile: Botão "Ver detalhes" clicado!');
         if (mobileExecutado) {
+          console.log('⚠️ Mobile: Já executado, ignorando...');
           return;
         }
 
-        // Aguardar um pouco para o modal ser montado
-        setTimeout(() => {
-          mobileExecutado = true;
-          handleMobile();
-        }, 500); // 500ms para o modal carregar
+        mobileExecutado = true;
+        console.log('🚀 Mobile: Botão clicado! Aguardando modal aparecer...');
+
+        // Aguardar o modal aparecer após o clique
+        aguardarModal();
       });
     } else {
+      console.log(
+        '📱 Mobile: Botão "Ver detalhes" não encontrado, executando handleMobile() diretamente...'
+      );
       handleMobile();
     }
   } else {
+    console.log('🖥️ Desktop: Executando handleDesktop()...');
     handleDesktop();
   }
 
