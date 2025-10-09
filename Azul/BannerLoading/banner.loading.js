@@ -36,11 +36,11 @@
       this.isVisible = false;
       this.progressInterval = null;
       this.hideTimeout = null;
+      this.hideDebounceTimeout = null;
+      this.loaderMonitorInterval = null;
       this.observer = null;
       this.originalLoader = null;
-      this.progressComplete = false;
-      this.canHideBanner = false;
-      this.loaderRemoved = false;
+      this.bannerInstance = null; // Controle de instância única
       this.init();
     }
 
@@ -105,6 +105,12 @@
       // Verifica se deve mostrar o banner
       if (!this.shouldShowBanner()) {
         console.log('Azul Banner: Banner não será exibido nesta página');
+        return;
+      }
+
+      // Evita múltiplas instâncias do banner
+      if (this.isVisible || document.getElementById('azul-loading-banner')) {
+        console.log('Azul Banner: Banner já está ativo - ignorando novo loader');
         return;
       }
 
@@ -218,6 +224,9 @@
 
       document.body.insertAdjacentHTML('beforeend', bannerHTML);
       this.addStyles();
+
+      // Marca que uma instância do banner foi criada
+      this.bannerInstance = true;
     }
 
     addStyles() {
@@ -504,57 +513,47 @@
     }
 
     startLoaderMonitoring() {
-      // Usa MutationObserver para detectar quando o loader é removido
-      if (!this.originalLoader) return;
+      // Evita múltiplas execuções
+      if (this.loaderMonitorInterval) {
+        return;
+      }
 
-      this.loaderObserver = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === 'childList') {
-            // Verifica se o loader original foi removido
-            mutation.removedNodes.forEach((node) => {
-              if (
-                node === this.originalLoader ||
-                (node.nodeType === Node.ELEMENT_NODE &&
-                  node.contains &&
-                  node.contains(this.originalLoader))
-              ) {
-                console.log(
-                  'Azul Banner: Loader original removido - aguardando progresso completar'
-                );
-                this.loaderRemoved = true;
-                this.loaderObserver.disconnect();
+      console.log('Azul Banner: Iniciando monitoramento inteligente com debounce');
 
-                // Se o progresso já completou, esconde o banner
-                if (this.canHideBanner) {
-                  this.hideBanner();
-                }
-              }
-            });
-          }
-        });
-      });
-
-      // Observa mudanças no documento
-      this.loaderObserver.observe(document.body, {
-        childList: true,
-        subtree: true,
-      });
-
-      // Fallback: verifica periodicamente se o elemento ainda existe (menos frequente)
+      // Monitora quando o loader original é removido da página
       this.loaderMonitorInterval = setInterval(() => {
         if (!this.originalLoader || !document.contains(this.originalLoader)) {
-          console.log(
-            'Azul Banner: Loader original removido (fallback) - aguardando progresso completar'
-          );
-          this.loaderRemoved = true;
-          clearInterval(this.loaderMonitorInterval);
+          console.log('Azul Banner: Loader removido - iniciando debounce de 0.2s');
 
-          // Se o progresso já completou, esconde o banner
-          if (this.canHideBanner) {
-            this.hideBanner();
-          }
+          // Limpa o interval de monitoramento
+          clearInterval(this.loaderMonitorInterval);
+          this.loaderMonitorInterval = null;
+
+          // Inicia o debounce inteligente
+          this.startSmartDebounce();
         }
-      }, 2000); // Verifica a cada 2 segundos como fallback
+      }, 100); // Verifica a cada 100ms
+    }
+
+    startSmartDebounce() {
+      // Cancela qualquer debounce anterior
+      if (this.hideDebounceTimeout) {
+        clearTimeout(this.hideDebounceTimeout);
+      }
+
+      // Aguarda 0.2s antes de esconder
+      this.hideDebounceTimeout = setTimeout(() => {
+        // Verifica se o loader reapareceu durante o debounce
+        const anyLoader = document.querySelector('.loader');
+        if (anyLoader) {
+          console.log('Azul Banner: Loader reapareceu durante debounce - mantendo banner');
+          // Se o loader voltou, continua monitorando
+          this.startLoaderMonitoring();
+        } else {
+          console.log('Azul Banner: Confirmado - loader não reapareceu, escondendo banner');
+          this.hideBanner();
+        }
+      }, 200); // Debounce de 0.2 segundos
     }
 
     showBanner() {
@@ -569,6 +568,11 @@
     }
 
     hideBanner() {
+      // Evita múltiplas execuções
+      if (!this.isVisible) {
+        return;
+      }
+
       const banner = document.getElementById('azul-loading-banner');
       if (banner) {
         banner.classList.remove('show');
@@ -589,6 +593,11 @@
 
           // Limpa referência ao loader original
           this.originalLoader = null;
+
+          // Limpa flag de instância única
+          this.bannerInstance = null;
+
+          console.log('Azul Banner: Banner completamente removido');
         }, 300);
       }
     }
@@ -616,24 +625,39 @@
       if (!progressFill || !loadingText) return;
 
       let progress = 0;
-      const minDuration = 3000; // Duração mínima de 3 segundos
+      const startTime = Date.now();
+      const minDuration = 2000; // Duração mínima de 2 segundos
+      const maxDuration = 8000; // Duração máxima de 8 segundos
+
+      // Calcula incremento baseado na duração mínima
       const increment = 100 / (minDuration / 100);
 
+      console.log('Azul Banner: Iniciando progress bar inteligente');
+
       this.progressInterval = setInterval(() => {
-        progress += increment;
+        const elapsed = Date.now() - startTime;
+
+        // Se passou do tempo mínimo, verifica se deve acelerar
+        if (elapsed >= minDuration) {
+          // Verifica se o loader ainda existe
+          const anyLoader = document.querySelector('.loader');
+          if (!anyLoader) {
+            // Loader foi removido - acelera para 100%
+            progress = Math.min(progress + 5, 100); // Incremento maior
+          } else {
+            // Loader ainda existe - continua normalmente
+            progress += increment;
+          }
+        } else {
+          // Ainda no tempo mínimo - progresso normal
+          progress += increment;
+        }
+
+        // Limita o progresso a 100%
         if (progress >= 100) {
           progress = 100;
           clearInterval(this.progressInterval);
-          this.progressComplete = true;
-
-          // Aguarda um pouco antes de permitir o fechamento
-          setTimeout(() => {
-            this.canHideBanner = true;
-            // Se o loader já foi removido, esconde o banner agora
-            if (this.loaderRemoved) {
-              this.hideBanner();
-            }
-          }, 500);
+          console.log('Azul Banner: Progress bar completada');
         }
 
         // Atualiza a barra de progresso
@@ -670,14 +694,14 @@
         clearTimeout(this.hideTimeout);
         this.hideTimeout = null;
       }
+
+      if (this.hideDebounceTimeout) {
+        clearTimeout(this.hideDebounceTimeout);
+        this.hideDebounceTimeout = null;
+      }
     }
 
     clearLoaderMonitoring() {
-      if (this.loaderObserver) {
-        this.loaderObserver.disconnect();
-        this.loaderObserver = null;
-      }
-
       if (this.loaderMonitorInterval) {
         clearInterval(this.loaderMonitorInterval);
         this.loaderMonitorInterval = null;
