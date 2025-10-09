@@ -4,25 +4,119 @@
 
   // Função para criar os ícones de benefícios
   function createBenefitsIcons() {
-    // Primeiro tenta encontrar elementos com a caixa de desconto
-    let elements = Array.from(document.querySelectorAll('p')).filter((p) =>
-      p.textContent.includes('Ganhe até R$150 de desconto em cafés')
+    // Proteção adicional: verifica se já está processando
+    if (window.benefitsIconsProcessing) {
+      console.log('Script já está processando, ignorando execução...');
+      return;
+    }
+
+    window.benefitsIconsProcessing = true;
+
+    // Busca específica por elementos com classe cb-text que contêm parcelamento
+    let elements = Array.from(document.querySelectorAll('p.cb-text')).filter(
+      (p) => p.textContent.includes('Em até') && p.textContent.includes('sem juros')
     );
 
-    // Se não encontrar, busca elementos com texto de parcelamento
+    // Se não encontrar elementos cb-text, busca em todos os elementos p
     if (elements.length === 0) {
       elements = Array.from(document.querySelectorAll('p')).filter(
         (p) => p.textContent.includes('Em até') && p.textContent.includes('sem juros')
       );
-      console.log('Caixa de desconto não encontrada, usando elementos de parcelamento');
+      console.log('Buscando em todos os elementos p');
+    }
+
+    // Se ainda não encontrar, busca por caixa de desconto
+    if (elements.length === 0) {
+      elements = Array.from(document.querySelectorAll('p')).filter((p) =>
+        p.textContent.includes('Ganhe até R$150 de desconto em cafés')
+      );
+      console.log('Elementos de parcelamento não encontrados, usando caixa de desconto');
+    }
+
+    // Busca adicional por outros elementos que possam conter informações de parcelamento
+    if (elements.length === 0) {
+      elements = Array.from(document.querySelectorAll('span, div')).filter(
+        (el) => el.textContent.includes('Em até') && el.textContent.includes('sem juros')
+      );
+      console.log('Buscando em outros elementos (span, div)');
     }
 
     console.log('Elementos encontrados:', elements.length);
 
+    // Log adicional para debug
+    elements.forEach((el, i) => {
+      console.log(`Elemento ${i + 1}:`, el.textContent.trim().substring(0, 50) + '...');
+      console.log(`Classe do elemento ${i + 1}:`, el.className);
+    });
+
+    // Limpa duplicatas existentes antes de processar
+    const existingContainers = document.querySelectorAll('.benefits-icons-container');
+    if (existingContainers.length > 0) {
+      console.log(
+        `Encontrados ${existingContainers.length} containers existentes, verificando duplicatas...`
+      );
+
+      // Remove containers órfãos (sem elemento de parcelamento próximo)
+      existingContainers.forEach((container, index) => {
+        const hasNearbyText =
+          container.previousElementSibling?.textContent?.includes('Em até') ||
+          container.nextElementSibling?.textContent?.includes('Em até') ||
+          container.parentElement?.querySelector('p.cb-text');
+
+        if (!hasNearbyText) {
+          console.log(`Removendo container órfão ${index + 1}`);
+          container.remove();
+        }
+      });
+    }
+
     elements.forEach((element, index) => {
-      // Verifica se já foi modificado para evitar duplicação
+      // Busca o card pai específico da Nespresso (nb-sku-machine)
+      const parentCard =
+        element.closest('nb-sku-machine') ||
+        element.closest('[class*="card"], [class*="product"], [class*="item"]') ||
+        element.parentElement;
+
+      // Verifica se já existe um container de benefícios no card pai
+      if (parentCard && parentCard.querySelector('.benefits-icons-container')) {
+        console.log(`Card ${index + 1} já possui benefits-icons-container`);
+        return;
+      }
+
+      // Verifica se o próprio elemento já foi modificado
       if (element.querySelector('.benefits-icons-container')) {
-        console.log(`Card ${index + 1} já foi modificado`);
+        console.log(`Card ${index + 1} já foi modificado diretamente`);
+        return;
+      }
+
+      // Verifica se há um elemento irmão com a classe
+      const nextSibling = element.nextElementSibling;
+      if (nextSibling && nextSibling.classList.contains('benefits-icons-container')) {
+        console.log(`Card ${index + 1} já possui benefits-icons-container como irmão`);
+        return;
+      }
+
+      // Verifica se há um elemento irmão próximo com a classe
+      const parentElement = element.parentElement;
+      if (parentElement && parentElement.querySelector('.benefits-icons-container')) {
+        console.log(`Card ${index + 1} já possui benefits-icons-container no elemento pai`);
+        return;
+      }
+
+      // Verificação adicional: procura por containers próximos (até 3 elementos de distância)
+      let nearbyContainer = null;
+      let currentElement = element;
+      for (let i = 0; i < 3; i++) {
+        if (currentElement.nextElementSibling?.classList.contains('benefits-icons-container')) {
+          nearbyContainer = currentElement.nextElementSibling;
+          break;
+        }
+        currentElement = currentElement.nextElementSibling;
+        if (!currentElement) break;
+      }
+
+      if (nearbyContainer) {
+        console.log(`Card ${index + 1} já possui benefits-icons-container próximo`);
         return;
       }
 
@@ -116,11 +210,28 @@
         element.appendChild(iconsContainer);
         console.log(`Card ${index + 1} - Caixa de desconto substituída!`);
       } else {
-        // Adiciona abaixo do elemento de parcelamento
-        element.parentNode.insertBefore(iconsContainer, element.nextSibling);
-        console.log(`Card ${index + 1} - Componente adicionado abaixo do parcelamento!`);
+        // Para elementos de parcelamento, adiciona após o elemento atual
+        // Procura pelo próximo elemento irmão ou adiciona no final do container pai
+        const parentContainer = element.parentElement;
+
+        if (element.nextElementSibling) {
+          // Insere após o elemento atual
+          parentContainer.insertBefore(iconsContainer, element.nextElementSibling);
+        } else {
+          // Se não há próximo irmão, adiciona no final do container
+          parentContainer.appendChild(iconsContainer);
+        }
+
+        console.log(`Card ${index + 1} - Componente adicionado após elemento de parcelamento!`);
+        console.log(`Elemento pai:`, parentContainer.className);
       }
     });
+
+    // Reset da flag de processamento após um delay
+    setTimeout(() => {
+      window.benefitsIconsProcessing = false;
+      console.log('Processamento finalizado, flag resetada');
+    }, 1000);
   }
 
   // Função para inicializar quando a página carregar
@@ -130,32 +241,51 @@
     } else {
       createBenefitsIcons();
     }
+
+    // Executa novamente após um delay para garantir que todos os elementos estejam carregados
+    setTimeout(() => {
+      console.log('Executando verificação adicional após delay...');
+      createBenefitsIcons();
+    }, 1000);
   }
 
   // Executa a função
   initBenefitsIcons();
 
   // Observer para detectar quando novos cards são adicionados
-  const cardsObserver = new MutationObserver(function (mutations) {
-    mutations.forEach(function (mutation) {
-      if (mutation.type === 'childList') {
-        const addedNodes = Array.from(mutation.addedNodes);
-        const hasNewCards = addedNodes.some(
-          (node) =>
-            node.nodeType === 1 &&
-            (node.querySelector?.('p') ||
-              node.textContent?.includes('Ganhe até R$150') ||
-              (node.textContent?.includes('Em até') && node.textContent?.includes('sem juros')))
-        );
+  let processingTimeout = null;
 
-        if (hasNewCards) {
-          console.log('Novos cards detectados!');
-          setTimeout(() => {
-            createBenefitsIcons();
-          }, 200);
+  const cardsObserver = new MutationObserver(function (mutations) {
+    // Debounce para evitar execuções múltiplas
+    if (processingTimeout) {
+      clearTimeout(processingTimeout);
+    }
+
+    processingTimeout = setTimeout(() => {
+      let hasNewCards = false;
+
+      mutations.forEach(function (mutation) {
+        if (mutation.type === 'childList') {
+          const addedNodes = Array.from(mutation.addedNodes);
+          const hasRelevantNodes = addedNodes.some(
+            (node) =>
+              node.nodeType === 1 &&
+              (node.querySelector?.('p') ||
+                node.textContent?.includes('Ganhe até R$150') ||
+                (node.textContent?.includes('Em até') && node.textContent?.includes('sem juros')))
+          );
+
+          if (hasRelevantNodes) {
+            hasNewCards = true;
+          }
         }
+      });
+
+      if (hasNewCards) {
+        console.log('Novos cards detectados!');
+        createBenefitsIcons();
       }
-    });
+    }, 300); // Aumenta o debounce para 300ms
   });
 
   // Observa mudanças no body para detectar novos cards

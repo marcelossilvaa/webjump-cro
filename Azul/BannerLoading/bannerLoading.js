@@ -20,8 +20,7 @@
     title: 'A um passo da viagem <br> dos sonhos.',
     description:
       'Sua experiência Azul fica ainda melhor. Ao comprar sua passagem, você ganha <strong>15% OFF em hotéis</strong> para escolher sua hospedagem com calma, quando quiser.',
-    hotelImageDesktop: 'https://i.imgur.com/MyN94BQ.png', // Imagem desktop
-    hotelImageMobile: 'https://i.imgur.com/GAoQdi9.png', // Imagem mobile
+    hotelImage: 'https://i.imgur.com/MyN94BQ.png', // Imagem desktop
     brandColors: {
       primary: '#0066CC',
       secondary: '#F0F8FF',
@@ -50,13 +49,21 @@
     }
 
     shouldShowBanner() {
-      // Verifica se está na URL de review - não deve funcionar lá
       const currentUrl = window.location.href;
+
+      // Verifica se está na URL de seleção de voo
+      if (!currentUrl.includes('/selecao-voo')) {
+        console.log('Azul Banner: Desabilitado - não está na página de seleção de voo');
+        return false;
+      }
+
+      // Verifica se está na URL de review - não deve funcionar lá
       if (currentUrl.includes('/review')) {
         console.log('Azul Banner: Desabilitado na página de review');
         return false;
       }
 
+      console.log('Azul Banner: Habilitado na página de seleção de voo');
       return true;
     }
 
@@ -154,7 +161,7 @@
         '<div class="azul-banner-desktop">' +
         '<div class="azul-banner-image">' +
         '<img src="' +
-        CONFIG.hotelImageDesktop +
+        CONFIG.hotelImage +
         '" alt="Resort tropical com piscina" />' +
         '<div class="azul-banner-overlay-gradient"></div>' +
         '</div>' +
@@ -189,7 +196,7 @@
         '<div class="azul-banner-mobile">' +
         '<div class="azul-banner-mobile-image">' +
         '<img src="' +
-        CONFIG.hotelImageMobile +
+        CONFIG.hotelImage +
         '" alt="Resort tropical com piscina" />' +
         '</div>' +
         '<div class="azul-banner-mobile-content">' +
@@ -263,7 +270,7 @@
         'background: white;' +
         'border-radius: 20px;' +
         'box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);' +
-        'max-width: 805px;' +
+        'max-width: 850px;' +
         'width: 90vw;' +
         'max-height: 90vh;' +
         'position: relative;' +
@@ -283,7 +290,7 @@
         '/* Versão Desktop */' +
         '.azul-banner-desktop {' +
         'display: flex;' +
-        'height: 254px;' +
+        'height: 300px;' +
         '}' +
         '.azul-banner-image {' +
         'flex: 0 0 46%;' +
@@ -294,7 +301,7 @@
         '.azul-banner-image img {' +
         'width: 100%;' +
         'height: 100%;' +
-        'object-fit: contain;' +
+        'object-fit: cover;' +
         '}' +
         '.azul-banner-overlay-gradient {' +
         'position: absolute;' +
@@ -332,7 +339,6 @@
         'flex-direction: column;' +
         'min-width: 320px;' +
         'max-width: 400px;' +
-        'border-radius: 20px;' +
         'overflow: hidden;' +
         '}' +
         '.azul-banner-mobile-image {' +
@@ -369,7 +375,8 @@
         'color: ' +
         CONFIG.brandColors.primary +
         ';' +
-        'margin: 0 0 20px 0;' +
+        'margin: 0;' +
+        'margin-bottom: 25px;' +
         'line-height: 1.2;' +
         'font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;' +
         'letter-spacing: -0.5px;' +
@@ -442,7 +449,7 @@
         '}' +
         '.azul-banner-modal {' +
         'margin: 20px;' +
-        'max-width: calc(100vw - 40px);' +
+        'max-width: 350px;' +
         'width: calc(100vw - 40px);' +
         '}' +
         '.azul-banner-title {' +

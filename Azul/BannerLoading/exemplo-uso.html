@@ -121,16 +121,17 @@
     <div class="instructions">
       <h3>📋 Instruções</h3>
       <p>Este banner da Azul foi modificado para detectar e substituir automaticamente qualquer elemento com a classe
-        <code>.loader</code> que apareça na página.
+        <code>.loader</code> que apareça na página <strong>apenas na URL /selecao-voo</strong>.
       </p>
       <p><strong>Como funciona:</strong></p>
       <ul>
-        <li>O script monitora a página em busca de elementos com classe <code>.loader</code></li>
+        <li>O script verifica se está na URL <code>/selecao-voo</code></li>
+        <li>Se estiver, monitora a página em busca de elementos com classe <code>.loader</code></li>
         <li>Quando detectado, esconde o loader original e exibe o banner da Azul</li>
         <li>Após o banner fechar, o loader original é restaurado</li>
       </ul>
-      <p><strong>Para testar:</strong> Clique em "Simular Loader Original" para criar um loader de teste e ver a
-        substituição automática.</p>
+      <p><strong>Para testar:</strong> Use "Forçar Exibição do Banner" para ver o banner independente da URL, ou simule
+        estar na página correta.</p>
     </div>
 
     <div class="demo-section">
@@ -141,7 +142,7 @@
       </div>
 
       <div class="status info" id="banner-status">
-        Banner aguardando detecção do loader com classe '.loader'.
+        Banner aguardando detecção do loader com classe '.loader' na URL /selecao-voo.
       </div>
 
       <button class="demo-button" onclick="simulateLoader()">
@@ -183,13 +184,14 @@
         • Classe monitorada: .loader<br>
         • Observador: MutationObserver ativo<br>
         • Substituição: Automática<br>
-        • Restauração: Após fechamento do banner<br><br>
+        • Restauração: Após fechamento do banner<br>
+        • URL obrigatória: /selecao-voo<br><br>
 
         <strong>Banner da Azul:</strong><br>
         Delay para exibir: Imediato após detecção<br>
         Tempo de exibição: 8 segundos<br>
-        Imagem Desktop: https://i.imgur.com/MyN94BQ.png<br>
-        Imagem Mobile: https://i.imgur.com/GAoQdi9.png<br>
+        Imagem Desktop: Unsplash Resort Image<br>
+        Imagem Mobile: Unsplash Resort Image<br>
         Mensagens Progressivas:<br>
         • 0%: "Estamos iniciando sua reserva..."<br>
         • 50%: "Quase lá... Estamos assegurando sua passagem."<br>
@@ -218,7 +220,7 @@
   </div>
 
   <!-- Incluir o script do banner -->
-  <script src="banner.loading.js"></script>
+  <script src="bannerLoading.js"></script>
 
   <script>
     // Funções de controle para o demo
@@ -303,7 +305,7 @@
                         
                         <div class="azul-banner-desktop">
                             <div class="azul-banner-image">
-                                <img src="https://i.imgur.com/MyN94BQ.png" alt="Resort tropical" />
+                                <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=254&fit=crop&crop=center" alt="Resort tropical" />
                                 <div class="azul-banner-overlay-gradient"></div>
                             </div>
                             <div class="azul-banner-content">
