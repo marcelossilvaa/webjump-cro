@@ -121,17 +121,16 @@
     <div class="instructions">
       <h3>📋 Instruções</h3>
       <p>Este banner da Azul foi modificado para detectar e substituir automaticamente qualquer elemento com a classe
-        <code>.loader</code> que apareça na página <strong>apenas na URL /selecao-voo com o botão "Informar
-          viajantes"</strong>.
+        <code>.loader</code> que apareça na página <strong>apenas após clicar no botão "Ir para escolha de assentos" na
+          URL /home/responsavel</strong>.
       </p>
       <p><strong>Como funciona:</strong></p>
       <ul>
-        <li>O script verifica se está na URL <code>/selecao-voo</code></li>
-        <li>Verifica se o botão <code>"Informar viajantes"</code> está presente (NÃO "Selecionar tarifa")</li>
-        <li>Se ambas condições forem atendidas, monitora a página em busca de elementos com classe <code>.loader</code>
-        </li>
-        <li>Quando detectado, esconde o loader original e exibe o banner da Azul</li>
-        <li>Após o banner fechar, o loader original é restaurado</li>
+        <li>O script verifica se está na URL <code>/home/responsavel</code></li>
+        <li>Configura um listener no botão <code>"Ir para escolha de assentos"</code></li>
+        <li>Quando o botão é clicado, ativa uma flag interna</li>
+        <li>Quando um loader aparece após o clique, substitui pelo banner da Azul</li>
+        <li>Outros loaders na mesma página são ignorados</li>
       </ul>
       <p><strong>Para testar:</strong> Use "Forçar Exibição do Banner" para ver o banner independente da URL, ou simule
         estar na página correta.</p>
@@ -145,7 +144,7 @@
       </div>
 
       <div class="status info" id="banner-status">
-        Banner aguardando detecção do loader com classe '.loader' na URL /selecao-voo com botão "Informar viajantes".
+        Banner aguardando clique no botão "Ir para escolha de assentos" na URL /home/responsavel.
       </div>
 
       <button class="demo-button" onclick="simulateLoader()">
@@ -157,7 +156,7 @@
       </button>
 
       <button class="demo-button" onclick="simulateTravelersButton()">
-        🎯 Simular Botão "Informar viajantes"
+        🎯 Simular Botão "Ir para escolha de assentos"
       </button>
 
       <button class="demo-button secondary" onclick="simulateOtherPage()">
@@ -192,8 +191,8 @@
         • Observador: MutationObserver ativo<br>
         • Substituição: Automática<br>
         • Restauração: Após fechamento do banner<br>
-        • URL obrigatória: /selecao-voo<br>
-        • Botão obrigatório: "Informar viajantes" (NÃO "Selecionar tarifa")<br>
+        • URL obrigatória: /home/responsavel<br>
+        • Botão obrigatório: "Ir para escolha de assentos"<br>
         • Pré-carregamento: Imagem carregada antecipadamente<br><br>
 
         <strong>Banner da Azul:</strong><br>
@@ -298,22 +297,22 @@
       // Remove botões existentes se houver
       const existingButtons = document.querySelectorAll('button');
       existingButtons.forEach(btn => {
-        const text = btn.querySelector('.button__text');
-        if (text && text.textContent.includes('Informar viajantes')) {
+        const ariaLabel = btn.getAttribute('aria-label');
+        if (ariaLabel && ariaLabel.includes('Ir para escolha de assentos')) {
           btn.remove();
         }
       });
 
-      // Cria o botão "Informar viajantes" específico
+      // Cria o botão "Ir para escolha de assentos" específico
       const buttonHTML = `
-        <button type="button" class="button undefined css-8g8ons" aria-label="Informar viajantes">
-          <div class="button__text" data-rte-editelement="true">Informar viajantes</div>
-          <div class="button__text button__text--mobile" data-rte-editelement="true">Informar viajantes</div>
+        <button data-testid="search-box-hotel-date-picker-primary-button" type="submit" class="button styles__StyledButton-sc-b3wwec-8 hqzALu css-13kiopy" aria-label="Ir para escolha de assentos" data-test-id="no-id" form="responsibleForm">
+          <div class="button__text" data-rte-editelement="true">Ir para escolha de assentos</div>
+          <div class="button__text button__text--mobile" data-rte-editelement="true">Ir para escolha de assentos</div>
         </button>
       `;
 
       document.body.insertAdjacentHTML('beforeend', buttonHTML);
-      updateBannerStatus('🎯 Botão "Informar viajantes" criado! Agora clique em "Simular Loader Original"');
+      updateBannerStatus('🎯 Botão "Ir para escolha de assentos" criado! Agora clique em "Simular Loader Original"');
     }
 
     function simulateOtherPage() {

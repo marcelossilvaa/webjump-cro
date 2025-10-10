@@ -9,7 +9,7 @@
 
   // Configurações do modal
   const CONFIG = {
-    urlTarget: '/selecao-voo',
+    urlTarget: '/home/responsavel',
     showDelay: 0, // Exibir imediatamente após injeção
     hideDelay: 8000, // Tempo para esconder o modal automaticamente (8 segundos)
     loadingMessages: {
@@ -40,12 +40,16 @@
       this.observer = null;
       this.originalLoader = null;
       this.bannerInstance = null; // Controle de instância única
+      this.shouldActivateOnLoader = false; // Flag para ativar banner após clique
       this.init();
     }
 
     init() {
       // Pré-carrega a imagem do banner
       this.preloadBannerImage();
+
+      // Verifica se deve configurar o listener do botão específico
+      this.setupSpecificButtonListener();
 
       // Inicia o observador para detectar o loader existente
       this.setupLoaderObserver();
@@ -54,92 +58,103 @@
     shouldShowBanner() {
       const currentUrl = window.location.href;
 
-      // Verifica se está na URL de seleção de voo
-      if (!currentUrl.includes('/selecao-voo')) {
-        console.log('Azul Banner: Desabilitado - não está na página de seleção de voo');
+      if (!currentUrl.includes('/home/responsavel')) {
         return false;
       }
 
-      // Verifica se está na URL de review - não deve funcionar lá
-      if (currentUrl.includes('/review')) {
-        console.log('Azul Banner: Desabilitado na página de review');
+      if (!this.shouldActivateOnLoader) {
         return false;
       }
 
-      // Procura por qualquer botão que contenha o texto "Informar viajantes"
-      const allButtons = document.querySelectorAll('button');
-      let travelersButton = null;
+      return true;
+    }
 
-      console.log(
-        'Azul Banner: Procurando botão "Informar viajantes" em',
-        allButtons.length,
-        'botões...'
+    setupSpecificButtonListener() {
+      const currentUrl = window.location.href;
+
+      if (!currentUrl.includes('/home/responsavel')) {
+        return;
+      }
+
+      this.findAndSetupButton();
+
+      document.addEventListener(
+        'click',
+        (event) => {
+          const target = event.target;
+          const button = target.closest('button');
+
+          if (!button) return;
+
+          const ariaLabel = button.getAttribute('aria-label');
+          const buttonText = button.querySelector('.button__text');
+          const buttonTextContent = buttonText ? buttonText.textContent.trim() : '';
+
+          if (
+            ariaLabel === 'Ir para escolha de assentos' ||
+            buttonTextContent === 'Ir para escolha de assentos'
+          ) {
+            this.activateBannerForTransition();
+          }
+        },
+        true
       );
+    }
 
-      for (let button of allButtons) {
+    findAndSetupButton() {
+      const allButtons = document.querySelectorAll('button');
+      let targetButton = null;
+
+      for (let i = 0; i < allButtons.length; i++) {
+        const button = allButtons[i];
+        const ariaLabel = button.getAttribute('aria-label');
         const buttonText = button.querySelector('.button__text');
         const buttonTextContent = buttonText ? buttonText.textContent.trim() : '';
-        const ariaLabel = button.getAttribute('aria-label') || '';
 
-        console.log('Azul Banner: Verificando botão:', {
-          element: button,
-          ariaLabel: ariaLabel,
-          buttonText: buttonTextContent,
-          classList: button.className,
-        });
-
-        if (buttonTextContent === 'Informar viajantes' || ariaLabel === 'Informar viajantes') {
-          travelersButton = button;
-          console.log('Azul Banner: ✅ Botão "Informar viajantes" encontrado!', {
-            element: button,
-            ariaLabel: ariaLabel,
-            buttonText: buttonTextContent,
-          });
+        if (
+          ariaLabel === 'Ir para escolha de assentos' ||
+          buttonTextContent === 'Ir para escolha de assentos'
+        ) {
+          targetButton = button;
           break;
         }
       }
 
-      if (!travelersButton) {
-        console.log(
-          'Azul Banner: Desabilitado - botão "Informar viajantes" não encontrado em nenhum botão da página'
-        );
-        return false;
-      }
+      if (targetButton) {
+        const clickHandler = (event) => {
+          this.activateBannerForTransition();
+        };
 
-      console.log(
-        'Azul Banner: Habilitado - página de seleção de voo com botão "Informar viajantes" detectado'
-      );
-      return true;
+        targetButton.addEventListener('click', clickHandler, true);
+        targetButton.addEventListener('mousedown', clickHandler, true);
+        targetButton.addEventListener('touchstart', clickHandler, true);
+      } else {
+        setTimeout(() => {
+          this.findAndSetupButton();
+        }, 2000);
+      }
+    }
+
+    activateBannerForTransition() {
+      this.shouldActivateOnLoader = true;
     }
 
     preloadBannerImage() {
-      // Pré-carrega a imagem do banner para evitar delay na exibição
       const img = new Image();
-      img.onload = () => {
-        console.log('Azul Banner: Imagem pré-carregada com sucesso');
-      };
-      img.onerror = () => {
-        console.warn('Azul Banner: Erro ao pré-carregar imagem');
-      };
       img.src = CONFIG.hotelImage;
     }
 
     setupLoaderObserver() {
-      // Verifica se já existe um loader na página
       this.checkForExistingLoader();
 
-      // Configura o observador para detectar quando o loader aparece
       this.observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           if (mutation.type === 'childList') {
-            // Verifica se algum nó adicionado contém a classe 'loader'
             mutation.addedNodes.forEach((node) => {
               if (node.nodeType === Node.ELEMENT_NODE) {
-                // Verifica se o próprio nó tem a classe loader
                 if (node.classList && node.classList.contains('loader')) {
                   this.replaceLoaderWithBanner(node);
                 }
-                // Verifica se há elementos com classe loader dentro do nó
                 const loaderElements = node.querySelectorAll
                   ? node.querySelectorAll('.loader')
                   : [];
@@ -150,7 +165,6 @@
         });
       });
 
-      // Inicia a observação
       this.observer.observe(document.body, {
         childList: true,
         subtree: true,
@@ -158,56 +172,35 @@
     }
 
     checkForExistingLoader() {
-      // Verifica se já existe um loader na página
-      console.log('Azul Banner: Verificando loaders existentes na página...');
       const existingLoader = document.querySelector('.loader');
       if (existingLoader) {
-        console.log('Azul Banner: Loader existente encontrado:', existingLoader);
         this.replaceLoaderWithBanner(existingLoader);
-      } else {
-        console.log('Azul Banner: Nenhum loader existente encontrado - aguardando detecção');
       }
     }
 
     replaceLoaderWithBanner(loaderElement) {
-      console.log('Azul Banner: replaceLoaderWithBanner chamado com:', loaderElement);
-
-      // Verifica se deve mostrar o banner
-      if (!this.shouldShowBanner()) {
-        console.log('Azul Banner: Banner não será exibido nesta página');
+      if (!this.shouldActivateOnLoader) {
         return;
       }
 
-      // Evita múltiplas instâncias do banner
+      this.shouldActivateOnLoader = false;
+
       if (this.isVisible || document.getElementById('azul-loading-banner')) {
-        console.log('Azul Banner: Banner já está ativo - ignorando novo loader');
         return;
       }
 
-      // Evita processar o mesmo loader múltiplas vezes
       if (loaderElement.dataset.azulReplaced) {
         return;
       }
 
-      // Marca o loader como já processado
       loaderElement.dataset.azulReplaced = 'true';
-
-      // Armazena referência ao loader original
       this.originalLoader = loaderElement;
-
-      // Esconde o loader original
       loaderElement.style.display = 'none';
 
-      // Cria e exibe o banner da Azul
       this.createBannerHTML();
       this.setupEventListeners();
       this.startLoadingSequence();
-
-      // Inicia o monitoramento do loader original
       this.startLoaderMonitoring();
-
-      // Log para debug
-      console.log('Azul Banner: Loader detectado e substituído pelo banner da Azul');
     }
 
     createBannerHTML() {
@@ -583,47 +576,32 @@
     }
 
     startLoaderMonitoring() {
-      // Evita múltiplas execuções
       if (this.loaderMonitorInterval) {
         return;
       }
 
-      console.log('Azul Banner: Iniciando monitoramento inteligente com debounce');
-
-      // Monitora quando o loader original é removido da página
       this.loaderMonitorInterval = setInterval(() => {
         if (!this.originalLoader || !document.contains(this.originalLoader)) {
-          console.log('Azul Banner: Loader removido - iniciando debounce de 0.2s');
-
-          // Limpa o interval de monitoramento
           clearInterval(this.loaderMonitorInterval);
           this.loaderMonitorInterval = null;
-
-          // Inicia o debounce inteligente
           this.startSmartDebounce();
         }
-      }, 100); // Verifica a cada 100ms
+      }, 100);
     }
 
     startSmartDebounce() {
-      // Cancela qualquer debounce anterior
       if (this.hideDebounceTimeout) {
         clearTimeout(this.hideDebounceTimeout);
       }
 
-      // Aguarda 0.2s antes de esconder
       this.hideDebounceTimeout = setTimeout(() => {
-        // Verifica se o loader reapareceu durante o debounce
         const anyLoader = document.querySelector('.loader');
         if (anyLoader) {
-          console.log('Azul Banner: Loader reapareceu durante debounce - mantendo banner');
-          // Se o loader voltou, continua monitorando
           this.startLoaderMonitoring();
         } else {
-          console.log('Azul Banner: Confirmado - loader não reapareceu, escondendo banner');
           this.hideBanner();
         }
-      }, 200); // Debounce de 0.2 segundos
+      }, 200);
     }
 
     showBanner() {
@@ -666,18 +644,14 @@
 
           // Limpa flag de instância única
           this.bannerInstance = null;
-
-          console.log('Azul Banner: Banner completamente removido');
         }, 300);
       }
     }
 
     restoreOriginalLoader() {
       if (this.originalLoader) {
-        // Restaura o loader original
         this.originalLoader.style.display = '';
         this.originalLoader = null;
-        console.log('Azul Banner: Loader original restaurado');
       }
     }
 
@@ -702,8 +676,6 @@
       // Calcula incremento baseado na duração mínima
       const increment = 100 / (minDuration / 100);
 
-      console.log('Azul Banner: Iniciando progress bar inteligente');
-
       this.progressInterval = setInterval(() => {
         const elapsed = Date.now() - startTime;
 
@@ -727,7 +699,6 @@
         if (progress >= 100) {
           progress = 100;
           clearInterval(this.progressInterval);
-          console.log('Azul Banner: Progress bar completada');
         }
 
         // Atualiza a barra de progresso
@@ -802,14 +773,6 @@
     }
 
     trackBannerEvent(action) {
-      // Implementar tracking/analytics conforme necessário
-      console.log(`Azul Banner ${action}:`, {
-        url: window.location.href,
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-      });
-
-      // Exemplo de integração com Google Analytics
       if (typeof gtag !== 'undefined') {
         gtag('event', 'azul_banner_' + action, {
           event_category: 'promotional_banner',
