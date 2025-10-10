@@ -44,6 +44,9 @@
     }
 
     init() {
+      // Pré-carrega a imagem do banner
+      this.preloadBannerImage();
+
       // Inicia o observador para detectar o loader existente
       this.setupLoaderObserver();
     }
@@ -63,8 +66,62 @@
         return false;
       }
 
-      console.log('Azul Banner: Habilitado na página de seleção de voo');
+      // Procura por qualquer botão que contenha o texto "Informar viajantes"
+      const allButtons = document.querySelectorAll('button');
+      let travelersButton = null;
+
+      console.log(
+        'Azul Banner: Procurando botão "Informar viajantes" em',
+        allButtons.length,
+        'botões...'
+      );
+
+      for (let button of allButtons) {
+        const buttonText = button.querySelector('.button__text');
+        const buttonTextContent = buttonText ? buttonText.textContent.trim() : '';
+        const ariaLabel = button.getAttribute('aria-label') || '';
+
+        console.log('Azul Banner: Verificando botão:', {
+          element: button,
+          ariaLabel: ariaLabel,
+          buttonText: buttonTextContent,
+          classList: button.className,
+        });
+
+        if (buttonTextContent === 'Informar viajantes' || ariaLabel === 'Informar viajantes') {
+          travelersButton = button;
+          console.log('Azul Banner: ✅ Botão "Informar viajantes" encontrado!', {
+            element: button,
+            ariaLabel: ariaLabel,
+            buttonText: buttonTextContent,
+          });
+          break;
+        }
+      }
+
+      if (!travelersButton) {
+        console.log(
+          'Azul Banner: Desabilitado - botão "Informar viajantes" não encontrado em nenhum botão da página'
+        );
+        return false;
+      }
+
+      console.log(
+        'Azul Banner: Habilitado - página de seleção de voo com botão "Informar viajantes" detectado'
+      );
       return true;
+    }
+
+    preloadBannerImage() {
+      // Pré-carrega a imagem do banner para evitar delay na exibição
+      const img = new Image();
+      img.onload = () => {
+        console.log('Azul Banner: Imagem pré-carregada com sucesso');
+      };
+      img.onerror = () => {
+        console.warn('Azul Banner: Erro ao pré-carregar imagem');
+      };
+      img.src = CONFIG.hotelImage;
     }
 
     setupLoaderObserver() {
@@ -102,13 +159,19 @@
 
     checkForExistingLoader() {
       // Verifica se já existe um loader na página
+      console.log('Azul Banner: Verificando loaders existentes na página...');
       const existingLoader = document.querySelector('.loader');
       if (existingLoader) {
+        console.log('Azul Banner: Loader existente encontrado:', existingLoader);
         this.replaceLoaderWithBanner(existingLoader);
+      } else {
+        console.log('Azul Banner: Nenhum loader existente encontrado - aguardando detecção');
       }
     }
 
     replaceLoaderWithBanner(loaderElement) {
+      console.log('Azul Banner: replaceLoaderWithBanner chamado com:', loaderElement);
+
       // Verifica se deve mostrar o banner
       if (!this.shouldShowBanner()) {
         console.log('Azul Banner: Banner não será exibido nesta página');

@@ -121,12 +121,15 @@
     <div class="instructions">
       <h3>📋 Instruções</h3>
       <p>Este banner da Azul foi modificado para detectar e substituir automaticamente qualquer elemento com a classe
-        <code>.loader</code> que apareça na página <strong>apenas na URL /selecao-voo</strong>.
+        <code>.loader</code> que apareça na página <strong>apenas na URL /selecao-voo com o botão "Informar
+          viajantes"</strong>.
       </p>
       <p><strong>Como funciona:</strong></p>
       <ul>
         <li>O script verifica se está na URL <code>/selecao-voo</code></li>
-        <li>Se estiver, monitora a página em busca de elementos com classe <code>.loader</code></li>
+        <li>Verifica se o botão <code>"Informar viajantes"</code> está presente (NÃO "Selecionar tarifa")</li>
+        <li>Se ambas condições forem atendidas, monitora a página em busca de elementos com classe <code>.loader</code>
+        </li>
         <li>Quando detectado, esconde o loader original e exibe o banner da Azul</li>
         <li>Após o banner fechar, o loader original é restaurado</li>
       </ul>
@@ -142,7 +145,7 @@
       </div>
 
       <div class="status info" id="banner-status">
-        Banner aguardando detecção do loader com classe '.loader' na URL /selecao-voo.
+        Banner aguardando detecção do loader com classe '.loader' na URL /selecao-voo com botão "Informar viajantes".
       </div>
 
       <button class="demo-button" onclick="simulateLoader()">
@@ -151,6 +154,10 @@
 
       <button class="demo-button" onclick="simulateSelecaoVoo()">
         🔄 Recriar Banner
+      </button>
+
+      <button class="demo-button" onclick="simulateTravelersButton()">
+        🎯 Simular Botão "Informar viajantes"
       </button>
 
       <button class="demo-button secondary" onclick="simulateOtherPage()">
@@ -185,7 +192,9 @@
         • Observador: MutationObserver ativo<br>
         • Substituição: Automática<br>
         • Restauração: Após fechamento do banner<br>
-        • URL obrigatória: /selecao-voo<br><br>
+        • URL obrigatória: /selecao-voo<br>
+        • Botão obrigatório: "Informar viajantes" (NÃO "Selecionar tarifa")<br>
+        • Pré-carregamento: Imagem carregada antecipadamente<br><br>
 
         <strong>Banner da Azul:</strong><br>
         Delay para exibir: Imediato após detecção<br>
@@ -283,6 +292,28 @@
           new window.AzulLoadingBanner();
         }
       }, 100);
+    }
+
+    function simulateTravelersButton() {
+      // Remove botões existentes se houver
+      const existingButtons = document.querySelectorAll('button');
+      existingButtons.forEach(btn => {
+        const text = btn.querySelector('.button__text');
+        if (text && text.textContent.includes('Informar viajantes')) {
+          btn.remove();
+        }
+      });
+
+      // Cria o botão "Informar viajantes" específico
+      const buttonHTML = `
+        <button type="button" class="button undefined css-8g8ons" aria-label="Informar viajantes">
+          <div class="button__text" data-rte-editelement="true">Informar viajantes</div>
+          <div class="button__text button__text--mobile" data-rte-editelement="true">Informar viajantes</div>
+        </button>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', buttonHTML);
+      updateBannerStatus('🎯 Botão "Informar viajantes" criado! Agora clique em "Simular Loader Original"');
     }
 
     function simulateOtherPage() {
