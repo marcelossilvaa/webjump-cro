@@ -2,7 +2,8 @@
   function onTargetPage() {
     const currentUrl = window.location.pathname;
     const targetTestUrl = '/payment';
-    return currentUrl.includes(targetTestUrl);
+    const stageTestUrl = '/stage';
+    return currentUrl.includes(targetTestUrl) || currentUrl.includes(stageTestUrl);
   }
 
   if (window.campaignPromoCode || !onTargetPage()) {

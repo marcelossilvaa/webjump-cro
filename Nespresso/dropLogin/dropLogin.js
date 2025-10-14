@@ -71,6 +71,12 @@
         font-family: Arial, sans-serif;
     `;
 
+    let dropdownRegister = document.querySelector('.LoginDropdown__register-description');
+
+    dropdownRegister.style.cssText = `
+      margin: -10px 0 5px !important;
+    `;
+
     // Título da seção
     const title = document.createElement('h3');
     title.textContent = 'Benefícios ao criar uma conta';
