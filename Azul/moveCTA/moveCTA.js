@@ -1,11 +1,19 @@
-(function () {
+window.alert('TESTE');
+console.log('TESTE 2');
+
+function executeMoveCTA() {
+  console.log('ENTROU AQUI 1');
+
   function onTargetPage() {
     const currentUrl = window.location.pathname;
+    console.log('URL >>>>>>>>> ', currentUrl);
     const targetTestUrl = '/payment';
-    return currentUrl.includes(targetTestUrl);
+    const stageTestUrl = '/stage';
+    return currentUrl.includes(targetTestUrl) || currentUrl.includes(stageTestUrl);
   }
 
   if (window.campaignMoveCTA || !onTargetPage()) {
+    console.log('Script não executado - URL não corresponde ou já foi executado');
     return;
   }
   window.campaignMoveCTA = true;
@@ -56,21 +64,21 @@
   // Criar uma nova div para envolver o botão
   const novaDivBotao = document.createElement('div');
   novaDivBotao.style.cssText = `
-    background-color: #f8f9fa;
-    border: 1px solid rgb(192, 192, 192);
-    border-top: none;
-    border-radius: 0 0 8px 8px;
-    padding: 15px;
-    margin-top: 0;
-  `;
+background-color: #f8f9fa;
+border: 1px solid rgb(192, 192, 192);
+border-top: none;
+border-radius: 0 0 8px 8px;
+padding: 15px;
+margin-top: 0;
+`;
 
   // Clonar o botão original
   const botaoClonado = botaoProsseguir.cloneNode(true);
   botaoClonado.style.cssText = `
-    width: 100%;
-    margin: 0;
-    border-radius: 6px;
-  `;
+width: 100%;
+margin: 0;
+border-radius: 6px;
+`;
 
   // Adicionar o botão clonado à nova div
   novaDivBotao.appendChild(botaoClonado);
@@ -83,4 +91,11 @@
 
   console.log('Botão "Prosseguir" movido com sucesso.');
   return true;
-})();
+}
+
+// Executar quando o DOM estiver pronto
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', executeMoveCTA);
+} else {
+  executeMoveCTA();
+}

@@ -1,4 +1,4 @@
-(function () {
+function executeMoveCTAWithModal() {
   function onTargetPage() {
     const currentUrl = window.location.pathname;
     const targetTestUrl = '/payment';
@@ -146,4 +146,11 @@
   console.log('Botão "Prosseguir" movido com sucesso.');
   console.log('Observer configurado para detectar modal.');
   return true;
-})();
+}
+
+// Executar quando o DOM estiver pronto
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', executeMoveCTAWithModal);
+} else {
+  executeMoveCTAWithModal();
+}
