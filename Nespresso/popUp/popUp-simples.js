@@ -84,7 +84,7 @@
     }
     popupTimer = setTimeout(() => {
       window.closeNapoliPopup();
-    }, 2000000); // 20 segundos
+    }, 20000); // 20 segundos
   }
 
   // Função para iniciar timer de 5 segundos após produto ser adicionado
@@ -155,7 +155,7 @@
                 width: 100% !important;
               }
               #napoli-popup #MiniBasketPushAddProductCTA {
-                width: 65% !important;
+                width: 70% !important;
                 padding: 0 !important;
               }
               #napoli-popup .AddToBagButton__button-CremaComponentId-${Date.now()} {
@@ -187,7 +187,7 @@
                 display: flex !important;
                 align-items: center !important;
                 justify-content: center !important;
-                gap: 8px !important;
+                gap: 3px !important;
                 flex-wrap: nowrap !important;
                 position: relative !important;
               }
@@ -340,7 +340,7 @@
     // Configurar timer para fechar pop-up automaticamente após 20 segundos
     popupTimer = setTimeout(() => {
       window.closeNapoliPopup();
-    }, 2000000);
+    }, 20000);
 
     // Inicializa módulos Mosaic na área do CTA, se disponível
     try {
