@@ -172,7 +172,7 @@
               #napoli-popup .add-to-cart-text {
                 display: inline-block !important;
                 margin-right: 8px !important;
-                font-size: 14px !important;
+                font-size: 14px;
                 font-weight: bold !important;
                 color: white !important;
                 visibility: visible !important;
@@ -192,7 +192,7 @@
                 position: relative !important;
               }
             </style>
-            <div id="napoli-popup" style="position: fixed; bottom: 20px; left: 20px; z-index: 9999; max-width: 450px; animation: slideInLeft 0.3s ease-out;">
+            <div id="napoli-popup" style="position: fixed; bottom: 20px; left: 20px; z-index: 999; max-width: 450px; animation: slideInLeft 0.3s ease-out;">
                 <div style="background: white; border-radius: 8px; padding: 24px 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
                         <h3 style="margin: 0; color: #999; font-size: 16px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.5px;">QUEM COMPRA <span style="font-weight: 600;">${lastAddedProductName}</span> TAMBÉM COMPRA</h3>
@@ -279,7 +279,7 @@
                 @media (max-width: 768px) {
                     #napoli-popup {
                         max-width: 90% !important;
-                        left: 4% !important;
+                        left: 5% !important;
                         right: 5% !important;
                         bottom: 25px !important;
                     }
@@ -290,18 +290,18 @@
                     }
                     
                     #napoli-popup h3 {
-                        font-size: 14px !important;
-                        margin-bottom: 8px !important;
+                        font-size: 14px!important;
+                        margin-bottom: 0px !important;
                         line-height: 1.3 !important;
                     }
                     
                     #napoli-popup h4 {
-                        font-size: 14px !important;
+                        font-size: 14px;
                         margin-bottom: 4px !important;
                     }
                     
                     #napoli-popup p {
-                        font-size: 14px !important;
+                        font-size: 14px;
                         margin-bottom: 8px !important;
                         line-height: 1.3 !important;
                     }
@@ -315,7 +315,27 @@
                         margin-bottom: 4px !important;
                     }
                     
+                    #napoli-popup div[style*="margin-bottom: 20px"] {
+                        margin-bottom: 10px !important;
+                    }
+                    
                     #napoli-popup .add-to-cart-text {
+                        font-size: 12px !important;
+                    }
+                    
+                    #napoli-popup .AddToBagButtonSmall .add-to-cart-text {
+                        font-size: 12px !important;
+                    }
+                    
+                    #napoli-popup button .add-to-cart-text {
+                        font-size: 12px !important;
+                    }
+                    
+                    #napoli-popup .AddToBagButtonSmall span.add-to-cart-text {
+                        font-size: 12px !important;
+                    }
+                    
+                    #napoli-popup span.add-to-cart-text {
                         font-size: 12px !important;
                     }
                     
@@ -481,7 +501,7 @@
                 newTextElement.style.cssText = `
                   display: inline-block !important;
                   margin-right: 8px !important;
-                  font-size: 14px !important;
+                  font-size: 14px;
                   font-weight: 600 !important;
                   color: white !important;
                   visibility: visible !important;
