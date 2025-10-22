@@ -1,844 +1,790 @@
-// Pop-up de sugestão de produto Napoli quando usuário adiciona produto ao carrinho
-
-console.log('Script Pop-up 1 ');
-window.alert('Script Pop-up 1');
 (function () {
   'use strict';
 
-  // Configurações do produto sugerido
-  const SUGGESTED_PRODUCT_ID = '7895.90'; // Napoli
-  const SUGGESTED_PRODUCT_NAME = 'Napoli';
-  const SUGGESTED_PRODUCT_PRICE = 3.4;
-  const SUGGESTED_PRODUCT_DESCRIPTION = 'Café torrado e marcante com notas de cacau e madeira';
-  const SUGGESTED_PRODUCT_INTENSITY = 13;
-  const SUGGESTED_PRODUCT_IMAGE =
-    '/ecom/medias/sys_master/public/15819013062686/C-0471-Product-684x378.jpg';
+  // Mapeamento de recomendações
+  const RECOMMENDATION_MAP = {
+    '7885.90': '7871.90', // Ristretto → Corto
+    '7857.90': '7871.90', // Ristretto Decaf → Corto
+    '7888.90': '7874.90', // Arpeggio → Indonesia
+    '7862.90': '7874.90', // Arpeggio Decaf → Indonesia
+    '7865.90': '7892.90', // Volluto → Chiaro
+    '7864.90': '7892.90', // Volluto Decaf → Chiaro
+    '7011.80': '7042.80', // Ristretto Intenso → Intenso
+    '7010.80': '7026.80', // Ristretto Clássico → Mexico
+  };
 
-  // Variáveis de controle
   let popupShown = false;
-  let cartItems = [];
-  let suggestedProductData = null;
-  let debugMode = true; // Ativar logs de debug
-  let observerInitialized = false;
+  let lastQuantity = 0;
+  let currentProductData = null;
+  let lastAddedProductName = '';
+  let previousCartState = new Map();
+  let popupTimer = null;
+  let cartObserver = null;
+  let productAddedTimer = null;
+  let productAddedToCart = false;
 
-  console.log('Script Pop-up 2');
-
-  // Função para criar o HTML do pop-up
-  function createPopupHTML() {
-    return `
-            <div id="napoli-suggestion-popup" class="napoli-popup-overlay">
-                <div class="napoli-popup-content">
-                    <div class="napoli-popup-header">
-                        <h3>Que tal experimentar algo novo?</h3>
-                        <button class="napoli-popup-close" onclick="closeNapoliPopup()">&times;</button>
-                    </div>
-                    <div class="napoli-popup-body">
-                        <div class="napoli-product-info">
-                            <div class="napoli-product-image">
-                                <img src="${SUGGESTED_PRODUCT_IMAGE}" alt="${SUGGESTED_PRODUCT_NAME}" />
-                            </div>
-                            <div class="napoli-product-details">
-                                <h4>${SUGGESTED_PRODUCT_NAME}</h4>
-                                <p class="napoli-description">${SUGGESTED_PRODUCT_DESCRIPTION}</p>
-                                <div class="napoli-intensity">
-                                    <span>Intensidade: ${SUGGESTED_PRODUCT_INTENSITY}/13</span>
-                                    <div class="napoli-intensity-bar">
-                                        ${'■'.repeat(SUGGESTED_PRODUCT_INTENSITY)}${'□'.repeat(
-      13 - SUGGESTED_PRODUCT_INTENSITY
-    )}
-                                    </div>
-                                </div>
-                                <div class="napoli-price">
-                                    <span class="napoli-price-value">R$ ${SUGGESTED_PRODUCT_PRICE.toFixed(
-                                      2
-                                    )}</span>
-                                    <span class="napoli-price-unit">por cápsula</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="napoli-popup-footer">
-                        <button class="napoli-btn napoli-btn-secondary" onclick="closeNapoliPopup()">
-                            Talvez depois
-                        </button>
-                        <button class="napoli-btn napoli-btn-primary" onclick="addNapoliToCart()">
-                            Adicionar ao carrinho
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
+  // Função para verificar se produto recomendado já está no carrinho
+  async function isRecommendedProductInCart(recommendedSku) {
+    try {
+      const cartItems = await window.napi.cart().read();
+      return cartItems.some((item) => {
+        const sku = item.productId.split('/').pop();
+        return sku === recommendedSku && !item.nonRemovable;
+      });
+    } catch (error) {
+      return false;
+    }
   }
 
-  // Função para adicionar estilos CSS
-  function addPopupStyles() {
-    const style = document.createElement('style');
-    style.textContent = `
-            .napoli-popup-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.5);
-                z-index: 9999;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                font-family: 'Arial', sans-serif;
-            }
-
-            .napoli-popup-content {
-                background: white;
-                border-radius: 12px;
-                max-width: 500px;
-                width: 90%;
-                max-height: 80vh;
-                overflow-y: auto;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-                animation: napoli-popup-fade-in 0.3s ease-out;
-            }
-
-            @keyframes napoli-popup-fade-in {
-                from {
-                    opacity: 0;
-                    transform: scale(0.9);
-                }
-                to {
-                    opacity: 1;
-                    transform: scale(1);
-                }
-            }
-
-            .napoli-popup-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 20px 20px 0 20px;
-                border-bottom: 1px solid #eee;
-            }
-
-            .napoli-popup-header h3 {
-                margin: 0;
-                color: #333;
-                font-size: 18px;
-                font-weight: 600;
-            }
-
-            .napoli-popup-close {
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-                color: #999;
-                padding: 0;
-                width: 30px;
-                height: 30px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .napoli-popup-close:hover {
-                color: #333;
-            }
-
-            .napoli-popup-body {
-                padding: 20px;
-            }
-
-            .napoli-product-info {
-                display: flex;
-                gap: 15px;
-            }
-
-            .napoli-product-image {
-                flex-shrink: 0;
-            }
-
-            .napoli-product-image img {
-                width: 120px;
-                height: 120px;
-                object-fit: cover;
-                border-radius: 8px;
-            }
-
-            .napoli-product-details {
-                flex: 1;
-            }
-
-            .napoli-product-details h4 {
-                margin: 0 0 10px 0;
-                color: #333;
-                font-size: 16px;
-                font-weight: 600;
-            }
-
-            .napoli-description {
-                margin: 0 0 15px 0;
-                color: #666;
-                font-size: 14px;
-                line-height: 1.4;
-            }
-
-            .napoli-intensity {
-                margin-bottom: 15px;
-            }
-
-            .napoli-intensity span {
-                display: block;
-                color: #333;
-                font-size: 14px;
-                font-weight: 500;
-                margin-bottom: 5px;
-            }
-
-            .napoli-intensity-bar {
-                font-family: monospace;
-                font-size: 16px;
-                color: #8B4513;
-            }
-
-            .napoli-price {
-                display: flex;
-                align-items: baseline;
-                gap: 5px;
-            }
-
-            .napoli-price-value {
-                font-size: 18px;
-                font-weight: 600;
-                color: #333;
-            }
-
-            .napoli-price-unit {
-                font-size: 12px;
-                color: #666;
-            }
-
-            .napoli-popup-footer {
-                padding: 20px;
-                display: flex;
-                gap: 10px;
-                justify-content: flex-end;
-                border-top: 1px solid #eee;
-            }
-
-            .napoli-btn {
-                padding: 10px 20px;
-                border: none;
-                border-radius: 6px;
-                cursor: pointer;
-                font-size: 14px;
-                font-weight: 500;
-                transition: all 0.2s ease;
-            }
-
-            .napoli-btn-secondary {
-                background: #f5f5f5;
-                color: #666;
-            }
-
-            .napoli-btn-secondary:hover {
-                background: #e5e5e5;
-            }
-
-            .napoli-btn-primary {
-                background: #007bff;
-                color: white;
-            }
-
-            .napoli-btn-primary:hover {
-                background: #0056b3;
-            }
-
-            @media (max-width: 480px) {
-                .napoli-popup-content {
-                    width: 95%;
-                    margin: 10px;
-                }
-
-                .napoli-product-info {
-                    flex-direction: column;
-                    text-align: center;
-                }
-
-                .napoli-product-image img {
-                    width: 100px;
-                    height: 100px;
-                }
-
-                .napoli-popup-footer {
-                    flex-direction: column;
-                }
-            }
-        `;
-    document.head.appendChild(style);
+  // Função para obter quantidade do produto no carrinho
+  async function getProductQuantityInCart(recommendedSku) {
+    try {
+      const cartItems = await window.napi.cart().read();
+      const item = cartItems.find((item) => {
+        const sku = item.productId.split('/').pop();
+        return sku === recommendedSku && !item.nonRemovable;
+      });
+      return item ? item.quantity : 0;
+    } catch (error) {
+      return 0;
+    }
   }
 
-  // Função para mostrar o pop-up
-  function showNapoliPopup() {
-    alwaysLog('🎯 INICIANDO: showNapoliPopup()');
+  // Função para atualizar texto do botão baseado no estado do carrinho
+  async function updateButtonText(recommendedSku) {
+    try {
+      const quantityInCart = await getProductQuantityInCart(recommendedSku);
+      const textElement = document.querySelector('#recommendation-popup .add-to-cart-text');
 
-    // Verificar se já existe o pop-up no DOM
-    if (document.getElementById('napoli-suggestion-popup')) {
-      alwaysLog('⚠️ Pop-up já existe no DOM, cancelando');
+      if (textElement) {
+        textElement.textContent =
+          quantityInCart > 0 ? 'JÁ ADICIONADOS AO CARRINHO' : 'ADICIONAR AO CARRINHO';
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar texto do botão:', error);
+    }
+  }
+
+  // Função para resetar timers do popup
+  function resetPopupTimers() {
+    // Se produto já foi adicionado, não resetar timers
+    if (productAddedToCart) {
       return;
     }
 
-    // Verificar se já foi mostrado nesta sessão
+    // Limpar timer de produto adicionado se existir
+    if (productAddedTimer) {
+      clearTimeout(productAddedTimer);
+      productAddedTimer = null;
+    }
+
+    // Resetar timer principal para 20 segundos
+    if (popupTimer) {
+      clearTimeout(popupTimer);
+    }
+    popupTimer = setTimeout(() => {
+      window.closeRecommendationPopup();
+    }, 20000); // 20 segundos
+  }
+
+  // Função para iniciar timer de 5 segundos após produto ser adicionado
+  function startProductAddedTimer() {
+    productAddedToCart = true;
+
+    // Limpar timer principal
+    if (popupTimer) {
+      clearTimeout(popupTimer);
+      popupTimer = null;
+    }
+
+    // Limpar timer anterior se existir
+    if (productAddedTimer) {
+      clearTimeout(productAddedTimer);
+    }
+
+    productAddedTimer = setTimeout(() => {
+      window.closeRecommendationPopup();
+    }, 5000);
+  }
+
+  // Função para buscar dados do produto recomendado
+  async function getRecommendedProductData(sku) {
+    try {
+      const productData = await window.napi.catalog().getProduct(sku);
+      return productData;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  // Função para mostrar popup de recomendação
+  async function showPopup(sku = '') {
     if (popupShown) {
-      alwaysLog('⚠️ Pop-up já foi mostrado nesta sessão, cancelando');
       return;
     }
-
-    alwaysLog('✅ Criando pop-up...');
-
-    // Adicionar estilos se ainda não foram adicionados
-    if (!document.querySelector('style[data-napoli-popup]')) {
-      addPopupStyles();
-      alwaysLog('🎨 Estilos CSS adicionados');
+    if (document.getElementById('recommendation-popup')) {
+      return;
     }
-
-    // Criar e adicionar o pop-up ao DOM
-    const popupHTML = createPopupHTML();
-    document.body.insertAdjacentHTML('beforeend', popupHTML);
 
     popupShown = true;
-    alwaysLog('🎉 POP-UP MOSTRADO COM SUCESSO!');
 
-    // Adicionar função global para fechar o pop-up
-    window.closeNapoliPopup = function () {
-      const popup = document.getElementById('napoli-suggestion-popup');
-      if (popup) {
-        popup.style.animation = 'napoli-popup-fade-out 0.3s ease-in';
-        setTimeout(() => {
-          popup.remove();
-        }, 300);
-      }
-      popupShown = false;
-    };
-
-    // Adicionar função global para adicionar Napoli ao carrinho
-    window.addNapoliToCart = async function () {
-      try {
-        // Adicionar o produto Napoli ao carrinho
-        await window.napi.cart().addProduct(SUGGESTED_PRODUCT_ID, 10); // Adiciona 10 cápsulas
-
-        // Fechar o pop-up
-        window.closeNapoliPopup();
-
-        // Mostrar mensagem de sucesso (opcional)
-        console.log('Produto Napoli adicionado ao carrinho com sucesso!');
-      } catch (error) {
-        console.error('Erro ao adicionar produto ao carrinho:', error);
-      }
-    };
-
-    // Adicionar animação de fade-out
-    const style = document.createElement('style');
-    style.setAttribute('data-napoli-popup', 'true');
-    style.textContent = `
-            @keyframes napoli-popup-fade-out {
-                from {
-                    opacity: 1;
-                    transform: scale(1);
-                }
-                to {
-                    opacity: 0;
-                    transform: scale(0.9);
-                }
-            }
-        `;
-    document.head.appendChild(style);
-  }
-
-  // Função para debug
-  function debugLog(message, data = null) {
-    if (debugMode) {
-      console.log(`🔥 [Napoli Popup Debug] ${message}`, data || '');
-      console.log(`📊 Timestamp: ${new Date().toLocaleTimeString()}`);
-      if (data) {
-        console.table(data);
-      }
+    // Exibir apenas com dados reais do produto recomendado
+    if (!currentProductData) {
+      return;
     }
-  }
+    const productData = currentProductData;
 
-  // Função para log sempre visível (mesmo com debug desabilitado)
-  function alwaysLog(message, data = null) {
-    console.log(`🚀 [Napoli Popup] ${message}`, data || '');
-    console.log(`⏰ ${new Date().toLocaleTimeString()}`);
-  }
+    const productName = productData.name || '';
+    const productDescription = productData.headline || '';
+    const productIntensity = productData.capsuleProperties?.intensity || '';
+    const productPrice = productData.unitPrice || '';
+    const productImage = productData.responsiveImages?.plp || productData.images?.main || '';
 
-  // Função para verificar se deve mostrar o pop-up
-  function shouldShowPopup(newCartItems) {
-    debugLog('Verificando se deve mostrar pop-up', {
-      popupShown,
-      cartItemsCount: newCartItems?.length,
-      newCartItems,
-    });
+    // Obter quantidade no carrinho para o copy do botão
+    const recommendedSku = RECOMMENDATION_MAP[sku];
+    const quantityInCart = recommendedSku ? await getProductQuantityInCart(recommendedSku) : 0;
+    const buttonText = quantityInCart > 0 ? 'JÁ ADICIONADO AO CARRINHO' : 'ADICIONAR AO CARRINHO';
 
-    // Não mostrar se já foi mostrado
-    if (popupShown) {
-      debugLog('Pop-up já foi mostrado, não mostrar novamente');
-      return false;
-    }
-
-    // Não mostrar se o carrinho estiver vazio
-    if (!newCartItems || newCartItems.length === 0) {
-      debugLog('Carrinho vazio, não mostrar pop-up');
-      return false;
-    }
-
-    // Não mostrar se o produto Napoli já estiver no carrinho
-    const hasNapoli = newCartItems.some(
-      (item) => item.productId.includes(SUGGESTED_PRODUCT_ID) || item.productId.includes('napoli')
-    );
-
-    if (hasNapoli) {
-      debugLog('Napoli já está no carrinho, não mostrar pop-up');
-      return false;
-    }
-
-    // Mostrar se há produtos no carrinho e não é o Napoli
-    debugLog('Condições atendidas, deve mostrar pop-up');
-    return newCartItems.length > 0;
-  }
-
-  // Função para lidar com atualizações do carrinho
-  async function handleCartUpdate() {
-    alwaysLog('🛒 CARRINHO ATUALIZADO! handleCartUpdate chamado');
-    try {
-      // Ler o estado atual do carrinho
-      alwaysLog('📖 Lendo estado do carrinho...');
-      const newCartItems = await window.napi.cart().read();
-      alwaysLog('✅ Carrinho lido com sucesso', newCartItems);
-
-      // Verificar se deve mostrar o pop-up
-      if (shouldShowPopup(newCartItems)) {
-        alwaysLog('🎯 DEVE MOSTRAR POP-UP! Aguardando 1 segundo...');
-        // Aguardar um pouco para garantir que a UI foi atualizada
-        setTimeout(() => {
-          alwaysLog('🚀 Mostrando pop-up agora...');
-          showNapoliPopup();
-        }, 1000);
-      } else {
-        alwaysLog('❌ Não deve mostrar pop-up');
-      }
-
-      // Atualizar o estado dos itens do carrinho
-      cartItems = newCartItems;
-    } catch (error) {
-      console.error('❌ Erro ao processar atualização do carrinho:', error);
-      alwaysLog('❌ Erro ao processar carrinho', error);
-    }
-  }
-
-  // Função para inicializar o observador
-  function initializePopupObserver() {
-    try {
-      debugLog('Inicializando observador...');
-
-      // Verificar se a API está disponível
-      if (!window.napi || !window.napi.data || !window.napi.cart) {
-        debugLog('API não disponível ainda, tentando novamente...');
-        return false;
-      }
-
-      // Registrar o observador para mudanças no carrinho
-      window.napi.data().on('cart.update', handleCartUpdate);
-      observerInitialized = true;
-
-      console.log('Observador de pop-up Napoli inicializado com sucesso!');
-      debugLog('Observador registrado com sucesso');
-
-      // Testar manualmente após inicialização
-      setTimeout(() => {
-        debugLog('Testando leitura do carrinho...');
-        window.napi
-          .cart()
-          .read()
-          .then((items) => {
-            debugLog('Teste de leitura do carrinho:', items);
-          })
-          .catch((err) => {
-            debugLog('Erro no teste de leitura:', err);
-          });
-      }, 2000);
-
-      return true;
-    } catch (error) {
-      console.error('Erro ao inicializar observador do pop-up:', error);
-      debugLog('Erro ao inicializar observador', error);
-      return false;
-    }
-  }
-
-  // Aguardar o DOM estar pronto e a API estar disponível
-  function waitForAPI() {
-    debugLog('Aguardando API estar disponível...', {
-      napi: !!window.napi,
-      data: !!(window.napi && window.napi.data),
-      cart: !!(window.napi && window.napi.cart),
-    });
-
-    if (window.napi && window.napi.data && window.napi.cart) {
-      const success = initializePopupObserver();
-      if (!success) {
-        // Se falhou, tentar novamente
-        setTimeout(waitForAPI, 1000);
-      }
-    } else {
-      // Tentar novamente em 100ms
-      setTimeout(waitForAPI, 100);
-    }
-  }
-
-  // Função para aguardar o botão do mini-carrinho aparecer
-  function waitForMiniBasketButton() {
-    return new Promise((resolve) => {
-      const checkButton = () => {
-        const button = document.querySelector('#ta-mini-basket__open, #ta-mini-basket_open');
-        if (button) {
-          debugLog('Botão do mini-carrinho encontrado após aguardar');
-          resolve(button);
-        } else {
-          setTimeout(checkButton, 100);
-        }
-      };
-      checkButton();
-    });
-  }
-
-  // Função para aguardar o span de quantidade aparecer
-  function waitForQuantitySpan() {
-    return new Promise((resolve) => {
-      let attempts = 0;
-      const maxAttempts = 100; // 10 segundos máximo
-
-      const checkSpan = () => {
-        attempts++;
-        alwaysLog(`🔍 Tentativa ${attempts}/${maxAttempts} - Procurando span de quantidade...`);
-
-        // Tentar diferentes seletores
-        const selectors = [
-          '#ta-mini-basket__open .notranslate',
-          '#ta-mini-basket_open .notranslate',
-          '.MiniBasketButton .notranslate',
-          '[class*="MiniBasketButton"] .notranslate',
-          'button .notranslate',
-        ];
-
-        let span = null;
-        for (const selector of selectors) {
-          span = document.querySelector(selector);
-          if (span) {
-            alwaysLog(`✅ Span encontrado com seletor: ${selector}`, span);
-            break;
-          }
-        }
-
-        if (span) {
-          alwaysLog('🎉 Span de quantidade encontrado após aguardar!', {
-            textContent: span.textContent,
-            className: span.className,
-            parentElement: span.parentElement?.tagName,
-          });
-          resolve(span);
-        } else if (attempts >= maxAttempts) {
-          alwaysLog('❌ Timeout: Span de quantidade não encontrado após 10 segundos');
-          resolve(null);
-        } else {
-          setTimeout(checkSpan, 100);
-        }
-      };
-      checkSpan();
-    });
-  }
-
-  // Função alternativa para detectar mudanças no carrinho via DOM
-  async function setupDOMObserver() {
-    alwaysLog('🔍 Configurando observador DOM específico para QUANTIDADE do carrinho...');
-
-    try {
-      // Aguardar o span de quantidade aparecer
-      const quantitySpan = await waitForQuantitySpan();
-
-      if (!quantitySpan) {
-        alwaysLog('❌ Span de quantidade não encontrado, usando fallback...');
-        setupFallbackObserver();
-        return;
-      }
-
-      // Armazenar quantidade inicial
-      let lastQuantity = parseInt(quantitySpan.textContent) || 0;
-      alwaysLog('📊 Quantidade inicial detectada:', lastQuantity);
-
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === 'childList' || mutation.type === 'characterData') {
-            const target = mutation.target;
-
-            // Verificar se é o span de quantidade que mudou
-            if (target.classList && target.classList.contains('notranslate')) {
-              const currentQuantity = parseInt(target.textContent) || 0;
-
-              alwaysLog('🔢 Mudança detectada na quantidade:', {
-                anterior: lastQuantity,
-                atual: currentQuantity,
-                mudou: currentQuantity !== lastQuantity,
-              });
-
-              // Só ativar se a quantidade realmente mudou E aumentou
-              if (currentQuantity !== lastQuantity && currentQuantity > lastQuantity) {
-                alwaysLog('🎉 QUANTIDADE AUMENTOU! Produto adicionado detectado!');
-                alwaysLog('📈 Mudança:', `${lastQuantity} → ${currentQuantity}`);
-
-                // Atualizar quantidade armazenada
-                lastQuantity = currentQuantity;
-
-                // Aguardar um pouco para garantir que o carrinho foi atualizado
-                setTimeout(() => {
-                  if (window.napi && window.napi.cart) {
-                    window.napi
-                      .cart()
-                      .read()
-                      .then((items) => {
-                        alwaysLog('✅ Carrinho verificado após detecção de quantidade:', items);
-                        if (shouldShowPopup(items)) {
-                          alwaysLog('🎯 Chamando showNapoliPopup...');
-                          showNapoliPopup();
-                        } else {
-                          alwaysLog('❌ shouldShowPopup retornou false');
-                        }
-                      })
-                      .catch((err) => {
-                        alwaysLog('❌ Erro ao verificar carrinho após detecção:', err);
-                      });
-                  }
-                }, 1000);
-              } else if (currentQuantity !== lastQuantity) {
-                // Quantidade mudou mas não aumentou (pode ter diminuído)
-                alwaysLog(
-                  '📉 Quantidade mudou mas não aumentou:',
-                  `${lastQuantity} → ${currentQuantity}`
-                );
-                lastQuantity = currentQuantity;
+    const popupHTML = `
+            <style>
+              #recommendation-popup .AddToBagButtonSmall {
+                width: 100% !important;
+                border-radius: 20px !important;
               }
-            }
-          }
-        });
-      });
+              #recommendation-popup .add-to-bag {
+                width: 100% !important;
+              }
+              #recommendation-popup #MiniBasketPushAddProductCTA {
+                width: 70% !important;
+                padding: 0 !important;
+              }
+              #recommendation-popup .AddToBagButton__button-CremaComponentId-${Date.now()} {
+                border-radius: 20px !important;
+              }
+              #recommendation-popup .AddToBagButtonSmall__quantity {
+                position: unset !important;
+                width: unset !important;
 
-      // Observar mudanças no conteúdo do span de quantidade
-      observer.observe(quantitySpan, {
+              }
+              #recommendation-popup .AddToBagButtonSmall__icon-sign {
+                display: none !important;
+              }
+              #recommendation-popup .add-to-cart-text {
+                display: inline-block !important;
+                margin-right: 8px !important;
+                font-size: 14px;
+                font-weight: bold !important;
+                color: white !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: relative !important;
+                z-index: 10 !important;
+                background: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+              }
+              #recommendation-popup .AddToBagButtonSmall {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 3px !important;
+                flex-wrap: nowrap !important;
+                position: relative !important;
+              }
+            </style>
+            <div id="recommendation-popup" style="position: fixed; bottom: 20px; left: 20px; z-index: 999; max-width: 450px; animation: slideInLeft 0.3s ease-out;">
+                <div style="background: white; border-radius: 8px; padding: 24px 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                        <h3 style="margin: 0; color: #999; font-size: 16px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.5px;">QUEM COMPRA <span style="font-weight: 600;">${lastAddedProductName}</span> TAMBÉM COMPRA</h3>
+                        <button onclick="closeRecommendationPopup()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #666; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">&times;</button>
+                    </div>
+                    <div style="display: flex; gap: 16px; margin-bottom: 20px;">
+                        <img src="${productImage}" alt="${productName}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px;">
+                        <div style="display: flex; flex-direction: column; justify-content: center;">
+                            <h4 style="margin: 0 0 8px 0; color: #333; font-size: 18px; font-weight: 700;">${productName}</h4>
+                            <p style="margin: 0 0 12px 0; color: #666; font-size: 14px; line-height: 1.4;">${productDescription}</p>
+                            ${
+                              productIntensity > 0
+                                ? `
+                            <div style="margin-bottom: 0;">
+                                 <span style="display: block; color: #666; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+                                     Intensidade: 
+                                     <span style="color: #876c43; font-weight: 600; letter-spacing: 1px; font-size: 30px;">${'-'.repeat(
+                                       productIntensity
+                                     )}</span>
+                                     <span style="color: #876c43; font-weight: 700; margin-left: 4px;">${productIntensity}</span>
+                                 </span>
+                            </div>
+                            `
+                                : ''
+                            }
+                        </div>
+                    </div>
+                     <div style="display: flex; justify-content: space-between; align-items: center;">
+                         <div id="MiniBasketPushAddProductCTA">
+                             <div class="add-to-bag" data-product-id="${
+                               currentProductData?.id || 'erp.br.b2c/prod/7895.90'
+                             }" data-button-size="small">
+                                 <div class="AddToBagButton__container">
+                                     <div id="AddToBagButton__button-CremaComponentId-${Date.now()}">
+                                          <button class="AddToBagButton AddToBagButtonSmall" data-focus-id="AddToBagButton__button-CremaComponentId-${Date.now()}" type="button" data-qa="${productName}">
+                                              <span class="VisuallyHidden">Você não possui nenhum ${productName} em seu carrinho. Ative para adicioná-lo.</span>
+                                              <span class="add-to-cart-text">${buttonText}</span>
+                                          </button>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                         <button onclick="closeRecommendationPopup()" style="background: none; border: none; cursor: pointer; font-size: 14px; color: #999; padding: 8px 0; padding-right: 10px;">Depois</button>
+                     </div>
+                </div>
+            </div>
+            <style>
+                @keyframes slideInLeft {
+                    from {
+                        transform: translateX(-100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                @keyframes slideOutLeft {
+                    0% {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: translateX(-100%);
+                        opacity: 0;
+                    }
+                }
+                #recommendation-popup {
+                    transition: all 0.3s ease-out;
+                    font-family: NespressoLucas, Helvetica, Arial, sans-serif !important;
+                }
+                #recommendation-popup * {
+                    font-family: NespressoLucas, Helvetica, Arial, sans-serif !important;
+                }
+                #recommendation-popup.closing {
+                    animation: slideOutLeft 0.3s ease-in forwards !important;
+                    pointer-events: none; /* Desabilita cliques durante animação */
+                }
+                #recommendation-popup button:hover {
+                    opacity: 0.8;
+                }
+                
+                /* Responsividade Mobile */
+                @media (max-width: 768px) {
+                    #recommendation-popup {
+                        max-width: 90% !important;
+                        left: 5% !important;
+                        right: 5% !important;
+                        bottom: 25px !important;
+                    }
+                    
+                    #recommendation-popup > div {
+                        padding: 16px !important;
+                        border-radius: 6px !important;
+                    }
+                    
+                    #recommendation-popup h3 {
+                        font-size: 14px!important;
+                        margin-bottom: 0px !important;
+                        line-height: 1.3 !important;
+                    }
+                    
+                    #recommendation-popup h4 {
+                        font-size: 14px;
+                        margin-bottom: 4px !important;
+                    }
+                    
+                    #recommendation-popup p {
+                        font-size: 14px;
+                        margin-bottom: 8px !important;
+                        line-height: 1.3 !important;
+                    }
+                    
+                    #recommendation-popup img {
+                        width: 80px !important;
+                        height: 80px !important;
+                    }
+                    
+                    #recommendation-popup div[style*="margin-bottom: 16px"] {
+                        margin-bottom: 4px !important;
+                    }
+                    
+                    #recommendation-popup div[style*="margin-bottom: 20px"] {
+                        margin-bottom: 10px !important;
+                    }
+                    
+                    #recommendation-popup .add-to-cart-text {
+                        font-size: 12px !important;
+                    }
+                    
+                    #recommendation-popup .AddToBagButtonSmall .add-to-cart-text {
+                        font-size: 12px !important;
+                    }
+                    
+                    #recommendation-popup button .add-to-cart-text {
+                        font-size: 12px !important;
+                    }
+                    
+                    #recommendation-popup .AddToBagButtonSmall span.add-to-cart-text {
+                        font-size: 12px !important;
+                    }
+                    
+                    #recommendation-popup span.add-to-cart-text {
+                        font-size: 12px !important;
+                    }
+                    
+                    #recommendation-popup button:not([onclick="closeRecommendationPopup()"]) {
+                        font-size: 12px !important;
+                        padding: 4px !important;
+                    }
+                    
+                    #recommendation-popup .AddToBagButtonSmall__quantity {
+                        font-size: 12px !important;
+                    }
+                    
+                    #recommendation-popup span[style*="font-size: 30px"] {
+                        font-size: 20px !important;
+                    }
+                }
+            </style>
+        `;
+
+    document.body.insertAdjacentHTML('beforeend', popupHTML);
+
+    // Configurar timer para fechar pop-up automaticamente após 20 segundos
+    popupTimer = setTimeout(() => {
+      window.closeRecommendationPopup();
+    }, 20000);
+
+    // Inicializa módulos Mosaic na área do CTA, se disponível
+    try {
+      const ctaContainer = document.getElementById('MiniBasketPushAddProductCTA');
+      if (typeof window.mosaic !== 'undefined' && ctaContainer) {
+        setTimeout(function () {
+          window.mosaic.initializeAllFreeHTMLModules(ctaContainer);
+        }, 200);
+      }
+    } catch (e) {}
+
+    // Configurar observador para atualizar texto do botão quando carrinho mudar
+    cartObserver = new MutationObserver(async () => {
+      if (recommendedSku) {
+        await updateButtonText(recommendedSku);
+      }
+    });
+
+    // Observar mudanças no span da quantidade do carrinho
+    const cartSpan = document.querySelector('#ta-mini-basket__open .notranslate');
+    if (cartSpan) {
+      cartObserver.observe(cartSpan, {
         childList: true,
         characterData: true,
         subtree: true,
       });
-
-      alwaysLog('✅ Observador DOM configurado para quantidade do carrinho');
-    } catch (error) {
-      alwaysLog('❌ Erro ao configurar observador específico:', error);
-      setupFallbackObserver();
     }
-  }
 
-  // Função de fallback para quando não consegue encontrar o span específico
-  function setupFallbackObserver() {
-    alwaysLog('🔄 Configurando observador de fallback...');
-
-    // Fallback: observar mudanças gerais no DOM
-    const observer = new MutationObserver((mutations) => {
+    // Observador específico para detectar mudanças na quantidade do botão do popup
+    const buttonQuantityObserver = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        if (mutation.type === 'childList' || mutation.type === 'attributes') {
-          // Verificar se há elementos relacionados ao carrinho
-          const cartElements = document.querySelectorAll(
-            '[class*="MiniBasketButton"], [id*="mini-basket"], [class*="cart"], [id*="cart"], [class*="basket"], [id*="basket"]'
+        if (mutation.type === 'childList' || mutation.type === 'characterData') {
+          const quantityElement = document.querySelector(
+            '#recommendation-popup .AddToBagButtonSmall__quantity'
           );
-          if (cartElements.length > 0) {
-            alwaysLog('🔍 Mudança detectada no DOM relacionada ao carrinho');
-            // Aguardar um pouco e verificar o carrinho
-            setTimeout(() => {
-              if (window.napi && window.napi.cart) {
-                window.napi
-                  .cart()
-                  .read()
-                  .then((items) => {
-                    alwaysLog('✅ Carrinho verificado via DOM observer:', items);
-                    if (shouldShowPopup(items)) {
-                      alwaysLog('🎯 Chamando showNapoliPopup via fallback...');
-                      showNapoliPopup();
-                    }
-                  })
-                  .catch((err) => {
-                    alwaysLog('❌ Erro ao verificar carrinho via DOM:', err);
-                  });
-              }
-            }, 500);
+          if (quantityElement) {
+            const currentQuantity = parseInt(quantityElement.textContent) || 0;
+            // Se quantidade mudou de 0 para > 0, produto foi adicionado
+            if (currentQuantity > 0 && !productAddedToCart) {
+              startProductAddedTimer();
+            }
           }
         }
       });
     });
 
-    // Observar mudanças no body
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class', 'id'],
-    });
+    // Observar mudanças no botão do popup
+    setTimeout(() => {
+      const popupButton = document.querySelector('#recommendation-popup .AddToBagButtonSmall');
+      if (popupButton) {
+        buttonQuantityObserver.observe(popupButton, {
+          childList: true,
+          characterData: true,
+          subtree: true,
+        });
+      }
+    }, 1000);
 
-    alwaysLog('✅ Observador DOM de fallback configurado');
-  }
+    // Adicionar eventos de interação para resetar timer
+    const popupElement = document.getElementById('recommendation-popup');
+    if (popupElement) {
+      // Eventos de mouse
+      popupElement.addEventListener('mouseenter', resetPopupTimers);
+      popupElement.addEventListener('mousemove', resetPopupTimers);
 
-  // Inicializar quando o script for carregado
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      alwaysLog('🚀 DOM CARREGADO! Iniciando sistema...');
-      // waitForAPI(); // DESABILITADO para evitar duplicação
-      alwaysLog('🔧 Chamando setupDOMObserver...');
-      setupDOMObserver().catch((err) => {
-        alwaysLog('❌ Erro ao configurar observador DOM:', err);
-      });
-    });
-  } else {
-    alwaysLog('🚀 DOM JÁ CARREGADO! Iniciando sistema...');
-    // waitForAPI(); // DESABILITADO para evitar duplicação
-    alwaysLog('🔧 Chamando setupDOMObserver...');
-    setupDOMObserver().catch((err) => {
-      alwaysLog('❌ Erro ao configurar observador DOM:', err);
-    });
-  }
-
-  // Expor funções para uso manual (opcional)
-  window.napoliPopup = {
-    show: showNapoliPopup,
-    hide: () => window.closeNapoliPopup(),
-    addToCart: () => window.addNapoliToCart(),
-    debug: () => {
-      debugLog('Estado atual:', {
-        popupShown,
-        observerInitialized,
-        cartItems,
-        napi: !!window.napi,
-      });
-    },
-    test: () => {
-      debugLog('Teste manual - mostrando pop-up');
-      showNapoliPopup();
-    },
-    checkCart: async () => {
-      if (window.napi && window.napi.cart) {
-        try {
-          const items = await window.napi.cart().read();
-          debugLog('Estado atual do carrinho:', items);
-          return items;
-        } catch (err) {
-          debugLog('Erro ao ler carrinho:', err);
+      // Eventos de clique (exceto nos botões de fechar)
+      popupElement.addEventListener('click', (e) => {
+        // Não resetar se clicar nos botões de fechar
+        if (!e.target.closest('button[onclick="closeRecommendationPopup()"]')) {
+          resetPopupTimers();
         }
-      } else {
-        debugLog('API não disponível');
-      }
-    },
-    checkMiniBasket: () => {
-      const button = document.querySelector('#ta-mini-basket__open, #ta-mini-basket_open');
-      const quantitySpan = document.querySelector(
-        '#ta-mini-basket__open .notranslate, #ta-mini-basket_open .notranslate'
+      });
+
+      // Eventos de teclado
+      popupElement.addEventListener('keydown', resetPopupTimers);
+      popupElement.addEventListener('keyup', resetPopupTimers);
+    }
+
+    // Inicializar o componente AddToBag após inserir no DOM
+    setTimeout(() => {
+      const addToBagElement = document.querySelector(
+        '#recommendation-popup #MiniBasketPushAddProductCTA .add-to-bag'
       );
 
-      if (button && quantitySpan) {
-        alwaysLog('🔍 Botão e quantidade encontrados:', {
-          buttonId: button.id,
-          buttonClasses: button.className,
-          buttonText: button.textContent.trim(),
-          quantidade: quantitySpan.textContent,
-          quantidadeNumerica: parseInt(quantitySpan.textContent) || 0,
+      // Reforça inicialização Mosaic no container do CTA
+      try {
+        const ctaContainer = document.getElementById('MiniBasketPushAddProductCTA');
+        if (typeof window.mosaic !== 'undefined' && ctaContainer) {
+          window.mosaic.initializeAllFreeHTMLModules(ctaContainer);
+          // Se possível, também inicializa diretamente o módulo do próprio elemento
+          if (addToBagElement) {
+            window.mosaic.initializeAllFreeHTMLModules(addToBagElement);
+          }
+        }
+      } catch (e) {}
+
+      // Forçar inserção do texto após inicialização do Mosaic
+      setTimeout(() => {
+        const button = document.querySelector('#recommendation-popup .AddToBagButtonSmall');
+        if (button) {
+          // Verificar se o texto já existe
+          let textElement = button.querySelector('.add-to-cart-text');
+          if (!textElement) {
+            // Criar e inserir o texto
+            textElement = document.createElement('span');
+            textElement.className = 'add-to-cart-text';
+            textElement.textContent = buttonText;
+            textElement.style.cssText = `
+              display: inline-block !important;
+              margin-right: 8px !important;
+              font-size: 14px !important;
+              font-weight: 600 !important;
+              color: white !important;
+              visibility: visible !important;
+              opacity: 1 !important;
+              position: relative !important;
+              z-index: 10 !important;
+            `;
+
+            // Inserir no final do botão
+            button.appendChild(textElement);
+          }
+        }
+      }, 1500);
+
+      // Observer para detectar mudanças no botão e reinserir texto se necessário
+      const buttonObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'childList') {
+            const button = document.querySelector('#recommendation-popup .AddToBagButtonSmall');
+            if (button) {
+              const textElement = button.querySelector('.add-to-cart-text');
+              if (!textElement) {
+                // Reinserir o texto se foi removido
+                const newTextElement = document.createElement('span');
+                newTextElement.className = 'add-to-cart-text';
+                newTextElement.textContent = buttonText;
+                newTextElement.style.cssText = `
+                  display: inline-block !important;
+                  margin-right: 8px !important;
+                  font-size: 14px;
+                  font-weight: 600 !important;
+                  color: white !important;
+                  visibility: visible !important;
+                  opacity: 1 !important;
+                  position: relative !important;
+                  z-index: 10 !important;
+                `;
+
+                // Inserir no final do botão
+                button.appendChild(newTextElement);
+              }
+            }
+          }
         });
-        return { button, quantitySpan };
-      } else {
-        alwaysLog('❌ Botão ou quantidade não encontrados:', {
-          button: !!button,
-          quantitySpan: !!quantitySpan,
-        });
-        return null;
-      }
-    },
-    simulateAddToCart: () => {
-      alwaysLog('🎭 Simulando adição de produto ao carrinho...');
-      const quantitySpan = document.querySelector(
-        '#ta-mini-basket__open .notranslate, #ta-mini-basket_open .notranslate'
+      });
+
+      // Observar mudanças no container do botão
+      const buttonContainer = document.querySelector(
+        '#recommendation-popup #MiniBasketPushAddProductCTA'
       );
-
-      if (quantitySpan) {
-        const currentQuantity = parseInt(quantitySpan.textContent) || 0;
-        const newQuantity = currentQuantity + 10; // Simular adição de 10 produtos
-
-        alwaysLog('📊 Simulando mudança de quantidade:', {
-          atual: currentQuantity,
-          nova: newQuantity,
+      if (buttonContainer) {
+        buttonObserver.observe(buttonContainer, {
+          childList: true,
+          subtree: true,
         });
-
-        // Simular mudança na quantidade
-        quantitySpan.textContent = newQuantity.toString();
-        alwaysLog('✅ Quantidade simulada:', quantitySpan.textContent);
-      } else {
-        alwaysLog('❌ Span de quantidade não encontrado para simulação');
       }
-    },
-    findSpan: () => {
-      alwaysLog('🔍 Procurando span de quantidade manualmente...');
 
-      const selectors = [
-        '#ta-mini-basket__open .notranslate',
-        '#ta-mini-basket_open .notranslate',
-        '.MiniBasketButton .notranslate',
-        '[class*="MiniBasketButton"] .notranslate',
-        'button .notranslate',
-        '.notranslate',
-      ];
+      if (addToBagElement && window.napi) {
+        const button = addToBagElement.querySelector('button');
+        if (button) {
+          button.addEventListener(
+            'click',
+            async function (e) {
+              e.preventDefault();
+              const productId = addToBagElement.getAttribute('data-product-id');
+              if (productId && window.napi && window.napi.cart) {
+                const cartApi = window.napi.cart();
+                let added = false;
+                // Tentativa 1: addProducts
+                try {
+                  if (typeof cartApi.addProducts === 'function') {
+                    await cartApi.addProducts([{ productId: productId, quantity: 1 }]);
+                    added = true;
+                  }
+                } catch (_) {}
+                // Tentativa 2: addOrUpdateProducts
+                if (!added) {
+                  try {
+                    if (typeof cartApi.addOrUpdateProducts === 'function') {
+                      await cartApi.addOrUpdateProducts([{ productId: productId, quantity: 1 }]);
+                      added = true;
+                    }
+                  } catch (_) {}
+                }
+                // Tentativa 3: updateProducts
+                if (!added) {
+                  try {
+                    if (typeof cartApi.updateProducts === 'function') {
+                      await cartApi.updateProducts([{ productId: productId, quantity: 1 }]);
+                      added = true;
+                    }
+                  } catch (_) {}
+                }
 
-      for (const selector of selectors) {
-        const elements = document.querySelectorAll(selector);
-        if (elements.length > 0) {
-          alwaysLog(`✅ Encontrado com seletor: ${selector}`, elements);
-          elements.forEach((el, index) => {
-            alwaysLog(`  Elemento ${index + 1}:`, {
-              textContent: el.textContent,
-              className: el.className,
-              parentElement: el.parentElement?.tagName,
-              parentClasses: el.parentElement?.className,
-            });
+                // Validação lendo o carrinho em seguida
+                try {
+                  const cartData = await cartApi.read();
+                  // sucesso mínimo: cartData truthy
+                  if (cartData) {
+                    // Atualizar texto do botão para "JÁ ADICIONADO AO CARRINHO"
+                    const textElement = document.querySelector(
+                      '#recommendation-popup .add-to-cart-text'
+                    );
+                    if (textElement) {
+                      textElement.textContent = 'JÁ ADICIONADOS AO CARRINHO';
+                    }
+                    // O timer de 5 segundos será iniciado pelo observador da quantidade
+                  }
+                } catch (error) {
+                  console.error('Erro ao ler carrinho:', error);
+                }
+              }
+            },
+            true
+          );
+        }
+      }
+    }, 100);
+  }
+
+  // Função para fechar popup de recomendação
+  window.closeRecommendationPopup = function () {
+    const popup = document.getElementById('recommendation-popup');
+    if (popup) {
+      // Prevenir múltiplas chamadas durante a animação
+      if (popup.classList.contains('closing')) {
+        return;
+      }
+
+      // Adicionar classe de fechamento para iniciar animação
+      popup.classList.add('closing');
+
+      // Usar requestAnimationFrame para garantir que a animação inicie
+      requestAnimationFrame(() => {
+        // Remover elemento após a animação terminar
+        setTimeout(() => {
+          if (popup && popup.parentNode) {
+            popup.remove();
+          }
+        }, 300); // 300ms = duração da animação
+      });
+    }
+    // Limpar timers se existirem
+    if (popupTimer) {
+      clearTimeout(popupTimer);
+      popupTimer = null;
+    }
+    if (productAddedTimer) {
+      clearTimeout(productAddedTimer);
+      productAddedTimer = null;
+    }
+    // Limpar observador do carrinho se existir
+    if (cartObserver) {
+      cartObserver.disconnect();
+      cartObserver = null;
+    }
+    // Resetar flags para permitir novo pop-up
+    popupShown = false;
+    productAddedToCart = false;
+  };
+
+  // Função para detectar produto adicionado/modificado no carrinho
+  async function detectAddedProduct() {
+    try {
+      const cartItems = await window.napi.cart().read();
+      const currentCartState = new Map();
+
+      // Mapear estado atual do carrinho
+      cartItems.forEach((item) => {
+        if (!item.nonRemovable) {
+          const sku = item.productId.split('/').pop();
+          currentCartState.set(sku, item.quantity);
+        }
+      });
+
+      // Comparar com estado anterior para detectar mudanças
+      const addedProducts = [];
+
+      for (const [sku, quantity] of currentCartState) {
+        const previousQuantity = previousCartState.get(sku) || 0;
+
+        if (quantity > previousQuantity) {
+          addedProducts.push({
+            sku: sku,
+            addedQuantity: quantity - previousQuantity,
+            totalQuantity: quantity,
+            wasNewProduct: previousQuantity === 0, // Verifica se era um produto novo
           });
         }
       }
 
-      // Procurar todos os elementos com classe notranslate
-      const allNotranslate = document.querySelectorAll('.notranslate');
-      alwaysLog(`📊 Total de elementos .notranslate encontrados: ${allNotranslate.length}`);
-      allNotranslate.forEach((el, index) => {
-        alwaysLog(`  Elemento ${index + 1}:`, {
-          textContent: el.textContent,
-          className: el.className,
-          parentElement: el.parentElement?.tagName,
-          parentClasses: el.parentElement?.className,
+      // Atualizar estado anterior
+      previousCartState = currentCartState;
+
+      // Retornar o produto mais recentemente adicionado
+      return addedProducts.length > 0 ? addedProducts[addedProducts.length - 1] : null;
+    } catch (error) {
+      return null;
+    }
+  }
+  async function getLastAddedProductSKU() {
+    try {
+      const cartItems = await window.napi.cart().read();
+
+      // Filtrar apenas produtos com nonRemovable: false
+      const removableItems = cartItems.filter((item) => item.nonRemovable === false);
+
+      if (removableItems.length > 0) {
+        // Pegar o último item (mais recente)
+        const lastItem = removableItems[removableItems.length - 1];
+
+        // Extrair apenas a parte final do productId (ex: 7884.90)
+        const productId = lastItem.productId;
+        const sku = productId.split('/').pop(); // Pega a última parte após a última barra
+
+        return sku;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Erro ao obter SKU do último produto:', error);
+      return null;
+    }
+  }
+
+  // Inicializar estado anterior do carrinho
+  async function initializePreviousCartState() {
+    try {
+      const cartItems = await window.napi.cart().read();
+      cartItems.forEach((item) => {
+        if (!item.nonRemovable) {
+          const sku = item.productId.split('/').pop();
+          previousCartState.set(sku, item.quantity);
+        }
+      });
+    } catch (error) {}
+  }
+
+  // Aguardar span aparecer e configurar observador
+  function setupObserver() {
+    const span = document.querySelector('#ta-mini-basket__open .notranslate');
+
+    if (span) {
+      lastQuantity = parseInt(span.textContent) || 0;
+
+      // Inicializar estado anterior do carrinho
+      initializePreviousCartState();
+
+      const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          if (mutation.type === 'characterData' || mutation.type === 'childList') {
+            const currentQuantity = parseInt(span.textContent) || 0;
+
+            // Só mostrar pop-up se a quantidade AUMENTAR (não diminuir)
+            if (currentQuantity !== lastQuantity && currentQuantity > lastQuantity) {
+              lastQuantity = currentQuantity;
+
+              // Detectar produto adicionado usando comparação de estados
+              detectAddedProduct().then(async (addedProduct) => {
+                if (addedProduct) {
+                  const sku = addedProduct.sku;
+
+                  // Verificar se há recomendação para este SKU
+                  const recommendedSku = RECOMMENDATION_MAP[sku];
+
+                  if (recommendedSku) {
+                    // Buscar dados do produto recomendado (sempre dinâmico)
+                    currentProductData = await getRecommendedProductData(recommendedSku);
+                  }
+                  try {
+                    const productData = await window.napi.catalog().getProduct(sku);
+                    if (productData && productData.name) {
+                      lastAddedProductName = productData.name;
+                    }
+                  } catch (e) {}
+                }
+                // Mostrar pop-up apenas se há produto recomendado E se era um produto novo E se produto recomendado não está no carrinho
+                if (currentProductData && addedProduct?.wasNewProduct) {
+                  const sku = addedProduct?.sku || '';
+                  const recommendedSku = RECOMMENDATION_MAP[sku];
+
+                  if (recommendedSku) {
+                    // Verificar se produto recomendado já está no carrinho
+                    const isRecommendedInCart = await isRecommendedProductInCart(recommendedSku);
+
+                    if (!isRecommendedInCart) {
+                      setTimeout(async () => await showPopup(sku), 1000);
+                    }
+                  }
+                }
+              });
+            } else if (currentQuantity !== lastQuantity) {
+              // Atualizar quantidade mesmo se não aumentar (para manter sincronizado)
+              lastQuantity = currentQuantity;
+            }
+          }
         });
       });
-    },
-    clearDuplicates: () => {
-      alwaysLog('🧹 Limpando pop-ups duplicados...');
-      const popups = document.querySelectorAll('#napoli-suggestion-popup');
-      if (popups.length > 1) {
-        alwaysLog(`Encontrados ${popups.length} pop-ups, removendo extras...`);
-        for (let i = 1; i < popups.length; i++) {
-          popups[i].remove();
-        }
-        alwaysLog('✅ Pop-ups duplicados removidos');
-      } else {
-        alwaysLog('✅ Nenhum pop-up duplicado encontrado');
-      }
-    },
-  };
 
-  alwaysLog('🎉 SCRIPT CARREGADO E PRONTO! Sistema Napoli Popup ativo!');
+      observer.observe(span, {
+        childList: true,
+        characterData: true,
+        subtree: true,
+      });
+    } else {
+      setTimeout(setupObserver, 100);
+    }
+  }
+
+  // Inicializar
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupObserver);
+  } else {
+    setupObserver();
+  }
 })();
