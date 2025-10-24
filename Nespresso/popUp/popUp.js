@@ -26,11 +26,18 @@
   // Função para verificar se produto recomendado já está no carrinho
   async function isRecommendedProductInCart(recommendedSku) {
     try {
+      // Aguardar API estar disponível
+      const apiReady = await waitForAPI();
+      if (!apiReady) {
+        return false;
+      }
+
       const cartItems = await window.napi.cart().read();
-      return cartItems.some((item) => {
+      const isInCart = cartItems.some((item) => {
         const sku = item.productId.split('/').pop();
         return sku === recommendedSku && !item.nonRemovable;
       });
+      return isInCart;
     } catch (error) {
       return false;
     }
@@ -39,12 +46,20 @@
   // Função para obter quantidade do produto no carrinho
   async function getProductQuantityInCart(recommendedSku) {
     try {
+      // Aguardar API estar disponível
+      const apiReady = await waitForAPI();
+      if (!apiReady) {
+        return 0;
+      }
+
       const cartItems = await window.napi.cart().read();
       const item = cartItems.find((item) => {
         const sku = item.productId.split('/').pop();
         return sku === recommendedSku && !item.nonRemovable;
       });
-      return item ? item.quantity : 0;
+
+      const quantity = item ? item.quantity : 0;
+      return quantity;
     } catch (error) {
       return 0;
     }
@@ -58,7 +73,7 @@
 
       if (textElement) {
         textElement.textContent =
-          quantityInCart > 0 ? 'JÁ ADICIONADOS AO CARRINHO' : 'ADICIONAR AO CARRINHO';
+          quantityInCart > 0 ? 'CAFÉS ADICIONADOS' : 'ADICIONAR AO CARRINHO';
       }
     } catch (error) {
       console.error('Erro ao atualizar texto do botão:', error);
@@ -107,9 +122,32 @@
     }, 5000);
   }
 
+  // Função para aguardar API estar disponível
+  async function waitForAPI(maxAttempts = 10, delay = 500) {
+    for (let i = 0; i < maxAttempts; i++) {
+      if (
+        window.napi &&
+        window.napi.catalog &&
+        typeof window.napi.catalog().getProduct === 'function'
+      ) {
+        return true;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+
+    return false;
+  }
+
   // Função para buscar dados do produto recomendado
   async function getRecommendedProductData(sku) {
     try {
+      // Aguardar API estar disponível
+      const apiReady = await waitForAPI();
+      if (!apiReady) {
+        return null;
+      }
+
       const productData = await window.napi.catalog().getProduct(sku);
       return productData;
     } catch (error) {
@@ -132,6 +170,16 @@
     if (!currentProductData) {
       return;
     }
+
+    // Fallback para teste quando API não está disponível
+    if (!currentProductData.name && !currentProductData.headline) {
+      currentProductData.name = currentProductData.name || 'Produto Recomendado';
+      currentProductData.headline =
+        currentProductData.headline || 'Descrição do produto recomendado';
+      currentProductData.responsiveImages = currentProductData.responsiveImages || {
+        plp: 'https://via.placeholder.com/100x100',
+      };
+    }
     const productData = currentProductData;
 
     const productName = productData.name || '';
@@ -145,215 +193,216 @@
     const quantityInCart = recommendedSku ? await getProductQuantityInCart(recommendedSku) : 0;
     const buttonText = quantityInCart > 0 ? 'JÁ ADICIONADO AO CARRINHO' : 'ADICIONAR AO CARRINHO';
 
-    const popupHTML = `
-            <style>
-              #recommendation-popup .AddToBagButtonSmall {
-                width: 100% !important;
-                border-radius: 20px !important;
-              }
-              #recommendation-popup .add-to-bag {
-                width: 100% !important;
-              }
-              #recommendation-popup #MiniBasketPushAddProductCTA {
-                width: 70% !important;
-                padding: 0 !important;
-              }
-              #recommendation-popup .AddToBagButton__button-CremaComponentId-${Date.now()} {
-                border-radius: 20px !important;
-              }
-              #recommendation-popup .AddToBagButtonSmall__quantity {
-                position: unset !important;
-                width: unset !important;
-
-              }
-              #recommendation-popup .AddToBagButtonSmall__icon-sign {
-                display: none !important;
-              }
-              #recommendation-popup .add-to-cart-text {
-                display: inline-block !important;
-                margin-right: 8px !important;
-                font-size: 14px;
-                font-weight: bold !important;
-                color: white !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                position: relative !important;
-                z-index: 10 !important;
-                background: transparent !important;
-                border: none !important;
-                padding: 0 !important;
-              }
-              #recommendation-popup .AddToBagButtonSmall {
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                gap: 3px !important;
-                flex-wrap: nowrap !important;
-                position: relative !important;
-              }
-            </style>
-            <div id="recommendation-popup" style="position: fixed; bottom: 20px; left: 20px; z-index: 999; max-width: 450px; animation: slideInLeft 0.3s ease-out;">
-                <div style="background: white; border-radius: 8px; padding: 24px 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                        <h3 style="margin: 0; color: #999; font-size: 16px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.5px;">QUEM COMPRA <span style="font-weight: 600;">${lastAddedProductName}</span> TAMBÉM COMPRA</h3>
-                        <button onclick="closeRecommendationPopup()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #666; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">&times;</button>
-                    </div>
-                    <div style="display: flex; gap: 16px; margin-bottom: 20px;">
-                        <img src="${productImage}" alt="${productName}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px;">
-                        <div style="display: flex; flex-direction: column; justify-content: center;">
-                            <h4 style="margin: 0 0 8px 0; color: #333; font-size: 18px; font-weight: 700;">${productName}</h4>
-                            <p style="margin: 0 0 12px 0; color: #666; font-size: 14px; line-height: 1.4;">${productDescription}</p>
-                            ${
-                              productIntensity > 0
-                                ? `
-                            <div style="margin-bottom: 0;">
-                                 <span style="display: block; color: #666; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
-                                     Intensidade: 
-                                     <span style="color: #876c43; font-weight: 600; letter-spacing: 1px; font-size: 30px;">${'-'.repeat(
-                                       productIntensity
-                                     )}</span>
-                                     <span style="color: #876c43; font-weight: 700; margin-left: 4px;">${productIntensity}</span>
-                                 </span>
-                            </div>
-                            `
-                                : ''
-                            }
-                        </div>
-                    </div>
-                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                         <div id="MiniBasketPushAddProductCTA">
-                             <div class="add-to-bag" data-product-id="${
-                               currentProductData?.id || 'erp.br.b2c/prod/7895.90'
-                             }" data-button-size="small">
-                                 <div class="AddToBagButton__container">
-                                     <div id="AddToBagButton__button-CremaComponentId-${Date.now()}">
-                                          <button class="AddToBagButton AddToBagButtonSmall" data-focus-id="AddToBagButton__button-CremaComponentId-${Date.now()}" type="button" data-qa="${productName}">
-                                              <span class="VisuallyHidden">Você não possui nenhum ${productName} em seu carrinho. Ative para adicioná-lo.</span>
-                                              <span class="add-to-cart-text">${buttonText}</span>
-                                          </button>
-                                     </div>
-                                 </div>
-                             </div>
-                         </div>
-                         <button onclick="closeRecommendationPopup()" style="background: none; border: none; cursor: pointer; font-size: 14px; color: #999; padding: 8px 0; padding-right: 10px;">Depois</button>
-                     </div>
-                </div>
-            </div>
-            <style>
-                @keyframes slideInLeft {
-                    from {
-                        transform: translateX(-100%);
-                        opacity: 0;
-                    }
-                    to {
-                        transform: translateX(0);
-                        opacity: 1;
-                    }
-                }
-                @keyframes slideOutLeft {
-                    0% {
-                        transform: translateX(0);
-                        opacity: 1;
-                    }
-                    100% {
-                        transform: translateX(-100%);
-                        opacity: 0;
-                    }
-                }
-                #recommendation-popup {
-                    transition: all 0.3s ease-out;
-                    font-family: NespressoLucas, Helvetica, Arial, sans-serif !important;
-                }
-                #recommendation-popup * {
-                    font-family: NespressoLucas, Helvetica, Arial, sans-serif !important;
-                }
-                #recommendation-popup.closing {
-                    animation: slideOutLeft 0.3s ease-in forwards !important;
-                    pointer-events: none; /* Desabilita cliques durante animação */
-                }
-                #recommendation-popup button:hover {
-                    opacity: 0.8;
-                }
-                
-                /* Responsividade Mobile */
-                @media (max-width: 768px) {
-                    #recommendation-popup {
-                        max-width: 90% !important;
-                        left: 5% !important;
-                        right: 5% !important;
-                        bottom: 25px !important;
-                    }
-                    
-                    #recommendation-popup > div {
-                        padding: 16px !important;
-                        border-radius: 6px !important;
-                    }
-                    
-                    #recommendation-popup h3 {
-                        font-size: 14px!important;
-                        margin-bottom: 0px !important;
-                        line-height: 1.3 !important;
-                    }
-                    
-                    #recommendation-popup h4 {
-                        font-size: 14px;
-                        margin-bottom: 4px !important;
-                    }
-                    
-                    #recommendation-popup p {
-                        font-size: 14px;
-                        margin-bottom: 8px !important;
-                        line-height: 1.3 !important;
-                    }
-                    
-                    #recommendation-popup img {
-                        width: 80px !important;
-                        height: 80px !important;
-                    }
-                    
-                    #recommendation-popup div[style*="margin-bottom: 16px"] {
-                        margin-bottom: 4px !important;
-                    }
-                    
-                    #recommendation-popup div[style*="margin-bottom: 20px"] {
-                        margin-bottom: 10px !important;
-                    }
-                    
-                    #recommendation-popup .add-to-cart-text {
-                        font-size: 12px !important;
-                    }
-                    
-                    #recommendation-popup .AddToBagButtonSmall .add-to-cart-text {
-                        font-size: 12px !important;
-                    }
-                    
-                    #recommendation-popup button .add-to-cart-text {
-                        font-size: 12px !important;
-                    }
-                    
-                    #recommendation-popup .AddToBagButtonSmall span.add-to-cart-text {
-                        font-size: 12px !important;
-                    }
-                    
-                    #recommendation-popup span.add-to-cart-text {
-                        font-size: 12px !important;
-                    }
-                    
-                    #recommendation-popup button:not([onclick="closeRecommendationPopup()"]) {
-                        font-size: 12px !important;
-                        padding: 4px !important;
-                    }
-                    
-                    #recommendation-popup .AddToBagButtonSmall__quantity {
-                        font-size: 12px !important;
-                    }
-                    
-                    #recommendation-popup span[style*="font-size: 30px"] {
-                        font-size: 20px !important;
-                    }
-                }
-            </style>
-        `;
+    const popupHTML =
+      '<style>' +
+      '#recommendation-popup .AddToBagButtonSmall {' +
+      'width: 100% !important;' +
+      'border-radius: 20px !important;' +
+      '}' +
+      '#recommendation-popup .add-to-bag {' +
+      'width: 100% !important;' +
+      '}' +
+      '#recommendation-popup #MiniBasketPushAddProductCTA {' +
+      'width: 70% !important;' +
+      'padding: 0 !important;' +
+      '}' +
+      '#recommendation-popup .AddToBagButton__button-CremaComponentId-' +
+      Date.now() +
+      ' {' +
+      'border-radius: 20px !important;' +
+      '}' +
+      '#recommendation-popup .AddToBagButtonSmall__quantity {' +
+      'position: unset !important;' +
+      'width: unset !important;' +
+      '}' +
+      '#recommendation-popup .AddToBagButtonSmall__icon-sign {' +
+      'display: none !important;' +
+      '}' +
+      '#recommendation-popup .add-to-cart-text {' +
+      'display: inline-block !important;' +
+      'margin-right: 8px !important;' +
+      'font-size: 14px;' +
+      'font-weight: bold !important;' +
+      'color: white !important;' +
+      'visibility: visible !important;' +
+      'opacity: 1 !important;' +
+      'position: relative !important;' +
+      'z-index: 10 !important;' +
+      'background: transparent !important;' +
+      'border: none !important;' +
+      'padding: 0 !important;' +
+      '}' +
+      '#recommendation-popup .AddToBagButtonSmall {' +
+      'display: flex !important;' +
+      'align-items: center !important;' +
+      'justify-content: center !important;' +
+      'gap: 3px !important;' +
+      'flex-wrap: nowrap !important;' +
+      'position: relative !important;' +
+      '}' +
+      '</style>' +
+      '<div id="recommendation-popup" style="position: fixed; bottom: 20px; left: 20px; z-index: 999; max-width: 450px; animation: slideInLeft 0.3s ease-out;">' +
+      '<div style="background: white; border-radius: 8px; padding: 24px 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">' +
+      '<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">' +
+      '<h3 style="margin: 0; color: #999; font-size: 16px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.5px;">QUEM COMPRA <span style="font-weight: 600;">' +
+      lastAddedProductName +
+      '</span> TAMBÉM COMPRA</h3>' +
+      '<button onclick="closeRecommendationPopup()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #666; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">&times;</button>' +
+      '</div>' +
+      '<div style="display: flex; gap: 16px; margin-bottom: 20px;">' +
+      '<img src="' +
+      productImage +
+      '" alt="' +
+      productName +
+      '" style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px;">' +
+      '<div style="display: flex; flex-direction: column; justify-content: center;">' +
+      '<h4 style="margin: 0 0 8px 0; color: #333; font-size: 18px; font-weight: 700;">' +
+      productName +
+      '</h4>' +
+      '<p style="margin: 0 0 12px 0; color: #666; font-size: 14px; line-height: 1.4;">' +
+      productDescription +
+      '</p>' +
+      (productIntensity > 0
+        ? '<div style="margin-bottom: 0;">' +
+          '<span style="display: block; color: #666; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">' +
+          'Intensidade: ' +
+          '<span style="color: #876c43; font-weight: 600; letter-spacing: 1px; font-size: 30px;">' +
+          '-'.repeat(productIntensity) +
+          '</span>' +
+          '<span style="color: #876c43; font-weight: 700; margin-left: 4px;">' +
+          productIntensity +
+          '</span>' +
+          '</span>' +
+          '</div>'
+        : '') +
+      '</div>' +
+      '</div>' +
+      '<div style="display: flex; justify-content: space-between; align-items: center;">' +
+      '<div id="MiniBasketPushAddProductCTA">' +
+      '<div class="add-to-bag" data-product-id="' +
+      (currentProductData?.id || 'erp.br.b2c/prod/7895.90') +
+      '" data-button-size="small">' +
+      '<div class="AddToBagButton__container">' +
+      '<div id="AddToBagButton__button-CremaComponentId-' +
+      Date.now() +
+      '">' +
+      '<button class="AddToBagButton AddToBagButtonSmall" data-focus-id="AddToBagButton__button-CremaComponentId-' +
+      Date.now() +
+      '" type="button" data-qa="' +
+      productName +
+      '">' +
+      '<span class="VisuallyHidden">Você não possui nenhum ' +
+      productName +
+      ' em seu carrinho. Ative para adicioná-lo.</span>' +
+      '<span class="add-to-cart-text">' +
+      buttonText +
+      '</span>' +
+      '</button>' +
+      '</div>' +
+      '</div>' +
+      '</div>' +
+      '</div>' +
+      '<button onclick="closeRecommendationPopup()" style="background: none; border: none; cursor: pointer; font-size: 14px; color: #999; padding: 8px 0; padding-right: 10px;">Depois</button>' +
+      '</div>' +
+      '</div>' +
+      '</div>' +
+      '<style>' +
+      '@keyframes slideInLeft {' +
+      'from {' +
+      'transform: translateX(-100%);' +
+      'opacity: 0;' +
+      '}' +
+      'to {' +
+      'transform: translateX(0);' +
+      'opacity: 1;' +
+      '}' +
+      '}' +
+      '@keyframes slideOutLeft {' +
+      '0% {' +
+      'transform: translateX(0);' +
+      'opacity: 1;' +
+      '}' +
+      '100% {' +
+      'transform: translateX(-100%);' +
+      'opacity: 0;' +
+      '}' +
+      '}' +
+      '#recommendation-popup {' +
+      'transition: all 0.3s ease-out;' +
+      'font-family: NespressoLucas, Helvetica, Arial, sans-serif !important;' +
+      '}' +
+      '#recommendation-popup * {' +
+      'font-family: NespressoLucas, Helvetica, Arial, sans-serif !important;' +
+      '}' +
+      '#recommendation-popup.closing {' +
+      'animation: slideOutLeft 0.3s ease-in forwards !important;' +
+      'pointer-events: none;' +
+      '}' +
+      '#recommendation-popup button:hover {' +
+      'opacity: 0.8;' +
+      '}' +
+      '@media (max-width: 768px) {' +
+      '#recommendation-popup {' +
+      'max-width: 90% !important;' +
+      'left: 5% !important;' +
+      'right: 5% !important;' +
+      'bottom: 25px !important;' +
+      '}' +
+      '#recommendation-popup > div {' +
+      'padding: 16px !important;' +
+      'border-radius: 6px !important;' +
+      '}' +
+      '#recommendation-popup h3 {' +
+      'font-size: 14px!important;' +
+      'margin-bottom: 0px !important;' +
+      'line-height: 1.3 !important;' +
+      '}' +
+      '#recommendation-popup h4 {' +
+      'font-size: 14px;' +
+      'margin-bottom: 4px !important;' +
+      '}' +
+      '#recommendation-popup p {' +
+      'font-size: 14px;' +
+      'margin-bottom: 8px !important;' +
+      'line-height: 1.3 !important;' +
+      '}' +
+      '#recommendation-popup img {' +
+      'width: 80px !important;' +
+      'height: 80px !important;' +
+      '}' +
+      '#recommendation-popup div[style*="margin-bottom: 16px"] {' +
+      'margin-bottom: 4px !important;' +
+      '}' +
+      '#recommendation-popup div[style*="margin-bottom: 20px"] {' +
+      'margin-bottom: 10px !important;' +
+      '}' +
+      '#recommendation-popup .add-to-cart-text {' +
+      'font-size: 12px !important;' +
+      '}' +
+      '#recommendation-popup .AddToBagButtonSmall .add-to-cart-text {' +
+      'font-size: 12px !important;' +
+      '}' +
+      '#recommendation-popup button .add-to-cart-text {' +
+      'font-size: 12px !important;' +
+      '}' +
+      '#recommendation-popup .AddToBagButtonSmall span.add-to-cart-text {' +
+      'font-size: 12px !important;' +
+      '}' +
+      '#recommendation-popup span.add-to-cart-text {' +
+      'font-size: 12px !important;' +
+      '}' +
+      '#recommendation-popup button:not([onclick="closeRecommendationPopup()"]) {' +
+      'font-size: 12px !important;' +
+      'padding: 4px !important;' +
+      '}' +
+      '#recommendation-popup .AddToBagButtonSmall__quantity {' +
+      'font-size: 12px !important;' +
+      '}' +
+      '#recommendation-popup span[style*="font-size: 30px"] {' +
+      'font-size: 20px !important;' +
+      '}' +
+      '}' +
+      '</style>';
 
     document.body.insertAdjacentHTML('beforeend', popupHTML);
 
@@ -468,17 +517,16 @@
             textElement = document.createElement('span');
             textElement.className = 'add-to-cart-text';
             textElement.textContent = buttonText;
-            textElement.style.cssText = `
-              display: inline-block !important;
-              margin-right: 8px !important;
-              font-size: 14px !important;
-              font-weight: 600 !important;
-              color: white !important;
-              visibility: visible !important;
-              opacity: 1 !important;
-              position: relative !important;
-              z-index: 10 !important;
-            `;
+            textElement.style.cssText =
+              'display: inline-block !important;' +
+              'margin-right: 8px !important;' +
+              'font-size: 14px !important;' +
+              'font-weight: 600 !important;' +
+              'color: white !important;' +
+              'visibility: visible !important;' +
+              'opacity: 1 !important;' +
+              'position: relative !important;' +
+              'z-index: 10 !important;';
 
             // Inserir no final do botão
             button.appendChild(textElement);
@@ -498,17 +546,16 @@
                 const newTextElement = document.createElement('span');
                 newTextElement.className = 'add-to-cart-text';
                 newTextElement.textContent = buttonText;
-                newTextElement.style.cssText = `
-                  display: inline-block !important;
-                  margin-right: 8px !important;
-                  font-size: 14px;
-                  font-weight: 600 !important;
-                  color: white !important;
-                  visibility: visible !important;
-                  opacity: 1 !important;
-                  position: relative !important;
-                  z-index: 10 !important;
-                `;
+                newTextElement.style.cssText =
+                  'display: inline-block !important;' +
+                  'margin-right: 8px !important;' +
+                  'font-size: 14px;' +
+                  'font-weight: 600 !important;' +
+                  'color: white !important;' +
+                  'visibility: visible !important;' +
+                  'opacity: 1 !important;' +
+                  'position: relative !important;' +
+                  'z-index: 10 !important;';
 
                 // Inserir no final do botão
                 button.appendChild(newTextElement);
@@ -636,6 +683,12 @@
   // Função para detectar produto adicionado/modificado no carrinho
   async function detectAddedProduct() {
     try {
+      // Aguardar API estar disponível
+      const apiReady = await waitForAPI();
+      if (!apiReady) {
+        return null;
+      }
+
       const cartItems = await window.napi.cart().read();
       const currentCartState = new Map();
 
@@ -700,6 +753,12 @@
   // Inicializar estado anterior do carrinho
   async function initializePreviousCartState() {
     try {
+      // Aguardar API estar disponível
+      const apiReady = await waitForAPI();
+      if (!apiReady) {
+        return;
+      }
+
       const cartItems = await window.napi.cart().read();
       cartItems.forEach((item) => {
         if (!item.nonRemovable) {
@@ -759,6 +818,7 @@
 
                     if (!isRecommendedInCart) {
                       setTimeout(async () => await showPopup(sku), 1000);
+                    } else {
                     }
                   }
                 }
@@ -781,10 +841,17 @@
     }
   }
 
+  // Inicializar com delay para aguardar API carregar
+  function initializeScript() {
+    setTimeout(() => {
+      setupObserver();
+    }, 2000); // 2 segundos de delay
+  }
+
   // Inicializar
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupObserver);
+    document.addEventListener('DOMContentLoaded', initializeScript);
   } else {
-    setupObserver();
+    initializeScript();
   }
 })();

@@ -21,38 +21,17 @@
   const acordeaoOriginal = togglePromo.parentElement;
   const formularioParaMover = togglePromo.nextElementSibling?.firstElementChild;
 
-  let anexoBotao;
-  let containerDoBotao;
-
-  if (isMobile) {
-    // No mobile, usar o elemento "Outras formas de pagamento" como referência
-    const outrasFormasPagamento = document
-      .querySelector('[data-test-id="fops-others-checkbox"]')
-      ?.closest('.sc-8bc246f-0');
-    if (outrasFormasPagamento) {
-      containerDoBotao = outrasFormasPagamento;
-    } else {
-      // Fallback para o botão de pagamento se não encontrar o elemento de outras formas
-      anexoBotao = document.querySelector('[data-test-id="payment-next-step-btn"]');
-      containerDoBotao = anexoBotao?.parentElement;
-    }
-  } else {
-    // Desktop - usar o botão de pagamento como antes
-    anexoBotao = document.querySelector('[data-test-id="payment-next-step-btn"]');
-    containerDoBotao = anexoBotao?.parentElement;
-  }
-
-  if (!containerDoBotao) {
-    console.error('Não encontrado o contêiner para anexar o formulário.');
+  // Usar o elemento sc-8bc246f-0 fbxbkv como referência para ambos mobile e desktop
+  const elementoReferencia = document.querySelector('.sc-8bc246f-0.fbxbkv');
+  if (!elementoReferencia) {
+    console.error('Elemento de referência sc-8bc246f-0 fbxbkv não encontrado.');
     return false;
   }
 
-  // Posicionar o formulário antes ou depois dependendo do dispositivo
-  if (isMobile) {
-    containerDoBotao.after(formularioParaMover);
-  } else {
-    containerDoBotao.before(formularioParaMover);
-  }
+  const containerDoBotao = elementoReferencia;
+
+  // Posicionar o formulário abaixo do elemento de referência para ambos os dispositivos
+  containerDoBotao.after(formularioParaMover);
   acordeaoOriginal.remove();
 
   // Ocultar o texto "Digite o seu código" antes de mover o formulário

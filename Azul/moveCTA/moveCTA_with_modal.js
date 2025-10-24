@@ -28,14 +28,14 @@ function executeMoveCTAWithModal() {
   }
 
   // Encontrar o contêiner pai do "Total a pagar"
-  const containerTotalPagar = totalPagar.closest('.sc-b533a5a3-14');
+  const containerTotalPagar = totalPagar.closest('.sc-d781f9ae-14');
   if (!containerTotalPagar) {
     console.error('Não foi possível encontrar o contêiner do "Total a pagar".');
     return false;
   }
 
   // Encontrar o contêiner principal do accordion (dstOvo)
-  const accordionContainer = containerTotalPagar.closest('.sc-b533a5a3-0');
+  const accordionContainer = containerTotalPagar.closest('.sc-d781f9ae-0');
   if (!accordionContainer) {
     console.error('Não foi possível encontrar o contêiner do accordion.');
     return false;
@@ -45,7 +45,7 @@ function executeMoveCTAWithModal() {
   accordionContainer.style.borderRadius = '10px 10px 0px 0px';
 
   // Ajustar border-radius do cabeçalho do accordion (quando fechado)
-  const cabecalhoAccordion = accordionContainer.querySelector('.sc-b533a5a3-1');
+  const cabecalhoAccordion = accordionContainer.querySelector('.sc-d781f9ae-1');
   if (cabecalhoAccordion) {
     cabecalhoAccordion.style.setProperty('border-radius', '10px 10px 0px 0px', 'important');
   }
@@ -83,7 +83,8 @@ function executeMoveCTAWithModal() {
 
   // Função para aplicar botão no modal
   function aplicarBotaoNoModal() {
-    const modal = document.querySelector('.sc-fifgRP.iwIahJ.sc-94d8ba36-0.bwDWcv');
+    // Atualizado com as novas classes do modal após o deploy
+    const modal = document.querySelector('.sc-fifgRP.iwIahJ.sc-1e818174-0.beINZX');
     if (!modal) return false;
 
     // Verificar se o botão já foi aplicado no modal
@@ -92,7 +93,7 @@ function executeMoveCTAWithModal() {
     }
 
     // Localizar o container do "Total a pagar" no modal
-    const totalPagarModal = modal.querySelector('.sc-94d8ba36-20.dtvURq');
+    const totalPagarModal = modal.querySelector('.sc-1e818174-21.fsASBr');
     if (!totalPagarModal) {
       console.log('Container "Total a pagar" não encontrado no modal.');
       return false;
@@ -122,15 +123,16 @@ function executeMoveCTAWithModal() {
           if (node.classList && node.classList.contains('sc-fifgRP')) {
             setTimeout(() => {
               aplicarBotaoNoModal();
-            }, 100); // Pequeno delay para garantir que o modal esteja totalmente montado
+            }, 10); // Pequeno delay para garantir que o modal esteja totalmente montado
           }
           // Verificar se algum elemento filho contém o modal
+          // Atualizado com as novas classes do modal após o deploy
           const modal =
-            node.querySelector && node.querySelector('.sc-fifgRP.iwIahJ.sc-94d8ba36-0.bwDWcv');
+            node.querySelector && node.querySelector('.sc-fifgRP.iwIahJ.sc-1e818174-0.beINZX');
           if (modal) {
             setTimeout(() => {
               aplicarBotaoNoModal();
-            }, 100);
+            }, 10);
           }
         }
       });

@@ -1,12 +1,6 @@
-window.alert('TESTE');
-console.log('TESTE 2');
-
 function executeMoveCTA() {
-  console.log('ENTROU AQUI 1');
-
   function onTargetPage() {
     const currentUrl = window.location.pathname;
-    console.log('URL >>>>>>>>> ', currentUrl);
     const targetTestUrl = '/payment';
     const stageTestUrl = '/stage';
     return currentUrl.includes(targetTestUrl) || currentUrl.includes(stageTestUrl);
@@ -36,14 +30,14 @@ function executeMoveCTA() {
   }
 
   // Encontrar o contêiner pai do "Total a pagar"
-  const containerTotalPagar = totalPagar.closest('.sc-b533a5a3-14');
+  const containerTotalPagar = totalPagar.closest('.sc-d781f9ae-14');
   if (!containerTotalPagar) {
     console.error('Não foi possível encontrar o contêiner do "Total a pagar".');
     return false;
   }
 
   // Encontrar o contêiner principal do accordion (dstOvo)
-  const accordionContainer = containerTotalPagar.closest('.sc-b533a5a3-0');
+  const accordionContainer = containerTotalPagar.closest('.sc-d781f9ae-0');
   if (!accordionContainer) {
     console.error('Não foi possível encontrar o contêiner do accordion.');
     return false;
@@ -53,7 +47,7 @@ function executeMoveCTA() {
   accordionContainer.style.borderRadius = '10px 10px 0px 0px';
 
   // Ajustar border-radius do cabeçalho do accordion (quando fechado)
-  const cabecalhoAccordion = accordionContainer.querySelector('.sc-b533a5a3-1');
+  const cabecalhoAccordion = accordionContainer.querySelector('.sc-d781f9ae-1');
   if (cabecalhoAccordion) {
     cabecalhoAccordion.style.setProperty('border-radius', '10px 10px 0px 0px', 'important');
   }
