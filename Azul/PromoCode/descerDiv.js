@@ -2,13 +2,15 @@
   function onTargetPage() {
     const currentUrl = window.location.pathname;
     const targetTestUrl = '/payment';
-    return currentUrl.includes(targetTestUrl);
+    const stageTestUrl = '/stage';
+    return currentUrl.includes(targetTestUrl) || currentUrl.includes(stageTestUrl);
   }
 
   if (window.campaignPromoCode || !onTargetPage()) {
     return;
   }
-  window.campaignPromoCode = true;
+
+  window.campaignDescerDiv = true;
 
   const isMobile = window.innerWidth < 768;
 
