@@ -6,6 +6,48 @@
     return currentUrl.includes(targetTestUrl) || currentUrl.includes(stageTestUrl);
   }
 
+  function analyticsEvent(eventLabel) {
+    if (eventLabel === undefined || !eventLabel) {
+      console.log('[MoveCTA] Missing parameters for analytics event.');
+      return;
+    }
+
+    const labelEvent = 'move_cta ' + eventLabel;
+
+    console.log('[MoveCTA] Analytics event triggered:', labelEvent);
+
+    (function () {
+      var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+      if (!s || typeof s.tl !== 'function') return;
+
+      s.linkTrackVars = 'events,eVar82';
+      s.linkTrackEvents = 'event90';
+      s.events = 'event90';
+      s.eVar82 = labelEvent;
+
+      s.tl(true, 'o', 'target_activity_action');
+    })();
+  }
+
+  function addClickListeners() {
+    const botaoProsseguir = document.querySelector('.move-cta-main-button');
+    const botaoFinalizar = document.querySelector('[data-test-id="payment-finish"]');
+
+    if (botaoProsseguir && !botaoProsseguir.hasAttribute('data-analytics-added')) {
+      botaoProsseguir.setAttribute('data-analytics-added', 'true');
+      botaoProsseguir.addEventListener('click', () => {
+        analyticsEvent('Prosseguir');
+      });
+    }
+
+    if (botaoFinalizar && !botaoFinalizar.hasAttribute('data-analytics-added')) {
+      botaoFinalizar.setAttribute('data-analytics-added', 'true');
+      botaoFinalizar.addEventListener('click', () => {
+        analyticsEvent('Finalizar pagamento');
+      });
+    }
+  }
+
   function reverterBotaoFinalizar() {
     if (!window.botaoFinalizarMovido) return false;
 
@@ -68,6 +110,7 @@ padding: 15px;
 margin-top: 0;
 `;
 
+    botaoProsseguir.classList.add('move-cta-main-button');
     botaoProsseguir.style.cssText = `
 width: 100%;
 margin: 0;
@@ -78,6 +121,9 @@ border-radius: 6px;
     accordionContainer.insertAdjacentElement('afterend', novaDivBotao);
 
     console.log('Botão "Prosseguir" movido com sucesso.');
+
+    setTimeout(() => addClickListeners(), 100);
+
     return true;
   }
 
@@ -134,6 +180,9 @@ margin-top: 0;
               novaDivBotao.appendChild(containerBotaoFinalizar);
               accordionContainer.insertAdjacentElement('afterend', novaDivBotao);
               console.log('Botão "Finalizar pagamento" movido com sucesso.');
+
+              setTimeout(() => addClickListeners(), 100);
+
               return true;
             }
           }

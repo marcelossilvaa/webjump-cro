@@ -5,6 +5,48 @@
     return currentUrl.includes(targetTestUrl);
   }
 
+  function analyticsEvent(eventLabel) {
+    if (eventLabel === undefined || !eventLabel) {
+      console.log('[MoveCTA] Missing parameters for analytics event.');
+      return;
+    }
+
+    const labelEvent = 'AT_move_cta_with_modal ' + eventLabel;
+
+    console.log('[MoveCTA] Analytics event triggered:', labelEvent);
+
+    (function () {
+      var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+      if (!s || typeof s.tl !== 'function') return;
+
+      s.linkTrackVars = 'events,eVar82';
+      s.linkTrackEvents = 'event90';
+      s.events = 'event90';
+      s.eVar82 = labelEvent;
+
+      s.tl(true, 'o', 'target_activity_action');
+    })();
+  }
+
+  function addClickListeners() {
+    const botaoProsseguirMain = document.querySelector('.move-cta-main-button');
+    const botaoFinalizar = document.querySelector('[data-test-id="payment-finish"]');
+
+    if (botaoProsseguirMain && !botaoProsseguirMain.hasAttribute('data-analytics-added')) {
+      botaoProsseguirMain.setAttribute('data-analytics-added', 'true');
+      botaoProsseguirMain.addEventListener('click', () => {
+        analyticsEvent('Prosseguir');
+      });
+    }
+
+    if (botaoFinalizar && !botaoFinalizar.hasAttribute('data-analytics-added')) {
+      botaoFinalizar.setAttribute('data-analytics-added', 'true');
+      botaoFinalizar.addEventListener('click', () => {
+        analyticsEvent('Finalizar pagamento');
+      });
+    }
+  }
+
   function reverterBotaoFinalizar() {
     if (!window.botaoFinalizarMovido) return false;
 
@@ -67,6 +109,7 @@
       margin-top: 0;
     `;
 
+    botaoProsseguir.classList.add('move-cta-main-button');
     botaoProsseguir.style.cssText = `
       width: 100%;
       margin: 0;
@@ -77,6 +120,9 @@
     accordionContainer.insertAdjacentElement('afterend', novaDivBotao);
 
     console.log('Botão "Prosseguir" movido com sucesso.');
+
+    setTimeout(() => addClickListeners(), 100);
+
     return true;
   }
 
@@ -133,6 +179,9 @@
               novaDivBotao.appendChild(containerBotaoFinalizar);
               accordionContainer.insertAdjacentElement('afterend', novaDivBotao);
               console.log('Botão "Finalizar pagamento" movido com sucesso.');
+
+              setTimeout(() => addClickListeners(), 100);
+
               return true;
             }
           }
@@ -176,6 +225,7 @@
       }
 
       const botaoClonadoModal = botaoMovido.cloneNode(true);
+      botaoClonadoModal.classList.add('move-cta-modal-button');
       botaoClonadoModal.style.cssText = `
         margin: 10px;
         width: 90%;
@@ -183,6 +233,8 @@
       `;
 
       botaoClonadoModal.addEventListener('click', () => {
+        analyticsEvent('Prosseguir - Modal');
+
         if (botaoMovido) {
           botaoMovido.click();
         }
