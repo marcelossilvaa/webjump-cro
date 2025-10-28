@@ -1,4 +1,4 @@
-function executeMoveCTA() {
+(function () {
   function onTargetPage() {
     const currentUrl = window.location.pathname;
     const targetTestUrl = '/payment';
@@ -6,58 +6,60 @@ function executeMoveCTA() {
     return currentUrl.includes(targetTestUrl) || currentUrl.includes(stageTestUrl);
   }
 
-  if (window.campaignMoveCTA || !onTargetPage()) {
-    console.log('Script não executado - URL não corresponde ou já foi executado');
-    return;
-  }
-  window.campaignMoveCTA = true;
+  function reverterBotaoFinalizar() {
+    if (!window.botaoFinalizarMovido) return false;
 
-  // Localizar o botão "Prosseguir"
-  const botaoProsseguir = document.querySelector('[data-test-id="payment-next-step-btn"]');
-  if (!botaoProsseguir) {
-    console.log('Botão "Prosseguir" não encontrado.');
-    return false;
-  }
+    window.botaoFinalizarMovido = false;
 
-  // Localizar o elemento "Total a pagar" como âncora
-  const totalPagar = Array.from(document.querySelectorAll('p')).find(
-    (p) => p.textContent.trim() === 'Total a pagar'
-  );
+    const botaoFinalizar = document.querySelector('[data-test-id="payment-finish"]');
+    if (botaoFinalizar) {
+      let divFinalizar = botaoFinalizar.parentElement;
+      while (divFinalizar && divFinalizar.style.backgroundColor !== 'rgb(248, 249, 250)') {
+        divFinalizar = divFinalizar.parentElement;
+      }
+      if (divFinalizar) {
+        divFinalizar.remove();
+      }
+    }
 
-  if (!totalPagar) {
-    console.error('Não foi possível encontrar a seção "Total a pagar" para usar como âncora.');
-    return false;
-  }
+    console.log('Botão "Finalizar pagamento" revertido.');
 
-  // Encontrar o contêiner pai do "Total a pagar"
-  const containerTotalPagar = totalPagar.closest('.sc-d781f9ae-14');
-  if (!containerTotalPagar) {
-    console.error('Não foi possível encontrar o contêiner do "Total a pagar".');
-    return false;
+    setTimeout(() => {
+      const botaoProsseguir = document.querySelector('[data-test-id="payment-next-step-btn"]');
+      if (botaoProsseguir) {
+        moverBotaoProsseguir();
+      }
+    }, 200);
+
+    return true;
   }
 
-  // Encontrar o contêiner principal do accordion (dstOvo)
-  const accordionContainer = containerTotalPagar.closest('.sc-d781f9ae-0');
-  if (!accordionContainer) {
-    console.error('Não foi possível encontrar o contêiner do accordion.');
-    return false;
-  }
+  function moverBotaoProsseguir() {
+    const botaoProsseguir = document.querySelector('[data-test-id="payment-next-step-btn"]');
+    if (!botaoProsseguir) return false;
 
-  // Ajustar border-radius do accordion para ter bordas arredondadas apenas no topo
-  accordionContainer.style.borderRadius = '10px 10px 0px 0px';
+    const totalPagar = Array.from(document.querySelectorAll('p')).find(
+      (p) => p.textContent.trim() === 'Total a pagar'
+    );
 
-  // Ajustar border-radius do cabeçalho do accordion (quando fechado)
-  const cabecalhoAccordion = accordionContainer.querySelector('.sc-d781f9ae-1');
-  if (cabecalhoAccordion) {
-    cabecalhoAccordion.style.setProperty('border-radius', '10px 10px 0px 0px', 'important');
-  }
+    if (!totalPagar) return false;
 
-  // Remover border-radius do elemento "Total a pagar"
-  containerTotalPagar.style.borderRadius = '0';
+    const containerTotalPagar = totalPagar.closest('.sc-d781f9ae-14');
+    if (!containerTotalPagar) return false;
 
-  // Criar uma nova div para envolver o botão
-  const novaDivBotao = document.createElement('div');
-  novaDivBotao.style.cssText = `
+    const accordionContainer = containerTotalPagar.closest('.sc-d781f9ae-0');
+    if (!accordionContainer) return false;
+
+    accordionContainer.style.borderRadius = '10px 10px 0px 0px';
+    const cabecalhoAccordion = accordionContainer.querySelector('.sc-d781f9ae-1');
+    if (cabecalhoAccordion) {
+      cabecalhoAccordion.style.setProperty('border-radius', '10px 10px 0px 0px', 'important');
+    }
+
+    containerTotalPagar.style.borderRadius = '0';
+
+    const novaDivBotao = document.createElement('div');
+    novaDivBotao.style.cssText = `
 background-color: #f8f9fa;
 border: 1px solid rgb(192, 192, 192);
 border-top: none;
@@ -66,30 +68,129 @@ padding: 15px;
 margin-top: 0;
 `;
 
-  // Clonar o botão original
-  const botaoClonado = botaoProsseguir.cloneNode(true);
-  botaoClonado.style.cssText = `
+    botaoProsseguir.style.cssText = `
 width: 100%;
 margin: 0;
 border-radius: 6px;
 `;
 
-  // Adicionar o botão clonado à nova div
-  novaDivBotao.appendChild(botaoClonado);
+    novaDivBotao.appendChild(botaoProsseguir);
+    accordionContainer.insertAdjacentElement('afterend', novaDivBotao);
 
-  // Inserir a nova div logo após o contêiner do accordion (próximo ao Total a pagar)
-  accordionContainer.insertAdjacentElement('afterend', novaDivBotao);
+    console.log('Botão "Prosseguir" movido com sucesso.');
+    return true;
+  }
 
-  // Remover o botão original
-  botaoProsseguir.remove();
+  function moverBotaoFinalizar() {
+    if (window.botaoFinalizarMovido) return false;
 
-  console.log('Botão "Prosseguir" movido com sucesso.');
-  return true;
-}
+    const botaoFinalizar = document.querySelector('[data-test-id="payment-finish"]');
+    if (!botaoFinalizar) return false;
 
-// Executar quando o DOM estiver pronto
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', executeMoveCTA);
-} else {
-  executeMoveCTA();
-}
+    window.botaoFinalizarMovido = true;
+
+    const botaoProsseguirMovido = document.querySelector('[data-test-id="payment-next-step-btn"]');
+    if (botaoProsseguirMovido) {
+      let divProsseguir = botaoProsseguirMovido.parentElement;
+      while (divProsseguir && divProsseguir.style.backgroundColor !== 'rgb(248, 249, 250)') {
+        divProsseguir = divProsseguir.parentElement;
+      }
+      if (divProsseguir) {
+        divProsseguir.style.display = 'none';
+      }
+    }
+
+    const totalPagar = Array.from(document.querySelectorAll('p')).find(
+      (p) => p.textContent.trim() === 'Total a pagar'
+    );
+
+    if (totalPagar) {
+      const containerTotalPagar = totalPagar.closest('.sc-d781f9ae-14');
+      if (containerTotalPagar) {
+        const accordionContainer = containerTotalPagar.closest('.sc-d781f9ae-0');
+        if (accordionContainer) {
+          accordionContainer.style.borderRadius = '10px 10px 0px 0px';
+          const cabecalhoAccordion = accordionContainer.querySelector('.sc-d781f9ae-1');
+          if (cabecalhoAccordion) {
+            cabecalhoAccordion.style.setProperty('border-radius', '10px 10px 0px 0px', 'important');
+          }
+          containerTotalPagar.style.borderRadius = '0';
+
+          const novaDivBotao = document.createElement('div');
+          novaDivBotao.style.cssText = `
+background-color: #f8f9fa;
+border: 1px solid rgb(192, 192, 192);
+border-top: none;
+border-radius: 0 0 8px 8px;
+padding: 15px;
+margin-top: 0;
+`;
+
+          const containerBotaoFinalizar = botaoFinalizar.closest('div');
+          if (containerBotaoFinalizar) {
+            const botao = containerBotaoFinalizar.querySelector('button');
+            if (botao) {
+              botao.style.cssText = 'width: 100%; margin: 0; border-radius: 6px;';
+              novaDivBotao.appendChild(containerBotaoFinalizar);
+              accordionContainer.insertAdjacentElement('afterend', novaDivBotao);
+              console.log('Botão "Finalizar pagamento" movido com sucesso.');
+              return true;
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  function executeMoveCTA() {
+    if (window.campaignMoveCTA || !onTargetPage()) {
+      console.log('Script não executado - URL não corresponde ou já foi executado');
+      return;
+    }
+
+    if (moverBotaoFinalizar()) {
+      return;
+    }
+
+    window.campaignMoveCTA = true;
+    moverBotaoProsseguir();
+  }
+
+  function init() {
+    executeMoveCTA();
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            if (node.querySelector && node.querySelector('[data-test-id="payment-finish"]')) {
+              setTimeout(() => moverBotaoFinalizar(), 100);
+            }
+
+            if (
+              node.querySelector &&
+              node.querySelector('[data-test-id="payment-next-step-btn"]')
+            ) {
+              const botaoProsseguir = node.querySelector('[data-test-id="payment-next-step-btn"]');
+              if (botaoProsseguir && !botaoProsseguir.closest('[data-test-id="payment-finish"]')) {
+                setTimeout(() => reverterBotaoFinalizar(), 100);
+              }
+            }
+          }
+        });
+      });
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

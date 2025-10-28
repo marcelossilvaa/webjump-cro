@@ -23,6 +23,11 @@
   const acordeaoOriginal = togglePromo.parentElement;
   const formularioParaMover = togglePromo.nextElementSibling?.firstElementChild;
 
+  if (!acordeaoOriginal || !formularioParaMover) {
+    console.error('Falha ao localizar os componentes do código promocional.');
+    return false;
+  }
+
   // Usar o elemento sc-8bc246f-0 fbxbkv como referência para ambos mobile e desktop
   const elementoReferencia = document.querySelector('.sc-8bc246f-0.fbxbkv');
   if (!elementoReferencia) {
@@ -34,7 +39,9 @@
 
   // Posicionar o formulário abaixo do elemento de referência para ambos os dispositivos
   containerDoBotao.after(formularioParaMover);
-  acordeaoOriginal.remove();
+
+  // Ocultar o container original ao invés de removê-lo para evitar quebrar event listeners
+  acordeaoOriginal.style.display = 'none';
 
   // Ocultar o texto "Digite o seu código" antes de mover o formulário
   const textoParaOcultar = Array.from(formularioParaMover.querySelectorAll('p')).find((p) =>

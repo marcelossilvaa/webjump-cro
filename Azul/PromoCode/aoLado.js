@@ -42,7 +42,9 @@
   }
 
   anexoDiv.after(formularioParaMover);
-  acordeaoOriginal.remove();
+
+  // Ocultar o container original ao invés de removê-lo para evitar quebrar event listeners
+  acordeaoOriginal.style.display = 'none';
 
   // Ocultar o texto "Digite o seu código" antes de mover o formulário
   const textoParaOcultar = Array.from(formularioParaMover.querySelectorAll('p')).find((p) =>

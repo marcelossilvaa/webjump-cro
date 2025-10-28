@@ -40,7 +40,9 @@
     }
 
     anexoDiv.after(formularioParaMover);
-    acordeaoOriginal.remove();
+
+    // Ocultar o container original ao invés de removê-lo para evitar quebrar event listeners
+    acordeaoOriginal.style.display = 'none';
 
     const childrenOriginais = Array.from(formularioParaMover.children);
     const conteudoDoFormulario = document.createElement('div');
@@ -157,8 +159,8 @@
       return false;
     }
 
-    // Remover o acordeão original
-    acordeaoOriginal.remove();
+    // Ocultar o container original ao invés de removê-lo para evitar quebrar event listeners
+    acordeaoOriginal.style.display = 'none';
 
     // Criar o novo container - usar classes genéricas para garantir compatibilidade
     const novoContainer = document.createElement('div');
