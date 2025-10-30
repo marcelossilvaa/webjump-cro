@@ -12,7 +12,7 @@
       return;
     }
 
-    const labelEvent = 'move_cta ' + eventLabel;
+    const labelEvent = 'AT_move_cta ' + eventLabel;
 
     console.log('[MoveCTA] Analytics event triggered:', labelEvent);
 

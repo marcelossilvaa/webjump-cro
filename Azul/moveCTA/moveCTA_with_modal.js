@@ -34,7 +34,10 @@
 
     if (botaoProsseguirMain && !botaoProsseguirMain.hasAttribute('data-analytics-added')) {
       botaoProsseguirMain.setAttribute('data-analytics-added', 'true');
-      botaoProsseguirMain.addEventListener('click', () => {
+      botaoProsseguirMain.addEventListener('click', (e) => {
+        if (botaoProsseguirMain.hasAttribute('data-skip-analytics')) {
+          return;
+        }
         analyticsEvent('Prosseguir');
       });
     }
@@ -226,17 +229,28 @@
 
       const botaoClonadoModal = botaoMovido.cloneNode(true);
       botaoClonadoModal.classList.add('move-cta-modal-button');
+      botaoClonadoModal.removeAttribute('data-analytics-added');
       botaoClonadoModal.style.cssText = `
         margin: 10px;
         width: 90%;
         border-radius: 6px;
       `;
 
-      botaoClonadoModal.addEventListener('click', () => {
+      botaoClonadoModal.addEventListener('click', (e) => {
+        e.stopPropagation();
         analyticsEvent('Prosseguir - Modal');
 
         if (botaoMovido) {
-          botaoMovido.click();
+          const botaoProsseguirMain = document.querySelector('.move-cta-main-button');
+          if (botaoProsseguirMain) {
+            botaoProsseguirMain.setAttribute('data-skip-analytics', 'true');
+            botaoProsseguirMain.click();
+            setTimeout(() => {
+              botaoProsseguirMain.removeAttribute('data-skip-analytics');
+            }, 100);
+          } else {
+            botaoMovido.click();
+          }
         }
 
         setTimeout(() => {
