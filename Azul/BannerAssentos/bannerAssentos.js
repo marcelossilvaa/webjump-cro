@@ -1,6 +1,5 @@
 /**
  * Azul Seats Banner Modal (exibe após o loader sumir)
- * Segue o mesmo layout do banner de loading, mas é mostrado
  * somente quando a classe .loader desaparece do DOM.
  */
 
@@ -73,6 +72,7 @@
       this.cardObserver = null;
       this.cardDebounceTimer = null;
       this.cardInserted = false;
+      this.cardVerificationInterval = null;
       this.mobileCardObserver = null;
       this.mobileCardInserted = false;
       this.init();
@@ -194,22 +194,36 @@
 
       // Retries agressivos para garantir inserção
       setTimeout(() => {
-        if (!this.cardInserted && this.isOnTargetUrl()) {
+        const card = document.getElementById('azul-seats-info-card');
+        if (!card && this.isOnTargetUrl()) {
+          this.cardInserted = false;
           this.checkAndInsertCard();
         }
       }, 300);
 
       setTimeout(() => {
-        if (!this.cardInserted && this.isOnTargetUrl()) {
+        const card = document.getElementById('azul-seats-info-card');
+        if (!card && this.isOnTargetUrl()) {
+          this.cardInserted = false;
           this.checkAndInsertCard();
         }
       }, 800);
 
       setTimeout(() => {
-        if (!this.cardInserted && this.isOnTargetUrl()) {
+        const card = document.getElementById('azul-seats-info-card');
+        if (!card && this.isOnTargetUrl()) {
+          this.cardInserted = false;
           this.checkAndInsertCard();
         }
       }, 2000);
+
+      setTimeout(() => {
+        const card = document.getElementById('azul-seats-info-card');
+        if (!card && this.isOnTargetUrl()) {
+          this.cardInserted = false;
+          this.checkAndInsertCard();
+        }
+      }, 4000);
 
       // Cria observador para detectar quando css-1oad65c aparecer
       if (!this.cardObserver) {
@@ -230,11 +244,16 @@
     checkAndInsertCard() {
       if (!this.isOnTargetUrl()) return;
 
-      // Verifica se já existe o card no DOM
+      // Verifica se já existe o card no DOM e está conectado
       const existingCard = document.getElementById('azul-seats-info-card');
-      if (existingCard) {
+      if (existingCard && existingCard.isConnected) {
         this.cardInserted = true;
         return;
+      }
+
+      // Se o flag diz que foi inserido mas o elemento não está no DOM, reseta o flag
+      if (this.cardInserted && !existingCard) {
+        this.cardInserted = false;
       }
 
       if (this.cardInserted) return;
@@ -264,23 +283,61 @@
 
       // Insere o card
       this.insertInfoCard(targetGridColumn);
-      this.cardInserted = true;
 
-      // Para o observer principal após inserir
-      if (this.cardObserver) {
-        this.cardObserver.disconnect();
-        this.cardObserver = null;
-      }
+      // Verifica se o elemento foi realmente inserido no DOM após um pequeno delay
+      setTimeout(() => {
+        const insertedCard = document.getElementById('azul-seats-info-card');
+        if (insertedCard && insertedCard.isConnected) {
+          // Elemento foi inserido com sucesso
+          this.cardInserted = true;
 
-      // Observa remoção do card para reinserir se o app re-renderizar
-      const removalObserver = new MutationObserver(() => {
-        if (!document.getElementById('azul-seats-info-card') && this.isOnTargetUrl()) {
-          removalObserver.disconnect();
+          // Para o observer principal após inserir
+          if (this.cardObserver) {
+            this.cardObserver.disconnect();
+            this.cardObserver = null;
+          }
+
+          // Observa remoção do card para reinserir se o app re-renderizar
+          const removalObserver = new MutationObserver(() => {
+            if (!document.getElementById('azul-seats-info-card') && this.isOnTargetUrl()) {
+              removalObserver.disconnect();
+              this.cardInserted = false;
+              this.injectCardWhenReady();
+            }
+          });
+          removalObserver.observe(container, { childList: true, subtree: true });
+
+          // Verificação periódica para garantir que o card ainda está no DOM
+          if (this.cardVerificationInterval) {
+            clearInterval(this.cardVerificationInterval);
+          }
+          this.cardVerificationInterval = setInterval(() => {
+            if (this.isOnTargetUrl()) {
+              const card = document.getElementById('azul-seats-info-card');
+              if (!card || !card.isConnected) {
+                console.log('[BannerAssentos] Card não encontrado no DOM, reinserindo...');
+                this.cardInserted = false;
+                clearInterval(this.cardVerificationInterval);
+                this.cardVerificationInterval = null;
+                this.injectCardWhenReady();
+              }
+            } else {
+              clearInterval(this.cardVerificationInterval);
+              this.cardVerificationInterval = null;
+            }
+          }, 2000);
+        } else {
+          // Elemento não foi inserido, reseta flag e tenta novamente
+          console.log('[BannerAssentos] Card não foi inserido corretamente, tentando novamente...');
           this.cardInserted = false;
-          this.injectCardWhenReady();
+          // Tenta novamente após um delay
+          setTimeout(() => {
+            if (!this.cardInserted && this.isOnTargetUrl()) {
+              this.checkAndInsertCard();
+            }
+          }, 500);
         }
-      });
-      removalObserver.observe(container, { childList: true, subtree: true });
+      }, 200);
     }
 
     // ========== Mobile Card (inserção no modal) ==========
