@@ -24,7 +24,7 @@
       description:
         'Marque os assentos com antecedência e garanta que fiquem lado a lado. <a href="https://www.voeazul.com.br/br/pt/sua-viagem/assentos#tipos-de-assentos" class="azul-seats-card__link" target="_blank">Saiba mais.</a>',
       mobileDescription:
-        '<p style="font-size: 16px; padding-bottom: 8px;">Reserva de Assentos: Família Junta!</p> <strong>Com crianças a bordo, todo planejamento vale a pena.</strong> <br> <span style="font-weight: 300;">Reserve seus assentos com antecedência e garanta que todos fiquem juntos — a partir de R$ 61,00 por pessoa.</span>',
+        '<p style="font-size: 16px; padding-bottom: 8px; color:#FFF;">Reserva de Assentos: Família Junta!</p> <strong style="font-size: 12px;">Com crianças a bordo, todo planejamento vale a pena.</strong> <br> <span style="font-weight: 300; font-size: 12px;">Reserve seus assentos com antecedência e garanta que todos fiquem juntos — a partir de R$ 61,00 por pessoa.</span>',
       priceFrom: 'R$ 61,00',
       priceTo: 'R$ 91,00',
       priceNoteLeft: 'Valor para 2 pessoas:',
@@ -365,7 +365,7 @@
         '<style id="' +
         styleId +
         '">' +
-        '.azul-seats-card-mobile{background:#fff;border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,0.12);overflow:hidden;border:1px solid rgba(0,0,0,0.05);margin:12px 0;display:none;}' +
+        '.azul-seats-card-mobile{background:#fff;border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,0.12);overflow:hidden;border:1px solid rgba(0,0,0,0.05);display:none;}' +
         '@media(max-width:767px){.azul-seats-card-mobile{display:block;}}' +
         '.azul-seats-card-mobile__image-wrap{position:relative;height:48px;overflow:hidden;flex:none;order:0;align-self:stretch;flex-grow:1;z-index:0;}' +
         '.azul-seats-card-mobile__image{width:100%;height:100%;object-fit:cover;display:block;border-radius:2px 2px 0 0;object-position: 0px -14px;}' +
@@ -445,14 +445,14 @@
         '<style id="' +
         styleId +
         '">' +
-        '.azul-seats-card-mobile{background:#fff;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);overflow:hidden;border:1px solid rgba(0,0,0,0.05);margin:12px 0;display:none;}' +
+        '.azul-seats-card-mobile{background:#fff;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);overflow:hidden;border:1px solid rgba(0,0,0,0.05);display:none;}' +
         '@media(max-width:767px){.azul-seats-card-mobile{display:block;}}' +
         '.azul-seats-card-mobile__image-wrap{position:relative;height:48px;overflow:hidden;flex:none;order:0;align-self:stretch;flex-grow:1;z-index:0;}' +
         '.azul-seats-card-mobile__image{width:100%;height:100%;object-fit:cover;display:block;border-radius:2px 2px 0 0;object-position: 0px -14px;}' +
         '.azul-seats-card-mobile__badge{position:absolute;left:10.5px;top:9px;height:28px;background:rgba(4,30,66,0.6);color:#fff;border-radius:49px;padding:4px 8px;gap:8px;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:700;display:flex;flex-direction:row;justify-content:center;align-items:center;}' +
         '.azul-seats-card-mobile__badge-icon{width:16px;height:13px;flex:none;order:0;flex-grow:0;}' +
         '.azul-seats-card-mobile__badge-text{width:auto;height:15px;font-size:10px;line-height:15px;display:flex;align-items:center;text-align:center;flex:none;order:1;flex-grow:0;color:#FFFFFF;white-space:nowrap;}' +
-        '.azul-seats-card-mobile__content{background:#041E42;padding:12px;color:#fff;text-align: start;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;}' +
+        '.azul-seats-card-mobile__content{line-height: 1; background:#041E42;padding:12px;color:#fff;text-align: start;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;}' +
         '.azul-seats-card-mobile__title{margin:0 0 8px 0;color:#003366;font-weight:700;font-size:14px;}' +
         '.azul-seats-card-mobile__desc{color:#FFF;font-size:12px;line-height:1.35;}' +
         '.azul-seats-card-mobile__link{color:' +
@@ -613,7 +613,6 @@
         '<img src="' +
         CONFIG.hotelImage +
         '" alt="Resort tropical com piscina" />' +
-        '<div class="azul-banner-overlay-gradient"></div>' +
         '</div>' +
         '<div class="azul-banner-content">' +
         '<h2 class="azul-banner-title">' +
@@ -724,17 +723,9 @@
         'height: 100%;' +
         'object-fit: cover;' +
         '}' +
-        '.azul-banner-overlay-gradient {' +
-        'position: absolute;' +
-        'top: 0;' +
-        'left: 0;' +
-        'right: 0;' +
-        'bottom: 0;' +
-        'background: linear-gradient(135deg, rgba(0, 102, 204, 0.1) 0%, rgba(0, 102, 204, 0.2) 100%);' +
-        '}' +
         '.azul-banner-content {' +
         'flex: 0 0 54%;' +
-        'padding: 35px 30px 35px 25px' +
+        'padding: 35px 30px 35px 25px;' +
         'display: flex;' +
         'flex-direction: column;' +
         'justify-content: center;' +
@@ -792,7 +783,7 @@
         '}' +
         '.azul-banner-description strong { font-weight: 700; }' +
         '.azul-banner-actions { margin-top: 20px; }' +
-        '.azul-banner-cta { display:block; text-align:center; background: ' +
+        '.azul-banner-cta { cursor: pointer; font-size: 16px; border: none; width: 100%; display:block; text-align:center; background: ' +
         '#026CB6' +
         '; color:#fff; text-decoration:none; border-radius:8px; padding:14px 18px; font-weight:400; font-family:"Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }' +
         '@media (max-width: 768px) {' +
