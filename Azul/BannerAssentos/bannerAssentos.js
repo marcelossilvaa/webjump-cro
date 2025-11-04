@@ -14,7 +14,7 @@
     hotelImage: 'https://imgur.com/8kb2vCw.png',
     title: 'Reserva de Assentos: Família Junta!',
     description:
-      'Com crianças a bordo, todo planejamento vale a pena. Reserve seus assentos com antecedência e garanta que todos fiquem juntos — <strong>a partir de R$ 61 por pessoa</strong>.',
+      '<strong>Com crianças a bordo, todo planejamento vale a pena.</strong> <br> Reserve seus assentos com antecedência e garanta que todos fiquem juntos — a partir de R$61,00 por pessoa.',
     ctaText: 'Continuar e garantir assentos',
     ctaHref: null,
     card: {
@@ -22,16 +22,16 @@
       badgeText: 'Viagem com criança',
       title: 'Reserva de Assentos: Família Junta!',
       description:
-        'Marque os assentos com antecedência e garanta que fiquem lado a lado. <a href="#" class="azul-seats-card__link">Saiba mais.</a>',
+        'Marque os assentos com antecedência e garanta que fiquem lado a lado. <a href="https://www.voeazul.com.br/br/pt/sua-viagem/assentos#tipos-de-assentos" class="azul-seats-card__link" target="_blank">Saiba mais.</a>',
       mobileDescription:
-        'Com crianças a bordo, todo planejamento vale a pena. Reserve seus assentos com antecedência e garanta que todos fiquem juntos — a partir de R$ 61,00 por pessoa.',
+        '<p style="font-size: 16px; padding-bottom: 8px;">Reserva de Assentos: Família Junta!</p> <strong>Com crianças a bordo, todo planejamento vale a pena.</strong> <br> <span style="font-weight: 300;">Reserve seus assentos com antecedência e garanta que todos fiquem juntos — a partir de R$ 61,00 por pessoa.</span>',
       priceFrom: 'R$ 61,00',
       priceTo: 'R$ 91,00',
       priceNoteLeft: 'Valor para 2 pessoas:',
       priceNoteRight: 'A partir de R$ 122,00',
     },
     brandColors: {
-      primary: '#0066CC',
+      primary: '#041E42',
       secondary: '#F0F8FF',
       text: '#333333',
     },
@@ -115,6 +115,9 @@
 
     handleUrlChange() {
       if (this.bannerShown) return;
+      // Reset flags quando URL muda
+      this.cardInserted = false;
+      this.mobileCardInserted = false;
       if (this.isOnTargetUrl()) {
         this.scheduleCheckForLoaderGone();
         this.injectCardWhenReady();
@@ -165,6 +168,25 @@
       // Verifica se css-1oad65c já existe
       this.checkAndInsertCard();
 
+      // Retries agressivos para garantir inserção
+      setTimeout(() => {
+        if (!this.cardInserted && this.isOnTargetUrl()) {
+          this.checkAndInsertCard();
+        }
+      }, 300);
+
+      setTimeout(() => {
+        if (!this.cardInserted && this.isOnTargetUrl()) {
+          this.checkAndInsertCard();
+        }
+      }, 800);
+
+      setTimeout(() => {
+        if (!this.cardInserted && this.isOnTargetUrl()) {
+          this.checkAndInsertCard();
+        }
+      }, 2000);
+
       // Cria observador para detectar quando css-1oad65c aparecer
       if (!this.cardObserver) {
         this.cardObserver = new MutationObserver(() => {
@@ -183,6 +205,14 @@
 
     checkAndInsertCard() {
       if (!this.isOnTargetUrl()) return;
+
+      // Verifica se já existe o card no DOM
+      const existingCard = document.getElementById('azul-seats-info-card');
+      if (existingCard) {
+        this.cardInserted = true;
+        return;
+      }
+
       if (this.cardInserted) return;
 
       // Verifica se o elemento css-1oad65c existe
@@ -199,6 +229,7 @@
 
       // Pega o segundo GridColumn (índice 1) - o que vem após o que contém css-1oad65c
       const targetGridColumn = gridColumns[1];
+      if (!targetGridColumn) return;
 
       // Verifica se já não há um card inserido depois deste GridColumn
       const nextSibling = targetGridColumn.nextElementSibling;
@@ -414,16 +445,16 @@
         '<style id="' +
         styleId +
         '">' +
-        '.azul-seats-card-mobile{background:#fff;border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,0.12);overflow:hidden;border:1px solid rgba(0,0,0,0.05);margin:12px 0;display:none;}' +
+        '.azul-seats-card-mobile{background:#fff;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);overflow:hidden;border:1px solid rgba(0,0,0,0.05);margin:12px 0;display:none;}' +
         '@media(max-width:767px){.azul-seats-card-mobile{display:block;}}' +
-        '.azul-seats-card-mobile__image-wrap{position:relative;height:90px;overflow:hidden;flex:none;order:0;align-self:stretch;flex-grow:1;z-index:0;}' +
+        '.azul-seats-card-mobile__image-wrap{position:relative;height:48px;overflow:hidden;flex:none;order:0;align-self:stretch;flex-grow:1;z-index:0;}' +
         '.azul-seats-card-mobile__image{width:100%;height:100%;object-fit:cover;display:block;border-radius:2px 2px 0 0;object-position: 0px -14px;}' +
         '.azul-seats-card-mobile__badge{position:absolute;left:10.5px;top:9px;height:28px;background:rgba(4,30,66,0.6);color:#fff;border-radius:49px;padding:4px 8px;gap:8px;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:700;display:flex;flex-direction:row;justify-content:center;align-items:center;}' +
         '.azul-seats-card-mobile__badge-icon{width:16px;height:13px;flex:none;order:0;flex-grow:0;}' +
         '.azul-seats-card-mobile__badge-text{width:auto;height:15px;font-size:10px;line-height:15px;display:flex;align-items:center;text-align:center;flex:none;order:1;flex-grow:0;color:#FFFFFF;white-space:nowrap;}' +
-        '.azul-seats-card-mobile__content{padding:12px;}' +
+        '.azul-seats-card-mobile__content{background:#041E42;padding:12px;color:#fff;text-align: start;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;}' +
         '.azul-seats-card-mobile__title{margin:0 0 8px 0;color:#003366;font-weight:700;font-size:14px;}' +
-        '.azul-seats-card-mobile__desc{margin:0 0 12px 0;color:#333;font-size:13px;line-height:1.35;}' +
+        '.azul-seats-card-mobile__desc{color:#FFF;font-size:12px;line-height:1.35;}' +
         '.azul-seats-card-mobile__link{color:' +
         CONFIG.brandColors.primary +
         ';text-decoration:underline;font-weight:600;}' +
@@ -525,9 +556,8 @@
         '.azul-seats-card__expand svg{width:20px;height:20px;flex:none;order:0;flex-grow:0;}' +
         '.azul-seats-card__content{padding:12px;}' +
         '.azul-seats-card__title{margin:0 0 8px 0;color:#003366;font-weight:700;font-size:14px;}' +
-        '.azul-seats-card__desc{margin:0 0 12px 0;color:#333;font-size:13px;line-height:1.35;}' +
-        '.azul-seats-card__link{color:' +
-        CONFIG.brandColors.primary +
+        '.azul-seats-card__desc{margin:0 0 12px 0;color:#333;font-size:12px;line-height:1.35;}' +
+        '.azul-seats-card__link{color:#026CB6' +
         ';text-decoration:underline;font-weight:600;}' +
         '.azul-seats-card__pricebox{background:#0E2B4F;border-radius:8px;padding:16px 8px;color:#fff;}' +
         '.azul-seats-card__pricebox-row{display:flex;justify-content:space-between;align-items:center;gap:10px; font-size:14px;}' +
@@ -586,13 +616,6 @@
         '<div class="azul-banner-overlay-gradient"></div>' +
         '</div>' +
         '<div class="azul-banner-content">' +
-        '<div class="azul-banner-background-icon">' +
-        '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">' +
-        '<g opacity="0.08">' +
-        '<circle cx="100" cy="100" r="75" fill="#595959" />' +
-        '</g>' +
-        '</svg>' +
-        '</div>' +
         '<h2 class="azul-banner-title">' +
         CONFIG.title +
         '</h2>' +
@@ -600,11 +623,9 @@
         CONFIG.description +
         '</p>' +
         '<div class="azul-banner-actions">' +
-        '<a href="' +
-        (CONFIG.ctaHref ? CONFIG.ctaHref : '#') +
-        '" class="azul-banner-cta" role="button">' +
+        '<button class="azul-banner-cta" role="button">' +
         CONFIG.ctaText +
-        '</a>' +
+        '</button>' +
         '</div>' +
         '</div>' +
         '</div>' +
@@ -674,7 +695,7 @@
         '}' +
         '.azul-banner-modal {' +
         'background: white;' +
-        'border-radius: 20px;' +
+        'border-radius: 8px;' +
         'box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);' +
         'max-width: 850px;' +
         'width: 90vw;' +
@@ -683,20 +704,20 @@
         'overflow: hidden;' +
         'animation: azulSlideIn 0.4s ease-out;' +
         '}' +
-        '.azul-banner-close { position:absolute; top:12px; right:12px; width:32px; height:32px; border:none; background:transparent; color:#4c4c4c; font-size:24px; line-height:1; cursor:pointer; z-index:5; }' +
+        '.azul-banner-close { position:absolute; top:0px; right:12px; width:32px; height:32px; border:none; background:transparent; color:#4c4c4c; font-size:40px; line-height:1; cursor:pointer; z-index:5; font-weight:300; font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;}' +
         '@keyframes azulSlideIn {' +
         'from { transform: translateY(30px) scale(0.95); opacity: 0; }' +
         'to { transform: translateY(0) scale(1); opacity: 1; }' +
         '}' +
         '.azul-banner-desktop {' +
         'display: flex;' +
-        'height: 300px;' +
+        'height: 285px;' +
         '}' +
         '.azul-banner-image {' +
         'flex: 0 0 46%;' +
         'position: relative;' +
         'overflow: hidden;' +
-        'border-radius: 20px 0 0 20px;' +
+        'border-radius: 8px 0 0 8px;' +
         '}' +
         '.azul-banner-image img {' +
         'width: 100%;' +
@@ -713,7 +734,7 @@
         '}' +
         '.azul-banner-content {' +
         'flex: 0 0 54%;' +
-        'padding: 30px 25px;' +
+        'padding: 35px 30px 35px 25px' +
         'display: flex;' +
         'flex-direction: column;' +
         'justify-content: center;' +
@@ -746,14 +767,14 @@
         '.azul-banner-mobile-content .azul-banner-background-icon { position: absolute; top: 50%; right: -10%; transform: translateY(-50%); z-index: 3; pointer-events: none; }' +
         '.azul-banner-mobile-content .azul-banner-background-icon svg { width: 180px; height: 180px; }' +
         '.azul-banner-title {' +
-        'font-size: 32px;' +
+        'font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;' +
+        'font-size: 26px;' +
         'font-weight: 400;' +
         'color: ' +
         CONFIG.brandColors.primary +
         ';' +
-        'margin: 0 0 25px 0;' +
+        'margin: 15px 0 25px 0;' +
         'line-height: 1.2;' +
-        'font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;' +
         'letter-spacing: -0.5px;' +
         'position: relative;' +
         'z-index: 4;' +
@@ -765,7 +786,6 @@
         ';' +
         'margin: 0 0 20px 0;' +
         'line-height: 1.3;' +
-        'font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;' +
         'font-weight: 400;' +
         'position: relative;' +
         'z-index: 4;' +
@@ -773,12 +793,12 @@
         '.azul-banner-description strong { font-weight: 700; }' +
         '.azul-banner-actions { margin-top: 20px; }' +
         '.azul-banner-cta { display:block; text-align:center; background: ' +
-        CONFIG.brandColors.primary +
-        '; color:#fff; text-decoration:none; border-radius:8px; padding:14px 18px; font-weight:600; font-family:"Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }' +
+        '#026CB6' +
+        '; color:#fff; text-decoration:none; border-radius:8px; padding:14px 18px; font-weight:400; font-family:"Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }' +
         '@media (max-width: 768px) {' +
         '.azul-banner-desktop { display: none; }' +
         '.azul-banner-mobile { display: flex; }' +
-        '.azul-banner-modal { margin: 20px; max-width: 350px; width: calc(100vw - 40px); }' +
+        '.azul-banner-modal { margin: 20px; max-width: 350px; width: calc(100vw - 40px); font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;}' +
         '.azul-banner-title { font-size: 28px; margin-bottom: 16px; }' +
         '.azul-banner-description { font-size: 12px; margin-bottom: 30px; line-height: 1.5; }' +
         '}' +
@@ -807,6 +827,14 @@
       const closeBtn = banner.querySelector('.azul-banner-close');
       if (closeBtn) {
         closeBtn.addEventListener('click', (e) => {
+          e.stopPropagation(); // Evita que o evento borbulhe
+          this.hideBanner();
+        });
+      }
+
+      const continueBuy = banner.querySelector('.azul-banner-cta');
+      if (continueBuy) {
+        continueBuy.addEventListener('click', (e) => {
           e.stopPropagation(); // Evita que o evento borbulhe
           this.hideBanner();
         });
