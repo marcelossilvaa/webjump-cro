@@ -37,6 +37,30 @@
     },
   };
 
+  // Função de tracking de analytics
+  function analyticsEvent(eventLabel) {
+    if (eventLabel === undefined || !eventLabel) {
+      console.log('[BannerAssentos] Missing parameters for analytics event.');
+      return;
+    }
+
+    const labelEvent = 'AT_assentos_para_crianças ' + eventLabel;
+
+    console.log('[BannerAssentos] Analytics event triggered:', labelEvent);
+
+    (function () {
+      var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+      if (!s || typeof s.tl !== 'function') return;
+
+      s.linkTrackVars = 'events,eVar82';
+      s.linkTrackEvents = 'event90';
+      s.events = 'event90';
+      s.eVar82 = labelEvent;
+
+      s.tl(true, 'o', 'target_activity_action');
+    })();
+  }
+
   class AzulSeatsBanner {
     constructor() {
       this.isVisible = false;
@@ -536,6 +560,16 @@
 
       referenceGridColumn.insertAdjacentHTML('afterend', html);
       this.addCardStyles();
+
+      // Adiciona tracking no link "Saiba mais"
+      setTimeout(() => {
+        const saibaMaisLink = document.querySelector('.azul-seats-card__link');
+        if (saibaMaisLink) {
+          saibaMaisLink.addEventListener('click', () => {
+            analyticsEvent('saiba_mais_link');
+          });
+        }
+      }, 100);
     }
 
     addCardStyles() {
@@ -819,6 +853,7 @@
       if (closeBtn) {
         closeBtn.addEventListener('click', (e) => {
           e.stopPropagation(); // Evita que o evento borbulhe
+          analyticsEvent('close_button');
           this.hideBanner();
         });
       }
@@ -827,6 +862,7 @@
       if (continueBuy) {
         continueBuy.addEventListener('click', (e) => {
           e.stopPropagation(); // Evita que o evento borbulhe
+          analyticsEvent('continue_button');
           this.hideBanner();
         });
       }
