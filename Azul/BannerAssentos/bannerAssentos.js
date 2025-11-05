@@ -75,6 +75,9 @@
       this.cardVerificationInterval = null;
       this.mobileCardObserver = null;
       this.mobileCardInserted = false;
+      this.hasChildAndAdult = false; // Flag para verificar se há criança e adulto
+      this.passengersObserver = null;
+      this.passengersDebounceTimer = null;
       this.init();
     }
 
@@ -82,6 +85,7 @@
       this.preloadBannerImage();
       this.setupUrlObserver();
       this.setupLoaderObserver();
+      this.checkPassengersForChildAndAdult();
       // Caso já não exista loader ao iniciar, ainda assim verifica com debounce
       if (this.isOnTargetUrl()) {
         this.scheduleCheckForLoaderGone();
@@ -101,6 +105,92 @@
       } catch (e) {
         return false;
       }
+    }
+
+    isOnPassengersUrl() {
+      try {
+        return window.location.href.includes('/home/passageiros');
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // ========== Verificação de Criança e Adulto ==========
+    checkPassengersForChildAndAdult() {
+      if (this.isOnPassengersUrl()) {
+        // Verifica imediatamente se já está na página de passageiros
+        this.verifyChildAndAdult();
+      }
+
+      // Observa mudanças de URL para verificar quando entrar na página de passageiros
+      const checkPassengers = () => {
+        if (this.isOnPassengersUrl()) {
+          this.verifyChildAndAdult();
+        }
+      };
+
+      // Verifica quando a URL muda
+      window.addEventListener('popstate', checkPassengers);
+      window.addEventListener('hashchange', checkPassengers);
+      window.addEventListener('historychange', checkPassengers);
+
+      // Observer para monitorar mudanças na página de passageiros
+      if (!this.passengersObserver) {
+        this.passengersObserver = new MutationObserver(() => {
+          if (this.isOnPassengersUrl()) {
+            // Debounce para evitar múltiplas execuções
+            if (this.passengersDebounceTimer) clearTimeout(this.passengersDebounceTimer);
+            this.passengersDebounceTimer = setTimeout(() => {
+              this.passengersDebounceTimer = null;
+              this.verifyChildAndAdult();
+            }, 200);
+          }
+        });
+        this.passengersObserver.observe(document.body, { childList: true, subtree: true });
+      }
+
+      // Retries para garantir verificação mesmo se a página carregar depois
+      setTimeout(() => {
+        if (this.isOnPassengersUrl()) {
+          this.verifyChildAndAdult();
+        }
+      }, 500);
+
+      setTimeout(() => {
+        if (this.isOnPassengersUrl()) {
+          this.verifyChildAndAdult();
+        }
+      }, 1500);
+    }
+
+    verifyChildAndAdult() {
+      if (!this.isOnPassengersUrl()) return;
+
+      // Busca todos os elementos passenger-type
+      const passengerTypes = document.querySelectorAll('.passenger-type');
+      if (passengerTypes.length === 0) return;
+
+      let hasChild = false;
+      let hasAdult = false;
+
+      passengerTypes.forEach((element) => {
+        const text = element.textContent || element.innerText;
+        if (text.includes('Criança')) {
+          hasChild = true;
+        }
+        if (text.includes('Principal') || text.includes('Adulto')) {
+          hasAdult = true;
+        }
+      });
+
+      // Atualiza a flag apenas se houver ambos
+      this.hasChildAndAdult = hasChild && hasAdult;
+
+      console.log('[BannerAssentos] Verificação de passageiros:', {
+        hasChild,
+        hasAdult,
+        hasChildAndAdult: this.hasChildAndAdult,
+      });
     }
 
     setupUrlObserver() {
@@ -142,6 +232,12 @@
       // Reset flags quando URL muda
       this.cardInserted = false;
       this.mobileCardInserted = false;
+
+      // Verifica passageiros quando mudar para página de passageiros
+      if (this.isOnPassengersUrl()) {
+        this.verifyChildAndAdult();
+      }
+
       if (this.isOnTargetUrl()) {
         this.scheduleCheckForLoaderGone();
         this.injectCardWhenReady();
@@ -182,6 +278,8 @@
     // ========== Info Card (inserção imediata em /home/review) ==========
     injectCardWhenReady() {
       if (!this.isOnTargetUrl()) return;
+      // Verifica se há criança e adulto antes de inserir o card
+      if (!this.hasChildAndAdult) return;
 
       const already = document.getElementById('azul-seats-info-card');
       if (already) {
@@ -243,6 +341,8 @@
 
     checkAndInsertCard() {
       if (!this.isOnTargetUrl()) return;
+      // Verifica se há criança e adulto antes de inserir o card
+      if (!this.hasChildAndAdult) return;
 
       // Verifica se já existe o card no DOM e está conectado
       const existingCard = document.getElementById('azul-seats-info-card');
@@ -343,35 +443,89 @@
     // ========== Mobile Card (inserção no modal) ==========
     injectMobileCardWhenReady() {
       if (!this.isOnTargetUrl()) return;
+      if (window.innerWidth >= 768) return; // Não executa em desktop
+      // Verifica se há criança e adulto antes de inserir o card mobile
+      if (!this.hasChildAndAdult) return;
 
       // Verifica se já existe o card mobile
       const already = document.getElementById('azul-seats-info-card-mobile');
-      if (already) {
+      if (already && already.isConnected) {
         this.mobileCardInserted = true;
         return;
       }
 
-      // Verifica se o modal já existe
+      // Verifica se o modal já existe e insere imediatamente
       this.checkAndInsertMobileCard();
+
+      // Retries muito rápidos para garantir inserção imediata
+      setTimeout(() => {
+        const card = document.getElementById('azul-seats-info-card-mobile');
+        if (!card && this.isOnTargetUrl() && window.innerWidth < 768) {
+          this.mobileCardInserted = false;
+          this.checkAndInsertMobileCard();
+        }
+      }, 50);
+
+      setTimeout(() => {
+        const card = document.getElementById('azul-seats-info-card-mobile');
+        if (!card && this.isOnTargetUrl() && window.innerWidth < 768) {
+          this.mobileCardInserted = false;
+          this.checkAndInsertMobileCard();
+        }
+      }, 150);
+
+      setTimeout(() => {
+        const card = document.getElementById('azul-seats-info-card-mobile');
+        if (!card && this.isOnTargetUrl() && window.innerWidth < 768) {
+          this.mobileCardInserted = false;
+          this.checkAndInsertMobileCard();
+        }
+      }, 300);
 
       // Cria observador para detectar quando o modal aparecer
       if (!this.mobileCardObserver) {
         this.mobileCardObserver = new MutationObserver(() => {
-          if (!this.mobileCardInserted) {
-            // Debounce para evitar múltiplas execuções
-            if (this.cardDebounceTimer) clearTimeout(this.cardDebounceTimer);
-            this.cardDebounceTimer = setTimeout(() => {
-              this.cardDebounceTimer = null;
+          if (!this.mobileCardInserted && window.innerWidth < 768) {
+            // Verifica se o modal existe e tenta inserir imediatamente
+            const modal = document.querySelector('.modal-content.css-wbgz83');
+            if (modal) {
+              // Modal existe, insere imediatamente sem delay
               this.checkAndInsertMobileCard();
-            }, 150);
+            }
           }
         });
+        // Observa apenas mudanças em childList para ser mais rápido
         this.mobileCardObserver.observe(document.body, { childList: true, subtree: true });
       }
+
+      // Observa especificamente quando o modal é adicionado ao DOM
+      const modalCheckObserver = new MutationObserver(() => {
+        const modal = document.querySelector('.modal-content.css-wbgz83');
+        if (modal && !this.mobileCardInserted && window.innerWidth < 768) {
+          // Modal apareceu, insere imediatamente
+          this.checkAndInsertMobileCard();
+        }
+      });
+      modalCheckObserver.observe(document.body, { childList: true });
     }
 
     checkAndInsertMobileCard() {
       if (!this.isOnTargetUrl()) return;
+      // Verifica se há criança e adulto antes de inserir o card mobile
+      if (!this.hasChildAndAdult) return;
+
+      // Verifica se já existe o card mobile no DOM
+      const existingCard = document.getElementById('azul-seats-info-card-mobile');
+      if (existingCard && existingCard.isConnected) {
+        this.mobileCardInserted = true;
+        return;
+      }
+
+      // Se o flag diz que foi inserido mas o elemento não está no DOM, reseta o flag
+      if (this.mobileCardInserted && !existingCard) {
+        this.mobileCardInserted = false;
+      }
+
       if (this.mobileCardInserted) return;
 
       // Verifica se é mobile (largura menor que 768px)
@@ -401,7 +555,33 @@
 
       // Insere o card mobile
       this.insertMobileCard(lastSeatItem);
-      this.mobileCardInserted = true;
+
+      // Verifica imediatamente se o elemento foi inserido
+      const insertedCard = document.getElementById('azul-seats-info-card-mobile');
+      if (insertedCard && insertedCard.isConnected) {
+        // Elemento foi inserido com sucesso
+        this.mobileCardInserted = true;
+      } else {
+        // Se não foi inserido imediatamente, verifica após um delay mínimo
+        setTimeout(() => {
+          const checkCard = document.getElementById('azul-seats-info-card-mobile');
+          if (checkCard && checkCard.isConnected) {
+            this.mobileCardInserted = true;
+          } else {
+            // Elemento não foi inserido, reseta flag e tenta novamente
+            console.log(
+              '[BannerAssentos] Card mobile não foi inserido corretamente, tentando novamente...'
+            );
+            this.mobileCardInserted = false;
+            // Tenta novamente após um delay curto
+            setTimeout(() => {
+              if (!this.mobileCardInserted && this.isOnTargetUrl() && window.innerWidth < 768) {
+                this.checkAndInsertMobileCard();
+              }
+            }, 100);
+          }
+        }, 50);
+      }
 
       // Observa remoção do modal para resetar o flag
       const modalRemovalObserver = new MutationObserver(() => {
@@ -668,6 +848,8 @@
     scheduleCheckForLoaderGone() {
       if (this.bannerShown) return;
       if (!this.isOnTargetUrl()) return;
+      // Verifica se há criança e adulto antes de mostrar o modal
+      if (!this.hasChildAndAdult) return;
       if (this.debounceTimer) {
         clearTimeout(this.debounceTimer);
       }
