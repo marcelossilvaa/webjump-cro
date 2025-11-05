@@ -76,6 +76,7 @@
       this.mobileCardObserver = null;
       this.mobileCardInserted = false;
       this.hasChildAndAdult = false; // Flag para verificar se há criança e adulto
+      this.childAndAdultTrackingSent = false; // Flag para evitar tracking duplicado
       this.passengersObserver = null;
       this.passengersDebounceTimer = null;
       this.init();
@@ -184,7 +185,14 @@
       });
 
       // Atualiza a flag apenas se houver ambos
+      const previousState = this.hasChildAndAdult;
       this.hasChildAndAdult = hasChild && hasAdult;
+
+      // Envia tracking quando a condição for verdadeira pela primeira vez
+      if (this.hasChildAndAdult && !this.childAndAdultTrackingSent && !previousState) {
+        analyticsEvent('has_child_and_adult');
+        this.childAndAdultTrackingSent = true;
+      }
 
       console.log('[BannerAssentos] Verificação de passageiros:', {
         hasChild,
