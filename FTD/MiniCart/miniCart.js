@@ -117,30 +117,39 @@
     });
   }
 
-  function analyticsEvent(eventLabel, productId, productName) {
+  function analyticsEvent(eventLabel, productId, productName, priceNumber, quantity, category) {
     if (eventLabel === undefined || !eventLabel) {
       console.log('[MiniCart] Missing parameters for analytics event.');
       return;
     }
 
-    var labelEvent = 'AT_mini_cart ' + eventLabel;
-    if (productId) {
-      labelEvent += ' | Product ID: ' + productId;
-    }
-    if (productName) {
-      labelEvent += ' | Product: ' + productName;
-    }
+    var productNameFormatted = productName || 'Produto';
+    var quantityValue = quantity || 1;
+    var priceValue = priceNumber || 0;
 
-    console.log('[MiniCart] Analytics event triggered:', labelEvent);
+    // Formato: :productName;quantity;price;;
+    var productsString =
+      ':' + productNameFormatted + ';' + quantityValue + ';' + priceValue.toFixed(2) + ';;';
+
+    var eVar7Value = 'target_mini_cart_' + eventLabel;
+
+    console.log('[MiniCart] Analytics event triggered:', {
+      event: 'scAdd',
+      products: productsString,
+      eVar7: eVar7Value,
+      productId: productId,
+      productName: productNameFormatted,
+    });
 
     (function () {
       var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
       if (!s || typeof s.tl !== 'function') return;
 
-      s.linkTrackVars = 'events,eVar82';
-      s.linkTrackEvents = 'event90';
-      s.events = 'event90';
-      s.eVar7 = labelEvent;
+      s.linkTrackVars = 'products,events,eVar7';
+      s.linkTrackEvents = 'scAdd';
+      s.products = productsString;
+      s.events = 'scAdd';
+      s.eVar7 = eVar7Value;
 
       s.tl(true, 'o', 'target_activity_action');
     })();
@@ -405,9 +414,19 @@
       btn.addEventListener('click', function () {
         var productId = Number(btn.dataset.productId || TARGET_ID);
         var productName = data.name || 'Produto';
+        var productPrice = data.priceNumber || 0;
+        var quantity = 1;
+        var category = data.category || data.product_category || '';
 
         // Tracking: clique no botão
-        analyticsEvent('add_to_cart_click', productId, productName);
+        analyticsEvent(
+          'add_to_cart_click',
+          productId,
+          productName,
+          productPrice,
+          quantity,
+          category
+        );
 
         btn.setAttribute('disabled', 'disabled');
         btn.textContent = 'Adicionando...';
@@ -418,7 +437,14 @@
             btn.textContent = 'Adicionado!';
 
             // Tracking: sucesso ao adicionar
-            analyticsEvent('add_to_cart_success', productId, productName);
+            analyticsEvent(
+              'add_to_cart_success',
+              productId,
+              productName,
+              productPrice,
+              quantity,
+              category
+            );
 
             setTimeout(function () {
               btn.textContent = 'Adicionar';
@@ -430,7 +456,14 @@
             btn.textContent = 'Erro - Tentar novamente';
 
             // Tracking: erro ao adicionar
-            analyticsEvent('add_to_cart_error', productId, productName);
+            analyticsEvent(
+              'add_to_cart_error',
+              productId,
+              productName,
+              productPrice,
+              quantity,
+              category
+            );
 
             setTimeout(function () {
               btn.textContent = 'Adicionar';
