@@ -12,28 +12,83 @@
     '\
 #' +
     SHELF_ID +
-    '{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:12px;margin:12px 0;border:1px solid rgba(0,0,0,.08);border-radius:8px;background:#fff}\
+    '{display:flex; gap:12px;align-items:center;padding:18px 0;border-top:var(--border-width-hairline) solid var(--color-neutral-300);background:#fff;font-family:var(--font-source-poppins);font-size:16px;max-width: calc(100% - 48px);margin: 0 auto; margin-top: 15px; width: 100%; justify-content: space-between;}\
 #' +
     SHELF_ID +
-    ' img{width:64px;height:64px;object-fit:contain;background:#fafafa;border-radius:6px;transition:opacity .15s ease}\
+    ' img{width:72px;height:72px;object-fit:contain;background:#fafafa;border-radius:6px;transition:opacity .15s ease}\
 #' +
     SHELF_ID +
-    ' .wj-title{font-size:14px;line-height:1.3;margin:0 0 6px 0;color:#222}\
+    ' .wj-title{font-size:16px;line-height:1.3;margin:0 0 6px 0;color:var(--color-brand-primary-700)!important;font-weight:600!important;}\
 #' +
     SHELF_ID +
-    ' .wj-price{font-size:14px;font-weight:600;color:#111}\
+    ' .wj-price{font-size:16px;font-weight:600;color:var(--color-neutral-800)!important;}\
 #' +
     SHELF_ID +
-    ' .wj-cta{display:inline-flex;align-items:center;justify-content:center;height:36px;padding:0 12px;border-radius:6px;border:1px solid #0a53be;background:#0d6efd;color:#fff;cursor:pointer;white-space:nowrap}\
+    ' .wj-cta{display:inline-flex;align-items:center;justify-content:center;height:48px;width:48px;border-radius:6px;border:1px solid #0a53be;background:var(--color-brand-primary-500);color:#fff;cursor:pointer;white-space:nowrap;} .wj-cta:hover{background:var(--color-brand-primary-600);}\
 #' +
     SHELF_ID +
     ' .wj-cta[disabled]{opacity:.6;cursor:default}\
+#' +
+    SHELF_ID +
+    ' .wj-cta .action-label{display:inline-flex;align-items:center;justify-content:center}\
+#' +
+    SHELF_ID +
+    ' .wj-cta{position:relative}\
+#' +
+    SHELF_ID +
+    ' .wj-cta .plus-icon{position:absolute;right:11px;bottom:10px;background:url(https://mcstaging.lumisfera.com.br/static/version1762519331/frontend/FTD/lumi/pt_BR/images/svg/icon-add-cart-plus.svg) no-repeat center;width:11px;height:16px;display:inline-block}\
+#' +
+    SHELF_ID +
+    ' .wj-cta .cart-icon{background:url(https://mcstaging.lumisfera.com.br/static/version1762519331/frontend/FTD/lumi/pt_BR/images/svg/icon-add-cart-empty.svg) no-repeat center;width:24px;height:24px;display:inline-block}\
 ';
   if (!document.getElementById(STYLE_ID)) {
     var sty = document.createElement('style');
     sty.id = STYLE_ID;
     sty.appendChild(document.createTextNode(CSS));
     document.head.appendChild(sty);
+  }
+
+  // Função auxiliar para criar os ícones do botão
+  function createButtonIcons() {
+    var actionLabel = document.createElement('span');
+    actionLabel.className = 'action-label';
+
+    var plusIcon = document.createElement('span');
+    plusIcon.className = 'plus-icon';
+    actionLabel.appendChild(plusIcon);
+
+    var cartIcon = document.createElement('span');
+    cartIcon.className = 'cart-icon';
+
+    return { actionLabel: actionLabel, cartIcon: cartIcon };
+  }
+
+  // Função auxiliar para atualizar o conteúdo do botão
+  function updateButtonContent(btn, state) {
+    // Limpa o conteúdo anterior
+    btn.innerHTML = '';
+
+    if (state === 'default' || state === 'add') {
+      // Estado padrão: mostra os ícones
+      var icons = createButtonIcons();
+      btn.appendChild(icons.actionLabel);
+      btn.appendChild(icons.cartIcon);
+    } else if (state === 'adding') {
+      // Estado de carregamento: mostra apenas os ícones (pode adicionar animação depois)
+      var icons = createButtonIcons();
+      btn.appendChild(icons.actionLabel);
+      btn.appendChild(icons.cartIcon);
+    } else if (state === 'added') {
+      // Estado de sucesso: mostra os ícones
+      var icons = createButtonIcons();
+      btn.appendChild(icons.actionLabel);
+      btn.appendChild(icons.cartIcon);
+    } else if (state === 'error') {
+      // Estado de erro: mostra os ícones (ou pode manter texto de erro)
+      var icons = createButtonIcons();
+      btn.appendChild(icons.actionLabel);
+      btn.appendChild(icons.cartIcon);
+    }
   }
 
   function fmtBRL(n) {
@@ -664,12 +719,27 @@
       info.appendChild(t);
       info.appendChild(p);
 
+      // Cria uma div wrapper para imagem e info
+      var imageInfoWrapper = document.createElement('div');
+      imageInfoWrapper.style.display = 'flex';
+      imageInfoWrapper.style.gap = '4px';
+      imageInfoWrapper.appendChild(img);
+      imageInfoWrapper.appendChild(info);
+
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'wj-cta';
-      btn.textContent = 'Adicionar';
       btn.dataset.productId = String(data.id || TARGET_ID);
-      btn.addEventListener('click', function () {
+
+      // Inicializa o botão com os ícones
+      updateButtonContent(btn, 'default');
+
+      btn.addEventListener('click', function (e) {
+        // Previne o comportamento padrão e a propagação do evento
+        // para evitar que o carrinho feche ao clicar no botão
+        e.preventDefault();
+        e.stopPropagation();
+
         var productId = Number(btn.dataset.productId || TARGET_ID);
         var productName = data.name || 'Produto';
         var productPrice = data.priceNumber || 0;
@@ -687,15 +757,15 @@
         );
 
         btn.setAttribute('disabled', 'disabled');
-        btn.textContent = 'Adicionando...';
+        updateButtonContent(btn, 'adding');
 
         addToCart(productId, 1)
           .then(function (res) {
             // Produto adicionado com sucesso via AJAX (sem recarregar página)
             console.log('[MiniCart] Produto adicionado com sucesso:', res);
 
-            // Atualiza o texto do botão para indicar sucesso
-            btn.textContent = 'Adicionado!';
+            // Atualiza o botão para indicar sucesso
+            updateButtonContent(btn, 'added');
 
             // Tracking: sucesso ao adicionar
             analyticsEvent(
@@ -709,7 +779,7 @@
 
             // Reabilita o botão após um tempo
             setTimeout(function () {
-              btn.textContent = 'Adicionar';
+              updateButtonContent(btn, 'default');
               btn.removeAttribute('disabled');
             }, 2000);
           })
@@ -718,7 +788,7 @@
             var errorMessage = err && err.message ? err.message : 'Erro desconhecido';
             console.error('[MiniCart] Mensagem de erro:', errorMessage);
 
-            btn.textContent = 'Erro - Tentar novamente';
+            updateButtonContent(btn, 'error');
             btn.title = errorMessage; // Mostra o erro ao passar o mouse
 
             // Tracking: erro ao adicionar
@@ -732,15 +802,14 @@
             );
 
             setTimeout(function () {
-              btn.textContent = 'Adicionar';
+              updateButtonContent(btn, 'default');
               btn.removeAttribute('disabled');
               btn.removeAttribute('title');
             }, 2000);
           });
       });
 
-      wrap.appendChild(img);
-      wrap.appendChild(info);
+      wrap.appendChild(imageInfoWrapper);
       wrap.appendChild(btn);
 
       anchor.parentElement.insertBefore(wrap, anchor);
