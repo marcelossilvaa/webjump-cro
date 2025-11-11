@@ -8,6 +8,9 @@
   var CACHE_KEY = 'WJ_SHELF_CACHE_' + TARGET_ID;
   var CACHE_TTL_MS = 15 * 60 * 1000;
 
+  // Variável global para armazenar o nível escolar detectado
+  var DETECTED_GRADE_LEVEL = null;
+
   var CSS =
     '\
 #' +
@@ -469,7 +472,12 @@
   }
 
   function fetchCartData() {
-    return fetch('/customer/section/load/?sections=cart', { credentials: 'same-origin' })
+    // Adiciona parâmetros necessários para evitar erro 400
+    var timestamp = Date.now();
+    var url =
+      '/customer/section/load/?sections=cart&force_new_section_timestamp=true&_=' + timestamp;
+
+    return fetch(url, { credentials: 'same-origin' })
       .then(function (res) {
         if (!res.ok) throw new Error('Cart fetch ' + res.status);
         return res.json();
@@ -479,6 +487,94 @@
       })
       .catch(function (err) {
         console.warn('Erro ao buscar dados do carrinho:', err);
+        return null;
+      });
+  }
+
+  // Função para extrair o nível escolar de um nome de produto
+  function extractGradeLevel(productName) {
+    if (!productName) return null;
+
+    // Padrões para identificar o nível escolar
+    // Exemplo: "5º ano - Aluno" -> "5º ano - Anos iniciais"
+    var patterns = [
+      {
+        pattern: /(\d+)[º°]\s*ano\s*-\s*Aluno/i,
+        grade: function (match) {
+          var ano = parseInt(match[1]);
+          if (ano >= 1 && ano <= 5) return ano + 'º ano - Anos iniciais';
+          if (ano >= 6 && ano <= 9) return ano + 'º ano - Anos finais';
+          return null;
+        },
+      },
+      {
+        pattern: /(\d+)[º°]\s*ano/i,
+        grade: function (match) {
+          var ano = parseInt(match[1]);
+          if (ano >= 1 && ano <= 5) return ano + 'º ano - Anos iniciais';
+          if (ano >= 6 && ano <= 9) return ano + 'º ano - Anos finais';
+          return null;
+        },
+      },
+    ];
+
+    for (var i = 0; i < patterns.length; i++) {
+      var match = productName.match(patterns[i].pattern);
+      if (match) {
+        var grade = patterns[i].grade(match);
+        if (grade) return grade;
+      }
+    }
+
+    return null;
+  }
+
+  // Função para verificar se há kit escolar no carrinho e extrair o nível
+  function detectSchoolKitAndGrade(cartData) {
+    if (!cartData || !cartData.items || !Array.isArray(cartData.items)) {
+      return { hasKit: false, gradeLevel: null };
+    }
+
+    var gradeLevel = null;
+    var kitProducts = [];
+
+    // Verifica cada item do carrinho
+    for (var i = 0; i < cartData.items.length; i++) {
+      var item = cartData.items[i];
+      var productName = item.product_name || '';
+
+      // Verifica se é um produto de kit escolar (padrão: "Conjunto", "Kit", ou produtos com ano)
+      var isKitProduct =
+        /conjunto|kit|faça|faca/i.test(productName) || /\d+[º°]\s*ano/i.test(productName);
+
+      if (isKitProduct) {
+        kitProducts.push(item);
+
+        // Tenta extrair o nível escolar
+        var extractedGrade = extractGradeLevel(productName);
+        if (extractedGrade && !gradeLevel) {
+          gradeLevel = extractedGrade;
+        }
+      }
+    }
+
+    return {
+      hasKit: kitProducts.length > 0,
+      gradeLevel: gradeLevel,
+      kitProducts: kitProducts,
+    };
+  }
+
+  // Função para buscar dados do carrinho (usa apenas o endpoint que funciona)
+  function fetchFullCartData() {
+    // Usa apenas fetchCartData que já está funcionando
+    return fetchCartData()
+      .then(function (cartData) {
+        // Retorna no formato esperado: { cart: ... }
+        return cartData ? { cart: cartData } : null;
+      })
+      .catch(function (err) {
+        console.warn('[MiniCart] Erro ao buscar dados do carrinho:', err);
         return null;
       });
   }
@@ -870,6 +966,83 @@
     var anchor = document.querySelector(ANCHOR_SELECTOR);
     if (!anchor) return;
 
+    // Primeiro, verifica se há kit escolar no carrinho usando customer data
+    magentoCustomerData(function (cd) {
+      var cart = cd && cd.get ? cd.get('cart')() : null;
+
+      if (!cart) {
+        // Se não tiver customer data, tenta fetch como fallback
+        fetchFullCartData()
+          .then(function (fullData) {
+            if (!fullData || !fullData.cart) {
+              console.log(
+                '[MiniCart] Nenhum dado do carrinho encontrado. Aguardando kit escolar...'
+              );
+              return;
+            }
+            checkKitAndShowRecommendation(fullData.cart);
+          })
+          .catch(function (err) {
+            console.warn('[MiniCart] Erro ao verificar kit escolar:', err);
+          });
+        return;
+      }
+
+      // Usa os dados do customer data (formato pode ser diferente)
+      var cartData = null;
+
+      // Tenta converter o formato do customer data para o formato esperado
+      if (cart && typeof cart === 'object') {
+        // Se já está no formato correto
+        if (cart.items && Array.isArray(cart.items)) {
+          cartData = cart;
+        } else if (cart.cart && cart.cart.items) {
+          cartData = cart.cart;
+        } else {
+          // Tenta buscar dados completos via fetch
+          fetchFullCartData()
+            .then(function (fullData) {
+              if (fullData && fullData.cart) {
+                checkKitAndShowRecommendation(fullData.cart);
+              }
+            })
+            .catch(function () {
+              // Se falhar, tenta detectar com os dados disponíveis
+              if (cart && Object.keys(cart).length > 0) {
+                checkKitAndShowRecommendation(cart);
+              }
+            });
+          return;
+        }
+      }
+
+      if (cartData) {
+        checkKitAndShowRecommendation(cartData);
+      }
+    });
+  }, 150);
+
+  // Função auxiliar para verificar kit e mostrar recomendação
+  function checkKitAndShowRecommendation(cartData) {
+    // Detecta se há kit e qual o nível escolar
+    var kitInfo = detectSchoolKitAndGrade(cartData);
+
+    if (!kitInfo.hasKit) {
+      console.log('[MiniCart] Nenhum kit escolar detectado no carrinho. Aguardando...');
+      DETECTED_GRADE_LEVEL = null;
+      return;
+    }
+
+    // Armazena o nível escolar detectado globalmente
+    DETECTED_GRADE_LEVEL = kitInfo.gradeLevel;
+
+    console.log('[MiniCart] Kit escolar detectado!', {
+      hasKit: kitInfo.hasKit,
+      gradeLevel: kitInfo.gradeLevel,
+      kitProducts: kitInfo.kitProducts.length,
+    });
+
+    // Se chegou aqui, há kit no carrinho - pode mostrar a recomendação
     // 1, tenta cache
     var cached = getCache();
     if (cached) {
@@ -887,43 +1060,38 @@
         return;
       }
 
-      // 3, busca diretamente do endpoint /customer/section/load/?sections=cart
-      fetchCartData()
-        .then(function (cartData) {
-          if (cartData) {
-            var fromCartApi = fromCartByProductId(cartData, TARGET_ID);
-            if (fromCartApi) {
-              setCache(fromCartApi);
-              mountOnceWithData(fromCartApi);
-              return;
-            }
-          }
-          // 4, se não encontrou no carrinho, busca PDP
-          return fetchPdpHtmlByIdOnce(TARGET_ID)
-            .then(parsePdp)
-            .then(function (pdpData) {
-              setCache(pdpData);
-              mountOnceWithData(pdpData);
-            });
+      // 3, se não encontrou no carrinho (esperado, pois estamos recomendando), busca PDP diretamente
+      // Não faz fetch do carrinho novamente para evitar erro 400
+      fetchPdpHtmlByIdOnce(TARGET_ID)
+        .then(parsePdp)
+        .then(function (pdpData) {
+          setCache(pdpData);
+          mountOnceWithData(pdpData);
         })
         .catch(function (err) {
-          console.warn('Erro ao buscar dados:', err);
-          // Fallback para PDP mesmo em caso de erro
-          fetchPdpHtmlByIdOnce(TARGET_ID)
-            .then(parsePdp)
-            .then(function (pdpData) {
-              setCache(pdpData);
-              mountOnceWithData(pdpData);
-            })
-            .catch(function () {
-              mountOnceWithData({ name: 'Produto', image: '', priceFormatted: '' });
-            });
+          console.warn('[MiniCart] Erro ao buscar dados do produto:', err);
+          mountOnceWithData({ name: 'Produto', image: '', priceFormatted: '' });
         });
     });
-  }, 150);
+  }
 
   var mo = new MutationObserver(run);
   mo.observe(document.body, { childList: true, subtree: true });
 
+  // Observa mudanças no customer data (quando o carrinho é atualizado)
+  magentoCustomerData(function (cd) {
+    if (cd && cd.get) {
+      var cart = cd.get('cart');
+      if (cart && typeof cart.subscribe === 'function') {
+        cart.subscribe(function (updatedCart) {
+          console.log('[MiniCart] Carrinho atualizado, verificando kit escolar...');
+          // Aguarda um pouco para garantir que os dados estão atualizados
+          setTimeout(run, 300);
+        });
+      }
+    }
+  });
+
+  // Executa a verificação inicial
   run();
 })();
