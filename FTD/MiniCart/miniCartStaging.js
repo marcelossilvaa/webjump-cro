@@ -116,12 +116,22 @@
   var DETECTED_GRADE_LEVEL = null;
   // Variável global para armazenar o último produto recomendado
   var LAST_RECOMMENDED_PRODUCT_ID = null;
+  // Variável para armazenar o produto recomendado inicialmente (não muda quando o produto é adicionado)
+  var INITIAL_RECOMMENDED_PRODUCT_ID = null;
+  // Hash do estado do carrinho quando a recomendação inicial foi feita
+  var INITIAL_RECOMMENDATION_CART_STATE = null;
 
   var CSS =
     '\
 #' +
     SHELF_ID +
-    '{display:flex; gap:12px;align-items:center;padding:18px 0;border-top:var(--border-width-hairline) solid var(--color-neutral-300);background:#fff;font-family:var(--font-source-poppins);font-size:16px;max-width: calc(100% - 48px);margin: 0 auto; margin-top: 15px; width: 100%; justify-content: space-between;}\
+    '{display:flex; flex-direction: column; gap:12px;padding:18px 0;border-top:var(--border-width-hairline) solid var(--color-neutral-300);background:#fff;font-family:var(--font-source-poppins);font-size:16px;max-width: calc(100% - 48px);margin: 0 auto; margin-top: 15px; width: 100%;}\
+#' +
+    SHELF_ID +
+    ' .wj-copy-header{font-size:14px;color:var(--color-brand-primary-700)!important;margin:0;padding:2px;text-align:center;background-color:#CACDD2;border-radius:5px;}\
+#' +
+    SHELF_ID +
+    ' .wj-product-content{display:flex;gap:18px;align-items:center;justify-content:space-between;width:100%;}\
 #' +
     SHELF_ID +
     ' img{width:72px;height:72px;object-fit:contain;background:#fafafa;border-radius:6px;transition:opacity .15s ease}\
@@ -456,64 +466,69 @@
       // Recarrega os dados do carrinho
       reloadCartSection();
 
-      // Verifica se o produto foi realmente adicionado
+      // Verifica se o produto foi realmente adicionado usando magentoCustomerData
+      // (evita erro 400 do fetchCartData)
       return new Promise(function (resolve, reject) {
         setTimeout(function () {
-          fetchCartData()
-            .then(function (cartData) {
-              var productInCart = fromCartByProductId(cartData, productId);
-              if (productInCart) {
-                console.log('[MiniCart] Produto confirmado no carrinho:', productInCart);
-                resolve(result);
-              } else {
-                // Tenta mais uma vez após um delay maior
-                setTimeout(function () {
-                  fetchCartData()
-                    .then(function (cartData2) {
-                      var productInCart2 = fromCartByProductId(cartData2, productId);
-                      if (productInCart2) {
-                        console.log(
-                          '[MiniCart] Produto confirmado no carrinho (segunda tentativa):',
-                          productInCart2
-                        );
-                        resolve(result);
-                      } else {
-                        // Mesmo sem confirmação, se a resposta foi sucesso, considera OK
-                        if (result.success) {
-                          console.warn(
-                            '[MiniCart] Produto pode ter sido adicionado, mas não foi confirmado no carrinho'
-                          );
-                          resolve(result);
-                        } else {
-                          reject(
-                            new Error(
-                              'Produto não foi adicionado ao carrinho. Verifique se o produto está disponível.'
-                            )
-                          );
-                        }
-                      }
-                    })
-                    .catch(function (err) {
-                      console.error('[MiniCart] Erro ao verificar carrinho:', err);
-                      // Mesmo com erro na verificação, resolve se a resposta original foi OK
-                      if (result.success) {
-                        resolve(result);
-                      } else {
-                        reject(err);
-                      }
-                    });
-                }, 1000);
-              }
-            })
-            .catch(function (err) {
-              console.error('[MiniCart] Erro ao verificar carrinho:', err);
-              // Mesmo com erro na verificação, resolve se a resposta original foi OK
+          // Usa magentoCustomerData em vez de fetchCartData para evitar erro 400
+          magentoCustomerData(function (customerData) {
+            if (!customerData || !customerData.get) {
+              console.warn('[MiniCart] CustomerData não disponível, assumindo sucesso');
               if (result.success) {
                 resolve(result);
               } else {
-                reject(err);
+                reject(new Error('Falha ao adicionar ao carrinho'));
               }
-            });
+              return;
+            }
+
+            var cart = customerData.get('cart')();
+            if (!cart || !cart.items) {
+              console.warn('[MiniCart] Dados do carrinho não disponíveis, assumindo sucesso');
+              if (result.success) {
+                resolve(result);
+              } else {
+                reject(new Error('Falha ao adicionar ao carrinho'));
+              }
+              return;
+            }
+
+            var productInCart = fromCartByProductId(cart, productId);
+            if (productInCart) {
+              console.log('[MiniCart] Produto confirmado no carrinho:', productInCart);
+              resolve(result);
+            } else {
+              // Tenta mais uma vez após um delay maior
+              setTimeout(function () {
+                var cart2 = customerData.get('cart')();
+                if (cart2 && cart2.items) {
+                  var productInCart2 = fromCartByProductId(cart2, productId);
+                  if (productInCart2) {
+                    console.log(
+                      '[MiniCart] Produto confirmado no carrinho (segunda tentativa):',
+                      productInCart2
+                    );
+                    resolve(result);
+                    return;
+                  }
+                }
+
+                // Mesmo sem confirmação, se a resposta foi sucesso, considera OK
+                if (result.success) {
+                  console.warn(
+                    '[MiniCart] Produto adicionado com sucesso (verificação não confirmou, mas API retornou sucesso)'
+                  );
+                  resolve(result);
+                } else {
+                  reject(
+                    new Error(
+                      'Produto não foi adicionado ao carrinho. Verifique se o produto está disponível.'
+                    )
+                  );
+                }
+              }, 1000);
+            }
+          });
         }, 500);
       });
     });
@@ -601,7 +616,32 @@
   function extractGradeLevel(productName) {
     if (!productName) return null;
 
-    // Padrões para identificar o nível escolar
+    var lowerName = productName.toLowerCase();
+
+    // Padrões específicos para Educação Infantil
+    if (/educação\s+infantil|infantil/i.test(lowerName)) {
+      // Educação Infantil 1 ano
+      if (/\b1\s*ano\b/i.test(lowerName)) return '1 ano - Educação Infantil';
+      // Educação Infantil 2 anos
+      if (/\b2\s*anos?\b/i.test(lowerName)) return '2 anos - Educação Infantil';
+      // Educação Infantil 3 anos
+      if (/\b3\s*anos?\b/i.test(lowerName)) return '3 anos - Educação Infantil';
+      // Pré Escola 4 anos
+      if (/\b4\s*anos?\b/i.test(lowerName) || /pré.*escola.*4/i.test(lowerName))
+        return '4 anos - Pré Escola';
+      // Pré Escola 5 anos
+      if (/\b5\s*anos?\b/i.test(lowerName) || /pré.*escola.*5/i.test(lowerName))
+        return '5 anos - Pré Escola';
+    }
+
+    // Padrões específicos para Ensino Médio / Colegial
+    if (/ensino\s+médio|colegial/i.test(lowerName)) {
+      if (/1[º°]\s*(série|ano|colegial)/i.test(lowerName)) return '1º Colegial';
+      if (/2[º°]\s*(série|ano|colegial)/i.test(lowerName)) return '2º Colegial';
+      if (/3[º°]\s*(série|ano|colegial)/i.test(lowerName)) return '3º Colegial';
+    }
+
+    // Padrões para identificar o nível escolar do Ensino Fundamental
     // Exemplo: "5º ano - Aluno" -> "5º ano - Anos iniciais"
     var patterns = [
       {
@@ -619,6 +659,15 @@
           var ano = parseInt(match[1]);
           if (ano >= 1 && ano <= 5) return ano + 'º ano - Anos iniciais';
           if (ano >= 6 && ano <= 9) return ano + 'º ano - Anos finais';
+          return null;
+        },
+      },
+      {
+        pattern: /(\d+)[º°]\s*(série)/i,
+        grade: function (match) {
+          var serie = parseInt(match[1]);
+          if (serie >= 1 && serie <= 5) return serie + 'º ano - Anos iniciais';
+          if (serie >= 6 && serie <= 9) return serie + 'º ano - Anos finais';
           return null;
         },
       },
@@ -640,9 +689,30 @@
   function convertGradeLevelToNumber(gradeLevel) {
     if (!gradeLevel) return null;
 
-    // Extrai o número do ano
+    // Mapeamento direto para níveis específicos
+    var directMappings = {
+      '1 ano - Educação Infantil': 1,
+      '2 anos - Educação Infantil': 2,
+      '3 anos - Educação Infantil': 3,
+      '4 anos - Pré Escola': 4,
+      '5 anos - Pré Escola': 5,
+      '1º Colegial': 15,
+      '2º Colegial': 16,
+      '3º Colegial': 17,
+    };
+
+    // Verifica se há mapeamento direto
+    if (directMappings[gradeLevel]) {
+      return directMappings[gradeLevel];
+    }
+
+    // Extrai o número do ano para os casos do Ensino Fundamental
     var match = gradeLevel.match(/(\d+)[º°]/);
-    if (!match) return null;
+    if (!match) {
+      // Tenta extrair número sem º ou °
+      match = gradeLevel.match(/(\d+)\s*ano/i);
+      if (!match) return null;
+    }
 
     var ano = parseInt(match[1]);
     var isAnosIniciais = gradeLevel.includes('Anos iniciais');
@@ -1046,6 +1116,16 @@
       wrap.setAttribute('role', 'region');
       wrap.setAttribute('aria-label', 'Sugestão');
 
+      // Adiciona a copy "Leve mais, com o mesmo frete!"
+      var copyHeader = document.createElement('p');
+      copyHeader.className = 'wj-copy-header';
+      copyHeader.textContent = 'Leve mais, com o mesmo frete!';
+      wrap.appendChild(copyHeader);
+
+      // Cria um wrapper para o conteúdo do produto (imagem, info e botão)
+      var productContent = document.createElement('div');
+      productContent.className = 'wj-product-content';
+
       var img = document.createElement('img');
       img.alt = data.name || 'Produto';
       img.style.opacity = '0';
@@ -1165,8 +1245,10 @@
           });
       });
 
-      wrap.appendChild(imageInfoWrapper);
-      wrap.appendChild(btn);
+      productContent.appendChild(imageInfoWrapper);
+      productContent.appendChild(btn);
+
+      wrap.appendChild(productContent);
 
       anchor.parentElement.insertBefore(wrap, anchor);
 
@@ -1425,6 +1507,8 @@
       );
       DETECTED_GRADE_LEVEL = null;
       LAST_RECOMMENDED_PRODUCT_ID = null;
+      INITIAL_RECOMMENDED_PRODUCT_ID = null;
+      INITIAL_RECOMMENDATION_CART_STATE = null;
       mutationObserverPaused = true;
       hideRecommendation(); // Esconde o elemento quando não há kit
       setTimeout(function () {
@@ -1466,12 +1550,72 @@
           : [],
     });
 
-    // Determina qual produto recomendar baseado no nível e no que já está no carrinho
-    var recommendedProductId = getRecommendedProductId(gradeNumber, cartData);
+    // Cria um hash simplificado dos IDs dos produtos no carrinho (excluindo kits)
+    var currentCartState = cartData.items
+      ? cartData.items
+          .filter(function (item) {
+            // Filtra itens que NÃO são kits escolares
+            // Um kit escolar contém "kit" E tem padrão de ano/série no nome
+            var name = (item.product_name || '').toLowerCase();
+            var hasKitWord = /conjunto|kit|faça|faca/i.test(name);
+            var hasGradePattern = /\d+[º°]\s*(ano|série)/i.test(name);
+            var isKit = hasKitWord || hasGradePattern;
+            return !isKit; // Retorna true se NÃO for kit
+          })
+          .map(function (item) {
+            return item.product_id;
+          })
+          .sort()
+          .join(',')
+      : '';
+
+    // Verifica se é a primeira recomendação ou se o kit/nível mudou
+    var isFirstRecommendation =
+      !INITIAL_RECOMMENDED_PRODUCT_ID || DETECTED_GRADE_LEVEL !== kitInfo.gradeLevel;
+
+    var recommendedProductId;
+
+    if (isFirstRecommendation) {
+      // Primeira recomendação ou kit mudou: determina produto com base no estado atual do carrinho
+      console.log('[MiniCart] Determinando recomendação inicial para nível:', gradeNumber);
+      recommendedProductId = getRecommendedProductId(gradeNumber, cartData);
+
+      if (recommendedProductId) {
+        INITIAL_RECOMMENDED_PRODUCT_ID = recommendedProductId;
+        INITIAL_RECOMMENDATION_CART_STATE = currentCartState;
+        console.log('[MiniCart] Recomendação inicial definida:', {
+          productId: recommendedProductId,
+          cartState: currentCartState,
+        });
+      }
+    } else {
+      // Não é a primeira recomendação: mantém o produto inicial, mesmo que tenha sido adicionado
+      recommendedProductId = INITIAL_RECOMMENDED_PRODUCT_ID;
+      console.log('[MiniCart] Mantendo recomendação inicial:', recommendedProductId);
+
+      // Verifica se o produto recomendado ainda faz sentido
+      // Se o produto já estava no carrinho na recomendação inicial e ainda está, está OK
+      // Se foi adicionado agora (não estava no initial state), mantém a recomendação
+      var wasInInitialCart = INITIAL_RECOMMENDATION_CART_STATE
+        ? INITIAL_RECOMMENDATION_CART_STATE.split(',').indexOf(String(recommendedProductId)) !== -1
+        : false;
+      var isInCurrentCart = isProductInCart(cartData, recommendedProductId);
+
+      console.log('[MiniCart] Status do produto recomendado:', {
+        productId: recommendedProductId,
+        wasInInitialCart: wasInInitialCart,
+        isInCurrentCart: isInCurrentCart,
+      });
+
+      // Se o produto foi adicionado pelo usuário (não estava no initial mas está agora),
+      // ainda assim mantém a recomendação
+    }
 
     if (!recommendedProductId) {
       console.warn('[MiniCart] Nenhum produto recomendado encontrado para o nível:', gradeNumber);
       LAST_RECOMMENDED_PRODUCT_ID = null;
+      INITIAL_RECOMMENDED_PRODUCT_ID = null;
+      INITIAL_RECOMMENDATION_CART_STATE = null;
       mutationObserverPaused = true;
       hideRecommendation();
       setTimeout(function () {
