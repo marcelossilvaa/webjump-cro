@@ -11,7 +11,7 @@
       return;
     }
 
-    const labelEvent = 'AT_BF_banner_click ' + eventLabel;
+    const labelEvent = 'AT_BF_banner_click_lp ' + eventLabel;
 
     console.log('[Tracking] Analytics event triggered:', labelEvent);
 
@@ -40,15 +40,16 @@
     // Mapeia nomes conhecidos para labels mais legíveis
     const nameMap = {
       'botao-aereo': 'Banner Passagens',
-      'botao-aereo-mobilev2': 'Banner Passagens Mobile',
-      'botao-aereo-deskv2': 'Banner Aereo',
-      'banner-viagemcompleta1': 'Banner Viagem Completa',
+      'botao-aereo-deskv2': 'Banner Passagens',
+      'banner-viagemcompleta1': 'Banner Pacotes',
+      'banner-viagemcompleta2': 'Banner Pacotes',
+      'bnr-pacotes': 'Banner Pacotes',
       'banner-fidelidade-mobile': 'Banner Fidelidade',
       'livelo-prorrog': 'Banner Livelo',
       'bnr-livelo-prorrog-desktop': 'Banner Livelo',
-      'bnr-pacotes': 'Banner Pacotes',
-      'bnr-engajamento-livelo-mobile': 'Banner Engajamento Livelo',
-      'bnr-engajamento-livelo-desktop': 'Banner Engajamento Livelo',
+      'bnr-engajamento-livelo': 'Banner Livelo',
+      'bnr-engajamento-livelo-mobile': 'Banner Livelo',
+      'bnr-engajamento-livelo-desktop': 'Banner Livelo',
     };
 
     // Tenta encontrar um match parcial
@@ -62,42 +63,71 @@
     return nameWithoutExt;
   }
 
+  function isBannerButton(button) {
+    // Verifica se é um botão que contém imagens de banner
+    // Critérios: button[type="button"] que contém img com src contendo /content/dam/voe-azul/
+    if (button.nodeName !== 'BUTTON' || button.type !== 'button') {
+      return false;
+    }
+
+    const imgs = button.querySelectorAll('img');
+    if (imgs.length === 0) {
+      return false;
+    }
+
+    // Verifica se pelo menos uma imagem tem o path de banner
+    for (let img of imgs) {
+      if (img.src && img.src.includes('/content/dam/voe-azul/')) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   function addClickListeners() {
     // Se já adicionou os listeners corretos, não processa novamente
     if (listenersAdicionados) {
       return true;
     }
 
-    // Busca TODOS os containers com a classe css-oo7lgl (podem existir múltiplos)
-    const containers = document.querySelectorAll('.container-capsule.css-oo7lgl');
+    // Estratégia 1: Busca por container-capsule (classe mais estável)
+    let containers = document.querySelectorAll('.container-capsule');
 
-    if (containers.length === 0) {
-      return false;
+    // Estratégia 2: Se não encontrar containers, busca diretamente os botões
+    let botoes = [];
+
+    if (containers.length > 0) {
+      console.log('[Tracking] Encontrados', containers.length, 'containers (container-capsule)');
+
+      // Busca botões dentro dos containers que são banners
+      containers.forEach((container) => {
+        const todosBotoes = container.querySelectorAll('button[type="button"]');
+        todosBotoes.forEach((botao) => {
+          if (isBannerButton(botao)) {
+            botoes.push(botao);
+          }
+        });
+      });
+    } else {
+      // Fallback: busca todos os botões no documento e filtra
+      console.log('[Tracking] Containers não encontrados, buscando botões diretamente...');
+      const todosBotoes = document.querySelectorAll('button[type="button"]');
+      todosBotoes.forEach((botao) => {
+        if (isBannerButton(botao)) {
+          botoes.push(botao);
+        }
+      });
     }
 
-    console.log('[Tracking] Encontrados', containers.length, 'containers com css-oo7lgl');
-
-    // Busca TODOS os botões css-3uz0rz dentro de TODOS os containers
-    let botoes = [];
-    containers.forEach((container) => {
-      const botoesContainer = container.querySelectorAll('button.css-3uz0rz');
-      botoes = botoes.concat(Array.from(botoesContainer));
-    });
-
-    // Remove duplicatas (caso algum botão apareça em múltiplos containers)
+    // Remove duplicatas
     botoes = Array.from(new Set(botoes));
 
     if (botoes.length === 0) {
       return false; // Ainda não apareceram os botões corretos
     }
 
-    console.log(
-      '[Tracking] Encontrados',
-      botoes.length,
-      'botões corretos (css-3uz0rz) em',
-      containers.length,
-      'containers'
-    );
+    console.log('[Tracking] Encontrados', botoes.length, 'botões de banner');
 
     let botoesProcessados = 0;
 
@@ -111,15 +141,29 @@
       botao.setAttribute('data-analytics-added', 'true');
 
       // Tenta encontrar a imagem dentro do botão
-      const img = botao.querySelector('img');
+      const imgs = botao.querySelectorAll('img');
       let bannerName = 'Banner ' + (index + 1);
 
-      if (img) {
-        // Prioriza a imagem desktop, se não encontrar usa a mobile
-        const imgDesktop = botao.querySelector('img.css-bq6zc0');
-        const imgSrc = imgDesktop ? imgDesktop.src : img.src;
-        bannerName = getBannerName(imgSrc);
-        console.log('[Tracking] Imagem encontrada:', imgSrc, '->', bannerName);
+      if (imgs.length > 0) {
+        // Busca a imagem com path de banner (prioriza desktop se houver múltiplas)
+        let imgSrc = null;
+        for (let img of imgs) {
+          if (img.src && img.src.includes('/content/dam/voe-azul/')) {
+            // Prioriza imagens que não sejam mobile (geralmente desktop tem paths mais completos)
+            if (!img.src.includes('-mobile') && !imgSrc) {
+              imgSrc = img.src;
+            } else if (!imgSrc) {
+              imgSrc = img.src;
+            }
+          }
+        }
+
+        if (imgSrc) {
+          bannerName = getBannerName(imgSrc);
+          console.log('[Tracking] Imagem encontrada:', imgSrc, '->', bannerName);
+        } else {
+          console.log('[Tracking] Nenhuma imagem de banner encontrada no botão', index + 1);
+        }
       } else {
         console.log('[Tracking] Nenhuma imagem encontrada no botão', index + 1);
       }
@@ -193,42 +237,29 @@
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
           if (node.nodeType === Node.ELEMENT_NODE) {
-            const containerCorreto = document.querySelector('.container-capsule.css-oo7lgl');
-
-            // Verifica se o container correto (css-oo7lgl) foi adicionado
-            if (
-              node.classList &&
-              (node.classList.contains('css-oo7lgl') ||
-                (node.classList.contains('container-capsule') &&
-                  node.classList.contains('css-oo7lgl')) ||
-                node.querySelector('.container-capsule.css-oo7lgl'))
-            ) {
+            // Verifica se é um container-capsule (classe estável)
+            if (node.classList && node.classList.contains('container-capsule')) {
               deveVerificar = true;
             }
 
-            // Verifica se é um botão com a classe específica
-            if (
-              node.nodeName === 'BUTTON' &&
-              node.classList &&
-              node.classList.contains('css-3uz0rz')
-            ) {
-              if (containerCorreto && containerCorreto.contains(node)) {
-                deveVerificar = true;
-              }
+            // Verifica se é um botão de banner
+            if (node.nodeName === 'BUTTON' && isBannerButton(node)) {
+              deveVerificar = true;
             }
 
-            // Verifica se botões foram adicionados dentro do container correto
-            if (node.querySelector && node.querySelector('button.css-3uz0rz')) {
-              if (containerCorreto && containerCorreto.contains(node)) {
-                deveVerificar = true;
-              }
+            // Verifica se há containers dentro do node adicionado
+            if (node.querySelector && node.querySelector('.container-capsule')) {
+              deveVerificar = true;
             }
 
-            // Verifica se qualquer elemento foi adicionado dentro do container correto
-            if (containerCorreto && containerCorreto.contains(node)) {
-              // Verifica se há botões dentro do node adicionado
-              if (node.querySelector && node.querySelector('button')) {
-                deveVerificar = true;
+            // Verifica se há botões de banner dentro do node adicionado
+            if (node.querySelector) {
+              const botoes = node.querySelectorAll('button[type="button"]');
+              for (let botao of botoes) {
+                if (isBannerButton(botao)) {
+                  deveVerificar = true;
+                  break;
+                }
               }
             }
           }
