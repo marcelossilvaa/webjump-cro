@@ -46,18 +46,18 @@
 
     // Mapeia nomes conhecidos para labels mais legíveis
     const nameMap = {
-      'bnr-35-off-2-desktop': 'Banner 35% Off',
-      'banner-20-off': 'Banner 20% Off',
-      'bnr-15-off-2-desktop': 'Banner 15% Off',
+      'bnr-35-off-2-desktop': 'Banner Pacote 35% Off',
+      'banner-20-off': 'Banner Pacote 20% Off',
+      'bnr-15-off-2-desktop': 'Banner Pacote 15% Off',
       'bnr-pacote-35': 'Banner Pacote 35%',
       'bnr-pacote-20': 'Banner Pacote 20%',
       'bnr-pacote-15': 'Banner Pacote 15%',
-      'bnr-principal': 'Banner Principal',
-      'brn-areo': 'Banner Aereo',
+      'bnr-principal': 'Banner Principais Ofertas',
+      'brn-areo': 'Banner Passagens Aereas',
       'bnr-pontos': 'Banner Pontos',
-      'bnr-geral-desktop': 'Banner Geral',
-      'bnr-geral-via_aereo-desktop': 'Banner Via Aereo',
-      'bnr-geral-fidelidade-desktop': 'Banner Fidelidade',
+      'bnr-geral-desktop': 'Banner Principais Ofertas',
+      'bnr-geral-via_aereo-desktop': 'Banner Passagens Aereas',
+      'bnr-geral-fidelidade-desktop': 'Banner Pontos',
     };
 
     // Tenta encontrar um match parcial (case insensitive)

@@ -46,24 +46,31 @@
 
     // Mapeia nomes conhecidos para labels mais legíveis
     const nameMap = {
-      'bnr-pagamentos-aic': 'Banner Pagamentos AIC',
+      'bnr-pagamentos-aic': 'Banner Cartao Azul Itaú',
+      'banner-aic-kv': 'Banner Cartao Azul Itaú',
+
       'bnr-pix-mobile': 'Banner PIX',
       'bnr-pix-15-': 'Banner PIX 15%',
+
+      'Frame 148721': 'Banner Conferir ofertas',
+      'bnr-alta-mobile': 'Banner Conferir ofertas',
+
       'bnr-pagamentos-nupay': 'Banner Pagamentos NuPay',
-      'bnr-alta-mobile': 'Banner Alta',
+
       'europa-mobile': 'Banner Europa',
       'europa-desktop': 'Banner Europa',
+
       'bnr-business-mobile': 'Banner Business',
+      'Frame 14872': 'Banner Business',
+
       'bnr-complemento-mobile': 'Banner Complemento',
-      'bnr-principal': 'Banner Principal',
-      'bnr-viagem-completa': 'Banner Viagem Completa',
+
+      'bnr-principal': 'Banner Principais Ofertas',
+      'bnr-viagem-completa': 'Banner Pacotes',
       'bnr-pontos': 'Banner Pontos',
-      'banner-aic-kv': 'Banner AIC KV',
-      'Frame 148721': 'Banner Frame 148721',
-      'Frame 14872': 'Banner Frame 14872',
-      'Group 115274': 'Banner Europa',
-      'MODULO FIDELIDADE': 'Banner Modulo Fidelidade',
-      'MODULO FIDELIDADE (1)': 'Banner Modulo Fidelidade 2',
+
+      'MODULO FIDELIDADE': 'Banner Principais Ofertas',
+      'MODULO FIDELIDADE (1)': 'Banner Pontos',
     };
 
     // Tenta encontrar um match parcial (case insensitive)
@@ -76,6 +83,56 @@
 
     // Se não encontrar, retorna o nome do arquivo sem extensão (limpo)
     return nameWithoutExt.replace(/%20/g, ' ').replace(/%28/g, '(').replace(/%29/g, ')');
+  }
+
+  function addCardListeners() {
+    // Busca todos os botões "Compre agora" com data-testid
+    const botoesComprarAgora = document.querySelectorAll(
+      'input[data-testid="search-box-hotel-date-picker-primary-input"]'
+    );
+
+    if (botoesComprarAgora.length === 0) {
+      return false;
+    }
+
+    console.log(
+      '[Tracking Passagens] Encontrados',
+      botoesComprarAgora.length,
+      'botões "Compre agora"'
+    );
+
+    let cardsProcessados = 0;
+
+    botoesComprarAgora.forEach((botao) => {
+      // Verifica se o listener já foi adicionado
+      if (botao.hasAttribute('data-card-analytics-added')) {
+        cardsProcessados++;
+        return;
+      }
+
+      botao.setAttribute('data-card-analytics-added', 'true');
+
+      // Busca o card pai (css-117ubr ou css-b7xk)
+      const card = botao.closest('.css-117ubr') || botao.closest('.css-b7xk');
+      let tituloCard = 'Destino Desconhecido';
+
+      if (card) {
+        // Busca o título do card no span com classe css-74a21x
+        const spanTitulo = card.querySelector('span.css-74a21x');
+        if (spanTitulo) {
+          tituloCard = spanTitulo.textContent.trim();
+        }
+      }
+
+      botao.addEventListener('click', () => {
+        analyticsEvent(tituloCard);
+      });
+
+      console.log('[Tracking Passagens] Listener adicionado ao card:', tituloCard);
+      cardsProcessados++;
+    });
+
+    return cardsProcessados > 0;
   }
 
   function addClickListeners() {
@@ -147,6 +204,9 @@
       console.log('[Tracking Passagens] Listener adicionado ao botão:', bannerName);
       botoesProcessados++;
     });
+
+    // Processa também os cards do carousel de destinos
+    addCardListeners();
 
     // Se processou todos os botões, marca como completo
     if (botoesProcessados === botoes.length && botoes.length > 0) {
@@ -251,6 +311,30 @@
               if (node.querySelector && node.querySelector('button')) {
                 deveVerificar = true;
               }
+            }
+
+            // Verifica se é um card de destino (input com data-testid)
+            if (
+              node.nodeName === 'INPUT' &&
+              node.getAttribute('data-testid') === 'search-box-hotel-date-picker-primary-input'
+            ) {
+              deveVerificar = true;
+            }
+
+            // Verifica se há cards de destino dentro do node adicionado
+            if (
+              node.querySelector &&
+              node.querySelector('input[data-testid="search-box-hotel-date-picker-primary-input"]')
+            ) {
+              deveVerificar = true;
+            }
+
+            // Verifica se é um card do carousel (css-117ubr ou css-b7xk)
+            if (
+              node.classList &&
+              (node.classList.contains('css-117ubr') || node.classList.contains('css-b7xk'))
+            ) {
+              deveVerificar = true;
             }
           }
         });

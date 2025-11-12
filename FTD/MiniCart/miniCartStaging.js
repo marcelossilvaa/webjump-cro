@@ -1,7 +1,111 @@
 (function () {
   'use strict';
 
-  var TARGET_ID = 52582;
+  // IDs dos produtos disponíveis
+  var PRODUCT_IDS = {
+    MINIDICIONARIO: 56551,
+    DICIONARIO_INGLES: 53959,
+    ESTUDA_COM_ANUAL: 1213247,
+    NUMERODROMO: 52150,
+    BICHODARIO: 52144,
+    TABUADA_A: 54595,
+    TABUADA_B: 54598,
+    TABUADA_C: 54601,
+    TABUADA_D: 54604,
+  };
+
+  // Mapeamento de nível escolar para produtos recomendados
+  // Formato: { gradeLevel: { primary: [id1, id2], secondary: [id3, id4] } }
+  // Baseado na tabela: Nível -> Série -> Idade -> Literatura 1 -> Literatura 2
+  var GRADE_RECOMMENDATIONS = {
+    // Educação Infantil - 1 ano
+    1: {
+      primary: [PRODUCT_IDS.NUMERODROMO, PRODUCT_IDS.BICHODARIO],
+      secondary: null,
+    },
+    // Educação Infantil - 2 anos
+    2: {
+      primary: [PRODUCT_IDS.NUMERODROMO, PRODUCT_IDS.BICHODARIO],
+      secondary: null,
+    },
+    // Educação Infantil - 3 anos
+    3: {
+      primary: [PRODUCT_IDS.NUMERODROMO, PRODUCT_IDS.BICHODARIO],
+      secondary: null,
+    },
+    // Educação Infantil - Pré Escola - 4 anos
+    4: {
+      primary: [PRODUCT_IDS.NUMERODROMO, PRODUCT_IDS.BICHODARIO],
+      secondary: null,
+    },
+    // Educação Infantil - Pré Escola - 5 anos
+    5: {
+      primary: [PRODUCT_IDS.NUMERODROMO, PRODUCT_IDS.BICHODARIO],
+      secondary: null,
+    },
+    // 1º Série - 6 anos
+    6: {
+      primary: [PRODUCT_IDS.MINIDICIONARIO],
+      secondary: null, // TODO: Adicionar IDs quando disponíveis
+    },
+    // 2º Série - 7 anos
+    7: {
+      primary: [PRODUCT_IDS.MINIDICIONARIO],
+      secondary: [PRODUCT_IDS.TABUADA_A], // TODO: Adicionar No capricho B quando disponível
+    },
+    // 3º Série - 8 anos
+    8: {
+      primary: [PRODUCT_IDS.MINIDICIONARIO],
+      secondary: [PRODUCT_IDS.TABUADA_B], // TODO: Adicionar No capricho C quando disponível
+    },
+    // 4º Série - 9 anos
+    9: {
+      primary: [PRODUCT_IDS.MINIDICIONARIO],
+      secondary: [PRODUCT_IDS.TABUADA_C], // TODO: Adicionar No capricho D quando disponível
+    },
+    // 5º Série - 10 anos
+    10: {
+      primary: [PRODUCT_IDS.MINIDICIONARIO],
+      secondary: [PRODUCT_IDS.TABUADA_D], // TODO: Adicionar No capricho E quando disponível
+    },
+    // 6º Série - 11 anos
+    11: {
+      primary: [PRODUCT_IDS.MINIDICIONARIO],
+      secondary: null, // TODO: Adicionar Peter Pan + Mágico de Oz quando disponíveis
+    },
+    // 7º Série - 12 anos
+    12: {
+      primary: [PRODUCT_IDS.DICIONARIO_INGLES],
+      secondary: null, // TODO: Adicionar Peter Pan + Mágico de Oz quando disponíveis
+    },
+    // 8º Série - 13 anos
+    13: {
+      primary: [PRODUCT_IDS.DICIONARIO_INGLES],
+      secondary: null, // TODO: Adicionar Peter Pan + Mágico de Oz quando disponíveis
+    },
+    // 9º Série - 14 anos
+    14: {
+      primary: [PRODUCT_IDS.DICIONARIO_INGLES],
+      secondary: null, // TODO: Adicionar Peter Pan + Mágico de Oz quando disponíveis
+    },
+    // 1º Colegial - 15 anos
+    15: {
+      primary: [PRODUCT_IDS.ESTUDA_COM_ANUAL],
+      secondary: null, // TODO: Adicionar Estuda.com Semestral quando disponível
+    },
+    // 2º Colegial - 16 anos
+    16: {
+      primary: [PRODUCT_IDS.ESTUDA_COM_ANUAL],
+      secondary: null, // TODO: Adicionar Estuda.com Semestral quando disponível
+    },
+    // 3º Colegial - 17 anos
+    17: {
+      primary: [PRODUCT_IDS.ESTUDA_COM_ANUAL],
+      secondary: null, // TODO: Adicionar Estuda.com Semestral quando disponível
+    },
+  };
+
+  var TARGET_ID = 52582; // Valor padrão, será atualizado dinamicamente
   var ANCHOR_SELECTOR = '.actions-info';
   var SHELF_ID = 'wj-mini-shelf';
   var STYLE_ID = 'wj-mini-shelf-style';
@@ -10,6 +114,8 @@
 
   // Variável global para armazenar o nível escolar detectado
   var DETECTED_GRADE_LEVEL = null;
+  // Variável global para armazenar o último produto recomendado
+  var LAST_RECOMMENDED_PRODUCT_ID = null;
 
   var CSS =
     '\
@@ -27,7 +133,7 @@
     ' .wj-price{font-size:16px;font-weight:600;color:var(--color-neutral-800)!important;}\
 #' +
     SHELF_ID +
-    ' .wj-cta{display:inline-flex;align-items:center;justify-content:center;height:48px;width:48px;border-radius:6px;border:1px solid #0a53be;background:var(--color-brand-primary-500);color:#fff;cursor:pointer;white-space:nowrap;} .wj-cta:hover{background:var(--color-brand-primary-600);}\
+    ' .wj-cta{display:inline-flex;align-items:center;justify-content:center;height:48px;min-width:48px;border-radius:6px;border:1px solid #0a53be;background:var(--color-brand-primary-500);color:#fff;cursor:pointer;white-space:nowrap;} .wj-cta:hover{background:var(--color-brand-primary-600);}\
 #' +
     SHELF_ID +
     ' .wj-cta[disabled]{opacity:.6;cursor:default}\
@@ -529,6 +635,142 @@
     return null;
   }
 
+  // Função para converter nível escolar detectado para número do nível
+  // Exemplo: "5º ano - Anos iniciais" -> 10 (5º Série)
+  function convertGradeLevelToNumber(gradeLevel) {
+    if (!gradeLevel) return null;
+
+    // Extrai o número do ano
+    var match = gradeLevel.match(/(\d+)[º°]/);
+    if (!match) return null;
+
+    var ano = parseInt(match[1]);
+    var isAnosIniciais = gradeLevel.includes('Anos iniciais');
+    var isAnosFinais = gradeLevel.includes('Anos finais');
+
+    // Mapeamento: ano -> número do nível
+    // Pré Escola: 4 e 5 anos -> níveis 4 e 5
+    // 1º ao 5º ano (Anos iniciais) -> 1º ao 5º Série (6 a 10)
+    // 6º ao 9º ano (Anos finais) -> 6º ao 9º Série (11 a 14)
+    // Colegial: 1º, 2º, 3º -> 15, 16, 17
+
+    if (ano >= 1 && ano <= 5 && isAnosIniciais) {
+      // 1º ao 5º ano (Anos iniciais) -> 1º ao 5º Série
+      return ano + 5; // 1º ano -> 6 (1º Série), 5º ano -> 10 (5º Série)
+    } else if (ano >= 6 && ano <= 9 && isAnosFinais) {
+      // 6º ao 9º ano (Anos finais) -> 6º ao 9º Série
+      return ano + 5; // 6º ano -> 11 (6º Série), 9º ano -> 14 (9º Série)
+    }
+
+    return null;
+  }
+
+  // Função para verificar se um produto está no carrinho
+  function isProductInCart(cartData, productId) {
+    if (!cartData || !cartData.items || !Array.isArray(cartData.items)) {
+      console.log('[MiniCart] isProductInCart: dados do carrinho inválidos', {
+        hasCartData: !!cartData,
+        hasItems: cartData && !!cartData.items,
+        isArray: cartData && cartData.items && Array.isArray(cartData.items),
+      });
+      return false;
+    }
+
+    var found = cartData.items.some(function (item) {
+      var itemProductId = Number(item.product_id);
+      var searchProductId = Number(productId);
+      var match = itemProductId === searchProductId;
+
+      if (match) {
+        console.log('[MiniCart] Produto encontrado no carrinho:', {
+          searchId: searchProductId,
+          itemId: itemProductId,
+          itemName: item.product_name,
+        });
+      }
+
+      return match;
+    });
+
+    return found;
+  }
+
+  // Função para determinar qual produto recomendar baseado no nível escolar
+  function getRecommendedProductId(gradeNumber, cartData) {
+    if (!gradeNumber || !GRADE_RECOMMENDATIONS[gradeNumber]) {
+      console.warn('[MiniCart] Nível escolar não encontrado nas recomendações:', gradeNumber);
+      return null;
+    }
+
+    var recommendation = GRADE_RECOMMENDATIONS[gradeNumber];
+
+    console.log('[MiniCart] Verificando recomendações para nível', gradeNumber, {
+      primary: recommendation.primary,
+      secondary: recommendation.secondary,
+      cartItemsCount: cartData && cartData.items ? cartData.items.length : 0,
+    });
+
+    // Verifica se algum produto primário já está no carrinho
+    var primaryInCart = [];
+    var primaryNotInCart = [];
+
+    if (recommendation.primary && Array.isArray(recommendation.primary)) {
+      recommendation.primary.forEach(function (productId) {
+        var inCart = isProductInCart(cartData, productId);
+        console.log('[MiniCart] Verificando produto primário', productId, 'no carrinho:', inCart);
+        if (inCart) {
+          primaryInCart.push(productId);
+        } else {
+          primaryNotInCart.push(productId);
+        }
+      });
+    }
+
+    console.log('[MiniCart] Produtos primários no carrinho:', primaryInCart);
+    console.log('[MiniCart] Produtos primários não no carrinho:', primaryNotInCart);
+
+    // Se algum produto primário está no carrinho e há produto secundário, recomenda o secundário
+    if (
+      primaryInCart.length > 0 &&
+      recommendation.secondary &&
+      Array.isArray(recommendation.secondary)
+    ) {
+      // Retorna o primeiro produto secundário disponível que não está no carrinho
+      for (var i = 0; i < recommendation.secondary.length; i++) {
+        var secondaryId = recommendation.secondary[i];
+        if (!isProductInCart(cartData, secondaryId)) {
+          console.log(
+            '[MiniCart] Produto primário já está no carrinho, recomendando secundário:',
+            secondaryId
+          );
+          return secondaryId;
+        }
+      }
+      // Se todos os secundários estão no carrinho, retorna null (não há mais o que recomendar)
+      console.log('[MiniCart] Todos os produtos (primários e secundários) já estão no carrinho');
+      return null;
+    }
+
+    // Se há produtos primários que não estão no carrinho, recomenda o primeiro disponível
+    if (primaryNotInCart.length > 0) {
+      console.log('[MiniCart] Recomendando produto primário:', primaryNotInCart[0]);
+      return primaryNotInCart[0];
+    }
+
+    // Se todos os primários estão no carrinho e não há secundário, retorna null
+    if (
+      primaryInCart.length > 0 &&
+      (!recommendation.secondary || recommendation.secondary.length === 0)
+    ) {
+      console.log(
+        '[MiniCart] Todos os produtos primários já estão no carrinho e não há produto secundário'
+      );
+      return null;
+    }
+
+    return null;
+  }
+
   // Função para verificar se há kit escolar no carrinho e extrair o nível
   function detectSchoolKitAndGrade(cartData) {
     if (!cartData || !cartData.items || !Array.isArray(cartData.items)) {
@@ -688,8 +930,24 @@
     return null;
   }
 
-  function fetchPdpHtmlByIdOnce(id) {
-    if (window.__WJ_PDP_PROMISE__) return window.__WJ_PDP_PROMISE__;
+  function fetchPdpHtmlByIdOnce(id, forceRefresh) {
+    // Se forçado, limpa o cache da promise
+    if (forceRefresh) {
+      window.__WJ_PDP_PROMISE__ = null;
+    }
+
+    // Se já existe uma promise em andamento e não foi forçado, retorna ela
+    if (window.__WJ_PDP_PROMISE__) {
+      // Verifica se a promise é para o mesmo produto
+      var currentId = window.__WJ_PDP_PRODUCT_ID__;
+      if (currentId === id) {
+        return window.__WJ_PDP_PROMISE__;
+      }
+      // Se for produto diferente, limpa e busca novo
+      window.__WJ_PDP_PROMISE__ = null;
+    }
+
+    window.__WJ_PDP_PRODUCT_ID__ = id;
     window.__WJ_PDP_PROMISE__ = fetch(
       '/catalog/product/view/id/' + encodeURIComponent(String(id)),
       { credentials: 'same-origin' }
@@ -700,6 +958,7 @@
       })
       .catch(function (err) {
         window.__WJ_PDP_PROMISE__ = null;
+        window.__WJ_PDP_PRODUCT_ID__ = null;
         throw err;
       });
     return window.__WJ_PDP_PROMISE__;
@@ -825,7 +1084,8 @@
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'wj-cta';
-      btn.dataset.productId = String(data.id || TARGET_ID);
+      // Sempre usa data.id se disponível, nunca usa TARGET_ID como fallback
+      btn.dataset.productId = String(data.id || '0');
 
       // Inicializa o botão com os ícones
       updateButtonContent(btn, 'default');
@@ -916,35 +1176,79 @@
       });
     }
 
-    // Atualiza textos apenas se vazio
+    // Atualiza textos e imagem
     var titleEl = wrap.querySelector('.wj-title');
     var priceEl = wrap.querySelector('.wj-price');
     var btnEl = wrap.querySelector('.wj-cta');
-
-    if (data.name && (!titleEl.textContent || titleEl.textContent === 'Produto')) {
-      titleEl.textContent = data.name;
-    }
-    if (data.url && titleEl.tagName === 'A' && titleEl.href !== data.url) {
-      titleEl.href = data.url;
-    }
-    if (data.priceFormatted && (!priceEl.textContent || priceEl.textContent.trim() === '')) {
-      priceEl.textContent = data.priceFormatted;
-    }
-    if (btnEl && data.id) {
-      btnEl.dataset.productId = String(data.id);
-    }
-
-    // Trava de imagem, define apenas uma vez
     var imgEl = wrap.querySelector('img');
-    if (imgEl && data.image && !imgEl.dataset.locked) {
-      // usa preload para evitar piscar
-      var pre = new Image();
-      pre.onload = function () {
-        if (!imgEl.dataset.locked) {
-          imgEl.src = data.image;
+
+    // Verifica se o produto mudou comparando o ID atual com o novo
+    var currentProductId = btnEl ? Number(btnEl.dataset.productId) : null;
+    var newProductId = data.id ? Number(data.id) : null;
+    var productChanged =
+      currentProductId !== null && newProductId !== null && currentProductId !== newProductId;
+
+    if (productChanged) {
+      console.log('[MiniCart] Produto mudou na interface:', {
+        currentId: currentProductId,
+        newId: newProductId,
+        newName: data.name,
+        newPrice: data.priceFormatted,
+      });
+    }
+
+    // Se o produto mudou, força a atualização de tudo
+    if (productChanged && imgEl) {
+      imgEl.dataset.locked = ''; // Remove o lock para permitir atualização
+    }
+
+    // Atualiza título - sempre atualiza se o produto mudou
+    if (data.name && titleEl) {
+      if (productChanged || !titleEl.textContent || titleEl.textContent === 'Produto') {
+        titleEl.textContent = data.name;
+      }
+    }
+
+    // Atualiza URL do título - sempre atualiza se o produto mudou
+    if (data.url && titleEl && titleEl.tagName === 'A') {
+      if (productChanged || titleEl.href !== data.url) {
+        titleEl.href = data.url;
+      }
+    }
+
+    // Atualiza preço - sempre atualiza se o produto mudou
+    if (data.priceFormatted && priceEl) {
+      if (productChanged || !priceEl.textContent || priceEl.textContent.trim() === '') {
+        priceEl.textContent = data.priceFormatted;
+      }
+    }
+
+    // Atualiza ID do botão - sempre atualiza se o produto mudou
+    if (btnEl && data.id) {
+      if (productChanged || btnEl.dataset.productId !== String(data.id)) {
+        btnEl.dataset.productId = String(data.id);
+      }
+    }
+
+    // Atualiza imagem
+    if (imgEl && data.image) {
+      if (productChanged || !imgEl.dataset.locked) {
+        // Atualiza alt text
+        if (data.name) {
+          imgEl.alt = data.name;
         }
-      };
-      pre.src = data.image;
+        // usa preload para evitar piscar
+        var pre = new Image();
+        pre.onload = function () {
+          if (productChanged || !imgEl.dataset.locked) {
+            imgEl.src = data.image;
+            if (!productChanged) {
+              imgEl.dataset.locked = '1';
+            }
+          }
+        };
+        pre.src = data.image;
+      }
     }
   }
 
@@ -952,9 +1256,34 @@
     var anchor = document.querySelector(ANCHOR_SELECTOR);
     if (!anchor) return;
     render(anchor, data);
+    // Garante que o elemento seja mostrado quando montado
+    showRecommendation();
   }
 
+  // Função para esconder o elemento quando não há kit
+  function hideRecommendation() {
+    var wrap = document.getElementById(SHELF_ID);
+    if (wrap) {
+      wrap.style.display = 'none';
+      console.log('[MiniCart] Recomendação escondida (kit removido)');
+    }
+  }
+
+  // Função para mostrar o elemento quando há kit
+  function showRecommendation() {
+    var wrap = document.getElementById(SHELF_ID);
+    if (wrap) {
+      wrap.style.display = '';
+      console.log('[MiniCart] Recomendação mostrada (kit detectado)');
+    }
+  }
+
+  // Variáveis para evitar loops infinitos
+  var isRunning = false;
+  var lastCheckedState = null;
   var debounceTimer = null;
+  var mutationObserverPaused = false;
+
   function debounced(fn, wait) {
     return function () {
       clearTimeout(debounceTimer);
@@ -962,9 +1291,30 @@
     };
   }
 
+  // Função para criar um hash do estado do carrinho
+  function getCartStateHash(cartData) {
+    if (!cartData || !cartData.items) return '';
+    var items = cartData.items
+      .map(function (item) {
+        return item.product_id + ':' + (item.qty || 1);
+      })
+      .sort()
+      .join(',');
+    return items;
+  }
+
   var run = debounced(function () {
+    // Evita execuções simultâneas
+    if (isRunning) {
+      console.log('[MiniCart] Execução já em andamento, ignorando...');
+      return;
+    }
+
     var anchor = document.querySelector(ANCHOR_SELECTOR);
     if (!anchor) return;
+
+    // Marca como em execução
+    isRunning = true;
 
     // Primeiro, verifica se há kit escolar no carrinho usando customer data
     magentoCustomerData(function (cd) {
@@ -978,12 +1328,22 @@
               console.log(
                 '[MiniCart] Nenhum dado do carrinho encontrado. Aguardando kit escolar...'
               );
+              isRunning = false;
               return;
+            }
+            var stateHash = getCartStateHash(fullData.cart);
+            if (stateHash && stateHash === lastCheckedState) {
+              isRunning = false;
+              return;
+            }
+            if (stateHash) {
+              lastCheckedState = stateHash;
             }
             checkKitAndShowRecommendation(fullData.cart);
           })
           .catch(function (err) {
             console.warn('[MiniCart] Erro ao verificar kit escolar:', err);
+            isRunning = false;
           });
         return;
       }
@@ -1003,13 +1363,33 @@
           fetchFullCartData()
             .then(function (fullData) {
               if (fullData && fullData.cart) {
+                var stateHash = getCartStateHash(fullData.cart);
+                if (stateHash && stateHash === lastCheckedState) {
+                  isRunning = false;
+                  return;
+                }
+                if (stateHash) {
+                  lastCheckedState = stateHash;
+                }
                 checkKitAndShowRecommendation(fullData.cart);
+              } else {
+                isRunning = false;
               }
             })
             .catch(function () {
               // Se falhar, tenta detectar com os dados disponíveis
               if (cart && Object.keys(cart).length > 0) {
+                var stateHash = getCartStateHash(cart);
+                if (stateHash && stateHash === lastCheckedState) {
+                  isRunning = false;
+                  return;
+                }
+                if (stateHash) {
+                  lastCheckedState = stateHash;
+                }
                 checkKitAndShowRecommendation(cart);
+              } else {
+                isRunning = false;
               }
             });
           return;
@@ -1017,10 +1397,22 @@
       }
 
       if (cartData) {
+        // Verifica se o estado do carrinho mudou
+        var stateHash = getCartStateHash(cartData);
+        if (stateHash && stateHash === lastCheckedState) {
+          // Estado não mudou, apenas reseta a flag
+          isRunning = false;
+          return;
+        }
+        if (stateHash) {
+          lastCheckedState = stateHash;
+        }
         checkKitAndShowRecommendation(cartData);
+      } else {
+        isRunning = false;
       }
     });
-  }, 150);
+  }, 300);
 
   // Função auxiliar para verificar kit e mostrar recomendação
   function checkKitAndShowRecommendation(cartData) {
@@ -1028,65 +1420,290 @@
     var kitInfo = detectSchoolKitAndGrade(cartData);
 
     if (!kitInfo.hasKit) {
-      console.log('[MiniCart] Nenhum kit escolar detectado no carrinho. Aguardando...');
+      console.log(
+        '[MiniCart] Nenhum kit escolar detectado no carrinho. Escondendo recomendação...'
+      );
       DETECTED_GRADE_LEVEL = null;
+      LAST_RECOMMENDED_PRODUCT_ID = null;
+      mutationObserverPaused = true;
+      hideRecommendation(); // Esconde o elemento quando não há kit
+      setTimeout(function () {
+        mutationObserverPaused = false;
+        isRunning = false;
+      }, 100);
       return;
     }
 
     // Armazena o nível escolar detectado globalmente
     DETECTED_GRADE_LEVEL = kitInfo.gradeLevel;
 
-    console.log('[MiniCart] Kit escolar detectado!', {
-      hasKit: kitInfo.hasKit,
-      gradeLevel: kitInfo.gradeLevel,
-      kitProducts: kitInfo.kitProducts.length,
-    });
+    // Converte o nível escolar para número (ex: "5º ano - Anos iniciais" -> 10)
+    var gradeNumber = convertGradeLevelToNumber(kitInfo.gradeLevel);
 
-    // Se chegou aqui, há kit no carrinho - pode mostrar a recomendação
-    // 1, tenta cache
-    var cached = getCache();
-    if (cached) {
-      mountOnceWithData(cached);
+    if (!gradeNumber) {
+      console.warn(
+        '[MiniCart] Não foi possível converter o nível escolar para número:',
+        kitInfo.gradeLevel
+      );
+      mutationObserverPaused = true;
+      hideRecommendation();
+      setTimeout(function () {
+        mutationObserverPaused = false;
+        isRunning = false;
+      }, 100);
       return;
     }
 
-    // 2, tenta customer data
-    magentoCustomerData(function (cd) {
-      var cart = cd && cd.get ? cd.get('cart')() : null;
-      var fromCart = fromCartByProductId(cart, TARGET_ID);
-      if (fromCart) {
-        setCache(fromCart);
-        mountOnceWithData(fromCart);
+    // Log dos dados do carrinho para debug
+    console.log('[MiniCart] Dados do carrinho antes de verificar recomendações:', {
+      cartDataExists: !!cartData,
+      itemsCount: cartData && cartData.items ? cartData.items.length : 0,
+      items:
+        cartData && cartData.items
+          ? cartData.items.map(function (item) {
+              return { id: item.product_id, name: item.product_name };
+            })
+          : [],
+    });
+
+    // Determina qual produto recomendar baseado no nível e no que já está no carrinho
+    var recommendedProductId = getRecommendedProductId(gradeNumber, cartData);
+
+    if (!recommendedProductId) {
+      console.warn('[MiniCart] Nenhum produto recomendado encontrado para o nível:', gradeNumber);
+      LAST_RECOMMENDED_PRODUCT_ID = null;
+      mutationObserverPaused = true;
+      hideRecommendation();
+      setTimeout(function () {
+        mutationObserverPaused = false;
+        isRunning = false;
+      }, 100);
+      return;
+    }
+
+    // Verifica se o produto recomendado mudou
+    var productChanged = LAST_RECOMMENDED_PRODUCT_ID !== recommendedProductId;
+    LAST_RECOMMENDED_PRODUCT_ID = recommendedProductId;
+
+    // Atualiza o TARGET_ID dinamicamente
+    var currentTargetId = recommendedProductId;
+
+    // Atualiza a chave do cache baseada no produto recomendado
+    var currentCacheKey = 'WJ_SHELF_CACHE_' + currentTargetId;
+
+    console.log('[MiniCart] Kit escolar detectado!', {
+      hasKit: kitInfo.hasKit,
+      gradeLevel: kitInfo.gradeLevel,
+      gradeNumber: gradeNumber,
+      recommendedProductId: recommendedProductId,
+      kitProducts: kitInfo.kitProducts.length,
+      productChanged: productChanged,
+    });
+
+    // Mostra o elemento quando há kit
+    showRecommendation();
+
+    // Função auxiliar para buscar dados do produto recomendado
+    function loadRecommendedProduct(productId, forceReload) {
+      // Se o produto mudou, sempre busca do PDP para garantir dados atualizados
+      if (forceReload) {
+        console.log(
+          '[MiniCart] Produto recomendado mudou, buscando dados do novo produto:',
+          productId
+        );
+        // Limpa o cache do produto anterior se necessário
+        // Busca diretamente do PDP com forceRefresh
+        fetchPdpHtmlByIdOnce(productId, true)
+          .then(parsePdp)
+          .then(function (pdpData) {
+            // Garante que o ID do produto está presente nos dados
+            if (!pdpData.id) {
+              pdpData.id = productId;
+            }
+            console.log('[MiniCart] Dados do novo produto carregados:', {
+              id: pdpData.id,
+              name: pdpData.name,
+              price: pdpData.priceFormatted,
+              image: pdpData.image ? 'presente' : 'ausente',
+            });
+            setCacheForProduct(productId, pdpData);
+            mutationObserverPaused = true;
+            mountOnceWithData(pdpData);
+            setTimeout(function () {
+              mutationObserverPaused = false;
+              isRunning = false;
+            }, 100);
+          })
+          .catch(function (err) {
+            console.warn('[MiniCart] Erro ao buscar dados do produto:', err);
+            mutationObserverPaused = true;
+            // Garante que o ID do produto está presente mesmo em caso de erro
+            mountOnceWithData({ id: productId, name: 'Produto', image: '', priceFormatted: '' });
+            setTimeout(function () {
+              mutationObserverPaused = false;
+              isRunning = false;
+            }, 100);
+          });
         return;
       }
 
-      // 3, se não encontrou no carrinho (esperado, pois estamos recomendando), busca PDP diretamente
-      // Não faz fetch do carrinho novamente para evitar erro 400
-      fetchPdpHtmlByIdOnce(TARGET_ID)
-        .then(parsePdp)
-        .then(function (pdpData) {
-          setCache(pdpData);
-          mountOnceWithData(pdpData);
-        })
-        .catch(function (err) {
-          console.warn('[MiniCart] Erro ao buscar dados do produto:', err);
-          mountOnceWithData({ name: 'Produto', image: '', priceFormatted: '' });
-        });
-    });
+      // Se não for forçado, tenta cache primeiro
+      // 1, tenta cache específico do produto
+      var cached = getCacheForProduct(productId);
+      if (cached) {
+        // Garante que o ID do produto está presente nos dados do cache
+        if (!cached.id) {
+          cached.id = productId;
+        }
+        mutationObserverPaused = true;
+        mountOnceWithData(cached);
+        setTimeout(function () {
+          mutationObserverPaused = false;
+          isRunning = false;
+        }, 100);
+        return;
+      }
+
+      // 2, tenta customer data
+      magentoCustomerData(function (cd) {
+        var cart = cd && cd.get ? cd.get('cart')() : null;
+        var fromCart = fromCartByProductId(cart, productId);
+        if (fromCart) {
+          // Garante que o ID do produto está presente nos dados do carrinho
+          if (!fromCart.id) {
+            fromCart.id = productId;
+          }
+          setCacheForProduct(productId, fromCart);
+          mutationObserverPaused = true;
+          mountOnceWithData(fromCart);
+          setTimeout(function () {
+            mutationObserverPaused = false;
+            isRunning = false;
+          }, 100);
+          return;
+        }
+
+        // 3, busca PDP diretamente
+        fetchPdpHtmlByIdOnce(productId)
+          .then(parsePdp)
+          .then(function (pdpData) {
+            // Garante que o ID do produto está presente nos dados
+            if (!pdpData.id) {
+              pdpData.id = productId;
+            }
+            setCacheForProduct(productId, pdpData);
+            mutationObserverPaused = true;
+            mountOnceWithData(pdpData);
+            setTimeout(function () {
+              mutationObserverPaused = false;
+              isRunning = false;
+            }, 100);
+          })
+          .catch(function (err) {
+            console.warn('[MiniCart] Erro ao buscar dados do produto:', err);
+            mutationObserverPaused = true;
+            // Garante que o ID do produto está presente mesmo em caso de erro
+            mountOnceWithData({ id: productId, name: 'Produto', image: '', priceFormatted: '' });
+            setTimeout(function () {
+              mutationObserverPaused = false;
+              isRunning = false;
+            }, 100);
+          });
+      });
+    }
+
+    // Carrega o produto recomendado
+    // Se o produto mudou, força o reload para atualizar a interface
+    loadRecommendedProduct(currentTargetId, productChanged);
   }
 
-  var mo = new MutationObserver(run);
+  // Funções auxiliares para cache específico por produto
+  function getCacheForProduct(productId) {
+    var cacheKey = 'WJ_SHELF_CACHE_' + productId;
+    try {
+      var raw = sessionStorage.getItem(cacheKey);
+      if (!raw) return null;
+      var obj = JSON.parse(raw);
+      if (!obj || !obj.t || Date.now() - obj.t > CACHE_TTL_MS) return null;
+      return obj.v;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function setCacheForProduct(productId, v) {
+    var cacheKey = 'WJ_SHELF_CACHE_' + productId;
+    try {
+      sessionStorage.setItem(cacheKey, JSON.stringify({ t: Date.now(), v: v }));
+    } catch (e) {}
+  }
+
+  var mo = new MutationObserver(function () {
+    // Ignora mutações quando estamos pausados ou em execução
+    if (mutationObserverPaused || isRunning) {
+      return;
+    }
+    run();
+  });
   mo.observe(document.body, { childList: true, subtree: true });
 
   // Observa mudanças no customer data (quando o carrinho é atualizado)
+  var cartSubscriptionActive = false;
+  var cartSubscriptionTimer = null;
+  var lastCartSubscriptionState = null;
+
   magentoCustomerData(function (cd) {
     if (cd && cd.get) {
       var cart = cd.get('cart');
-      if (cart && typeof cart.subscribe === 'function') {
+      if (cart && typeof cart.subscribe === 'function' && !cartSubscriptionActive) {
+        cartSubscriptionActive = true;
         cart.subscribe(function (updatedCart) {
-          console.log('[MiniCart] Carrinho atualizado, verificando kit escolar...');
-          // Aguarda um pouco para garantir que os dados estão atualizados
-          setTimeout(run, 300);
+          // Ignora se já está em execução
+          if (isRunning) {
+            return;
+          }
+
+          // Cria um hash do estado atual do carrinho
+          var currentState = null;
+          if (updatedCart && updatedCart.items && Array.isArray(updatedCart.items)) {
+            currentState = updatedCart.items
+              .map(function (item) {
+                return (item.product_id || item.id) + ':' + (item.qty || 1);
+              })
+              .sort()
+              .join(',');
+          }
+
+          // Se o estado não mudou, ignora
+          if (currentState === lastCartSubscriptionState) {
+            return;
+          }
+
+          lastCartSubscriptionState = currentState;
+
+          // Limpa o timer anterior
+          clearTimeout(cartSubscriptionTimer);
+
+          // Debounce agressivo para evitar múltiplas chamadas
+          cartSubscriptionTimer = setTimeout(function () {
+            if (isRunning) {
+              return;
+            }
+
+            console.log('[MiniCart] Carrinho atualizado, verificando kit escolar...');
+
+            // Recarrega os dados do carrinho antes de verificar
+            if (cd && typeof cd.reload === 'function') {
+              cd.reload(['cart'], true);
+            }
+
+            // Aguarda um pouco para garantir que os dados estão atualizados
+            setTimeout(function () {
+              if (!isRunning) {
+                run();
+              }
+            }, 500);
+          }, 1000); // Debounce de 1 segundo
         });
       }
     }

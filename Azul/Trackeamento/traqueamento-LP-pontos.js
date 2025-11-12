@@ -46,23 +46,33 @@
 
     // Mapeia nomes conhecidos para labels mais legíveis
     const nameMap = {
-      'header-fidelidade-prorrog-mobile': 'Banner Header Fidelidade',
-      'header-fidelidade-prorrog-desktop': 'Banner Header Fidelidade',
-      'bnr-multibancos-mobile': 'Banner Multibancos',
-      'Group 11527 (1)': 'Banner Multibancos',
-      'Group 11527': 'Banner C6',
-      'bnr-c6-mobile': 'Banner C6',
-      'bnr-adesao-mobile1': 'Banner Adesao',
+      'header-fidelidade-prorrog-mobile': 'Banner Principal Livelo',
+      'header-fidelidade-prorrog-desktop': 'Banner Principal Livelo',
+
+      'nova-ofertas': 'Banner Transferencia de Pontos',
+      'bnr-multibancos-mobile': 'Banner Transferencia de Pontos',
+
+      'bnr-c6-mobile': 'Banner C6 Bank',
+      'Group 11527': 'Banner C6 Bank',
+
+      'bnr-adesao-mobile1': 'Banner Assine o Clube',
+
       'bnr-upgrade-mobile1': 'Banner Upgrade',
+
       'banner-cadastro-mobile': 'Banner Cadastro',
       'header-cadastro-desktop-azf': 'Banner Cadastro',
+
       'bnr-facilidades-mobile': 'Banner Facilidades',
       'bnr-facilidades-desktop': 'Banner Facilidades',
-      'bnr-principal': 'Banner Principal',
-      'bnr-viagem-completa': 'Banner Viagem Completa',
-      'bnr-geral-via_aereo-desktop': 'Banner Via Aereo',
-      'MODULO FIDELIDADE': 'Banner Modulo Fidelidade',
-      'MODULO VIAGENS': 'Banner Modulo Viagens',
+
+      'bnr-principal': 'Banner Principais Ofertas',
+      '27/10/MODULO FIDELIDADE': 'Banner Principais Ofertas',
+
+      '27/10/MODULO VIAGENS': 'Banner Passagens Aereas',
+      'bnr-geral-via_aereo-desktop': 'Banner Passagens Aereas',
+
+      'bnr-viagem-completa.png': 'Banner Pacotes',
+      '27-10/MODULO VIAGENS.png': 'Banner Pacotes',
     };
 
     // Tenta encontrar um match parcial (case insensitive)
@@ -75,6 +85,94 @@
 
     // Se não encontrar, retorna o nome do arquivo sem extensão (limpo)
     return nameWithoutExt.replace(/%20/g, ' ').replace(/%28/g, '(').replace(/%29/g, ')');
+  }
+
+  function extractBrandName(imgSrc) {
+    if (!imgSrc) return 'unknown';
+
+    // Extrai o nome do arquivo da imagem
+    let fileName = imgSrc.split('/').pop();
+
+    // Decodifica URL
+    try {
+      fileName = decodeURIComponent(fileName);
+    } catch (e) {
+      // Se falhar, usa o nome original
+    }
+
+    // Remove a extensão
+    let nameWithoutExt = fileName.replace(/\.(png|jpg|jpeg|gif|webp)$/i, '');
+
+    // Remove prefixos comuns como "logo-", "Logo-", etc (case insensitive)
+    nameWithoutExt = nameWithoutExt.replace(/^logo-?/i, '');
+
+    // Se o nome tiver hífens, capitaliza cada palavra
+    let brandName = nameWithoutExt
+      .split('-')
+      .map((word) => {
+        if (word.length > 0) {
+          return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        }
+        return word;
+      })
+      .join(' ');
+
+    // Se não tiver hífens, apenas capitaliza a primeira letra
+    if (!nameWithoutExt.includes('-')) {
+      if (brandName.length > 0) {
+        brandName = brandName.charAt(0).toUpperCase() + brandName.slice(1).toLowerCase();
+      }
+    }
+
+    return brandName;
+  }
+
+  function addCardListeners() {
+    // Busca todos os botões "Ver promoção" com data-testid
+    const botoesVerPromocao = document.querySelectorAll(
+      'input[data-testid="search-box-hotel-date-picker-primary-input"]'
+    );
+
+    if (botoesVerPromocao.length === 0) {
+      return false;
+    }
+
+    console.log('[Tracking Pontos] Encontrados', botoesVerPromocao.length, 'botões "Ver promoção"');
+
+    let cardsProcessados = 0;
+
+    botoesVerPromocao.forEach((botao) => {
+      // Verifica se o listener já foi adicionado
+      if (botao.hasAttribute('data-card-analytics-added')) {
+        cardsProcessados++;
+        return;
+      }
+
+      botao.setAttribute('data-card-analytics-added', 'true');
+
+      // Busca o card pai (css-117ubr ou css-b7xk)
+      const card = botao.closest('.css-117ubr') || botao.closest('.css-b7xk');
+      let nomeMarca = 'Marca Desconhecida';
+
+      if (card) {
+        // Busca a imagem do logo dentro do card
+        const imgLogo = card.querySelector('img');
+        if (imgLogo && imgLogo.src) {
+          nomeMarca = extractBrandName(imgLogo.src);
+        }
+      }
+
+      const labelCard = 'Parceiro + ' + nomeMarca;
+
+      botao.addEventListener('click', () => {
+        analyticsEvent(labelCard);
+      });
+
+      console.log('[Tracking Pontos] Listener adicionado ao card:', labelCard);
+      cardsProcessados++;
+    });
+
+    return cardsProcessados > 0;
   }
 
   function addClickListeners() {
@@ -146,6 +244,9 @@
       console.log('[Tracking Pontos] Listener adicionado ao botão:', bannerName);
       botoesProcessados++;
     });
+
+    // Processa também os cards do carousel de parceiros
+    addCardListeners();
 
     // Se processou todos os botões, marca como completo
     if (botoesProcessados === botoes.length && botoes.length > 0) {
@@ -245,6 +346,30 @@
               if (node.querySelector && node.querySelector('button')) {
                 deveVerificar = true;
               }
+            }
+
+            // Verifica se é um card de parceiro (input com data-testid)
+            if (
+              node.nodeName === 'INPUT' &&
+              node.getAttribute('data-testid') === 'search-box-hotel-date-picker-primary-input'
+            ) {
+              deveVerificar = true;
+            }
+
+            // Verifica se há cards de parceiro dentro do node adicionado
+            if (
+              node.querySelector &&
+              node.querySelector('input[data-testid="search-box-hotel-date-picker-primary-input"]')
+            ) {
+              deveVerificar = true;
+            }
+
+            // Verifica se é um card do carousel (css-117ubr ou css-b7xk)
+            if (
+              node.classList &&
+              (node.classList.contains('css-117ubr') || node.classList.contains('css-b7xk'))
+            ) {
+              deveVerificar = true;
             }
           }
         });
