@@ -5,13 +5,20 @@
   let listenersAdicionados = false;
   let intervaloPeriodicoAtivo = null;
 
-  function analyticsEvent(eventLabel) {
+  function analyticsEvent(eventLabel, bannerType = 'banner') {
+    // bannerType pode ser: 'banner', 'card', ou 'mini_banner'
     if (eventLabel === undefined || !eventLabel) {
       console.log('[Tracking Passagens] Missing parameters for analytics event.');
       return;
     }
 
-    const labelEvent = 'AT_BF_banner_click_passagens ' + eventLabel;
+    const eventType =
+      bannerType === 'card'
+        ? 'card_click'
+        : bannerType === 'mini_banner'
+        ? 'mini_banner_click'
+        : 'banner_click';
+    const labelEvent = 'AT_BF_' + eventType + '_passagens ' + eventLabel;
 
     console.log('[Tracking Passagens] Analytics event triggered:', labelEvent);
 
@@ -23,9 +30,48 @@
       s.linkTrackEvents = 'event90';
       s.events = 'event90';
       s.eVar82 = labelEvent;
+      s.eVar84 = 'AT_BF_lp_Passagens';
 
       s.tl(true, 'o', 'target_activity_action');
     })();
+  }
+
+  function isMiniBanner(imgSrc, buttonElement) {
+    if (!imgSrc) return false;
+
+    // Lista de imagens que são mini_banners
+    const miniBannerPatterns = [
+      'inter-35-desk',
+      'inter-20-desk',
+      'pacotes-20-desk',
+      'pacotes-15-desk',
+      'bnr-principal',
+      'brn-areo',
+      'bnr-pontos',
+      'bnr-ofertas-1',
+      'bnr-ofertas-2',
+      'bnr-ofertas-3',
+      'MODULO FIDELIDADE',
+      'MODULO FIDELIDADE (1)',
+      'MODULO VIAGENS',
+    ];
+
+    // Verifica se a imagem corresponde a algum dos padrões
+    for (const pattern of miniBannerPatterns) {
+      if (imgSrc.includes(pattern)) {
+        return true;
+      }
+    }
+
+    // Verifica se o botão está dentro de containers específicos de mini_banner
+    if (buttonElement) {
+      const parent = buttonElement.closest('.css-1e8rjdr, .css-1391tka, .css-1ngnp0i, .css-615bn6');
+      if (parent) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   function getBannerName(imgSrc) {
@@ -46,6 +92,9 @@
 
     // Mapeia nomes conhecidos para labels mais legíveis
     const nameMap = {
+      'header-nordeste-mobile': 'Banner Nordeste',
+      'header-nordeste-desktop': 'Banner Nordeste',
+
       'bnr-pagamentos-aic': 'Banner Cartao Azul Itaú',
       'banner-aic-kv': 'Banner Cartao Azul Itaú',
 
@@ -65,12 +114,12 @@
 
       'bnr-complemento-mobile': 'Banner Complemento',
 
-      'bnr-principal': 'Banner Principais Ofertas',
-      'bnr-viagem-completa': 'Banner Pacotes',
-      'bnr-pontos': 'Banner Pontos',
+      'bnr-principal': 'Mini Banner Principais Ofertas',
+      'bnr-viagem-completa': 'Mini Banner Pacotes',
+      'bnr-pontos': 'Mini Banner Pontos',
 
-      'MODULO FIDELIDADE': 'Banner Principais Ofertas',
-      'MODULO FIDELIDADE (1)': 'Banner Pontos',
+      'MODULO FIDELIDADE': 'Mini Banner Principais Ofertas',
+      'MODULO FIDELIDADE (1)': 'Mini Banner Pontos',
     };
 
     // Tenta encontrar um match parcial (case insensitive)
@@ -125,7 +174,7 @@
       }
 
       botao.addEventListener('click', () => {
-        analyticsEvent(tituloCard);
+        analyticsEvent(tituloCard, 'card');
       });
 
       console.log('[Tracking Passagens] Listener adicionado ao card:', tituloCard);
@@ -186,22 +235,36 @@
       // Tenta encontrar a imagem dentro do botão
       const img = botao.querySelector('img');
       let bannerName = 'Banner ' + (index + 1);
+      let isMini = false;
 
       if (img) {
         // Prioriza a imagem desktop, se não encontrar usa a mobile
         const imgDesktop = botao.querySelector('img.css-bq6zc0');
         const imgSrc = imgDesktop ? imgDesktop.src : img.src;
         bannerName = getBannerName(imgSrc);
-        console.log('[Tracking Passagens] Imagem encontrada:', imgSrc, '->', bannerName);
+        isMini = isMiniBanner(imgSrc, botao);
+        console.log(
+          '[Tracking Passagens] Imagem encontrada:',
+          imgSrc,
+          '->',
+          bannerName,
+          isMini ? '(mini_banner)' : ''
+        );
       } else {
         console.log('[Tracking Passagens] Nenhuma imagem encontrada no botão', index + 1);
       }
 
+      const bannerType = isMini ? 'mini_banner' : 'banner';
+
       botao.addEventListener('click', () => {
-        analyticsEvent(bannerName);
+        analyticsEvent(bannerName, bannerType);
       });
 
-      console.log('[Tracking Passagens] Listener adicionado ao botão:', bannerName);
+      console.log(
+        '[Tracking Passagens] Listener adicionado ao botão:',
+        bannerName,
+        '(' + bannerType + ')'
+      );
       botoesProcessados++;
     });
 
