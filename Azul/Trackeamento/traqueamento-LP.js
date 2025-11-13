@@ -87,13 +87,17 @@
       'botao-aereo-deskv2': 'Banner Passagens',
       'banner-viagemcompleta1': 'Banner Pacotes',
       'banner-viagemcompleta2': 'Banner Pacotes',
-      'bnr-pacotes': 'Banner Pacotes',
-      'banner-fidelidade-mobile': 'Banner Fidelidade',
+      'bnr-pacotes': 'Mini Banner Pacotes',
+      'banner-fidelidade-mobile': 'Mini Banner Fidelidade',
       'livelo-prorrog': 'Banner Livelo',
       'bnr-livelo-prorrog-desktop': 'Banner Livelo',
       'bnr-engajamento-livelo': 'Banner Livelo',
       'bnr-engajamento-livelo-mobile': 'Banner Livelo',
       'bnr-engajamento-livelo-desktop': 'Banner Livelo',
+      // Mini banners específicos
+      'bnr-nordeste-desktop': 'Mini Banner Nordeste',
+      'bnr-nordeste-mobile': 'Mini Banner Nordeste',
+      'bnr-engajamento': 'Mini Banner Fidelidade',
     };
 
     // Tenta encontrar um match parcial
