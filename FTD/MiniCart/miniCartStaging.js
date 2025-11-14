@@ -20,88 +20,88 @@
   var GRADE_RECOMMENDATIONS = {
     // Educação Infantil - 1 ano
     1: {
-      primary: [PRODUCT_IDS.NUMERODROMO, PRODUCT_IDS.BICHODARIO],
+      primary: [],
       secondary: null,
     },
     // Educação Infantil - 2 anos
     2: {
-      primary: [PRODUCT_IDS.NUMERODROMO, PRODUCT_IDS.BICHODARIO],
+      primary: [],
       secondary: null,
     },
-    // Educação Infantil - 3 anos
+    // Educação Infantil - 3 anos / Pré Escola 4 anos
     3: {
       primary: [PRODUCT_IDS.NUMERODROMO, PRODUCT_IDS.BICHODARIO],
       secondary: null,
     },
-    // Educação Infantil - Pré Escola - 4 anos
+    // Pré Escola - 4 anos
     4: {
       primary: [PRODUCT_IDS.NUMERODROMO, PRODUCT_IDS.BICHODARIO],
       secondary: null,
     },
-    // Educação Infantil - Pré Escola - 5 anos
+    // Pré Escola - 5 anos
     5: {
       primary: [PRODUCT_IDS.NUMERODROMO, PRODUCT_IDS.BICHODARIO],
       secondary: null,
     },
-    // 1º Série - 6 anos
+    // 1º Série / 1º ano - Anos iniciais (6 anos)
     6: {
       primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: null, // TODO: Adicionar IDs quando disponíveis
+      secondary: [PRODUCT_IDS.TABUADA_A], // No capricho A + Que vergonha que dá!
     },
-    // 2º Série - 7 anos
+    // 2º Série / 2º ano - Anos iniciais (7 anos)
     7: {
       primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: [PRODUCT_IDS.TABUADA_A], // TODO: Adicionar No capricho B quando disponível
+      secondary: [PRODUCT_IDS.TABUADA_A, PRODUCT_IDS.TABUADA_B], // Nós e a tabuada 1 + No capricho B
     },
-    // 3º Série - 8 anos
+    // 3º Série / 3º ano - Anos iniciais (8 anos)
     8: {
       primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: [PRODUCT_IDS.TABUADA_B], // TODO: Adicionar No capricho C quando disponível
+      secondary: [PRODUCT_IDS.TABUADA_B, PRODUCT_IDS.TABUADA_C], // Nós e a tabuada 2 + No capricho C
     },
-    // 4º Série - 9 anos
+    // 4º Série / 4º ano - Anos iniciais (9 anos)
     9: {
       primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: [PRODUCT_IDS.TABUADA_C], // TODO: Adicionar No capricho D quando disponível
+      secondary: [PRODUCT_IDS.TABUADA_C, PRODUCT_IDS.TABUADA_D], // Nós e a tabuada 3 + No capricho D
     },
-    // 5º Série - 10 anos
+    // 5º Série / 5º ano - Anos iniciais (10 anos)
     10: {
       primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: [PRODUCT_IDS.TABUADA_D], // TODO: Adicionar No capricho E quando disponível
+      secondary: [PRODUCT_IDS.TABUADA_D], // Nós e a tabuada 4 + No capricho E
     },
-    // 6º Série - 11 anos
+    // 6º Série / 6º ano - Anos finais (11 anos)
     11: {
       primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: null, // TODO: Adicionar Peter Pan + Mágico de Oz quando disponíveis
+      secondary: null, // Peter Pan + Mágico de Oz (não temos IDs)
     },
-    // 7º Série - 12 anos
+    // 7º Série / 7º ano - Anos finais (12 anos)
     12: {
       primary: [PRODUCT_IDS.DICIONARIO_INGLES],
-      secondary: null, // TODO: Adicionar Peter Pan + Mágico de Oz quando disponíveis
+      secondary: null, // Peter Pan + Mágico de Oz (não temos IDs)
     },
-    // 8º Série - 13 anos
+    // 8º Série / 8º ano - Anos finais (13 anos)
     13: {
       primary: [PRODUCT_IDS.DICIONARIO_INGLES],
-      secondary: null, // TODO: Adicionar Peter Pan + Mágico de Oz quando disponíveis
+      secondary: null, // Peter Pan + Mágico de Oz (não temos IDs)
     },
-    // 9º Série - 14 anos
+    // 9º Série / 9º ano - Anos finais (14 anos)
     14: {
       primary: [PRODUCT_IDS.DICIONARIO_INGLES],
-      secondary: null, // TODO: Adicionar Peter Pan + Mágico de Oz quando disponíveis
+      secondary: null, // Peter Pan + Mágico de Oz (não temos IDs)
     },
-    // 1º Colegial - 15 anos
+    // Ensino Médio 1 / 1º Colegial (15 anos)
     15: {
       primary: [PRODUCT_IDS.ESTUDA_COM_ANUAL],
-      secondary: null, // TODO: Adicionar Estuda.com Semestral quando disponível
+      secondary: null, // Estuda.com Semestral (não temos ID)
     },
-    // 2º Colegial - 16 anos
+    // Ensino Médio 2 / 2º Colegial (16 anos)
     16: {
       primary: [PRODUCT_IDS.ESTUDA_COM_ANUAL],
-      secondary: null, // TODO: Adicionar Estuda.com Semestral quando disponível
+      secondary: null, // Estuda.com Semestral (não temos ID)
     },
-    // 3º Colegial - 17 anos
+    // Ensino Médio 3 / 3º Colegial (17 anos)
     17: {
       primary: [PRODUCT_IDS.ESTUDA_COM_ANUAL],
-      secondary: null, // TODO: Adicionar Estuda.com Semestral quando disponível
+      secondary: null, // Estuda.com Semestral (não temos ID)
     },
   };
 
@@ -120,6 +120,11 @@
   var INITIAL_RECOMMENDED_PRODUCT_ID = null;
   // Hash do estado do carrinho quando a recomendação inicial foi feita
   var INITIAL_RECOMMENDATION_CART_STATE = null;
+
+  // Mapa de studentId → gradeLevel (dados da API /rest/V1/students/mine)
+  var STUDENT_GRADE_MAP = {};
+  var STUDENTS_DATA_LOADED = false;
+  var STUDENTS_DATA_LOADING = false;
 
   var CSS =
     '\
@@ -303,6 +308,103 @@
       .catch(function (err) {
         console.warn('[MiniCart] Erro ao buscar novo form_key:', err);
         return null;
+      });
+  }
+
+  // Função para buscar dados dos estudantes e mapear studentId → gradeLevel
+  function fetchStudentsData() {
+    if (STUDENTS_DATA_LOADED || STUDENTS_DATA_LOADING) {
+      console.log('[MiniCart] Dados dos estudantes já carregados ou em carregamento');
+      return Promise.resolve(STUDENT_GRADE_MAP);
+    }
+
+    STUDENTS_DATA_LOADING = true;
+    console.log('[MiniCart] Buscando dados dos estudantes da API...');
+
+    var timestamp = Date.now();
+    // API retorna apenas estudantes do usuário logado (via sessão/cookie)
+    // pageSize=100 é mais que suficiente (maioria dos usuários tem < 10 estudantes)
+    var url = '/rest/V1/students/mine?searchCriteria[pageSize]=100&_=' + timestamp;
+
+    return fetch(url, {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        Accept: 'application/json',
+      },
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+        return response.json();
+      })
+      .then(function (data) {
+        console.log('[MiniCart] Dados dos estudantes recebidos:', {
+          totalStudents: data.items ? data.items.length : 0,
+        });
+
+        if (!data.items || !Array.isArray(data.items)) {
+          console.warn('[MiniCart] Resposta da API de estudantes sem items válidos');
+          STUDENTS_DATA_LOADED = true;
+          STUDENTS_DATA_LOADING = false;
+          return STUDENT_GRADE_MAP;
+        }
+
+        // Mapeia studentId → gradeLevel
+        data.items.forEach(function (student) {
+          var studentId = student.entity_id;
+          var adoptionLists = student.extension_attributes
+            ? student.extension_attributes.adoption_lists
+            : null;
+
+          if (!adoptionLists || !Array.isArray(adoptionLists) || adoptionLists.length === 0) {
+            console.log('[MiniCart] Estudante sem adoption_lists:', {
+              id: studentId,
+              name: student.name,
+            });
+            return;
+          }
+
+          // Pega a primeira adoption_list (a mais recente)
+          var adoptionList = adoptionLists[0];
+          var schoolGrade = adoptionList.extension_attributes
+            ? adoptionList.extension_attributes.school_grade
+            : null;
+
+          if (!schoolGrade || !schoolGrade.title) {
+            console.log('[MiniCart] Estudante sem school_grade:', {
+              id: studentId,
+              name: student.name,
+            });
+            return;
+          }
+
+          // Armazena o mapeamento
+          STUDENT_GRADE_MAP[studentId] = schoolGrade.title;
+          console.log('[MiniCart] Mapeado estudante:', {
+            id: studentId,
+            name: student.name,
+            gradeLevel: schoolGrade.title,
+            level: schoolGrade.level,
+          });
+        });
+
+        console.log('[MiniCart] Mapa de estudantes criado:', {
+          totalMapped: Object.keys(STUDENT_GRADE_MAP).length,
+          map: STUDENT_GRADE_MAP,
+        });
+
+        STUDENTS_DATA_LOADED = true;
+        STUDENTS_DATA_LOADING = false;
+        return STUDENT_GRADE_MAP;
+      })
+      .catch(function (error) {
+        console.error('[MiniCart] Erro ao buscar dados dos estudantes:', error);
+        STUDENTS_DATA_LOADING = false;
+        // Não marca como loaded para permitir retry
+        return STUDENT_GRADE_MAP;
       });
   }
 
@@ -622,19 +724,19 @@
 
     var lowerName = productName.toLowerCase();
 
-    // Padrões específicos para Educação Infantil
-    if (/educação\s+infantil|infantil/i.test(lowerName)) {
+    // Padrões específicos para Educação Infantil (EI ou Educação Infantil)
+    if (/educação\s+infantil|infantil|\bEI\b/i.test(lowerName)) {
       // Educação Infantil 1 ano
-      if (/\b1\s*ano\b/i.test(lowerName)) return '1 ano - Educação Infantil';
+      if (/\b1\s*anos?\b|level\s*1/i.test(lowerName)) return '1 ano - Educação Infantil';
       // Educação Infantil 2 anos
-      if (/\b2\s*anos?\b/i.test(lowerName)) return '2 anos - Educação Infantil';
+      if (/\b2\s*anos?\b|level\s*2/i.test(lowerName)) return '2 anos - Educação Infantil';
       // Educação Infantil 3 anos
-      if (/\b3\s*anos?\b/i.test(lowerName)) return '3 anos - Educação Infantil';
+      if (/\b3\s*anos?\b|level\s*3/i.test(lowerName)) return '3 anos - Educação Infantil';
       // Pré Escola 4 anos
-      if (/\b4\s*anos?\b/i.test(lowerName) || /pré.*escola.*4/i.test(lowerName))
+      if (/\b4\s*anos?\b|level\s*4/i.test(lowerName) || /pré.*escola.*4/i.test(lowerName))
         return '4 anos - Pré Escola';
       // Pré Escola 5 anos
-      if (/\b5\s*anos?\b/i.test(lowerName) || /pré.*escola.*5/i.test(lowerName))
+      if (/\b5\s*anos?\b|level\s*5/i.test(lowerName) || /pré.*escola.*5/i.test(lowerName))
         return '5 anos - Pré Escola';
     }
 
@@ -863,7 +965,51 @@
       '[MiniCart] Verificando ' + cartData.items.length + ' itens no carrinho para detectar kits...'
     );
 
-    // Verifica cada item do carrinho
+    // 🔍 PRIORIDADE 1: Tenta buscar gradeLevel via API de estudantes
+    // Acessa: cart.ftd.data.miniCart.miniCartAdoptionLists
+    if (
+      cartData.ftd &&
+      cartData.ftd.data &&
+      cartData.ftd.data.miniCart &&
+      cartData.ftd.data.miniCart.miniCartAdoptionLists
+    ) {
+      var adoptionLists = cartData.ftd.data.miniCart.miniCartAdoptionLists;
+      var adoptionListKeys = Object.keys(adoptionLists);
+
+      console.log('[MiniCart] Detectadas adoption lists no carrinho:', {
+        count: adoptionListKeys.length,
+        lists: adoptionListKeys,
+      });
+
+      // Pega o primeiro studentId encontrado
+      if (adoptionListKeys.length > 0) {
+        var firstAdoptionListId = adoptionListKeys[0];
+        var firstAdoptionList = adoptionLists[firstAdoptionListId];
+        var studentId = firstAdoptionList.studentId;
+
+        console.log('[MiniCart] Primeiro studentId do carrinho:', studentId);
+
+        // Busca o gradeLevel no mapa (se já foi carregado)
+        if (STUDENTS_DATA_LOADED && STUDENT_GRADE_MAP[studentId]) {
+          gradeLevel = STUDENT_GRADE_MAP[studentId];
+          console.log('[MiniCart] ✅ Nível escolar obtido via API de estudantes:', {
+            studentId: studentId,
+            gradeLevel: gradeLevel,
+          });
+        } else {
+          console.log(
+            '[MiniCart] ⚠️ Mapa de estudantes não carregado ou studentId não encontrado:',
+            {
+              dataLoaded: STUDENTS_DATA_LOADED,
+              hasStudentId: !!STUDENT_GRADE_MAP[studentId],
+              studentId: studentId,
+            }
+          );
+        }
+      }
+    }
+
+    // Verifica cada item do carrinho para detectar kits (necessário mesmo se já temos gradeLevel)
     for (var i = 0; i < cartData.items.length; i++) {
       var item = cartData.items[i];
       var productName = item.product_name || '';
@@ -875,19 +1021,25 @@
 
       // Verifica se é um produto de kit escolar (padrão: "Conjunto", "Kit", ou produtos com ano)
       var isKitProduct =
-        /conjunto|kit|faça|faca|lista\s*de\s*materiais/i.test(productName) ||
-        /\d+[º°]\s*(ano|série)/i.test(productName);
+        /conjunto|kit|faça|faca|lista\s*de\s*materiais|\bCJ\b|\bEI\b/i.test(productName) ||
+        /\d+[º°]\s*(ano|série)/i.test(productName) ||
+        /\d+\s+ANOS/i.test(productName) ||
+        /LEVEL\s+\d+/i.test(productName);
 
       if (isKitProduct) {
         console.log('[MiniCart] Kit detectado:', productName);
         kitProducts.push(item);
 
-        // Tenta extrair o nível escolar (apenas do primeiro kit)
+        // 🔍 PRIORIDADE 2: Tenta extrair o nível escolar do nome do produto (fallback)
+        // Só tenta se ainda não temos gradeLevel
         if (!gradeLevel) {
           var extractedGrade = extractGradeLevel(productName);
           if (extractedGrade) {
             gradeLevel = extractedGrade;
-            console.log('[MiniCart] Nível escolar extraído do primeiro kit:', gradeLevel);
+            console.log(
+              '[MiniCart] ℹ️ Nível escolar extraído do nome do produto (fallback):',
+              gradeLevel
+            );
           } else {
             console.warn('[MiniCart] Não foi possível extrair nível do kit:', productName);
           }
@@ -898,6 +1050,11 @@
     console.log('[MiniCart] Resultado da detecção:', {
       hasKit: kitProducts.length > 0,
       gradeLevel: gradeLevel,
+      gradeLevelSource: gradeLevel
+        ? STUDENTS_DATA_LOADED && STUDENT_GRADE_MAP[Object.keys(STUDENT_GRADE_MAP)[0]]
+          ? 'API'
+          : 'regex'
+        : 'none',
       kitsFound: kitProducts.length,
     });
 
@@ -1566,6 +1723,19 @@
 
   // Função auxiliar para verificar kit e mostrar recomendação
   function checkKitAndShowRecommendation(cartData) {
+    // ⏳ Se a API ainda está carregando, aguarda um pouco e tenta novamente
+    if (STUDENTS_DATA_LOADING && !STUDENTS_DATA_LOADED) {
+      console.log('[MiniCart] ⏳ Aguardando carregamento dos dados da API de estudantes...');
+      setTimeout(function () {
+        console.log('[MiniCart] Tentando novamente após carregamento da API...');
+        // Reseta o lastCheckedState para forçar nova verificação com dados da API
+        lastCheckedState = null;
+        isRunning = false;
+        run();
+      }, 500);
+      return;
+    }
+
     // Detecta se há kit e qual o nível escolar
     var kitInfo = detectSchoolKitAndGrade(cartData);
 
@@ -1864,8 +2034,18 @@
     } catch (e) {}
   }
 
-  console.log('[MiniCart] Script inicializado - versão com detecção aprimorada de kits');
+  console.log(
+    '[MiniCart] Script inicializado - versão com detecção aprimorada de kits + API de estudantes'
+  );
   console.log('[MiniCart] Aguardando anchor:', ANCHOR_SELECTOR);
+
+  // Busca dados dos estudantes no início (em background)
+  fetchStudentsData().catch(function (err) {
+    console.warn(
+      '[MiniCart] Erro ao carregar dados dos estudantes (continuará com fallback):',
+      err
+    );
+  });
 
   var mo = new MutationObserver(function () {
     // Ignora mutações quando estamos pausados ou em execução
