@@ -60,9 +60,13 @@ Aumentar ticket médio e itens por pedido através de recomendações contextuai
 ### **Fluxo Geral**
 
 ```
+0. Script busca dados dos estudantes da API em background
+   ↓
 1. Usuário adiciona Kit ao carrinho
    ↓
 2. Sistema detecta o kit e extrai nível escolar
+   → Método 1: Via API /rest/V1/students/mine (studentId → school_grade)
+   → Método 2: Fallback via regex no nome do produto
    ↓
 3. Busca produto complementar para aquele nível
    ↓
@@ -73,14 +77,33 @@ Aumentar ticket médio e itens por pedido através de recomendações contextuai
 6. Card desaparece com animação
 ```
 
+### **✨ Detecção Inteligente via API**
+
+O sistema usa uma abordagem híbrida para detectar o nível escolar:
+
+**1. Prioridade: API de Estudantes**
+
+- Busca `/rest/V1/students/mine` no início da sessão
+- Cria um mapa `studentId → school_grade.title`
+- Identifica o `studentId` no carrinho via `cart.ftd.data.miniCart.miniCartAdoptionLists`
+- Obtém o nível escolar exato e confiável
+
+**2. Fallback: Extração via Regex**
+
+- Se a API falhar ou dados não estiverem disponíveis
+- Analisa o nome do produto para extrair o nível escolar
+- Mantém compatibilidade com sistemas antigos
+
 ### **1. Detecção de Kit**
 
 O sistema monitora o carrinho e detecta kits através de **regex patterns** no nome do produto:
 
 ```javascript
 // Padrões de detecção
-/conjunto|kit|faça|faca|lista\s*de\s*materiais/i
+/conjunto|kit|faça|faca|lista\s*de\s*materiais|\bCJ\b|\bEI\b/i
 /\d+[º°]\s*(ano|série)/i
+/\d+\s+ANOS/i
+/LEVEL\s+\d+/i
 ```
 
 **Exemplos detectados:**
@@ -88,10 +111,22 @@ O sistema monitora o carrinho e detecta kits através de **regex patterns** no n
 - ✅ "Kit 5º ano - Anos iniciais"
 - ✅ "Conjunto Didático 3º ano"
 - ✅ "Lista de materiais - Ensino Médio 2"
+- ✅ "CJ TRILHAS EI 3 ANOS" (CJ = Conjunto, EI = Educação Infantil)
+- ✅ "CJ EVOLUTION EI - LEVEL 1" (LEVEL 1 = 1 ano)
 
 ### **2. Extração do Nível Escolar**
 
-Sistema extrai o nível usando regex patterns específicos:
+**Prioridade 1: API de Estudantes** (método principal)
+
+O sistema busca o nível escolar diretamente da API `/rest/V1/students/mine`:
+
+1. Identifica o `studentId` no carrinho via `cart.ftd.data.miniCart.miniCartAdoptionLists`
+2. Busca o `school_grade.title` do estudante na API
+3. Obtém o nível escolar preciso (ex: "3 anos - Ensino Infantil")
+
+**Prioridade 2: Extração via Regex** (fallback)
+
+Se a API falhar ou os dados não estiverem disponíveis, usa regex patterns:
 
 | Padrão                 | Exemplo                  | gradeNumber |
 | ---------------------- | ------------------------ | ----------- |
@@ -130,39 +165,42 @@ Sistema extrai o nível usando regex patterns específicos:
 
 ### **Mapeamento de Produtos por Nível**
 
-| Nível                    | Produtos Primários                                  | Produtos Secundários                                |
-| ------------------------ | --------------------------------------------------- | --------------------------------------------------- |
-| **Pré Escola (3-4)**     | Numeródromo (52150)<br>Bichodário (52144)           | -                                                   |
-| **1º-2º ano (5-6)**      | Numeródromo (52150)<br>Bichodário (52144)           | -                                                   |
-| **3º ano (7)**           | Numeródromo (52150)<br>Bichodário (52144)           | Tabuada A (54595)                                   |
-| **4º ano (8)**           | Numeródromo (52150)<br>Bichodário (52144)           | Tabuada A (54595)<br>Tabuada B (54598)              |
-| **5º-9º ano (9-14)**     | Minidicionário (56551)<br>Dicionário Inglês (53959) | Tabuada A-D (54595-54604)                           |
-| **Ensino Médio (15-17)** | Estuda com Anual (1213247)                          | Minidicionário (56551)<br>Dicionário Inglês (53959) |
+| gradeNumber | Nível Escolar        | Produto Primário                          | Produtos Secundários      |
+| ----------- | -------------------- | ----------------------------------------- | ------------------------- |
+| **3-5**     | Pré Escola 4-5       | Numeródromo (52150)<br>Bichodário (52144) | -                         |
+| **6**       | 1º Série / 1º ano    | Minidicionário (56551)                    | Tabuada A (54595)         |
+| **7**       | 2º Série / 2º ano    | Minidicionário (56551)                    | Tabuada A-B (54595-54598) |
+| **8**       | 3º Série / 3º ano    | Minidicionário (56551)                    | Tabuada B-C (54598-54601) |
+| **9**       | 4º Série / 4º ano    | Minidicionário (56551)                    | Tabuada C-D (54601-54604) |
+| **10**      | 5º Série / 5º ano    | Minidicionário (56551)                    | Tabuada D (54604)         |
+| **11**      | 6º Série / 6º ano    | Minidicionário (56551)                    | -                         |
+| **12-14**   | 7º-9º Série          | Dicionário Inglês (53959)                 | -                         |
+| **15-17**   | Ensino Médio (1º-3º) | Estuda.com Anual (1213247)                | -                         |
 
 ### **Cenários de Exemplo**
 
-**Cenário 1: 5º ano, carrinho vazio**
+**Cenário 1: 1º ano (gradeNumber 6), carrinho vazio**
 
 ```
-→ Recomenda: Minidicionário (56551)
+→ Recomenda: Minidicionário (56551) ✅
 ```
 
-**Cenário 2: 5º ano, Minidicionário já no carrinho**
+**Cenário 2: 1º ano (gradeNumber 6), Minidicionário já no carrinho**
 
 ```
-→ Recomenda: Dicionário Inglês (53959)
+→ Recomenda: Tabuada A (54595) ✅ (secundário)
 ```
 
-**Cenário 3: 5º ano, todos primários no carrinho**
+**Cenário 3: 8º ano (gradeNumber 13), carrinho vazio**
 
 ```
-→ Recomenda: Tabuada A (54595)
+→ Recomenda: Dicionário Inglês (53959) ✅
 ```
 
-**Cenário 4: Todos produtos já no carrinho**
+**Cenário 4: Ensino Médio 2º ano (gradeNumber 16), carrinho vazio**
 
 ```
-→ Não exibe recomendação
+→ Recomenda: Estuda.com Anual (1213247) ✅
 ```
 
 ---
@@ -189,14 +227,15 @@ Sistema extrai o nível usando regex patterns específicos:
 
 ### **Componentes Principais**
 
-| Componente                  | Função                    | Complexidade |
-| --------------------------- | ------------------------- | ------------ |
-| `run()`                     | Orquestração principal    | ⭐⭐⭐⭐⭐   |
-| `detectSchoolKitAndGrade()` | Detecta kits e nível      | ⭐⭐⭐       |
-| `getRecommendedProductId()` | Seleciona produto         | ⭐⭐⭐       |
-| `loadRecommendedProduct()`  | Carrega dados (cache/PDP) | ⭐⭐⭐⭐     |
-| `render()`                  | Renderiza UI              | ⭐⭐⭐⭐⭐   |
-| `addToCart()`               | Adiciona ao carrinho      | ⭐⭐⭐⭐⭐   |
+| Componente                  | Função                             | Complexidade |
+| --------------------------- | ---------------------------------- | ------------ |
+| `run()`                     | Orquestração principal             | ⭐⭐⭐⭐⭐   |
+| `fetchStudentsData()`       | Busca dados da API de estudantes   | ⭐⭐⭐       |
+| `detectSchoolKitAndGrade()` | Detecta kits e nível (API + regex) | ⭐⭐⭐⭐     |
+| `getRecommendedProductId()` | Seleciona produto                  | ⭐⭐⭐       |
+| `loadRecommendedProduct()`  | Carrega dados (cache/PDP)          | ⭐⭐⭐⭐     |
+| `render()`                  | Renderiza UI                       | ⭐⭐⭐⭐⭐   |
+| `addToCart()`               | Adiciona ao carrinho               | ⭐⭐⭐⭐⭐   |
 
 ### **Sistema de Monitoramento**
 
