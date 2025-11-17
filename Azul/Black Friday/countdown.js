@@ -232,21 +232,51 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     return svg;
   }
 
+  // Função para detectar qual LP está sendo usada
+  function detectLandingPage() {
+    const pathname = window.location.pathname;
+
+    if (pathname.includes('/azul-friday/pontos')) {
+      return 'pontos';
+    } else if (pathname.includes('/azul-friday/viagem-completa')) {
+      return 'viagem-completa';
+    } else if (pathname.includes('/azul-friday/passagens')) {
+      return 'passagens';
+    } else if (pathname.includes('/azul-friday')) {
+      return 'default'; // LP principal
+    }
+
+    return 'default';
+  }
+
+  // Função para obter os padrões de imagens baseado na LP
+  function getImagePatterns(lpType) {
+    const patterns = {
+      default: ['header-geral-mobile.png', 'header-geral-desktop.png'],
+      pontos: ['header-esfera-mob.png', 'header-esfera-desk.png'],
+      'viagem-completa': ['header-azv-35-mobile.png', 'header-azv-35-desktop.png'],
+      passagens: ['header-nordeste-mobile.png', 'header-nordeste-desktop.png'],
+    };
+
+    return patterns[lpType] || patterns['default'];
+  }
+
   // Função para encontrar o container do header
   function findHeaderContainer() {
+    const lpType = detectLandingPage();
+    const imagePatterns = getImagePatterns(lpType);
+
     // Buscar todos os containers
     const containers = document.querySelectorAll('.container-capsule.containerDefault');
 
     for (let i = 0; i < containers.length; i++) {
       const container = containers[i];
-      // Verificar se contém um botão com as imagens header-geral
+      // Verificar se contém um botão com as imagens específicas da LP
       const button = container.querySelector('button');
       if (button) {
         const images = button.querySelectorAll('img');
-        const hasHeaderImages = Array.from(images).some(
-          (img) =>
-            img.src.includes('header-geral-mobile.png') ||
-            img.src.includes('header-geral-desktop.png')
+        const hasHeaderImages = Array.from(images).some((img) =>
+          imagePatterns.some((pattern) => img.src.includes(pattern))
         );
         if (hasHeaderImages) {
           return container;
@@ -254,6 +284,43 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
       }
     }
     return null;
+  }
+
+  // Função para aplicar estilos responsivos no mobile
+  function applyResponsiveStyles() {
+    const banner = document.getElementById('azul-friday-countdown');
+    const textContainer = banner
+      ? banner.querySelector('[data-countdown-text-container="true"]')
+      : null;
+
+    if (!banner) return;
+
+    const isMobile = window.innerWidth < 768;
+
+    if (isMobile) {
+      // Estilos para mobile no banner
+      banner.style.setProperty('flex-direction', 'column', 'important');
+      banner.style.setProperty('gap', '10px', 'important');
+      banner.style.setProperty('margin', '15px auto', 'important');
+      banner.style.setProperty('align-items', 'center', 'important');
+      banner.style.setProperty('justify-content', 'center', 'important');
+
+      // Estilos para mobile no textContainer
+      if (textContainer) {
+        textContainer.style.setProperty('max-width', '240px', 'important');
+      }
+    } else {
+      // Estilos para desktop no banner
+      banner.style.setProperty('flex-direction', 'row', 'important');
+      banner.style.setProperty('gap', '0', 'important');
+      banner.style.setProperty('margin', '0px auto', 'important');
+      banner.style.setProperty('justify-content', 'space-between', 'important');
+
+      // Estilos para desktop no textContainer
+      if (textContainer) {
+        textContainer.style.removeProperty('max-width');
+      }
+    }
   }
 
   // Função para criar o banner do countdown
@@ -309,6 +376,7 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
 
     // Texto "Ofertas por tempo limitado!" (agora diretamente no banner)
     const textContainer = document.createElement('div');
+    textContainer.setAttribute('data-countdown-text-container', 'true');
     textContainer.style.cssText = `
       display: flex;
       align-items: center;
@@ -322,6 +390,7 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     clockIcon.setAttribute('height', '44');
     clockIcon.setAttribute('viewBox', '0 0 44 44');
     clockIcon.setAttribute('fill', 'none');
+    clockIcon.style.setProperty('min-width', '44px', 'important');
 
     const clockPath1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     clockPath1.setAttribute('d', 'M22 11V22L29.3333 25.6667');
@@ -368,37 +437,78 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     banner.appendChild(countdownContainer);
 
     // Encontrar a div vazia dentro do container do header para inserir o countdown
-    // A estrutura é: container > div > button + div vazia
-    const containerInnerDiv = headerContainer.querySelector('div');
-    if (containerInnerDiv) {
-      // Procurar pela div vazia que vem após o button
-      const button = containerInnerDiv.querySelector('button');
-      if (button) {
-        // Encontrar a próxima div irmã (div vazia)
-        let nextDiv = button.nextElementSibling;
-        while (nextDiv && nextDiv.tagName !== 'DIV') {
-          nextDiv = nextDiv.nextElementSibling;
-        }
-        if (nextDiv) {
-          // Inserir o banner dentro da div vazia
-          nextDiv.appendChild(banner);
+    // A estrutura varia por LP:
+    // - default/pontos/passagens: container > div > button + div vazia
+    // - viagem-completa: container > div > div + button (dentro de div) + div vazia
+    const lpType = detectLandingPage();
+
+    // Para viagem-completa, precisamos encontrar a div que CONTÉM o button
+    // não a primeira div do container
+    let containerInnerDiv;
+    const button = headerContainer.querySelector('button');
+
+    if (button) {
+      // Para viagem-completa, o button está dentro de uma div
+      // Precisamos inserir o countdown DENTRO da div do button, no FINAL (abaixo do button)
+      if (lpType === 'viagem-completa') {
+        const buttonParent = button.parentElement;
+        if (buttonParent) {
+          // Remover qualquer countdown existente (pode estar na posição errada)
+          const existingCountdown = document.getElementById('azul-friday-countdown');
+          if (existingCountdown) {
+            existingCountdown.remove();
+          }
+
+          // Inserir o banner no FINAL da div do button (abaixo de tudo)
+          // Isso garante que fique abaixo do button e de qualquer div vazia
+          buttonParent.appendChild(banner);
         } else {
-          // Se não encontrar, criar uma nova div e inserir
+          // Fallback: inserir após o button
           const newDiv = document.createElement('div');
           newDiv.appendChild(banner);
-          containerInnerDiv.appendChild(newDiv);
+          headerContainer.appendChild(newDiv);
         }
       } else {
-        // Se não encontrar o button, inserir diretamente na div interna
-        containerInnerDiv.appendChild(banner);
+        // Para outras LPs, usar a lógica original
+        containerInnerDiv = headerContainer.querySelector('div');
+        if (containerInnerDiv) {
+          // Para outras LPs, encontrar a div vazia que vem após o button
+          let nextDiv = button.nextElementSibling;
+          while (nextDiv && nextDiv.tagName !== 'DIV') {
+            nextDiv = nextDiv.nextElementSibling;
+          }
+          if (nextDiv) {
+            // Inserir o banner dentro da div vazia
+            nextDiv.appendChild(banner);
+          } else {
+            // Se não encontrar, criar uma nova div e inserir após o button
+            const newDiv = document.createElement('div');
+            newDiv.appendChild(banner);
+            containerInnerDiv.appendChild(newDiv);
+          }
+        } else {
+          // Fallback: inserir após o container do header
+          if (headerContainer.parentElement) {
+            headerContainer.parentElement.insertBefore(banner, headerContainer.nextSibling);
+          } else {
+            headerContainer.appendChild(banner);
+          }
+        }
       }
     } else {
-      // Fallback: inserir após o container do header
-      headerContainer.parentElement.insertBefore(banner, headerContainer.nextSibling);
+      // Fallback: inserir após o container do header se não encontrar button
+      if (headerContainer.parentElement) {
+        headerContainer.parentElement.insertBefore(banner, headerContainer.nextSibling);
+      } else {
+        headerContainer.appendChild(banner);
+      }
     }
 
     // Atualizar countdown
     updateCountdown();
+
+    // Aplicar estilos responsivos
+    applyResponsiveStyles();
   }
 
   // Função para atualizar o countdown
@@ -457,7 +567,7 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
       value.textContent = String(unit.value).padStart(2, '0');
       value.style.cssText = `
         color: white;
-        font-size: 32px;
+        font-size: 30px;
         font-weight: 700;
         font-family: sans-serif;
         line-height: 1;
@@ -489,6 +599,15 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     setInterval(() => {
       updateCountdown();
     }, 1000);
+
+    // Adicionar listener para resize da janela (responsividade)
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        applyResponsiveStyles();
+      }, 100);
+    });
   }
 
   // Aguardar DOM estar pronto
