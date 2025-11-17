@@ -287,7 +287,7 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
       box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     `;
 
-    // Lado esquerdo: Logo e texto
+    // Lado esquerdo: Logo
     const leftSection = document.createElement('div');
     leftSection.style.cssText = `
       display: flex;
@@ -305,7 +305,9 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     logoSvg.style.cssText = 'height: 108px; width: auto;';
     logoContainer.appendChild(logoSvg);
 
-    // Texto "Ofertas por tempo limitado!"
+    leftSection.appendChild(logoContainer);
+
+    // Texto "Ofertas por tempo limitado!" (agora diretamente no banner)
     const textContainer = document.createElement('div');
     textContainer.style.cssText = `
       display: flex;
@@ -353,9 +355,6 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     textContainer.appendChild(clockIcon);
     textContainer.appendChild(text);
 
-    leftSection.appendChild(logoContainer);
-    leftSection.appendChild(textContainer);
-
     // Lado direito: Countdown
     const countdownContainer = document.createElement('div');
     countdownContainer.id = 'countdown-display';
@@ -365,6 +364,7 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     `;
 
     banner.appendChild(leftSection);
+    banner.appendChild(textContainer);
     banner.appendChild(countdownContainer);
 
     // Encontrar a div vazia dentro do container do header para inserir o countdown
