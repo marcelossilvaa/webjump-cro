@@ -141,19 +141,19 @@
       console.log(`✅ Font-size aplicado em ${departureSpansStyled} span(s) "Saindo"`);
     }
 
-    // 5. Remover min-height de divs que contêm "A partir de:" e "por pessoa"
+    // 5. Aplicar min-height: initial !important em divs que contêm "A partir de:"
     const allDivsForPrice = targetContainer.querySelectorAll('div');
     let priceDivsFixed = 0;
     allDivsForPrice.forEach((div) => {
       const text = div.textContent || '';
-      // Verificar se contém "A partir de:" e "por pessoa"
-      if (text.includes('A partir de:') && text.includes('por pessoa')) {
+      // Verificar se contém "A partir de:" (usando a copy fixa como referência)
+      if (text.includes('A partir de:')) {
         div.style.setProperty('min-height', 'initial', 'important');
         priceDivsFixed++;
       }
     });
     if (priceDivsFixed > 0) {
-      console.log(`✅ Min-height removido de ${priceDivsFixed} div(s) de preço`);
+      console.log(`✅ Min-height aplicado em ${priceDivsFixed} div(s) com "A partir de:"`);
     }
 
     // 6. Adicionar badge "Mais Vendido" no primeiro card
