@@ -8,10 +8,13 @@
     ESTUDA_COM_ANUAL: 1213247,
     NUMERODROMO: 52150,
     BICHODARIO: 52144,
-    TABUADA_A: 54595,
-    TABUADA_B: 54598,
-    TABUADA_C: 54601,
-    TABUADA_D: 54604,
+    NO_CAPRICHO_A: 54565, // No capricho A + Que vergonha que dá!
+    TABUADA_1: 54595, // Nós e a tabuada 1 + No capricho B
+    TABUADA_2: 54598, // Nós e a tabuada 2 + No capricho C
+    TABUADA_3: 54601, // Nós e a tabuada 3 + No capricho D
+    TABUADA_4: 54604, // Nós e a tabuada 4 + No capricho E
+    PETER_PAN: 56512, // Peter Pan + Mágico de Oz
+    ESTUDA_COM_SEMESTRAL: 696542, // Estuda.com Semestral
   };
 
   // Mapeamento de nível escolar para produtos recomendados
@@ -20,88 +23,88 @@
   var GRADE_RECOMMENDATIONS = {
     // Educação Infantil - 1 ano
     1: {
-      primary: [],
-      secondary: null,
+      primary: [PRODUCT_IDS.NUMERODROMO],
+      secondary: [PRODUCT_IDS.BICHODARIO],
     },
     // Educação Infantil - 2 anos
     2: {
-      primary: [],
-      secondary: null,
+      primary: [PRODUCT_IDS.NUMERODROMO],
+      secondary: [PRODUCT_IDS.BICHODARIO],
     },
-    // Educação Infantil - 3 anos / Pré Escola 4 anos
+    // Educação Infantil - 3 anos
     3: {
-      primary: [PRODUCT_IDS.NUMERODROMO, PRODUCT_IDS.BICHODARIO],
-      secondary: null,
+      primary: [PRODUCT_IDS.NUMERODROMO],
+      secondary: [PRODUCT_IDS.BICHODARIO],
     },
     // Pré Escola - 4 anos
     4: {
-      primary: [PRODUCT_IDS.NUMERODROMO, PRODUCT_IDS.BICHODARIO],
-      secondary: null,
+      primary: [PRODUCT_IDS.NUMERODROMO],
+      secondary: [PRODUCT_IDS.BICHODARIO],
     },
     // Pré Escola - 5 anos
     5: {
-      primary: [PRODUCT_IDS.NUMERODROMO, PRODUCT_IDS.BICHODARIO],
-      secondary: null,
+      primary: [PRODUCT_IDS.NUMERODROMO],
+      secondary: [PRODUCT_IDS.BICHODARIO],
     },
     // 1º Série / 1º ano - Anos iniciais (6 anos)
     6: {
       primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: [PRODUCT_IDS.TABUADA_A], // No capricho A + Que vergonha que dá!
+      secondary: [PRODUCT_IDS.NO_CAPRICHO_A], // No capricho A + Que vergonha que dá!
     },
     // 2º Série / 2º ano - Anos iniciais (7 anos)
     7: {
       primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: [PRODUCT_IDS.TABUADA_A, PRODUCT_IDS.TABUADA_B], // Nós e a tabuada 1 + No capricho B
+      secondary: [PRODUCT_IDS.TABUADA_1], // Nós e a tabuada 1 + No capricho B
     },
     // 3º Série / 3º ano - Anos iniciais (8 anos)
     8: {
       primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: [PRODUCT_IDS.TABUADA_B, PRODUCT_IDS.TABUADA_C], // Nós e a tabuada 2 + No capricho C
+      secondary: [PRODUCT_IDS.TABUADA_2], // Nós e a tabuada 2 + No capricho C
     },
     // 4º Série / 4º ano - Anos iniciais (9 anos)
     9: {
       primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: [PRODUCT_IDS.TABUADA_C, PRODUCT_IDS.TABUADA_D], // Nós e a tabuada 3 + No capricho D
+      secondary: [PRODUCT_IDS.TABUADA_3], // Nós e a tabuada 3 + No capricho D
     },
     // 5º Série / 5º ano - Anos iniciais (10 anos)
     10: {
       primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: [PRODUCT_IDS.TABUADA_D], // Nós e a tabuada 4 + No capricho E
+      secondary: [PRODUCT_IDS.TABUADA_4], // Nós e a tabuada 4 + No capricho E
     },
     // 6º Série / 6º ano - Anos finais (11 anos)
     11: {
       primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: null, // Peter Pan + Mágico de Oz (não temos IDs)
+      secondary: [PRODUCT_IDS.PETER_PAN], // Peter Pan + Mágico de Oz
     },
     // 7º Série / 7º ano - Anos finais (12 anos)
     12: {
       primary: [PRODUCT_IDS.DICIONARIO_INGLES],
-      secondary: null, // Peter Pan + Mágico de Oz (não temos IDs)
+      secondary: [PRODUCT_IDS.PETER_PAN], // Peter Pan + Mágico de Oz
     },
     // 8º Série / 8º ano - Anos finais (13 anos)
     13: {
       primary: [PRODUCT_IDS.DICIONARIO_INGLES],
-      secondary: null, // Peter Pan + Mágico de Oz (não temos IDs)
+      secondary: [PRODUCT_IDS.PETER_PAN], // Peter Pan + Mágico de Oz
     },
     // 9º Série / 9º ano - Anos finais (14 anos)
     14: {
       primary: [PRODUCT_IDS.DICIONARIO_INGLES],
-      secondary: null, // Peter Pan + Mágico de Oz (não temos IDs)
+      secondary: [PRODUCT_IDS.PETER_PAN], // Peter Pan + Mágico de Oz
     },
     // Ensino Médio 1 / 1º Colegial (15 anos)
     15: {
       primary: [PRODUCT_IDS.ESTUDA_COM_ANUAL],
-      secondary: null, // Estuda.com Semestral (não temos ID)
+      secondary: [PRODUCT_IDS.ESTUDA_COM_SEMESTRAL], // Estuda.com Semestral
     },
     // Ensino Médio 2 / 2º Colegial (16 anos)
     16: {
       primary: [PRODUCT_IDS.ESTUDA_COM_ANUAL],
-      secondary: null, // Estuda.com Semestral (não temos ID)
+      secondary: [PRODUCT_IDS.ESTUDA_COM_SEMESTRAL], // Estuda.com Semestral
     },
     // Ensino Médio 3 / 3º Colegial (17 anos)
     17: {
       primary: [PRODUCT_IDS.ESTUDA_COM_ANUAL],
-      secondary: null, // Estuda.com Semestral (não temos ID)
+      secondary: [PRODUCT_IDS.ESTUDA_COM_SEMESTRAL], // Estuda.com Semestral
     },
   };
 
@@ -1774,7 +1777,7 @@
         isRunning = false;
       }
     });
-  }, 300);
+  }, 200); // Otimizado: reduzido de 300ms para 200ms
 
   // Função auxiliar para verificar kit e mostrar recomendação
   function checkKitAndShowRecommendation(cartData) {
@@ -1787,7 +1790,7 @@
         lastCheckedState = null;
         isRunning = false;
         run();
-      }, 500);
+      }, 300); // Otimizado: reduzido de 500ms para 300ms
       return;
     }
 
@@ -1983,7 +1986,7 @@
             setTimeout(function () {
               mutationObserverPaused = false;
               isRunning = false;
-            }, 100);
+            }, 50); // Otimizado: reduzido de 100ms para 50ms
           })
           .catch(function (err) {
             console.warn('[MiniCart] Erro ao buscar dados do produto:', err);
@@ -1993,7 +1996,7 @@
             setTimeout(function () {
               mutationObserverPaused = false;
               isRunning = false;
-            }, 100);
+            }, 50); // Otimizado: reduzido de 100ms para 50ms
           });
         return;
       }
@@ -2048,7 +2051,7 @@
             setTimeout(function () {
               mutationObserverPaused = false;
               isRunning = false;
-            }, 100);
+            }, 50); // Otimizado: reduzido de 100ms para 50ms
           })
           .catch(function (err) {
             console.warn('[MiniCart] Erro ao buscar dados do produto:', err);
@@ -2058,7 +2061,7 @@
             setTimeout(function () {
               mutationObserverPaused = false;
               isRunning = false;
-            }, 100);
+            }, 50); // Otimizado: reduzido de 100ms para 50ms
           });
       });
     }
@@ -2166,8 +2169,8 @@
               if (!isRunning) {
                 run();
               }
-            }, 500);
-          }, 1000); // Debounce de 1 segundo
+            }, 300); // Otimizado: reduzido de 500ms para 300ms
+          }, 700); // Otimizado: reduzido de 1000ms para 700ms
         });
       }
     }
@@ -2177,14 +2180,14 @@
   setTimeout(function () {
     console.log('[MiniCart] Executando verificação inicial...');
     run();
-  }, 1000);
+  }, 500); // Otimizado: reduzido de 1000ms para 500ms
 
   // Executa também imediatamente caso o DOM já esteja pronto
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    setTimeout(run, 100);
+    setTimeout(run, 50); // Otimizado: reduzido de 100ms para 50ms
   } else {
     window.addEventListener('load', function () {
-      setTimeout(run, 100);
+      setTimeout(run, 50); // Otimizado: reduzido de 100ms para 50ms
     });
   }
 })();
