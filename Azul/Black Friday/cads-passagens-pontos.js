@@ -1,5 +1,7 @@
 (function () {
   let observer = null;
+  let isProcessing = false;
+  let debounceTimer = null;
 
   // Função para encontrar todos os containers que contém cards de passagens
   function findCardsContainers() {
@@ -13,13 +15,19 @@
     // Verificar quais containers contém cards de passagens
     for (let i = 0; i < allContainers.length; i++) {
       const container = allContainers[i];
-      const buttons = container.querySelectorAll('input[type="button"][value="Compre agora"]');
+      const buttonsCompreAgora = container.querySelectorAll(
+        'input[type="button"][value="Compre agora"]'
+      );
+      const buttonsVerPromocao = container.querySelectorAll(
+        'input[type="button"][value="Ver promoção"]'
+      );
       const spans = container.querySelectorAll('span');
       const divs = container.querySelectorAll('div');
 
       let hasPrice = false;
       let hasApartirDe = false;
-      let hasCompreAgoraButton = buttons.length > 0;
+      let hasCompreAgoraButton = buttonsCompreAgora.length > 0;
+      let hasVerPromocaoButton = buttonsVerPromocao.length > 0;
 
       // Verificar se algum span contém "x de"
       for (let j = 0; j < spans.length; j++) {
@@ -41,7 +49,11 @@
 
       // Se tem botão "Compre agora" E (tem preço OU tem "A partir de:"), é um container de passagens
       // Ou se tem botão "Compre agora" e parece ser um card (tem imagem)
-      if (hasCompreAgoraButton && (hasPrice || hasApartirDe || container.querySelector('img'))) {
+      // Ou se tem botão "Ver promoção" e parece ser um card (tem imagem)
+      if (
+        (hasCompreAgoraButton && (hasPrice || hasApartirDe || container.querySelector('img'))) ||
+        (hasVerPromocaoButton && container.querySelector('img'))
+      ) {
         console.log(`Container ${i + 1} contém cards de passagens`);
         relevantContainers.push(container);
       }
@@ -74,26 +86,35 @@
       console.log(`✅ Font-size aplicado em ${priceSpans.length} span(s) de preço`);
     }
 
-    // 2. Aplicar min-height: initial !important em divs que contêm "A partir de:"
-    const allDivsForPrice = container.querySelectorAll('div');
+    // 2. Aplicar min-height: initial !important APENAS na div que contém diretamente o span "A partir de:"
+    // Buscar spans com "A partir de:" e aplicar na div pai direta
+    const allSpansForApartirDe = container.querySelectorAll('span');
     let priceDivsFixed = 0;
-    allDivsForPrice.forEach((div) => {
-      const text = div.textContent || '';
-      // Verificar se contém "A partir de:" (usando a copy fixa como referência)
+    allSpansForApartirDe.forEach((span) => {
+      const text = span.textContent || '';
+      // Verificar se o span contém "A partir de:"
       if (text.includes('A partir de:')) {
-        div.style.setProperty('min-height', 'initial', 'important');
-        priceDivsFixed++;
+        // Aplicar na div pai direta deste span
+        const parentDiv = span.parentElement;
+        if (parentDiv && parentDiv.tagName === 'DIV') {
+          // Verificar se já foi aplicado para evitar reaplicação
+          if (!parentDiv.hasAttribute('data-min-height-applied')) {
+            parentDiv.style.setProperty('min-height', 'initial', 'important');
+            parentDiv.setAttribute('data-min-height-applied', 'true');
+            priceDivsFixed++;
+          }
+        }
       }
     });
     if (priceDivsFixed > 0) {
       console.log(`✅ Min-height aplicado em ${priceDivsFixed} div(s) com "A partir de:"`);
     }
 
-    // 3. Estilizar botões "Compre agora" (buscar por value, sem depender de classes)
+    // 3. Estilizar botões "Compre agora" e "Ver promoção" (buscar por value, sem depender de classes)
     const allInputs = container.querySelectorAll('input[type="button"]');
     let buttonsStyled = 0;
     allInputs.forEach((button) => {
-      if (button.value === 'Compre agora') {
+      if (button.value === 'Compre agora' || button.value === 'Ver promoção') {
         button.style.setProperty('background-color', '#CF527A', 'important');
         button.style.setProperty('border-radius', '65px', 'important');
         button.style.setProperty('font-weight', '700', 'important');
@@ -103,15 +124,52 @@
     if (buttonsStyled > 0) {
       console.log(`✅ Botões estilizados: ${buttonsStyled}`);
     }
+
+    // 4. Aplicar max-width e min-width: 266px APENAS na div css-b7xk (card individual)
+    // Buscar especificamente divs com classe css-b7xk que têm imagem como filho direto
+    const allDivs = container.querySelectorAll('div.css-b7xk');
+    let cardsStyled = 0;
+    allDivs.forEach((div) => {
+      // Verificar se tem imagem como filho direto (não em filhos aninhados)
+      const hasDirectImage = Array.from(div.children).some((child) => child.tagName === 'IMG');
+
+      // Verificar se tem preço ou botão (para confirmar que é um card válido)
+      const hasPrice = Array.from(div.querySelectorAll('span')).some((span) =>
+        span.textContent.includes('A partir de:')
+      );
+      const hasButtonCompreAgora = div.querySelector('input[type="button"][value="Compre agora"]');
+      const hasButtonVerPromocao = div.querySelector('input[type="button"][value="Ver promoção"]');
+
+      // Aplicar apenas se for css-b7xk com imagem direta e (preço ou botão)
+      if (hasDirectImage && (hasPrice || hasButtonCompreAgora || hasButtonVerPromocao)) {
+        // Verificar se já foi estilizado
+        if (!div.hasAttribute('data-card-width-applied')) {
+          div.style.setProperty('max-width', '266px', 'important');
+          div.style.setProperty('min-width', '266px', 'important');
+          div.setAttribute('data-card-width-applied', 'true');
+          cardsStyled++;
+        }
+      }
+    });
+    if (cardsStyled > 0) {
+      console.log(`✅ Max-width e min-width de 266px aplicado em ${cardsStyled} card(s) css-b7xk`);
+    }
   }
 
   // Função para aplicar personalizações em todos os containers de passagens
   function customizeCards() {
+    // Evitar execução simultânea
+    if (isProcessing) {
+      return;
+    }
+    isProcessing = true;
+
     // Buscar todos os containers relevantes
     const containers = findCardsContainers();
 
     if (containers.length === 0) {
       console.log('Containers com cards de passagens não encontrados ainda');
+      isProcessing = false;
       return;
     }
 
@@ -119,6 +177,9 @@
     containers.forEach((container) => {
       customizeCardsInContainer(container);
     });
+
+    // Resetar flag de processamento
+    isProcessing = false;
   }
 
   // Função para inicializar
@@ -135,8 +196,13 @@
       // Configurar MutationObserver para detectar mudanças e novos containers
       if (!observer) {
         observer = new MutationObserver(() => {
-          // Reaplicar personalizações (isso também vai encontrar novos containers)
-          customizeCards();
+          // Debounce para evitar loops
+          if (debounceTimer) {
+            clearTimeout(debounceTimer);
+          }
+          debounceTimer = setTimeout(() => {
+            customizeCards();
+          }, 300);
         });
 
         // Observar o document.body para capturar mudanças em qualquer lugar

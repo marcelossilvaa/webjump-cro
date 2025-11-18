@@ -301,7 +301,7 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
       // Estilos para mobile no banner
       banner.style.setProperty('flex-direction', 'column', 'important');
       banner.style.setProperty('gap', '10px', 'important');
-      banner.style.setProperty('margin', '15px auto', 'important');
+      banner.style.setProperty('margin', '15px auto 20px auto', 'important');
       banner.style.setProperty('align-items', 'center', 'important');
       banner.style.setProperty('justify-content', 'center', 'important');
 
@@ -313,7 +313,7 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
       // Estilos para desktop no banner
       banner.style.setProperty('flex-direction', 'row', 'important');
       banner.style.setProperty('gap', '0', 'important');
-      banner.style.setProperty('margin', '0px auto', 'important');
+      banner.style.setProperty('margin', '0px auto 20px auto', 'important');
       banner.style.setProperty('justify-content', 'space-between', 'important');
 
       // Estilos para desktop no textContainer
@@ -344,7 +344,7 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
       max-width: 1024px;
       width: 100%;
       border: 0px;
-      margin: 0px auto;
+      margin: 0px auto 20px auto;
       padding: 20px 24px;
       border-radius: 16px;
       background: linear-gradient(0deg, #D8F9FF -63%, #6BD1E3 -19.01%, #56C3E5 24.97%, #008BC4 68.96%, #0061A0 112.95%);
