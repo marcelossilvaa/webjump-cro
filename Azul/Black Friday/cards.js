@@ -57,9 +57,20 @@
 
     if (priceSpans.length > 0) {
       priceSpans.forEach((span) => {
-        span.style.setProperty('font-size', '24px', 'important');
+        // Aplicar font-size de 22px (forçar remoção de estilos inline anteriores)
+        span.style.removeProperty('font-size');
+        span.style.setProperty('font-size', '22px', 'important');
+
+        // Remover &nbsp; do texto (substituir por espaço normal)
+        const currentText = span.textContent || '';
+        const cleanedText = currentText.replace(/\u00A0/g, ' ').trim();
+        if (currentText !== cleanedText) {
+          span.textContent = cleanedText;
+        }
       });
-      console.log(`✅ Font-size aplicado em ${priceSpans.length} span(s) de preço`);
+      console.log(
+        `✅ Font-size aplicado e &nbsp; removido em ${priceSpans.length} span(s) de preço`
+      );
     }
 
     // 2. Modificar spans que contenham "Aéreo + Hotel" para manter apenas "Aéreo + Hotel"
@@ -79,6 +90,71 @@
     });
     if (hotelSpansModified > 0) {
       console.log(`✅ Texto de hotel modificado em ${hotelSpansModified} span(s)`);
+    }
+
+    // 2.1. Substituir nome do hotel por "Aéreo + Hotel"
+    // Buscar divs que contêm apenas um span com texto que não é nenhum dos textos conhecidos
+    // e que estão dentro de um card (que contém "A partir de" e "x de")
+    const allDivsForHotel = targetContainer.querySelectorAll('div');
+    let hotelDivsReplaced = 0;
+    allDivsForHotel.forEach((div) => {
+      // Verificar se a div tem apenas um span filho direto
+      const directSpans = Array.from(div.children).filter((child) => child.tagName === 'SPAN');
+      if (directSpans.length === 1) {
+        const span = directSpans[0];
+        const spanText = span.textContent || '';
+        const trimmedText = spanText.trim();
+
+        // Verificar se não é nenhum dos textos conhecidos
+        const isKnownText =
+          trimmedText.includes('x de') ||
+          trimmedText.includes('A partir de') ||
+          trimmedText.includes('Saindo') ||
+          trimmedText.includes('dias') ||
+          trimmedText.includes('noites') ||
+          trimmedText.includes('por pessoa') ||
+          trimmedText === 'Aéreo + Hotel' ||
+          trimmedText.length === 0;
+
+        if (!isKnownText) {
+          // Verificar se está dentro de um card (buscar um ancestor que contenha "A partir de" e "x de")
+          let ancestor = div.parentElement;
+          let isInCard = false;
+          while (ancestor && ancestor !== targetContainer) {
+            const ancestorText = ancestor.textContent || '';
+            if (ancestorText.includes('A partir de') && ancestorText.includes('x de')) {
+              isInCard = true;
+              break;
+            }
+            ancestor = ancestor.parentElement;
+          }
+
+          if (isInCard && trimmedText !== 'Aéreo + Hotel') {
+            span.textContent = 'Aéreo + Hotel';
+            hotelDivsReplaced++;
+          }
+        }
+      }
+    });
+    if (hotelDivsReplaced > 0) {
+      console.log(`✅ ${hotelDivsReplaced} nome(s) de hotel substituído(s) por "Aéreo + Hotel"`);
+    }
+
+    // 2.2. Substituir "Fernando de Noronha" por "Noronha" nos títulos
+    // Buscar spans que contêm "Fernando de Noronha"
+    const allSpansForTitle = targetContainer.querySelectorAll('span');
+    let titlesModified = 0;
+    allSpansForTitle.forEach((span) => {
+      const text = span.textContent || '';
+      if (text.includes('Fernando de Noronha')) {
+        span.textContent = 'Noronha';
+        titlesModified++;
+      }
+    });
+    if (titlesModified > 0) {
+      console.log(
+        `✅ ${titlesModified} título(s) modificado(s): "Fernando de Noronha" → "Noronha"`
+      );
     }
 
     // 3. Estilizar botões "Compre agora" (buscar por value, sem depender de classes)
@@ -154,6 +230,33 @@
     });
     if (priceDivsFixed > 0) {
       console.log(`✅ Min-height aplicado em ${priceDivsFixed} div(s) com "A partir de:"`);
+    }
+
+    // 5.1. Aplicar gap de 6px nos containers dos cards
+    // Buscar divs que contêm "A partir de" e "x de" e que têm múltiplos filhos div
+    const allDivsForGap = targetContainer.querySelectorAll('div');
+    let gapApplied = 0;
+    allDivsForGap.forEach((div) => {
+      const text = div.textContent || '';
+      // Verificar se contém "A partir de" e "x de" (estrutura de card)
+      if (text.includes('A partir de') && text.includes('x de')) {
+        // Verificar se tem múltiplos filhos div (estrutura: css-e92yew, css-385o3a, css-1ago99h)
+        const childDivs = Array.from(div.children).filter((child) => child.tagName === 'DIV');
+        if (childDivs.length >= 2) {
+          // Aplicar gap de 6px
+          div.style.setProperty('gap', '6px', 'important');
+          // Garantir que seja flex ou grid para o gap funcionar
+          const computedDisplay = window.getComputedStyle(div).display;
+          if (computedDisplay !== 'flex' && computedDisplay !== 'grid') {
+            div.style.setProperty('display', 'flex', 'important');
+            div.style.setProperty('flex-direction', 'column', 'important');
+          }
+          gapApplied++;
+        }
+      }
+    });
+    if (gapApplied > 0) {
+      console.log(`✅ Gap de 6px aplicado em ${gapApplied} container(s) de card`);
     }
 
     // 6. Adicionar badge "Mais Vendido" no primeiro card
