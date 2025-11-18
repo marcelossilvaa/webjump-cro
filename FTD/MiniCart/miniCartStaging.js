@@ -726,17 +726,26 @@
 
     // Padrões específicos para Educação Infantil (EI ou Educação Infantil)
     if (/educação\s+infantil|infantil|\bEI\b/i.test(lowerName)) {
-      // Educação Infantil 1 ano
-      if (/\b1\s*anos?\b|level\s*1/i.test(lowerName)) return '1 ano - Educação Infantil';
+      // Padrão melhorado para detectar números com zero à esquerda (03, 04, etc.)
+      // Educação Infantil 1 ano (aceita "1", "01", "1 ano", "01 ANOS")
+      if (/\b0?1\s*anos?\b|level\s*1|ei\s*0?1/i.test(lowerName)) return '1 ano - Educação Infantil';
       // Educação Infantil 2 anos
-      if (/\b2\s*anos?\b|level\s*2/i.test(lowerName)) return '2 anos - Educação Infantil';
-      // Educação Infantil 3 anos
-      if (/\b3\s*anos?\b|level\s*3/i.test(lowerName)) return '3 anos - Educação Infantil';
-      // Pré Escola 4 anos
-      if (/\b4\s*anos?\b|level\s*4/i.test(lowerName) || /pré.*escola.*4/i.test(lowerName))
+      if (/\b0?2\s*anos?\b|level\s*2|ei\s*0?2/i.test(lowerName))
+        return '2 anos - Educação Infantil';
+      // Educação Infantil 3 anos (aceita "3", "03", "3 anos", "03 ANOS", "EI 03")
+      if (/\b0?3\s*anos?\b|level\s*3|ei\s*0?3/i.test(lowerName))
+        return '3 anos - Educação Infantil';
+      // Pré Escola 4 anos (aceita "4", "04", "4 anos", "04 ANOS", "EI 04")
+      if (
+        /\b0?4\s*anos?\b|level\s*4|ei\s*0?4/i.test(lowerName) ||
+        /pré.*escola.*4/i.test(lowerName)
+      )
         return '4 anos - Pré Escola';
       // Pré Escola 5 anos
-      if (/\b5\s*anos?\b|level\s*5/i.test(lowerName) || /pré.*escola.*5/i.test(lowerName))
+      if (
+        /\b0?5\s*anos?\b|level\s*5|ei\s*0?5/i.test(lowerName) ||
+        /pré.*escola.*5/i.test(lowerName)
+      )
         return '5 anos - Pré Escola';
     }
 
@@ -1020,14 +1029,47 @@
       });
 
       // Verifica se é um produto de kit escolar (padrão: "Conjunto", "Kit", ou produtos com ano)
+      // Padrões melhorados para detectar mais variações
+      var hasKitKeyword = /conjunto|kit|faça|faca|lista\s*de\s*materiais|\bCJ\b/i.test(productName);
+      var hasEI = /\bEI\b/i.test(productName);
+      var hasGradePattern = /\d+[º°]\s*(ano|série)/i.test(productName);
+      var hasAnosPattern = /\d+\s*ANOS?/i.test(productName); // Aceita "ANOS" ou "ANO"
+      var hasLevelPattern = /LEVEL\s+\d+/i.test(productName);
+      var hasVolumePattern = /VOL\s*\d+/i.test(productName); // Detecta "VOL 1", "VOL 2", etc.
+
       var isKitProduct =
-        /conjunto|kit|faça|faca|lista\s*de\s*materiais|\bCJ\b|\bEI\b/i.test(productName) ||
-        /\d+[º°]\s*(ano|série)/i.test(productName) ||
-        /\d+\s+ANOS/i.test(productName) ||
-        /LEVEL\s+\d+/i.test(productName);
+        hasKitKeyword ||
+        hasEI ||
+        hasGradePattern ||
+        hasAnosPattern ||
+        hasLevelPattern ||
+        hasVolumePattern;
+
+      // Log de debug para entender por que não está detectando
+      if (!isKitProduct) {
+        console.log('[MiniCart] Produto NÃO detectado como kit:', {
+          name: productName,
+          hasKitKeyword: hasKitKeyword,
+          hasEI: hasEI,
+          hasGradePattern: hasGradePattern,
+          hasAnosPattern: hasAnosPattern,
+          hasLevelPattern: hasLevelPattern,
+          hasVolumePattern: hasVolumePattern,
+        });
+      }
 
       if (isKitProduct) {
-        console.log('[MiniCart] Kit detectado:', productName);
+        console.log('[MiniCart] Kit detectado:', {
+          name: productName,
+          patterns: {
+            hasKitKeyword: hasKitKeyword,
+            hasEI: hasEI,
+            hasGradePattern: hasGradePattern,
+            hasAnosPattern: hasAnosPattern,
+            hasLevelPattern: hasLevelPattern,
+            hasVolumePattern: hasVolumePattern,
+          },
+        });
         kitProducts.push(item);
 
         // 🔍 PRIORIDADE 2: Tenta extrair o nível escolar do nome do produto (fallback)
