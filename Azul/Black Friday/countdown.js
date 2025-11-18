@@ -341,7 +341,6 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     const banner = document.createElement('div');
     banner.id = 'azul-friday-countdown';
     banner.style.cssText = `
-      max-width: 1024px;
       width: 100%;
       border: 0px;
       margin: 0px auto 20px auto;

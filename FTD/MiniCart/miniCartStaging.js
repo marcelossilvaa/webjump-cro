@@ -801,52 +801,98 @@
 
   // Função para converter nível escolar detectado para número do nível
   // Exemplo: "5º ano - Anos iniciais" -> 10 (5º Série)
+  // Versão robusta: normaliza strings e usa regex flexíveis
   function convertGradeLevelToNumber(gradeLevel) {
     if (!gradeLevel) return null;
 
-    // Mapeamento direto para níveis específicos
-    var directMappings = {
-      '1 ano - Educação Infantil': 1,
-      '2 anos - Educação Infantil': 2,
-      '3 anos - Educação Infantil': 3,
-      '4 anos - Pré Escola': 4,
-      '5 anos - Pré Escola': 5,
-      '1º Colegial': 15,
-      '2º Colegial': 16,
-      '3º Colegial': 17,
-    };
+    // Normaliza a string: lowercase, remove espaços extras, remove hífens/traços
+    var normalized = gradeLevel
+      .toLowerCase()
+      .replace(/\s+/g, ' ') // Múltiplos espaços -> 1 espaço
+      .replace(/\s*-\s*/g, ' ') // Remove hífens e espaços ao redor
+      .trim();
 
-    // Verifica se há mapeamento direto
-    if (directMappings[gradeLevel]) {
-      return directMappings[gradeLevel];
+    console.log('[MiniCart] Normalizando gradeLevel:', {
+      original: gradeLevel,
+      normalized: normalized,
+    });
+
+    // 1. EDUCAÇÃO INFANTIL (1-5 anos)
+    // Padrões: "1 ano educacao infantil", "2 anos ensino infantil", "3 anos pre escola"
+    if (
+      /educacao\s*infantil|ensino\s*infantil|pre\s*escola/i.test(normalized) ||
+      /\d+\s*anos?\s*(educacao|ensino|infantil|pre)/i.test(normalized)
+    ) {
+      // Extrai o número (1, 2, 3, 4, ou 5)
+      var infantilMatch = normalized.match(/(\d+)\s*anos?/);
+      if (infantilMatch) {
+        var anos = parseInt(infantilMatch[1]);
+        if (anos >= 1 && anos <= 5) {
+          console.log('[MiniCart] Detectado Educação Infantil:', anos, 'anos -> nível', anos);
+          return anos; // 1 ano -> 1, 2 anos -> 2, ..., 5 anos -> 5
+        }
+      }
     }
 
-    // Extrai o número do ano para os casos do Ensino Fundamental
-    var match = gradeLevel.match(/(\d+)[º°]/);
-    if (!match) {
-      // Tenta extrair número sem º ou °
-      match = gradeLevel.match(/(\d+)\s*ano/i);
-      if (!match) return null;
+    // 2. ENSINO MÉDIO / COLEGIAL (15, 16, 17)
+    // Padrões: "1º ano ensino medio", "2ª serie ensino medio", "3º colegial"
+    if (/ensino\s*medio|colegial/i.test(normalized)) {
+      // Extrai o número (1, 2, ou 3)
+      var medioMatch = normalized.match(/(\d+)[º°ª]?\s*(ano|serie|colegial)/);
+      if (medioMatch) {
+        var serie = parseInt(medioMatch[1]);
+        if (serie >= 1 && serie <= 3) {
+          var nivel = 14 + serie; // 1 -> 15, 2 -> 16, 3 -> 17
+          console.log('[MiniCart] Detectado Ensino Médio:', serie, 'º ano/série -> nível', nivel);
+          return nivel;
+        }
+      }
     }
 
-    var ano = parseInt(match[1]);
-    var isAnosIniciais = gradeLevel.includes('Anos iniciais');
-    var isAnosFinais = gradeLevel.includes('Anos finais');
-
-    // Mapeamento: ano -> número do nível
-    // Pré Escola: 4 e 5 anos -> níveis 4 e 5
-    // 1º ao 5º ano (Anos iniciais) -> 1º ao 5º Série (6 a 10)
-    // 6º ao 9º ano (Anos finais) -> 6º ao 9º Série (11 a 14)
-    // Colegial: 1º, 2º, 3º -> 15, 16, 17
-
-    if (ano >= 1 && ano <= 5 && isAnosIniciais) {
-      // 1º ao 5º ano (Anos iniciais) -> 1º ao 5º Série
-      return ano + 5; // 1º ano -> 6 (1º Série), 5º ano -> 10 (5º Série)
-    } else if (ano >= 6 && ano <= 9 && isAnosFinais) {
-      // 6º ao 9º ano (Anos finais) -> 6º ao 9º Série
-      return ano + 5; // 6º ano -> 11 (6º Série), 9º ano -> 14 (9º Série)
+    // 3. ENSINO FUNDAMENTAL - ANOS INICIAIS (1º ao 5º ano -> 6 a 10)
+    if (/anos?\s*iniciais|ef\s*1|efai/i.test(normalized)) {
+      var iniciaisMatch = normalized.match(/(\d+)[º°ª]?\s*ano/);
+      if (iniciaisMatch) {
+        var ano = parseInt(iniciaisMatch[1]);
+        if (ano >= 1 && ano <= 5) {
+          var nivel = ano + 5; // 1º -> 6, 2º -> 7, ..., 5º -> 10
+          console.log('[MiniCart] Detectado Anos Iniciais:', ano, 'º ano -> nível', nivel);
+          return nivel;
+        }
+      }
     }
 
+    // 4. ENSINO FUNDAMENTAL - ANOS FINAIS (6º ao 9º ano -> 11 a 14)
+    if (/anos?\s*finais|ef\s*2/i.test(normalized)) {
+      var finaisMatch = normalized.match(/(\d+)[º°ª]?\s*ano/);
+      if (finaisMatch) {
+        var ano = parseInt(finaisMatch[1]);
+        if (ano >= 6 && ano <= 9) {
+          var nivel = ano + 5; // 6º -> 11, 7º -> 12, 8º -> 13, 9º -> 14
+          console.log('[MiniCart] Detectado Anos Finais:', ano, 'º ano -> nível', nivel);
+          return nivel;
+        }
+      }
+    }
+
+    // 5. FALLBACK: Tenta extrair apenas o número e adivinhar pelo contexto
+    // Se tem "ano" ou "série" e um número de 1-9, assume ensino fundamental
+    var fallbackMatch = normalized.match(/(\d+)[º°ª]?\s*(ano|serie)/);
+    if (fallbackMatch) {
+      var num = parseInt(fallbackMatch[1]);
+      // Anos 1-5: provavelmente anos iniciais
+      if (num >= 1 && num <= 5) {
+        console.log('[MiniCart] FALLBACK: Assumindo Anos Iniciais para', num, 'º ano');
+        return num + 5;
+      }
+      // Anos 6-9: provavelmente anos finais
+      if (num >= 6 && num <= 9) {
+        console.log('[MiniCart] FALLBACK: Assumindo Anos Finais para', num, 'º ano');
+        return num + 5;
+      }
+    }
+
+    console.warn('[MiniCart] Não foi possível converter gradeLevel:', gradeLevel);
     return null;
   }
 
@@ -969,12 +1015,13 @@
 
     var gradeLevel = null;
     var kitProducts = [];
+    var hasAdoptionList = false;
 
     console.log(
       '[MiniCart] Verificando ' + cartData.items.length + ' itens no carrinho para detectar kits...'
     );
 
-    // 🔍 PRIORIDADE 1: Tenta buscar gradeLevel via API de estudantes
+    // PRIORIDADE 1: Verifica se existe adoption list (indica que há kit escolar)
     // Acessa: cart.ftd.data.miniCart.miniCartAdoptionLists
     if (
       cartData.ftd &&
@@ -990,8 +1037,12 @@
         lists: adoptionListKeys,
       });
 
-      // Pega o primeiro studentId encontrado
+      // Se existe pelo menos uma adoption list, há kit no carrinho
       if (adoptionListKeys.length > 0) {
+        hasAdoptionList = true;
+        console.log('[MiniCart] Kit detectado via adoption list');
+
+        // Pega o primeiro studentId encontrado
         var firstAdoptionListId = adoptionListKeys[0];
         var firstAdoptionList = adoptionLists[firstAdoptionListId];
         var studentId = firstAdoptionList.studentId;
@@ -1001,13 +1052,13 @@
         // Busca o gradeLevel no mapa (se já foi carregado)
         if (STUDENTS_DATA_LOADED && STUDENT_GRADE_MAP[studentId]) {
           gradeLevel = STUDENT_GRADE_MAP[studentId];
-          console.log('[MiniCart] ✅ Nível escolar obtido via API de estudantes:', {
+          console.log('[MiniCart] Nivel escolar obtido via API de estudantes:', {
             studentId: studentId,
             gradeLevel: gradeLevel,
           });
         } else {
           console.log(
-            '[MiniCart] ⚠️ Mapa de estudantes não carregado ou studentId não encontrado:',
+            '[MiniCart] AVISO: Mapa de estudantes nao carregado ou studentId nao encontrado:',
             {
               dataLoaded: STUDENTS_DATA_LOADED,
               hasStudentId: !!STUDENT_GRADE_MAP[studentId],
@@ -1089,8 +1140,12 @@
       }
     }
 
+    // Determina se há kit: se existe adoption list OU se detectou produtos por regex
+    var hasKit = hasAdoptionList || kitProducts.length > 0;
+
     console.log('[MiniCart] Resultado da detecção:', {
-      hasKit: kitProducts.length > 0,
+      hasKit: hasKit,
+      hasAdoptionList: hasAdoptionList,
       gradeLevel: gradeLevel,
       gradeLevelSource: gradeLevel
         ? STUDENTS_DATA_LOADED && STUDENT_GRADE_MAP[Object.keys(STUDENT_GRADE_MAP)[0]]
@@ -1101,7 +1156,7 @@
     });
 
     return {
-      hasKit: kitProducts.length > 0,
+      hasKit: hasKit,
       gradeLevel: gradeLevel,
       kitProducts: kitProducts,
     };
