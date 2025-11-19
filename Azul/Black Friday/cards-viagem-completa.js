@@ -174,6 +174,26 @@
         button.style.setProperty('background-color', '#CF527A', 'important');
         button.style.setProperty('border-radius', '65px', 'important');
         button.style.setProperty('font-weight', '700', 'important');
+
+        // Adicionar estilos de hover
+        if (!button.hasAttribute('data-hover-listener-added')) {
+          button.addEventListener('mouseenter', () => {
+            button.style.setProperty('transform', 'translateY(-2px)', 'important');
+            button.style.setProperty(
+              'box-shadow',
+              '0 6px 16px rgba(255, 79, 154, 0.35)',
+              'important'
+            );
+          });
+
+          button.addEventListener('mouseleave', () => {
+            button.style.removeProperty('transform');
+            button.style.removeProperty('box-shadow');
+          });
+
+          button.setAttribute('data-hover-listener-added', 'true');
+        }
+
         buttonsStyled++;
       }
     });
