@@ -5,107 +5,163 @@
   var PRODUCT_IDS = {
     MINIDICIONARIO: 56551,
     DICIONARIO_INGLES: 53959,
-    ESTUDA_COM_ANUAL: 1213247,
-    NUMERODROMO: 52150,
+    ESTUDA_COM_ANUAL: 696545,
+    ESTUDA_COM_SEMESTRAL: 696542,
+    REFORCA_ANUAL: null, // Sem ID disponível
+    REFORCA_SEMESTRAL: 453779,
+    NUMERODROMO_BICHODARIO: 699322, // Numeródromo + bichodário (conjunto)
     BICHODARIO: 52144,
-    NO_CAPRICHO_A: 54565, // No capricho A + Que vergonha que dá!
-    TABUADA_1: 54595, // Nós e a tabuada 1 + No capricho B
-    TABUADA_2: 54598, // Nós e a tabuada 2 + No capricho C
-    TABUADA_3: 54601, // Nós e a tabuada 3 + No capricho D
-    TABUADA_4: 54604, // Nós e a tabuada 4 + No capricho E
-    PETER_PAN: 56512, // Peter Pan + Mágico de Oz
-    ESTUDA_COM_SEMESTRAL: 696542, // Estuda.com Semestral
+    NO_CAPRICHO_A: 695573, // No capricho A + Que vergonha que dá!
+    TABUADA_1: 695576, // Nós e a tabuada 1 + No capricho B
+    TABUADA_2: 695786, // Nós e a tabuada 2 + No capricho C
+    TABUADA_3: 695816, // Nós e a tabuada 3 + No capricho D
+    TABUADA_4: 695888, // Nós e a tabuada 4 + No capricho E
+    PETER_PAN: 578096, // Peter Pan + Mágico de Oz
+    CADE_LIVRO: 56353, // Cadê o livro que estava aqui?
+    MUSEU_EMILIA: 51706, // O museu da emília
+    ALICE: 56506, // Alice no País das Maravilhas
+    PEQUENO_PRINCIPE: 75016, // O pequeno príncipe
+    ENQUANTO_MAMAE_DORMIA: 697535, // Enquanto mamãe dormia
+    BENNY_INVENTOR: 697577, // Benny o inventor
+    SETE_CORVOS: 697628, // Sete corvos e oito contos
+    ANJOS: 697679, // Anjos
+    MAMAE_GATA: 56572, // Mamãe gata e seus pintinhos
+    TUNEL: 56317, // O túnel
+    ISCA_FAISCA: 52123, // Isca, Faísca!-Coleção Acalanto
+    OLHO_VIVO: 450491, // Olho vivo, olho mágico
+    LIVRO_PASSAROS: 51754, // O livro dos pássaros mágicos
+    E_DE_MORTE: 53071, // É de morte! - Série Espelhos
   };
 
-  // Mapeamento de nível escolar para produtos recomendados
-  // Formato: { gradeLevel: { primary: [id1, id2], secondary: [id3, id4] } }
-  // Baseado na tabela: Nível -> Série -> Idade -> Literatura 1 -> Literatura 2
+  // Mapeamento de nível escolar para produtos recomendados em ordem de prioridade
+  // O primeiro produto do array é o mais importante, depois o segundo, etc.
+  // Baseado na tabela completa fornecida
   var GRADE_RECOMMENDATIONS = {
     // Educação Infantil - 1 ano
-    1: {
-      primary: [PRODUCT_IDS.NUMERODROMO],
-      secondary: [PRODUCT_IDS.BICHODARIO],
-    },
+    1: [
+      PRODUCT_IDS.NUMERODROMO_BICHODARIO,
+      PRODUCT_IDS.BICHODARIO,
+      PRODUCT_IDS.ENQUANTO_MAMAE_DORMIA,
+      PRODUCT_IDS.MAMAE_GATA,
+    ],
     // Educação Infantil - 2 anos
-    2: {
-      primary: [PRODUCT_IDS.NUMERODROMO],
-      secondary: [PRODUCT_IDS.BICHODARIO],
-    },
+    2: [
+      PRODUCT_IDS.NUMERODROMO_BICHODARIO,
+      PRODUCT_IDS.BICHODARIO,
+      PRODUCT_IDS.ENQUANTO_MAMAE_DORMIA,
+      PRODUCT_IDS.MAMAE_GATA,
+    ],
     // Educação Infantil - 3 anos
-    3: {
-      primary: [PRODUCT_IDS.NUMERODROMO],
-      secondary: [PRODUCT_IDS.BICHODARIO],
-    },
+    3: [
+      PRODUCT_IDS.NUMERODROMO_BICHODARIO,
+      PRODUCT_IDS.BICHODARIO,
+      PRODUCT_IDS.ENQUANTO_MAMAE_DORMIA,
+      PRODUCT_IDS.MAMAE_GATA,
+    ],
     // Pré Escola - 4 anos
-    4: {
-      primary: [PRODUCT_IDS.NUMERODROMO],
-      secondary: [PRODUCT_IDS.BICHODARIO],
-    },
+    4: [
+      PRODUCT_IDS.NUMERODROMO_BICHODARIO,
+      PRODUCT_IDS.BICHODARIO,
+      PRODUCT_IDS.ENQUANTO_MAMAE_DORMIA,
+      PRODUCT_IDS.TUNEL,
+    ],
     // Pré Escola - 5 anos
-    5: {
-      primary: [PRODUCT_IDS.NUMERODROMO],
-      secondary: [PRODUCT_IDS.BICHODARIO],
-    },
+    5: [
+      PRODUCT_IDS.NUMERODROMO_BICHODARIO,
+      PRODUCT_IDS.BICHODARIO,
+      PRODUCT_IDS.ENQUANTO_MAMAE_DORMIA,
+      PRODUCT_IDS.TUNEL,
+    ],
     // 1º Série / 1º ano - Anos iniciais (6 anos)
-    6: {
-      primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: [PRODUCT_IDS.NO_CAPRICHO_A], // No capricho A + Que vergonha que dá!
-    },
+    6: [
+      PRODUCT_IDS.MINIDICIONARIO,
+      PRODUCT_IDS.NO_CAPRICHO_A,
+      PRODUCT_IDS.CADE_LIVRO,
+      PRODUCT_IDS.BENNY_INVENTOR,
+      PRODUCT_IDS.ISCA_FAISCA,
+    ],
     // 2º Série / 2º ano - Anos iniciais (7 anos)
-    7: {
-      primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: [PRODUCT_IDS.TABUADA_1], // Nós e a tabuada 1 + No capricho B
-    },
+    7: [
+      PRODUCT_IDS.MINIDICIONARIO,
+      PRODUCT_IDS.TABUADA_1,
+      PRODUCT_IDS.CADE_LIVRO,
+      PRODUCT_IDS.BENNY_INVENTOR,
+      PRODUCT_IDS.ISCA_FAISCA,
+    ],
     // 3º Série / 3º ano - Anos iniciais (8 anos)
-    8: {
-      primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: [PRODUCT_IDS.TABUADA_2], // Nós e a tabuada 2 + No capricho C
-    },
+    8: [
+      PRODUCT_IDS.MINIDICIONARIO,
+      PRODUCT_IDS.TABUADA_2,
+      PRODUCT_IDS.MUSEU_EMILIA,
+      PRODUCT_IDS.BENNY_INVENTOR,
+      PRODUCT_IDS.OLHO_VIVO,
+    ],
     // 4º Série / 4º ano - Anos iniciais (9 anos)
-    9: {
-      primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: [PRODUCT_IDS.TABUADA_3], // Nós e a tabuada 3 + No capricho D
-    },
+    9: [
+      PRODUCT_IDS.MINIDICIONARIO,
+      PRODUCT_IDS.TABUADA_3,
+      PRODUCT_IDS.MUSEU_EMILIA,
+      PRODUCT_IDS.SETE_CORVOS,
+      PRODUCT_IDS.OLHO_VIVO,
+    ],
     // 5º Série / 5º ano - Anos iniciais (10 anos)
-    10: {
-      primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: [PRODUCT_IDS.TABUADA_4], // Nós e a tabuada 4 + No capricho E
-    },
+    10: [
+      PRODUCT_IDS.MINIDICIONARIO,
+      PRODUCT_IDS.TABUADA_4,
+      PRODUCT_IDS.ALICE,
+      PRODUCT_IDS.SETE_CORVOS,
+      PRODUCT_IDS.LIVRO_PASSAROS,
+    ],
     // 6º Série / 6º ano - Anos finais (11 anos)
-    11: {
-      primary: [PRODUCT_IDS.MINIDICIONARIO],
-      secondary: [PRODUCT_IDS.PETER_PAN], // Peter Pan + Mágico de Oz
-    },
+    11: [
+      PRODUCT_IDS.MINIDICIONARIO,
+      PRODUCT_IDS.PETER_PAN,
+      PRODUCT_IDS.ALICE,
+      PRODUCT_IDS.ANJOS,
+      PRODUCT_IDS.LIVRO_PASSAROS,
+    ],
     // 7º Série / 7º ano - Anos finais (12 anos)
-    12: {
-      primary: [PRODUCT_IDS.DICIONARIO_INGLES],
-      secondary: [PRODUCT_IDS.PETER_PAN], // Peter Pan + Mágico de Oz
-    },
+    12: [
+      PRODUCT_IDS.DICIONARIO_INGLES,
+      PRODUCT_IDS.PETER_PAN,
+      PRODUCT_IDS.PEQUENO_PRINCIPE,
+      PRODUCT_IDS.ANJOS,
+      PRODUCT_IDS.E_DE_MORTE,
+    ],
     // 8º Série / 8º ano - Anos finais (13 anos)
-    13: {
-      primary: [PRODUCT_IDS.DICIONARIO_INGLES],
-      secondary: [PRODUCT_IDS.PETER_PAN], // Peter Pan + Mágico de Oz
-    },
+    13: [
+      PRODUCT_IDS.DICIONARIO_INGLES,
+      PRODUCT_IDS.PETER_PAN,
+      PRODUCT_IDS.PEQUENO_PRINCIPE,
+      PRODUCT_IDS.ANJOS,
+      PRODUCT_IDS.E_DE_MORTE,
+    ],
     // 9º Série / 9º ano - Anos finais (14 anos)
-    14: {
-      primary: [PRODUCT_IDS.DICIONARIO_INGLES],
-      secondary: [PRODUCT_IDS.PETER_PAN], // Peter Pan + Mágico de Oz
-    },
+    14: [
+      PRODUCT_IDS.DICIONARIO_INGLES,
+      PRODUCT_IDS.PETER_PAN,
+      PRODUCT_IDS.PEQUENO_PRINCIPE,
+      PRODUCT_IDS.ANJOS,
+      PRODUCT_IDS.E_DE_MORTE,
+    ],
     // Ensino Médio 1 / 1º Colegial (15 anos)
-    15: {
-      primary: [PRODUCT_IDS.ESTUDA_COM_ANUAL],
-      secondary: [PRODUCT_IDS.ESTUDA_COM_SEMESTRAL], // Estuda.com Semestral
-    },
+    15: [
+      PRODUCT_IDS.ESTUDA_COM_ANUAL,
+      PRODUCT_IDS.ESTUDA_COM_SEMESTRAL,
+      PRODUCT_IDS.REFORCA_SEMESTRAL,
+    ],
     // Ensino Médio 2 / 2º Colegial (16 anos)
-    16: {
-      primary: [PRODUCT_IDS.ESTUDA_COM_ANUAL],
-      secondary: [PRODUCT_IDS.ESTUDA_COM_SEMESTRAL], // Estuda.com Semestral
-    },
+    16: [
+      PRODUCT_IDS.ESTUDA_COM_ANUAL,
+      PRODUCT_IDS.ESTUDA_COM_SEMESTRAL,
+      PRODUCT_IDS.REFORCA_SEMESTRAL,
+    ],
     // Ensino Médio 3 / 3º Colegial (17 anos)
-    17: {
-      primary: [PRODUCT_IDS.ESTUDA_COM_ANUAL],
-      secondary: [PRODUCT_IDS.ESTUDA_COM_SEMESTRAL], // Estuda.com Semestral
-    },
+    17: [
+      PRODUCT_IDS.ESTUDA_COM_ANUAL,
+      PRODUCT_IDS.ESTUDA_COM_SEMESTRAL,
+      PRODUCT_IDS.REFORCA_SEMESTRAL,
+    ],
   };
 
   var TARGET_ID = 52582; // Valor padrão, será atualizado dinamicamente
@@ -936,72 +992,49 @@
       return null;
     }
 
-    var recommendation = GRADE_RECOMMENDATIONS[gradeNumber];
+    var recommendations = GRADE_RECOMMENDATIONS[gradeNumber];
+
+    // Valida se é um array
+    if (!Array.isArray(recommendations) || recommendations.length === 0) {
+      console.warn('[MiniCart] Nenhuma recomendação disponível para o nível:', gradeNumber);
+      return null;
+    }
 
     console.log('[MiniCart] Verificando recomendações para nível', gradeNumber, {
-      primary: recommendation.primary,
-      secondary: recommendation.secondary,
+      totalProducts: recommendations.length,
+      products: recommendations,
       cartItemsCount: cartData && cartData.items ? cartData.items.length : 0,
     });
 
-    // Verifica se algum produto primário já está no carrinho
-    var primaryInCart = [];
-    var primaryNotInCart = [];
+    // Percorre o array de recomendações em ordem de prioridade
+    // Retorna o primeiro produto que NÃO está no carrinho
+    for (var i = 0; i < recommendations.length; i++) {
+      var productId = recommendations[i];
 
-    if (recommendation.primary && Array.isArray(recommendation.primary)) {
-      recommendation.primary.forEach(function (productId) {
-        var inCart = isProductInCart(cartData, productId);
-        console.log('[MiniCart] Verificando produto primário', productId, 'no carrinho:', inCart);
-        if (inCart) {
-          primaryInCart.push(productId);
-        } else {
-          primaryNotInCart.push(productId);
-        }
-      });
-    }
-
-    console.log('[MiniCart] Produtos primários no carrinho:', primaryInCart);
-    console.log('[MiniCart] Produtos primários não no carrinho:', primaryNotInCart);
-
-    // Se algum produto primário está no carrinho e há produto secundário, recomenda o secundário
-    if (
-      primaryInCart.length > 0 &&
-      recommendation.secondary &&
-      Array.isArray(recommendation.secondary)
-    ) {
-      // Retorna o primeiro produto secundário disponível que não está no carrinho
-      for (var i = 0; i < recommendation.secondary.length; i++) {
-        var secondaryId = recommendation.secondary[i];
-        if (!isProductInCart(cartData, secondaryId)) {
-          console.log(
-            '[MiniCart] Produto primário já está no carrinho, recomendando secundário:',
-            secondaryId
-          );
-          return secondaryId;
-        }
+      // Pula produtos com ID null (ex: REFORCA_ANUAL)
+      if (productId === null || productId === undefined) {
+        console.log('[MiniCart] Produto', i + 1, 'não possui ID válido, pulando...');
+        continue;
       }
-      // Se todos os secundários estão no carrinho, retorna null (não há mais o que recomendar)
-      console.log('[MiniCart] Todos os produtos (primários e secundários) já estão no carrinho');
-      return null;
-    }
 
-    // Se há produtos primários que não estão no carrinho, recomenda o primeiro disponível
-    if (primaryNotInCart.length > 0) {
-      console.log('[MiniCart] Recomendando produto primário:', primaryNotInCart[0]);
-      return primaryNotInCart[0];
-    }
-
-    // Se todos os primários estão no carrinho e não há secundário, retorna null
-    if (
-      primaryInCart.length > 0 &&
-      (!recommendation.secondary || recommendation.secondary.length === 0)
-    ) {
+      var inCart = isProductInCart(cartData, productId);
       console.log(
-        '[MiniCart] Todos os produtos primários já estão no carrinho e não há produto secundário'
+        '[MiniCart] Verificando produto',
+        i + 1,
+        '(ID:',
+        productId,
+        ') - No carrinho:',
+        inCart
       );
-      return null;
+
+      if (!inCart) {
+        console.log('[MiniCart] Recomendando produto:', productId, '(posição', i + 1, 'na lista)');
+        return productId;
+      }
     }
 
+    // Se todos os produtos recomendados já estão no carrinho
+    console.log('[MiniCart] Todos os produtos recomendados já estão no carrinho');
     return null;
   }
 

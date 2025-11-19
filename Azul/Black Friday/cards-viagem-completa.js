@@ -11,7 +11,7 @@
       '.container-capsule.containerDefault.hide-on-mobile'
     );
 
-    console.log(`Encontrados ${allContainers.length} container(s) com as classes`);
+    console.log('Encontrados ' + allContainers.length + ' container(s) com as classes');
 
     // Verificar qual container contém spans com "x de"
     for (let i = 0; i < allContainers.length; i++) {
@@ -22,7 +22,7 @@
       for (let j = 0; j < spans.length; j++) {
         const text = spans[j].textContent || '';
         if (text.includes('x de')) {
-          console.log(`Container ${i + 1} contém cards com "x de"`);
+          console.log('Container ' + (i + 1) + ' contém cards com "x de"');
           return container;
         }
       }
@@ -78,7 +78,7 @@
         }
       });
       console.log(
-        `✅ Font-size aplicado e &nbsp; removido em ${priceSpans.length} span(s) de preço`
+        'Font-size aplicado e &nbsp; removido em ' + priceSpans.length + ' span(s) de preço'
       );
     }
 
@@ -98,7 +98,7 @@
       }
     });
     if (hotelSpansModified > 0) {
-      console.log(`✅ Texto de hotel modificado em ${hotelSpansModified} span(s)`);
+      console.log('Texto de hotel modificado em ' + hotelSpansModified + ' span(s)');
     }
 
     // 2.1. Substituir nome do hotel por "Aéreo + Hotel"
@@ -146,7 +146,7 @@
       }
     });
     if (hotelDivsReplaced > 0) {
-      console.log(`✅ ${hotelDivsReplaced} nome(s) de hotel substituído(s) por "Aéreo + Hotel"`);
+      console.log(hotelDivsReplaced + ' nome(s) de hotel substituído(s) por "Aéreo + Hotel"');
     }
 
     // 2.2. Substituir "Fernando de Noronha" por "Noronha" nos títulos
@@ -161,9 +161,7 @@
       }
     });
     if (titlesModified > 0) {
-      console.log(
-        `✅ ${titlesModified} título(s) modificado(s): "Fernando de Noronha" → "Noronha"`
-      );
+      console.log(titlesModified + ' título(s) modificado(s): "Fernando de Noronha" → "Noronha"');
     }
 
     // 3. Estilizar botões "Compre agora" (buscar por value, sem depender de classes)
@@ -198,7 +196,7 @@
       }
     });
     if (buttonsStyled > 0) {
-      console.log(`✅ Botões estilizados: ${buttonsStyled}`);
+      console.log('Botões estilizados: ' + buttonsStyled);
     }
 
     // 4. Remover spans com dias/noites (buscar por conteúdo, não por classe)
@@ -213,7 +211,7 @@
       }
     });
     if (daysSpansRemoved > 0) {
-      console.log(`✅ Removidos ${daysSpansRemoved} span(s) de dias/noites`);
+      console.log('Removidos ' + daysSpansRemoved + ' span(s) de dias/noites');
     }
 
     // 4.1. Remover spans com "por pessoa"
@@ -228,7 +226,7 @@
       }
     });
     if (personSpansRemoved > 0) {
-      console.log(`✅ Removidos ${personSpansRemoved} span(s) "por pessoa"`);
+      console.log('Removidos ' + personSpansRemoved + ' span(s) "por pessoa"');
     }
 
     // 4.2. Personalizar font-size de spans que contêm "Saindo"
@@ -243,7 +241,7 @@
       }
     });
     if (departureSpansStyled > 0) {
-      console.log(`✅ Font-size aplicado em ${departureSpansStyled} span(s) "Saindo"`);
+      console.log('Font-size aplicado em ' + departureSpansStyled + ' span(s) "Saindo"');
     }
 
     // 5. Aplicar min-height: initial !important APENAS na div específica css-1rdnbft
@@ -269,7 +267,7 @@
       }
     });
     if (priceDivsFixed > 0) {
-      console.log(`✅ Min-height aplicado em ${priceDivsFixed} div(s) css-1rdnbft`);
+      console.log('Min-height aplicado em ' + priceDivsFixed + ' div(s) css-1rdnbft');
     }
 
     // 5.1. Aplicar gap de 6px na div específica css-d8o86p do card
@@ -319,7 +317,7 @@
       }
     });
     if (gapApplied > 0) {
-      console.log(`✅ Gap de 6px aplicado em ${gapApplied} div(s) css-d8o86p`);
+      console.log('Gap de 6px aplicado em ' + gapApplied + ' div(s) css-d8o86p');
     }
 
     // 5.2. Aplicar max-width: 266px na div css-b7xk (que contém img + css-d8o86p)
@@ -352,7 +350,7 @@
       }
     });
     if (maxWidthApplied > 0) {
-      console.log(`✅ Max-width de 266px aplicado em ${maxWidthApplied} div(s) css-b7xk`);
+      console.log('Max-width de 266px aplicado em ' + maxWidthApplied + ' div(s) css-b7xk');
     }
 
     // 6. Adicionar margin-top: 10px em todos os cards com imagem
@@ -384,7 +382,7 @@
       }
     });
     if (marginTopApplied > 0) {
-      console.log(`✅ Margin-top de 10px aplicado em ${marginTopApplied} card(s) com imagem`);
+      console.log('Margin-top de 10px aplicado em ' + marginTopApplied + ' card(s) com imagem');
     }
 
     // 6.1. Adicionar badge "Mais Barato" no card com menor valor
@@ -393,28 +391,55 @@
     const cardsWithPrices = [];
 
     allDivs.forEach((div) => {
-      // Verificar se tem exatamente 1 filho div (estrutura css-117ubr)
+      // Verificar se tem 1 ou 2 filhos div (estrutura css-117ubr)
+      // Pode ter 2 se já tiver a badge adicionada
       const childDivs = Array.from(div.children).filter((child) => child.tagName === 'DIV');
-      if (childDivs.length === 1) {
-        const childDiv = childDivs[0];
+      const hasBadge = div.querySelector('.badge-mais-barato') !== null;
+
+      // Aceitar se tiver exatamente 1 div filho OU se tiver badge + 1 div filho
+      if (childDivs.length === 1 || (hasBadge && childDivs.length === 2)) {
+        // Encontrar o div css-b7xk (não a badge)
+        let childDiv = null;
+        for (let m = 0; m < childDivs.length; m++) {
+          if (!childDivs[m].classList.contains('badge-mais-barato')) {
+            childDiv = childDivs[m];
+            break;
+          }
+        }
+
+        if (!childDiv) {
+          return;
+        }
+
         // Verificar se o filho tem uma imagem como filho direto (estrutura css-b7xk)
         const hasDirectImage = Array.from(childDiv.children).some(
           (child) => child.tagName === 'IMG'
         );
-        // Verificar se o filho tem o atributo data-max-width-applied (confirmação de css-b7xk)
-        const hasMaxWidthApplied = childDiv.hasAttribute('data-max-width-applied');
 
-        if (hasDirectImage && hasMaxWidthApplied) {
+        if (hasDirectImage) {
           const text = childDiv.textContent || '';
           const hasPrice = text.includes('x de');
           const hasApartirDe = text.includes('A partir de');
 
           if (hasPrice && hasApartirDe) {
-            // Extrair o preço (formato: "15x de R$ 92,29")
-            const priceMatch = text.match(/R\$\s*(\d+(?:,\d+)?)/);
-            if (priceMatch) {
-              // Converter para número (substituir vírgula por ponto)
-              const priceValue = parseFloat(priceMatch[1].replace(',', '.'));
+            // Buscar o span que contém o preço (formato: "15x de R$ 92,29")
+            const priceSpans = childDiv.querySelectorAll('span');
+            let priceValue = null;
+
+            for (let k = 0; k < priceSpans.length; k++) {
+              const spanText = priceSpans[k].textContent || '';
+              if (spanText.includes('x de') && spanText.includes('R$')) {
+                // Extrair o preço (formato: "15x de R$ 92,29" ou "15x de R$92,29")
+                const priceMatch = spanText.match(/R\$\s*(\d+(?:,\d+)?)/);
+                if (priceMatch && priceMatch[1]) {
+                  // Converter para número (substituir vírgula por ponto)
+                  priceValue = parseFloat(priceMatch[1].replace(',', '.'));
+                  break;
+                }
+              }
+            }
+
+            if (priceValue !== null && !isNaN(priceValue)) {
               cardsWithPrices.push({
                 element: div,
                 price: priceValue,
@@ -425,7 +450,7 @@
       }
     });
 
-    console.log(`🔍 Encontrados ${cardsWithPrices.length} cards com preços para análise`);
+    console.log('Encontrados ' + cardsWithPrices.length + ' cards com preços para análise');
 
     if (cardsWithPrices.length > 0) {
       // Remover TODAS as badges antigas no container inteiro
@@ -433,7 +458,7 @@
       allOldBadges.forEach((oldBadge) => {
         oldBadge.remove();
       });
-      console.log(`🧹 Removidas ${allOldBadges.length} badge(s) antiga(s)`);
+      console.log('Removidas ' + allOldBadges.length + ' badge(s) antiga(s)');
 
       // Encontrar o card com menor preço
       const cheapestCard = cardsWithPrices.reduce((min, card) =>
@@ -441,7 +466,7 @@
       );
 
       console.log(
-        `🔍 Card mais barato encontrado: R$ ${cheapestCard.price}, elemento:`,
+        'Card mais barato encontrado: R$ ' + cheapestCard.price + ', elemento:',
         cheapestCard.element
       );
 
@@ -501,14 +526,10 @@
           cheapestCard.element.style.setProperty('overflow', 'visible', 'important');
         }
 
-        // Verificar também o parent do card (css-b7xk) para garantir que não corte
+        // Verificar também o parent do card (css-b7xk) para garantir z-index
         const cardChild = cheapestCard.element.querySelector('div[data-max-width-applied]');
         if (cardChild) {
           const childComputedStyle = window.getComputedStyle(cardChild);
-          const childOverflow = childComputedStyle.overflow;
-          if (childOverflow === 'hidden' || childOverflow === 'clip') {
-            cardChild.style.setProperty('overflow', 'visible', 'important');
-          }
           // Garantir que o parent também tenha z-index menor
           const childZIndex = childComputedStyle.zIndex;
           if (childZIndex === 'auto' || parseInt(childZIndex) < 9999) {
@@ -529,7 +550,7 @@
         // Inserir o badge no início do card (dentro dele, no topo)
         cheapestCard.element.insertBefore(badge, cheapestCard.element.firstChild);
         console.log(
-          `✅ Badge "Mais Barato" adicionado no card com menor valor (R$ ${cheapestCard.price})`
+          'Badge "Mais Barato" adicionado no card com menor valor (R$ ' + cheapestCard.price + ')'
         );
       }
     }
