@@ -7,7 +7,7 @@
     DICIONARIO_INGLES: 53959,
     ESTUDA_COM_ANUAL: 696545,
     ESTUDA_COM_SEMESTRAL: 696542,
-    REFORCA_ANUAL: null, // Sem ID disponível
+    REFORCA_ANUAL: 453782,
     REFORCA_SEMESTRAL: 453779,
     NUMERODROMO_BICHODARIO: 699322, // Numeródromo + bichodário (conjunto)
     BICHODARIO: 52144,
@@ -149,19 +149,35 @@
       PRODUCT_IDS.ESTUDA_COM_ANUAL,
       PRODUCT_IDS.ESTUDA_COM_SEMESTRAL,
       PRODUCT_IDS.REFORCA_SEMESTRAL,
+      PRODUCT_IDS.REFORCA_ANUAL,
     ],
     // Ensino Médio 2 / 2º Colegial (16 anos)
     16: [
       PRODUCT_IDS.ESTUDA_COM_ANUAL,
       PRODUCT_IDS.ESTUDA_COM_SEMESTRAL,
       PRODUCT_IDS.REFORCA_SEMESTRAL,
+      PRODUCT_IDS.REFORCA_ANUAL,
     ],
     // Ensino Médio 3 / 3º Colegial (17 anos)
     17: [
       PRODUCT_IDS.ESTUDA_COM_ANUAL,
       PRODUCT_IDS.ESTUDA_COM_SEMESTRAL,
       PRODUCT_IDS.REFORCA_SEMESTRAL,
+      PRODUCT_IDS.REFORCA_ANUAL,
     ],
+  };
+
+  // Mapeamento de opções de bundle por produto
+  // Formato: productId: { 'bundle_option[X]': 'valueY', ... }
+  var BUNDLE_OPTIONS_MAP = {
+    695786: { 'bundle_option[254]': '320', 'bundle_option[257]': '323' }, // Combo Caligrafia + Tabuada - 3ª Série
+    695576: { 'bundle_option[254]': '320', 'bundle_option[257]': '323' }, // Nós e a tabuada 1 + No capricho B
+    695786: { 'bundle_option[254]': '320', 'bundle_option[257]': '323' }, // Nós e a tabuada 2 + No capricho C
+    695816: { 'bundle_option[260]': '326', 'bundle_option[263]': '329' }, // Nós e a tabuada 3 + No capricho D
+    695888: { 'bundle_option[278]': '320', 'bundle_option[281]': '323' }, // Nós e a tabuada 4 + No capricho E
+    578096: { 'bundle_option[212]': '272', 'bundle_option[215]': '275' }, // Peter Pan + Mágico de Oz
+    699322: { 'bundle_option[313]': '382', 'bundle_option[316]': '385' }, // Numeródromo + bichodário
+    695573: { 'bundle_option[242]': '308', 'bundle_option[245]': '311' }, // No capricho A + Que vergonha que dá!
   };
 
   var TARGET_ID = 52582; // Valor padrão, será atualizado dinamicamente
@@ -182,6 +198,8 @@
 
   // Mapa de studentId → gradeLevel (dados da API /rest/V1/students/mine)
   var STUDENT_GRADE_MAP = {};
+  // Mapa de adoptionListId → gradeLevel (para identificar o nível correto quando há múltiplas listas)
+  var ADOPTION_LIST_GRADE_MAP = {};
   var STUDENTS_DATA_LOADED = false;
   var STUDENTS_DATA_LOADING = false;
 
@@ -411,7 +429,7 @@
           return STUDENT_GRADE_MAP;
         }
 
-        // Mapeia studentId → gradeLevel
+        // Mapeia studentId → gradeLevel e adoptionListId → gradeLevel
         data.items.forEach(function (student) {
           var studentId = student.entity_id;
           var adoptionLists = student.extension_attributes
@@ -426,33 +444,64 @@
             return;
           }
 
-          // Pega a primeira adoption_list (a mais recente)
-          var adoptionList = adoptionLists[0];
-          var schoolGrade = adoptionList.extension_attributes
-            ? adoptionList.extension_attributes.school_grade
-            : null;
+          // Itera por TODAS as adoption_lists do estudante
+          var firstGradeLevel = null;
+          adoptionLists.forEach(function (adoptionList, index) {
+            var adoptionListId = adoptionList.entity_id;
+            var schoolGrade = adoptionList.extension_attributes
+              ? adoptionList.extension_attributes.school_grade
+              : null;
 
-          if (!schoolGrade || !schoolGrade.title) {
-            console.log('[MiniCart] Estudante sem school_grade:', {
-              id: studentId,
-              name: student.name,
-            });
-            return;
-          }
+            // Tenta pegar school_grade do contract se não estiver no extension_attributes
+            if (
+              !schoolGrade &&
+              adoptionList.extension_attributes &&
+              adoptionList.extension_attributes.contract
+            ) {
+              schoolGrade = adoptionList.extension_attributes.contract.extension_attributes
+                ? adoptionList.extension_attributes.contract.extension_attributes.school_grade
+                : null;
+            }
 
-          // Armazena o mapeamento
-          STUDENT_GRADE_MAP[studentId] = schoolGrade.title;
-          console.log('[MiniCart] Mapeado estudante:', {
-            id: studentId,
-            name: student.name,
-            gradeLevel: schoolGrade.title,
-            level: schoolGrade.level,
+            // Tenta pegar do contract_school_grade_title (fallback)
+            var gradeTitle =
+              schoolGrade && schoolGrade.title
+                ? schoolGrade.title
+                : adoptionList.extension_attributes &&
+                  adoptionList.extension_attributes.contract_school_grade_title
+                ? adoptionList.extension_attributes.contract_school_grade_title
+                : null;
+
+            if (gradeTitle) {
+              // Armazena o mapeamento por adoptionListId
+              ADOPTION_LIST_GRADE_MAP[adoptionListId] = gradeTitle;
+
+              // Guarda o primeiro gradeLevel para o mapeamento do estudante (fallback)
+              if (index === 0) {
+                firstGradeLevel = gradeTitle;
+              }
+
+              console.log('[MiniCart] Mapeada lista de adoção:', {
+                adoptionListId: adoptionListId,
+                studentId: studentId,
+                studentName: student.name,
+                gradeLevel: gradeTitle,
+                listIndex: index,
+              });
+            }
           });
+
+          // Armazena o mapeamento do estudante (usa a primeira lista como fallback)
+          if (firstGradeLevel) {
+            STUDENT_GRADE_MAP[studentId] = firstGradeLevel;
+          }
         });
 
-        console.log('[MiniCart] Mapa de estudantes criado:', {
-          totalMapped: Object.keys(STUDENT_GRADE_MAP).length,
-          map: STUDENT_GRADE_MAP,
+        console.log('[MiniCart] Mapas criados:', {
+          totalStudents: Object.keys(STUDENT_GRADE_MAP).length,
+          totalAdoptionLists: Object.keys(ADOPTION_LIST_GRADE_MAP).length,
+          studentMap: STUDENT_GRADE_MAP,
+          adoptionListMap: ADOPTION_LIST_GRADE_MAP,
         });
 
         STUDENTS_DATA_LOADED = true;
@@ -504,6 +553,17 @@
     params.set('product', String(productId));
     params.set('qty', String(qty || 1));
     params.set('uenc', uenc);
+
+    // Adiciona opções de bundle se o produto estiver no mapeamento
+    var bundleOptions = BUNDLE_OPTIONS_MAP[productId];
+    if (bundleOptions) {
+      console.log('[MiniCart] Produto bundle detectado, adicionando opções:', bundleOptions);
+      for (var optionName in bundleOptions) {
+        if (bundleOptions.hasOwnProperty(optionName)) {
+          params.set(optionName, bundleOptions[optionName]);
+        }
+      }
+    }
 
     // Adiciona suggestion_code se existir na página
     var existingSuggestionCode = document.querySelector('input[name="suggestion_code"]');
@@ -1078,26 +1138,40 @@
         hasAdoptionList = true;
         console.log('[MiniCart] Kit detectado via adoption list');
 
-        // Pega o primeiro studentId encontrado
+        // Pega a primeira adoption list do carrinho
         var firstAdoptionListId = adoptionListKeys[0];
         var firstAdoptionList = adoptionLists[firstAdoptionListId];
         var studentId = firstAdoptionList.studentId;
 
-        console.log('[MiniCart] Primeiro studentId do carrinho:', studentId);
+        console.log('[MiniCart] Primeira lista de adoção no carrinho:', {
+          adoptionListId: firstAdoptionListId,
+          studentId: studentId,
+        });
 
-        // Busca o gradeLevel no mapa (se já foi carregado)
-        if (STUDENTS_DATA_LOADED && STUDENT_GRADE_MAP[studentId]) {
+        // PRIORIDADE 1: Busca o gradeLevel pelo adoptionListId (mais preciso)
+        if (STUDENTS_DATA_LOADED && ADOPTION_LIST_GRADE_MAP[firstAdoptionListId]) {
+          gradeLevel = ADOPTION_LIST_GRADE_MAP[firstAdoptionListId];
+          console.log('[MiniCart] Nivel escolar obtido via adoptionListId da API:', {
+            adoptionListId: firstAdoptionListId,
+            studentId: studentId,
+            gradeLevel: gradeLevel,
+          });
+        }
+        // FALLBACK: Se não encontrou pela lista, tenta pelo studentId
+        else if (STUDENTS_DATA_LOADED && STUDENT_GRADE_MAP[studentId]) {
           gradeLevel = STUDENT_GRADE_MAP[studentId];
-          console.log('[MiniCart] Nivel escolar obtido via API de estudantes:', {
+          console.log('[MiniCart] Nivel escolar obtido via studentId (fallback):', {
             studentId: studentId,
             gradeLevel: gradeLevel,
           });
         } else {
           console.log(
-            '[MiniCart] AVISO: Mapa de estudantes nao carregado ou studentId nao encontrado:',
+            '[MiniCart] AVISO: Mapa de estudantes nao carregado ou lista nao encontrada:',
             {
               dataLoaded: STUDENTS_DATA_LOADED,
+              hasAdoptionListId: !!ADOPTION_LIST_GRADE_MAP[firstAdoptionListId],
               hasStudentId: !!STUDENT_GRADE_MAP[studentId],
+              adoptionListId: firstAdoptionListId,
               studentId: studentId,
             }
           );
