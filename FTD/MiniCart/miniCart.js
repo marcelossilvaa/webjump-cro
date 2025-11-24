@@ -148,22 +148,22 @@
     15: [
       PRODUCT_IDS.ESTUDA_COM_ANUAL,
       PRODUCT_IDS.ESTUDA_COM_SEMESTRAL,
-      PRODUCT_IDS.REFORCA_SEMESTRAL,
       PRODUCT_IDS.REFORCA_ANUAL,
+      PRODUCT_IDS.REFORCA_SEMESTRAL,
     ],
     // Ensino Médio 2 / 2º Colegial (16 anos)
     16: [
       PRODUCT_IDS.ESTUDA_COM_ANUAL,
       PRODUCT_IDS.ESTUDA_COM_SEMESTRAL,
-      PRODUCT_IDS.REFORCA_SEMESTRAL,
       PRODUCT_IDS.REFORCA_ANUAL,
+      PRODUCT_IDS.REFORCA_SEMESTRAL,
     ],
     // Ensino Médio 3 / 3º Colegial (17 anos)
     17: [
       PRODUCT_IDS.ESTUDA_COM_ANUAL,
       PRODUCT_IDS.ESTUDA_COM_SEMESTRAL,
-      PRODUCT_IDS.REFORCA_SEMESTRAL,
       PRODUCT_IDS.REFORCA_ANUAL,
+      PRODUCT_IDS.REFORCA_SEMESTRAL,
     ],
   };
 
@@ -804,7 +804,7 @@
     });
 
     (function () {
-      var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+      var s = window.s || (typeof s_gi === 'function' && s_gi('lumisfera'));
       if (!s || typeof s.tl !== 'function') return;
 
       s.linkTrackVars = 'products,events,eVar7';
@@ -915,11 +915,17 @@
   function convertGradeLevelToNumber(gradeLevel) {
     if (!gradeLevel) return null;
 
-    // Normaliza a string: lowercase, remove espaços extras, remove hífens/traços
+    // Normaliza a string: lowercase, remove espaços extras, remove hífens/traços, remove acentos
     var normalized = gradeLevel
       .toLowerCase()
       .replace(/\s+/g, ' ') // Múltiplos espaços -> 1 espaço
       .replace(/\s*-\s*/g, ' ') // Remove hífens e espaços ao redor
+      .replace(/[àáâãäå]/g, 'a')
+      .replace(/[èéêë]/g, 'e')
+      .replace(/[ìíîï]/g, 'i')
+      .replace(/[òóôõö]/g, 'o')
+      .replace(/[ùúûü]/g, 'u')
+      .replace(/[ç]/g, 'c')
       .trim();
 
     console.log('[MiniCart] Normalizando gradeLevel:', {
@@ -1884,7 +1890,7 @@
         isRunning = false;
       }
     });
-  }, 200); // Otimizado: reduzido de 300ms para 200ms
+  }, 100); // Otimizado: reduzido de 200ms para 100ms
 
   // Função auxiliar para verificar kit e mostrar recomendação
   function checkKitAndShowRecommendation(cartData) {
@@ -1897,7 +1903,7 @@
         lastCheckedState = null;
         isRunning = false;
         run();
-      }, 300); // Otimizado: reduzido de 500ms para 300ms
+      }, 150); // Otimizado: reduzido de 300ms para 150ms
       return;
     }
 
@@ -2093,7 +2099,7 @@
             setTimeout(function () {
               mutationObserverPaused = false;
               isRunning = false;
-            }, 50); // Otimizado: reduzido de 100ms para 50ms
+            }, 25); // Otimizado: reduzido de 50ms para 25ms
           })
           .catch(function (err) {
             console.warn('[MiniCart] Erro ao buscar dados do produto:', err);
@@ -2103,7 +2109,7 @@
             setTimeout(function () {
               mutationObserverPaused = false;
               isRunning = false;
-            }, 50); // Otimizado: reduzido de 100ms para 50ms
+            }, 25); // Otimizado: reduzido de 50ms para 25ms
           });
         return;
       }
@@ -2158,7 +2164,7 @@
             setTimeout(function () {
               mutationObserverPaused = false;
               isRunning = false;
-            }, 50); // Otimizado: reduzido de 100ms para 50ms
+            }, 25); // Otimizado: reduzido de 50ms para 25ms
           })
           .catch(function (err) {
             console.warn('[MiniCart] Erro ao buscar dados do produto:', err);
@@ -2168,7 +2174,7 @@
             setTimeout(function () {
               mutationObserverPaused = false;
               isRunning = false;
-            }, 50); // Otimizado: reduzido de 100ms para 50ms
+            }, 25); // Otimizado: reduzido de 50ms para 25ms
           });
       });
     }
@@ -2276,8 +2282,8 @@
               if (!isRunning) {
                 run();
               }
-            }, 300); // Otimizado: reduzido de 500ms para 300ms
-          }, 700); // Otimizado: reduzido de 1000ms para 700ms
+            }, 150); // Otimizado: reduzido de 300ms para 150ms
+          }, 400); // Otimizado: reduzido de 700ms para 400ms
         });
       }
     }
@@ -2287,14 +2293,14 @@
   setTimeout(function () {
     console.log('[MiniCart] Executando verificação inicial...');
     run();
-  }, 500); // Otimizado: reduzido de 1000ms para 500ms
+  }, 250); // Otimizado: reduzido de 500ms para 250ms
 
   // Executa também imediatamente caso o DOM já esteja pronto
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    setTimeout(run, 50); // Otimizado: reduzido de 100ms para 50ms
+    setTimeout(run, 25); // Otimizado: reduzido de 50ms para 25ms
   } else {
     window.addEventListener('load', function () {
-      setTimeout(run, 50); // Otimizado: reduzido de 100ms para 50ms
+      setTimeout(run, 25); // Otimizado: reduzido de 50ms para 25ms
     });
   }
 })();
