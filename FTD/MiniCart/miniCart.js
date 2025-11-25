@@ -733,14 +733,14 @@
     var productsString =
       ':' + productNameFormatted + ';' + quantityValue + ';' + priceValue.toFixed(2) + ';;';
 
-    var eVar7Value = 'AT_evar25_' + eventLabel;
+    var eVar7Value = 'AT_evar7_' + eventLabel;
     var eVar25Value = 'AT_evar25_' + eventLabel;
 
     (function () {
       var s = window.s || (typeof s_gi === 'function' && s_gi('lumisfera'));
       if (!s || typeof s.tl !== 'function') return;
 
-      s.linkTrackVars = 'products,events,eVar7';
+      s.linkTrackVars = 'products,events,eVar7,eVar25';
       s.linkTrackEvents = 'scAdd';
       s.products = productsString;
       s.events = 'scAdd';
@@ -1436,6 +1436,13 @@
       wrap.appendChild(productContent);
 
       anchor.parentElement.insertBefore(wrap, anchor);
+
+      // Tracking: componente carregado/exibido
+      var productId = data.id || 0;
+      var productName = data.name || 'Produto';
+      var productPrice = data.priceNumber || 0;
+      var category = data.category || data.product_category || '';
+      analyticsEvent('component_view', productId, productName, productPrice, 1, category);
 
       img.addEventListener('load', function () {
         img.style.opacity = '1';
