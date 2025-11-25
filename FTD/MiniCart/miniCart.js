@@ -383,7 +383,6 @@
         return null;
       })
       .catch(function (err) {
-        console.warn('[MiniCart] Erro ao buscar novo form_key:', err);
         return null;
       });
   }
@@ -391,12 +390,10 @@
   // Função para buscar dados dos estudantes e mapear studentId → gradeLevel
   function fetchStudentsData() {
     if (STUDENTS_DATA_LOADED || STUDENTS_DATA_LOADING) {
-      console.log('[MiniCart] Dados dos estudantes já carregados ou em carregamento');
       return Promise.resolve(STUDENT_GRADE_MAP);
     }
 
     STUDENTS_DATA_LOADING = true;
-    console.log('[MiniCart] Buscando dados dos estudantes da API...');
 
     var timestamp = Date.now();
     // API retorna apenas estudantes do usuário logado (via sessão/cookie)
@@ -418,12 +415,7 @@
         return response.json();
       })
       .then(function (data) {
-        console.log('[MiniCart] Dados dos estudantes recebidos:', {
-          totalStudents: data.items ? data.items.length : 0,
-        });
-
         if (!data.items || !Array.isArray(data.items)) {
-          console.warn('[MiniCart] Resposta da API de estudantes sem items válidos');
           STUDENTS_DATA_LOADED = true;
           STUDENTS_DATA_LOADING = false;
           return STUDENT_GRADE_MAP;
@@ -437,10 +429,6 @@
             : null;
 
           if (!adoptionLists || !Array.isArray(adoptionLists) || adoptionLists.length === 0) {
-            console.log('[MiniCart] Estudante sem adoption_lists:', {
-              id: studentId,
-              name: student.name,
-            });
             return;
           }
 
@@ -480,14 +468,6 @@
               if (index === 0) {
                 firstGradeLevel = gradeTitle;
               }
-
-              console.log('[MiniCart] Mapeada lista de adoção:', {
-                adoptionListId: adoptionListId,
-                studentId: studentId,
-                studentName: student.name,
-                gradeLevel: gradeTitle,
-                listIndex: index,
-              });
             }
           });
 
@@ -497,19 +477,11 @@
           }
         });
 
-        console.log('[MiniCart] Mapas criados:', {
-          totalStudents: Object.keys(STUDENT_GRADE_MAP).length,
-          totalAdoptionLists: Object.keys(ADOPTION_LIST_GRADE_MAP).length,
-          studentMap: STUDENT_GRADE_MAP,
-          adoptionListMap: ADOPTION_LIST_GRADE_MAP,
-        });
-
         STUDENTS_DATA_LOADED = true;
         STUDENTS_DATA_LOADING = false;
         return STUDENT_GRADE_MAP;
       })
       .catch(function (error) {
-        console.error('[MiniCart] Erro ao buscar dados dos estudantes:', error);
         STUDENTS_DATA_LOADING = false;
         // Não marca como loaded para permitir retry
         return STUDENT_GRADE_MAP;
@@ -539,7 +511,6 @@
     }
 
     if (!formKey) {
-      console.error('[MiniCart] form_key não encontrado para requisição AJAX');
       return Promise.reject(new Error('form_key não encontrado'));
     }
 
@@ -557,7 +528,6 @@
     // Adiciona opções de bundle se o produto estiver no mapeamento
     var bundleOptions = BUNDLE_OPTIONS_MAP[productId];
     if (bundleOptions) {
-      console.log('[MiniCart] Produto bundle detectado, adicionando opções:', bundleOptions);
       for (var optionName in bundleOptions) {
         if (bundleOptions.hasOwnProperty(optionName)) {
           params.set(optionName, bundleOptions[optionName]);
@@ -570,11 +540,6 @@
     if (existingSuggestionCode && existingSuggestionCode.value) {
       params.set('suggestion_code', existingSuggestionCode.value);
     }
-
-    console.log('[MiniCart] Enviando requisição AJAX:', {
-      url: url,
-      params: params.toString(),
-    });
 
     // Faz a requisição via fetch (sem redirecionar)
     return fetch(url, {
@@ -589,7 +554,6 @@
     }).then(function (res) {
       // Se for redirecionamento (3xx), considera sucesso (produto foi adicionado)
       if (res.status >= 300 && res.status < 400) {
-        console.log('[MiniCart] Produto adicionado (redirecionamento detectado)');
         return { success: true, redirected: true };
       }
 
@@ -597,15 +561,12 @@
       var contentType = res.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
         return res.json().then(function (json) {
-          console.log('[MiniCart] Resposta JSON:', json);
           return { success: true, data: json };
         });
       }
 
       // Lê como texto
       return res.text().then(function (text) {
-        console.log('[MiniCart] Resposta texto:', text.substring(0, 200));
-
         // Se a resposta contém indicadores de sucesso ou é HTML de redirecionamento
         if (res.ok || res.status === 200 || text.includes('success') || text.includes('carrinho')) {
           return { success: true, data: text };
@@ -633,7 +594,6 @@
       var formInput = addToCartForms[i].querySelector('input[name="form_key"]');
       if (formInput && formInput.value && formInput.value.trim()) {
         formKey = formInput.value.trim();
-        console.log('[MiniCart] form_key obtido de formulário existente');
         break;
       }
     }
@@ -645,13 +605,11 @@
 
     // 3. Se ainda não encontrou, tenta buscar um novo do servidor
     if (!formKey) {
-      console.warn('[MiniCart] form_key não encontrado na página, tentando buscar do servidor...');
       // Nota: fetchNewFormKey é assíncrono, então vamos tentar sem ele primeiro
       // e só usar se realmente necessário
     }
 
     if (!formKey) {
-      console.error('[MiniCart] form_key não encontrado! Não é possível adicionar ao carrinho.');
       return Promise.reject(
         new Error('form_key não encontrado. Por favor, atualize a página e tente novamente.')
       );
@@ -679,13 +637,6 @@
       }
     }
 
-    console.log('[MiniCart] Adicionando produto ao carrinho via AJAX:', {
-      productId: productId,
-      qty: qty || 1,
-      formKey: formKey ? 'presente' : 'ausente',
-      uenc: uenc,
-    });
-
     // Usa AJAX para adicionar sem redirecionar a página
     return addToCartViaAjax(productId, qty || 1, uenc, formKey).then(function (result) {
       // Recarrega os dados do carrinho
@@ -698,7 +649,6 @@
           // Usa magentoCustomerData em vez de fetchCartData para evitar erro 400
           magentoCustomerData(function (customerData) {
             if (!customerData || !customerData.get) {
-              console.warn('[MiniCart] CustomerData não disponível, assumindo sucesso');
               if (result.success) {
                 resolve(result);
               } else {
@@ -709,7 +659,6 @@
 
             var cart = customerData.get('cart')();
             if (!cart || !cart.items) {
-              console.warn('[MiniCart] Dados do carrinho não disponíveis, assumindo sucesso');
               if (result.success) {
                 resolve(result);
               } else {
@@ -720,7 +669,6 @@
 
             var productInCart = fromCartByProductId(cart, productId);
             if (productInCart) {
-              console.log('[MiniCart] Produto confirmado no carrinho:', productInCart);
               resolve(result);
             } else {
               // Tenta mais uma vez após um delay maior
@@ -729,10 +677,6 @@
                 if (cart2 && cart2.items) {
                   var productInCart2 = fromCartByProductId(cart2, productId);
                   if (productInCart2) {
-                    console.log(
-                      '[MiniCart] Produto confirmado no carrinho (segunda tentativa):',
-                      productInCart2
-                    );
                     resolve(result);
                     return;
                   }
@@ -740,9 +684,6 @@
 
                 // Mesmo sem confirmação, se a resposta foi sucesso, considera OK
                 if (result.success) {
-                  console.warn(
-                    '[MiniCart] Produto adicionado com sucesso (verificação não confirmou, mas API retornou sucesso)'
-                  );
                   resolve(result);
                 } else {
                   reject(
@@ -781,7 +722,6 @@
 
   function analyticsEvent(eventLabel, productId, productName, priceNumber, quantity, category) {
     if (eventLabel === undefined || !eventLabel) {
-      console.log('[MiniCart] Missing parameters for analytics event.');
       return;
     }
 
@@ -793,15 +733,8 @@
     var productsString =
       ':' + productNameFormatted + ';' + quantityValue + ';' + priceValue.toFixed(2) + ';;';
 
-    var eVar7Value = 'target_mini_cart_' + eventLabel;
-
-    console.log('[MiniCart] Analytics event triggered:', {
-      event: 'scAdd',
-      products: productsString,
-      eVar7: eVar7Value,
-      productId: productId,
-      productName: productNameFormatted,
-    });
+    var eVar7Value = 'AT_evar25_' + eventLabel;
+    var eVar25Value = 'AT_evar25_' + eventLabel;
 
     (function () {
       var s = window.s || (typeof s_gi === 'function' && s_gi('lumisfera'));
@@ -812,6 +745,7 @@
       s.products = productsString;
       s.events = 'scAdd';
       s.eVar7 = eVar7Value;
+      s.eVar25 = eVar25Value;
 
       s.tl(true, 'o', 'target_activity_action');
     })();
@@ -832,7 +766,6 @@
         return data && data.cart ? data.cart : null;
       })
       .catch(function (err) {
-        console.warn('Erro ao buscar dados do carrinho:', err);
         return null;
       });
   }
@@ -928,11 +861,6 @@
       .replace(/[ç]/g, 'c')
       .trim();
 
-    console.log('[MiniCart] Normalizando gradeLevel:', {
-      original: gradeLevel,
-      normalized: normalized,
-    });
-
     // 1. EDUCAÇÃO INFANTIL (1-5 anos)
     // Padrões: "1 ano educacao infantil", "2 anos ensino infantil", "3 anos pre escola"
     if (
@@ -944,7 +872,6 @@
       if (infantilMatch) {
         var anos = parseInt(infantilMatch[1]);
         if (anos >= 1 && anos <= 5) {
-          console.log('[MiniCart] Detectado Educação Infantil:', anos, 'anos -> nível', anos);
           return anos; // 1 ano -> 1, 2 anos -> 2, ..., 5 anos -> 5
         }
       }
@@ -959,7 +886,6 @@
         var serie = parseInt(medioMatch[1]);
         if (serie >= 1 && serie <= 3) {
           var nivel = 14 + serie; // 1 -> 15, 2 -> 16, 3 -> 17
-          console.log('[MiniCart] Detectado Ensino Médio:', serie, 'º ano/série -> nível', nivel);
           return nivel;
         }
       }
@@ -972,7 +898,6 @@
         var ano = parseInt(iniciaisMatch[1]);
         if (ano >= 1 && ano <= 5) {
           var nivel = ano + 5; // 1º -> 6, 2º -> 7, ..., 5º -> 10
-          console.log('[MiniCart] Detectado Anos Iniciais:', ano, 'º ano -> nível', nivel);
           return nivel;
         }
       }
@@ -985,7 +910,6 @@
         var ano = parseInt(finaisMatch[1]);
         if (ano >= 6 && ano <= 9) {
           var nivel = ano + 5; // 6º -> 11, 7º -> 12, 8º -> 13, 9º -> 14
-          console.log('[MiniCart] Detectado Anos Finais:', ano, 'º ano -> nível', nivel);
           return nivel;
         }
       }
@@ -998,28 +922,20 @@
       var num = parseInt(fallbackMatch[1]);
       // Anos 1-5: provavelmente anos iniciais
       if (num >= 1 && num <= 5) {
-        console.log('[MiniCart] FALLBACK: Assumindo Anos Iniciais para', num, 'º ano');
         return num + 5;
       }
       // Anos 6-9: provavelmente anos finais
       if (num >= 6 && num <= 9) {
-        console.log('[MiniCart] FALLBACK: Assumindo Anos Finais para', num, 'º ano');
         return num + 5;
       }
     }
 
-    console.warn('[MiniCart] Não foi possível converter gradeLevel:', gradeLevel);
     return null;
   }
 
   // Função para verificar se um produto está no carrinho
   function isProductInCart(cartData, productId) {
     if (!cartData || !cartData.items || !Array.isArray(cartData.items)) {
-      console.log('[MiniCart] isProductInCart: dados do carrinho inválidos', {
-        hasCartData: !!cartData,
-        hasItems: cartData && !!cartData.items,
-        isArray: cartData && cartData.items && Array.isArray(cartData.items),
-      });
       return false;
     }
 
@@ -1029,11 +945,6 @@
       var match = itemProductId === searchProductId;
 
       if (match) {
-        console.log('[MiniCart] Produto encontrado no carrinho:', {
-          searchId: searchProductId,
-          itemId: itemProductId,
-          itemName: item.product_name,
-        });
       }
 
       return match;
@@ -1045,7 +956,6 @@
   // Função para determinar qual produto recomendar baseado no nível escolar
   function getRecommendedProductId(gradeNumber, cartData) {
     if (!gradeNumber || !GRADE_RECOMMENDATIONS[gradeNumber]) {
-      console.warn('[MiniCart] Nível escolar não encontrado nas recomendações:', gradeNumber);
       return null;
     }
 
@@ -1053,15 +963,8 @@
 
     // Valida se é um array
     if (!Array.isArray(recommendations) || recommendations.length === 0) {
-      console.warn('[MiniCart] Nenhuma recomendação disponível para o nível:', gradeNumber);
       return null;
     }
-
-    console.log('[MiniCart] Verificando recomendações para nível', gradeNumber, {
-      totalProducts: recommendations.length,
-      products: recommendations,
-      cartItemsCount: cartData && cartData.items ? cartData.items.length : 0,
-    });
 
     // Percorre o array de recomendações em ordem de prioridade
     // Retorna o primeiro produto que NÃO está no carrinho
@@ -1070,49 +973,29 @@
 
       // Pula produtos com ID null (ex: REFORCA_ANUAL)
       if (productId === null || productId === undefined) {
-        console.log('[MiniCart] Produto', i + 1, 'não possui ID válido, pulando...');
         continue;
       }
 
       var inCart = isProductInCart(cartData, productId);
-      console.log(
-        '[MiniCart] Verificando produto',
-        i + 1,
-        '(ID:',
-        productId,
-        ') - No carrinho:',
-        inCart
-      );
 
       if (!inCart) {
-        console.log('[MiniCart] Recomendando produto:', productId, '(posição', i + 1, 'na lista)');
         return productId;
       }
     }
 
     // Se todos os produtos recomendados já estão no carrinho
-    console.log('[MiniCart] Todos os produtos recomendados já estão no carrinho');
     return null;
   }
 
   // Função para verificar se há kit escolar no carrinho e extrair o nível
   function detectSchoolKitAndGrade(cartData) {
     if (!cartData || !cartData.items || !Array.isArray(cartData.items)) {
-      console.warn('[MiniCart] detectSchoolKitAndGrade: dados inválidos', {
-        hasCartData: !!cartData,
-        hasItems: cartData && !!cartData.items,
-        isArray: cartData && cartData.items && Array.isArray(cartData.items),
-      });
       return { hasKit: false, gradeLevel: null, kitProducts: [] };
     }
 
     var gradeLevel = null;
     var kitProducts = [];
     var hasAdoptionList = false;
-
-    console.log(
-      '[MiniCart] Verificando ' + cartData.items.length + ' itens no carrinho para detectar kits...'
-    );
 
     // PRIORIDADE 1: Verifica se existe adoption list (indica que há kit escolar)
     // Acessa: cart.ftd.data.miniCart.miniCartAdoptionLists
@@ -1125,53 +1008,23 @@
       var adoptionLists = cartData.ftd.data.miniCart.miniCartAdoptionLists;
       var adoptionListKeys = Object.keys(adoptionLists);
 
-      console.log('[MiniCart] Detectadas adoption lists no carrinho:', {
-        count: adoptionListKeys.length,
-        lists: adoptionListKeys,
-      });
-
       // Se existe pelo menos uma adoption list, há kit no carrinho
       if (adoptionListKeys.length > 0) {
         hasAdoptionList = true;
-        console.log('[MiniCart] Kit detectado via adoption list');
 
         // Pega a primeira adoption list do carrinho
         var firstAdoptionListId = adoptionListKeys[0];
         var firstAdoptionList = adoptionLists[firstAdoptionListId];
         var studentId = firstAdoptionList.studentId;
 
-        console.log('[MiniCart] Primeira lista de adoção no carrinho:', {
-          adoptionListId: firstAdoptionListId,
-          studentId: studentId,
-        });
-
         // PRIORIDADE 1: Busca o gradeLevel pelo adoptionListId (mais preciso)
         if (STUDENTS_DATA_LOADED && ADOPTION_LIST_GRADE_MAP[firstAdoptionListId]) {
           gradeLevel = ADOPTION_LIST_GRADE_MAP[firstAdoptionListId];
-          console.log('[MiniCart] Nivel escolar obtido via adoptionListId da API:', {
-            adoptionListId: firstAdoptionListId,
-            studentId: studentId,
-            gradeLevel: gradeLevel,
-          });
         }
         // FALLBACK: Se não encontrou pela lista, tenta pelo studentId
         else if (STUDENTS_DATA_LOADED && STUDENT_GRADE_MAP[studentId]) {
           gradeLevel = STUDENT_GRADE_MAP[studentId];
-          console.log('[MiniCart] Nivel escolar obtido via studentId (fallback):', {
-            studentId: studentId,
-            gradeLevel: gradeLevel,
-          });
         } else {
-          console.log(
-            '[MiniCart] AVISO: Mapa de estudantes nao carregado ou lista nao encontrada:',
-            {
-              dataLoaded: STUDENTS_DATA_LOADED,
-              hasAdoptionListId: !!ADOPTION_LIST_GRADE_MAP[firstAdoptionListId],
-              hasStudentId: !!STUDENT_GRADE_MAP[studentId],
-              adoptionListId: firstAdoptionListId,
-              studentId: studentId,
-            }
-          );
         }
       }
     }
@@ -1181,11 +1034,6 @@
       var item = cartData.items[i];
       var productName = item.product_name || '';
 
-      console.log('[MiniCart] Verificando item ' + (i + 1) + ':', {
-        name: productName,
-        id: item.product_id,
-      });
-
       // Verifica se é um produto de kit escolar (padrão: "Conjunto", "Kit", ou produtos com ano)
       var isKitProduct =
         /conjunto|kit|faça|faca|lista\s*de\s*materiais|\bCJ\b|\bEI\b/i.test(productName) ||
@@ -1194,7 +1042,6 @@
         /LEVEL\s+\d+/i.test(productName);
 
       if (isKitProduct) {
-        console.log('[MiniCart] Kit detectado:', productName);
         kitProducts.push(item);
 
         // PRIORIDADE 2: Tenta extrair o nivel escolar do nome do produto (fallback)
@@ -1203,12 +1050,7 @@
           var extractedGrade = extractGradeLevel(productName);
           if (extractedGrade) {
             gradeLevel = extractedGrade;
-            console.log(
-              '[MiniCart] INFO: Nivel escolar extraido do nome do produto (fallback):',
-              gradeLevel
-            );
           } else {
-            console.warn('[MiniCart] Não foi possível extrair nível do kit:', productName);
           }
         }
       }
@@ -1216,18 +1058,6 @@
 
     // Determina se há kit: se existe adoption list OU se detectou produtos por regex
     var hasKit = hasAdoptionList || kitProducts.length > 0;
-
-    console.log('[MiniCart] Resultado da detecção:', {
-      hasKit: hasKit,
-      hasAdoptionList: hasAdoptionList,
-      gradeLevel: gradeLevel,
-      gradeLevelSource: gradeLevel
-        ? STUDENTS_DATA_LOADED && STUDENT_GRADE_MAP[Object.keys(STUDENT_GRADE_MAP)[0]]
-          ? 'API'
-          : 'regex'
-        : 'none',
-      kitsFound: kitProducts.length,
-    });
 
     return {
       hasKit: hasKit,
@@ -1245,7 +1075,6 @@
         return cartData ? { cart: cartData } : null;
       })
       .catch(function (err) {
-        console.warn('[MiniCart] Erro ao buscar dados do carrinho:', err);
         return null;
       });
   }
@@ -1557,7 +1386,6 @@
         addToCart(productId, 1)
           .then(function (res) {
             // Produto adicionado com sucesso via AJAX (sem recarregar página)
-            console.log('[MiniCart] Produto adicionado com sucesso:', res);
 
             // Atualiza o botão para indicar sucesso
             updateButtonContent(btn, 'added');
@@ -1579,9 +1407,7 @@
             }, 2000);
           })
           .catch(function (err) {
-            console.error('[MiniCart] Falha ao adicionar ao carrinho:', err);
             var errorMessage = err && err.message ? err.message : 'Erro desconhecido';
-            console.error('[MiniCart] Mensagem de erro:', errorMessage);
 
             updateButtonContent(btn, 'error');
             btn.title = errorMessage; // Mostra o erro ao passar o mouse
@@ -1630,12 +1456,6 @@
       currentProductId !== null && newProductId !== null && currentProductId !== newProductId;
 
     if (productChanged) {
-      console.log('[MiniCart] Produto mudou na interface:', {
-        currentId: currentProductId,
-        newId: newProductId,
-        newName: data.name,
-        newPrice: data.priceFormatted,
-      });
     }
 
     // Se o produto mudou, força a atualização de tudo
@@ -1706,7 +1526,6 @@
     var wrap = document.getElementById(SHELF_ID);
     if (wrap) {
       wrap.style.display = 'none';
-      console.log('[MiniCart] Recomendação escondida (kit removido)');
     }
   }
 
@@ -1716,7 +1535,6 @@
     if (wrap) {
       wrap.style.display = '';
       wrap.classList.remove('wj-hiding'); // Remove a classe de animação se existir
-      console.log('[MiniCart] Recomendação mostrada (kit detectado)');
     }
   }
 
@@ -1726,13 +1544,11 @@
     if (wrap) {
       // Adiciona a classe que dispara a animação
       wrap.classList.add('wj-hiding');
-      console.log('[MiniCart] Iniciando animação de ocultação...');
 
       // Após a animação, oculta completamente o elemento
       setTimeout(function () {
         wrap.style.display = 'none';
         wrap.classList.remove('wj-hiding');
-        console.log('[MiniCart] Recomendação ocultada (produto adicionado ao carrinho)');
       }, 500); // Duração da animação
     }
   }
@@ -1763,49 +1579,28 @@
   }
 
   var run = debounced(function () {
-    console.log('[MiniCart] run() chamado');
-
     // Evita execuções simultâneas
     if (isRunning) {
-      console.log('[MiniCart] Execução já em andamento, ignorando...');
       return;
     }
 
     var anchor = document.querySelector(ANCHOR_SELECTOR);
     if (!anchor) {
-      console.warn('[MiniCart] Anchor não encontrado:', ANCHOR_SELECTOR);
       return;
     }
-
-    console.log('[MiniCart] Anchor encontrado, iniciando verificação do carrinho...');
 
     // Marca como em execução
     isRunning = true;
 
     // Primeiro, verifica se há kit escolar no carrinho usando customer data
     magentoCustomerData(function (cd) {
-      console.log('[MiniCart] magentoCustomerData callback executado', {
-        hasCustomerData: !!cd,
-        hasGet: cd && !!cd.get,
-      });
-
       var cart = cd && cd.get ? cd.get('cart')() : null;
 
-      console.log('[MiniCart] Dados do carrinho obtidos:', {
-        hasCart: !!cart,
-        hasItems: cart && !!cart.items,
-        itemsCount: cart && cart.items ? cart.items.length : 0,
-      });
-
       if (!cart) {
-        console.warn('[MiniCart] Cart não disponível via customerData, tentando fetch...');
         // Se não tiver customer data, tenta fetch como fallback
         fetchFullCartData()
           .then(function (fullData) {
             if (!fullData || !fullData.cart) {
-              console.log(
-                '[MiniCart] Nenhum dado do carrinho encontrado. Aguardando kit escolar...'
-              );
               isRunning = false;
               return;
             }
@@ -1820,7 +1615,6 @@
             checkKitAndShowRecommendation(fullData.cart);
           })
           .catch(function (err) {
-            console.warn('[MiniCart] Erro ao verificar kit escolar:', err);
             isRunning = false;
           });
         return;
@@ -1896,9 +1690,7 @@
   function checkKitAndShowRecommendation(cartData) {
     // Se a API ainda esta carregando, aguarda um pouco e tenta novamente
     if (STUDENTS_DATA_LOADING && !STUDENTS_DATA_LOADED) {
-      console.log('[MiniCart] Aguardando carregamento dos dados da API de estudantes...');
       setTimeout(function () {
-        console.log('[MiniCart] Tentando novamente após carregamento da API...');
         // Reseta o lastCheckedState para forçar nova verificação com dados da API
         lastCheckedState = null;
         isRunning = false;
@@ -1911,9 +1703,6 @@
     var kitInfo = detectSchoolKitAndGrade(cartData);
 
     if (!kitInfo.hasKit) {
-      console.log(
-        '[MiniCart] Nenhum kit escolar detectado no carrinho. Escondendo recomendação...'
-      );
       DETECTED_GRADE_LEVEL = null;
       LAST_RECOMMENDED_PRODUCT_ID = null;
       INITIAL_RECOMMENDED_PRODUCT_ID = null;
@@ -1934,10 +1723,6 @@
     var gradeNumber = convertGradeLevelToNumber(kitInfo.gradeLevel);
 
     if (!gradeNumber) {
-      console.warn(
-        '[MiniCart] Não foi possível converter o nível escolar para número:',
-        kitInfo.gradeLevel
-      );
       mutationObserverPaused = true;
       hideRecommendation();
       setTimeout(function () {
@@ -1948,16 +1733,6 @@
     }
 
     // Log dos dados do carrinho para debug
-    console.log('[MiniCart] Dados do carrinho antes de verificar recomendações:', {
-      cartDataExists: !!cartData,
-      itemsCount: cartData && cartData.items ? cartData.items.length : 0,
-      items:
-        cartData && cartData.items
-          ? cartData.items.map(function (item) {
-              return { id: item.product_id, name: item.product_name };
-            })
-          : [],
-    });
 
     // Cria um hash simplificado dos IDs dos produtos no carrinho (excluindo kits)
     var currentCartState = cartData.items
@@ -1986,21 +1761,15 @@
 
     if (isFirstRecommendation) {
       // Primeira recomendação ou kit mudou: determina produto com base no estado atual do carrinho
-      console.log('[MiniCart] Determinando recomendação inicial para nível:', gradeNumber);
       recommendedProductId = getRecommendedProductId(gradeNumber, cartData);
 
       if (recommendedProductId) {
         INITIAL_RECOMMENDED_PRODUCT_ID = recommendedProductId;
         INITIAL_RECOMMENDATION_CART_STATE = currentCartState;
-        console.log('[MiniCart] Recomendação inicial definida:', {
-          productId: recommendedProductId,
-          cartState: currentCartState,
-        });
       }
     } else {
       // Não é a primeira recomendação: mantém o produto inicial, mesmo que tenha sido adicionado
       recommendedProductId = INITIAL_RECOMMENDED_PRODUCT_ID;
-      console.log('[MiniCart] Mantendo recomendação inicial:', recommendedProductId);
 
       // Verifica se o produto recomendado ainda faz sentido
       // Se o produto já estava no carrinho na recomendação inicial e ainda está, está OK
@@ -2010,18 +1779,11 @@
         : false;
       var isInCurrentCart = isProductInCart(cartData, recommendedProductId);
 
-      console.log('[MiniCart] Status do produto recomendado:', {
-        productId: recommendedProductId,
-        wasInInitialCart: wasInInitialCart,
-        isInCurrentCart: isInCurrentCart,
-      });
-
       // Se o produto foi adicionado pelo usuário (não estava no initial mas está agora),
       // ainda assim mantém a recomendação
     }
 
     if (!recommendedProductId) {
-      console.warn('[MiniCart] Nenhum produto recomendado encontrado para o nível:', gradeNumber);
       LAST_RECOMMENDED_PRODUCT_ID = null;
       INITIAL_RECOMMENDED_PRODUCT_ID = null;
       INITIAL_RECOMMENDATION_CART_STATE = null;
@@ -2044,21 +1806,11 @@
     // Atualiza a chave do cache baseada no produto recomendado
     var currentCacheKey = 'WJ_SHELF_CACHE_' + currentTargetId;
 
-    console.log('[MiniCart] Kit escolar detectado!', {
-      hasKit: kitInfo.hasKit,
-      gradeLevel: kitInfo.gradeLevel,
-      gradeNumber: gradeNumber,
-      recommendedProductId: recommendedProductId,
-      kitProducts: kitInfo.kitProducts.length,
-      productChanged: productChanged,
-    });
-
     // Verifica se o produto recomendado foi adicionado ao carrinho
     // Se sim, oculta o card com animação
     var recommendedProductInCart = isProductInCart(cartData, recommendedProductId);
 
     if (recommendedProductInCart && !isFirstRecommendation) {
-      console.log('[MiniCart] Produto recomendado já está no carrinho, ocultando com animação...');
       hideRecommendationWithAnimation();
       setTimeout(function () {
         mutationObserverPaused = false;
@@ -2074,10 +1826,6 @@
     function loadRecommendedProduct(productId, forceReload) {
       // Se o produto mudou, sempre busca do PDP para garantir dados atualizados
       if (forceReload) {
-        console.log(
-          '[MiniCart] Produto recomendado mudou, buscando dados do novo produto:',
-          productId
-        );
         // Limpa o cache do produto anterior se necessário
         // Busca diretamente do PDP com forceRefresh
         fetchPdpHtmlByIdOnce(productId, true)
@@ -2087,12 +1835,6 @@
             if (!pdpData.id) {
               pdpData.id = productId;
             }
-            console.log('[MiniCart] Dados do novo produto carregados:', {
-              id: pdpData.id,
-              name: pdpData.name,
-              price: pdpData.priceFormatted,
-              image: pdpData.image ? 'presente' : 'ausente',
-            });
             setCacheForProduct(productId, pdpData);
             mutationObserverPaused = true;
             mountOnceWithData(pdpData);
@@ -2102,7 +1844,6 @@
             }, 25); // Otimizado: reduzido de 50ms para 25ms
           })
           .catch(function (err) {
-            console.warn('[MiniCart] Erro ao buscar dados do produto:', err);
             mutationObserverPaused = true;
             // Garante que o ID do produto está presente mesmo em caso de erro
             mountOnceWithData({ id: productId, name: 'Produto', image: '', priceFormatted: '' });
@@ -2167,7 +1908,6 @@
             }, 25); // Otimizado: reduzido de 50ms para 25ms
           })
           .catch(function (err) {
-            console.warn('[MiniCart] Erro ao buscar dados do produto:', err);
             mutationObserverPaused = true;
             // Garante que o ID do produto está presente mesmo em caso de erro
             mountOnceWithData({ id: productId, name: 'Produto', image: '', priceFormatted: '' });
@@ -2205,18 +1945,8 @@
     } catch (e) {}
   }
 
-  console.log(
-    '[MiniCart] Script inicializado - versão com detecção aprimorada de kits + API de estudantes'
-  );
-  console.log('[MiniCart] Aguardando anchor:', ANCHOR_SELECTOR);
-
   // Busca dados dos estudantes no início (em background)
-  fetchStudentsData().catch(function (err) {
-    console.warn(
-      '[MiniCart] Erro ao carregar dados dos estudantes (continuará com fallback):',
-      err
-    );
-  });
+  fetchStudentsData().catch(function (err) {});
 
   var mo = new MutationObserver(function () {
     // Ignora mutações quando estamos pausados ou em execução
@@ -2270,8 +2000,6 @@
               return;
             }
 
-            console.log('[MiniCart] Carrinho atualizado, verificando kit escolar...');
-
             // Recarrega os dados do carrinho antes de verificar
             if (cd && typeof cd.reload === 'function') {
               cd.reload(['cart'], true);
@@ -2291,7 +2019,6 @@
 
   // Executa a verificação inicial após um pequeno delay para garantir que o DOM está pronto
   setTimeout(function () {
-    console.log('[MiniCart] Executando verificação inicial...');
     run();
   }, 250); // Otimizado: reduzido de 500ms para 250ms
 
