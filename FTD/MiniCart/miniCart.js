@@ -219,7 +219,10 @@
     ' img{width:72px;height:72px;object-fit:contain;background:#fafafa;border-radius:6px;transition:opacity .15s ease}\
 #' +
     SHELF_ID +
-    ' .wj-title{font-size:14px;line-height:1.3;margin:0 0 6px 0;color:var(--color-brand-primary-700)!important;font-weight:600!important;}\
+    ' .wj-title{font-size:14px;line-height:1.3;margin:0 0 6px 0;color:var(--color-brand-primary-700)!important;font-weight:600!important;transition:opacity 0.2s ease;}\
+#' +
+    SHELF_ID +
+    ' .wj-title:hover{opacity:0.7;text-decoration:underline!important;}\
 #' +
     SHELF_ID +
     ' .wj-price{font-size:16px;font-weight:600;color:var(--color-neutral-800)!important;}\
@@ -1223,7 +1226,7 @@
   }
   function parsePdp(html) {
     var doc = new DOMParser().parseFromString(html, 'text/html');
-    var data = { name: 'Produto', image: '', priceNumber: 0, priceFormatted: '' };
+    var data = { name: 'Produto', image: '', priceNumber: 0, priceFormatted: '', url: '' };
 
     var scripts = Array.prototype.slice.call(
       doc.querySelectorAll('script[type="application/ld+json"]')
@@ -1266,6 +1269,15 @@
     if (!data.name || data.name === 'Produto') {
       var ogt = doc.querySelector('meta[property="og:title"]');
       if (ogt && ogt.content) data.name = ogt.content;
+    }
+    if (!data.url) {
+      var canonical = doc.querySelector('link[rel="canonical"]');
+      if (canonical && canonical.href) {
+        data.url = canonical.href;
+      } else {
+        var ogUrl = doc.querySelector('meta[property="og:url"]');
+        if (ogUrl && ogUrl.content) data.url = ogUrl.content;
+      }
     }
     if (!data.priceNumber) {
       var metaPrice = doc.querySelector('[itemprop="price"]');
@@ -1320,6 +1332,14 @@
       img.style.cursor = data.url ? 'pointer' : 'default';
       if (data.url) {
         img.addEventListener('click', function () {
+          // Tracking: clique na imagem do produto
+          var productId = data.id || TARGET_ID;
+          var productName = data.name || 'Produto';
+          var productPrice = data.priceNumber || 0;
+          var category = data.category || data.product_category || '';
+
+          analyticsEvent('product_link_click', productId, productName, productPrice, 1, category);
+
           if (data.url) window.location.href = data.url;
         });
         img.title = 'Ver produto: ' + (data.name || 'Produto');
@@ -1333,6 +1353,18 @@
         t.style.textDecoration = 'none';
         t.style.color = 'inherit';
         t.style.cursor = 'pointer';
+
+        // Adiciona tracking de clique no título
+        t.addEventListener('click', function (e) {
+          // Não previne o comportamento padrão para permitir navegação
+          var productId = data.id || TARGET_ID;
+          var productName = data.name || 'Produto';
+          var productPrice = data.priceNumber || 0;
+          var category = data.category || data.product_category || '';
+
+          // Tracking: clique no título do produto
+          analyticsEvent('product_link_click', productId, productName, productPrice, 1, category);
+        });
       }
       t.textContent = data.name || 'Produto';
       var p = document.createElement('div');

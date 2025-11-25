@@ -219,7 +219,10 @@
     ' img{width:72px;height:72px;object-fit:contain;background:#fafafa;border-radius:6px;transition:opacity .15s ease}\
 #' +
     SHELF_ID +
-    ' .wj-title{font-size:14px;line-height:1.3;margin:0 0 6px 0;color:var(--color-brand-primary-700)!important;font-weight:600!important;}\
+    ' .wj-title{font-size:14px;line-height:1.3;margin:0 0 6px 0;color:var(--color-brand-primary-700)!important;font-weight:600!important;transition:opacity 0.2s ease;}\
+#' +
+    SHELF_ID +
+    ' .wj-title:hover{opacity:0.7;text-decoration:underline!important;}\
 #' +
     SHELF_ID +
     ' .wj-price{font-size:16px;font-weight:600;color:var(--color-neutral-800)!important;}\
@@ -415,7 +418,6 @@
         return response.json();
       })
       .then(function (data) {
-
         if (!data.items || !Array.isArray(data.items)) {
           STUDENTS_DATA_LOADED = true;
           STUDENTS_DATA_LOADING = false;
@@ -469,7 +471,6 @@
               if (index === 0) {
                 firstGradeLevel = gradeTitle;
               }
-
             }
           });
 
@@ -478,7 +479,6 @@
             STUDENT_GRADE_MAP[studentId] = firstGradeLevel;
           }
         });
-
 
         STUDENTS_DATA_LOADED = true;
         STUDENTS_DATA_LOADING = false;
@@ -544,7 +544,6 @@
       params.set('suggestion_code', existingSuggestionCode.value);
     }
 
-
     // Faz a requisição via fetch (sem redirecionar)
     return fetch(url, {
       method: 'POST',
@@ -571,7 +570,6 @@
 
       // Lê como texto
       return res.text().then(function (text) {
-
         // Se a resposta contém indicadores de sucesso ou é HTML de redirecionamento
         if (res.ok || res.status === 200 || text.includes('success') || text.includes('carrinho')) {
           return { success: true, data: text };
@@ -641,7 +639,6 @@
         uenc = btoa(redirectUrl);
       }
     }
-
 
     // Usa AJAX para adicionar sem redirecionar a página
     return addToCartViaAjax(productId, qty || 1, uenc, formKey).then(function (result) {
@@ -740,7 +737,6 @@
       ':' + productNameFormatted + ';' + quantityValue + ';' + priceValue.toFixed(2) + ';;';
 
     var eVar7Value = 'target_mini_cart_' + eventLabel;
-
 
     (function () {
       var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
@@ -869,7 +865,6 @@
       .replace(/\s*-\s*/g, ' ') // Remove hífens e espaços ao redor
       .trim();
 
-
     // 1. EDUCAÇÃO INFANTIL (1-5 anos)
     // Padrões: "1 ano educacao infantil", "2 anos ensino infantil", "3 anos pre escola"
     if (
@@ -975,7 +970,6 @@
       return null;
     }
 
-
     // Percorre o array de recomendações em ordem de prioridade
     // Retorna o primeiro produto que NÃO está no carrinho
     for (var i = 0; i < recommendations.length; i++) {
@@ -1007,7 +1001,6 @@
     var kitProducts = [];
     var hasAdoptionList = false;
 
-
     // PRIORIDADE 1: Verifica se existe adoption list (indica que há kit escolar)
     // Acessa: cart.ftd.data.miniCart.miniCartAdoptionLists
     if (
@@ -1019,7 +1012,6 @@
       var adoptionLists = cartData.ftd.data.miniCart.miniCartAdoptionLists;
       var adoptionListKeys = Object.keys(adoptionLists);
 
-
       // Se existe pelo menos uma adoption list, há kit no carrinho
       if (adoptionListKeys.length > 0) {
         hasAdoptionList = true;
@@ -1028,7 +1020,6 @@
         var firstAdoptionListId = adoptionListKeys[0];
         var firstAdoptionList = adoptionLists[firstAdoptionListId];
         var studentId = firstAdoptionList.studentId;
-
 
         // PRIORIDADE 1: Busca o gradeLevel pelo adoptionListId (mais preciso)
         if (STUDENTS_DATA_LOADED && ADOPTION_LIST_GRADE_MAP[firstAdoptionListId]) {
@@ -1046,7 +1037,6 @@
     for (var i = 0; i < cartData.items.length; i++) {
       var item = cartData.items[i];
       var productName = item.product_name || '';
-
 
       // Verifica se é um produto de kit escolar (padrão: "Conjunto", "Kit", ou produtos com ano)
       // Padrões melhorados para detectar mais variações
@@ -1086,7 +1076,6 @@
 
     // Determina se há kit: se existe adoption list OU se detectou produtos por regex
     var hasKit = hasAdoptionList || kitProducts.length > 0;
-
 
     return {
       hasKit: hasKit,
@@ -1252,7 +1241,7 @@
   }
   function parsePdp(html) {
     var doc = new DOMParser().parseFromString(html, 'text/html');
-    var data = { name: 'Produto', image: '', priceNumber: 0, priceFormatted: '' };
+    var data = { name: 'Produto', image: '', priceNumber: 0, priceFormatted: '', url: '' };
 
     var scripts = Array.prototype.slice.call(
       doc.querySelectorAll('script[type="application/ld+json"]')
@@ -1295,6 +1284,15 @@
     if (!data.name || data.name === 'Produto') {
       var ogt = doc.querySelector('meta[property="og:title"]');
       if (ogt && ogt.content) data.name = ogt.content;
+    }
+    if (!data.url) {
+      var canonical = doc.querySelector('link[rel="canonical"]');
+      if (canonical && canonical.href) {
+        data.url = canonical.href;
+      } else {
+        var ogUrl = doc.querySelector('meta[property="og:url"]');
+        if (ogUrl && ogUrl.content) data.url = ogUrl.content;
+      }
     }
     if (!data.priceNumber) {
       var metaPrice = doc.querySelector('[itemprop="price"]');
@@ -1349,6 +1347,14 @@
       img.style.cursor = data.url ? 'pointer' : 'default';
       if (data.url) {
         img.addEventListener('click', function () {
+          // Tracking: clique na imagem do produto
+          var productId = data.id || TARGET_ID;
+          var productName = data.name || 'Produto';
+          var productPrice = data.priceNumber || 0;
+          var category = data.category || data.product_category || '';
+
+          analyticsEvent('product_image_click', productId, productName, productPrice, 1, category);
+
           if (data.url) window.location.href = data.url;
         });
         img.title = 'Ver produto: ' + (data.name || 'Produto');
@@ -1362,6 +1368,18 @@
         t.style.textDecoration = 'none';
         t.style.color = 'inherit';
         t.style.cursor = 'pointer';
+
+        // Adiciona tracking de clique no título
+        t.addEventListener('click', function (e) {
+          // Não previne o comportamento padrão para permitir navegação
+          var productId = data.id || TARGET_ID;
+          var productName = data.name || 'Produto';
+          var productPrice = data.priceNumber || 0;
+          var category = data.category || data.product_category || '';
+
+          // Tracking: clique no título do produto
+          analyticsEvent('product_title_click', productId, productName, productPrice, 1, category);
+        });
       }
       t.textContent = data.name || 'Produto';
       var p = document.createElement('div');
@@ -1608,7 +1626,6 @@
   }
 
   var run = debounced(function () {
-
     // Evita execuções simultâneas
     if (isRunning) {
       return;
@@ -1619,15 +1636,12 @@
       return;
     }
 
-
     // Marca como em execução
     isRunning = true;
 
     // Primeiro, verifica se há kit escolar no carrinho usando customer data
     magentoCustomerData(function (cd) {
-
       var cart = cd && cd.get ? cd.get('cart')() : null;
-
 
       if (!cart) {
         // Se não tiver customer data, tenta fetch como fallback
@@ -1812,7 +1826,6 @@
         : false;
       var isInCurrentCart = isProductInCart(cartData, recommendedProductId);
 
-
       // Se o produto foi adicionado pelo usuário (não estava no initial mas está agora),
       // ainda assim mantém a recomendação
     }
@@ -1839,7 +1852,6 @@
 
     // Atualiza a chave do cache baseada no produto recomendado
     var currentCacheKey = 'WJ_SHELF_CACHE_' + currentTargetId;
-
 
     // Verifica se o produto recomendado foi adicionado ao carrinho
     // Se sim, oculta o card com animação
@@ -1980,10 +1992,8 @@
     } catch (e) {}
   }
 
-
   // Busca dados dos estudantes no início (em background)
-  fetchStudentsData().catch(function (err) {
-  });
+  fetchStudentsData().catch(function (err) {});
 
   var mo = new MutationObserver(function () {
     // Ignora mutações quando estamos pausados ou em execução
@@ -2036,7 +2046,6 @@
             if (isRunning) {
               return;
             }
-
 
             // Recarrega os dados do carrinho antes de verificar
             if (cd && typeof cd.reload === 'function') {
