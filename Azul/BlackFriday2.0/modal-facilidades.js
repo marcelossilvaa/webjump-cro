@@ -2,14 +2,49 @@
 // CONFIGURAÇÃO DA DATA FINAL DO COUNTDOWN
 // ============================================
 // Formato: 'YYYY-MM-DD HH:MM:SS' (horário de Brasília)
-// Exemplo: '2024-11-29 23:59:59'
-const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
-
+//
+// LÓGICA DE RENOVAÇÃO:
+// - FASE 1: Conta até 27/11 às 23:59:59
+// - Renovação 1: 28/11 às 00:00:00 (automaticamente muda para FASE 2)
+// - FASE 2: Conta até 30/11 às 23:59:59
+// - Renovação 2: 01/12 às 00:00:00 (automaticamente muda para FASE 3)
+// - FASE 3: Conta até 04/12 às 23:59:59
+//
 (function () {
+  // Constantes de configuração (dentro da IIFE para evitar conflitos)
+  const COUNTDOWN_END_DATE_PHASE_1 = '2025-11-27 23:59:59'; // FASE 1 termina em 27/11 às 23:59:59
+  const RENEWAL_DATE_PHASE_1 = '2025-11-28 00:00:00'; // Renovação 1 em 28/11 à meia-noite
+  const COUNTDOWN_END_DATE_PHASE_2 = '2025-11-30 23:59:59'; // FASE 2 termina em 30/11 às 23:59:59
+  const RENEWAL_DATE_PHASE_2 = '2025-12-01 00:00:00'; // Renovação 2 em 01/12 à meia-noite
+  const COUNTDOWN_END_DATE_PHASE_3 = '2025-12-04 23:59:59'; // FASE 3 termina em 04/12 às 23:59:59
   let observer = null;
   let isProcessing = false;
   let modalCreated = false;
   let countdownInterval = null;
+
+  // Função para tracking de analytics
+  function analyticsEvent(eventLabel) {
+    if (eventLabel === undefined || !eventLabel) {
+      console.log('[ModalFacilidades] Missing parameters for analytics event.');
+      return;
+    }
+
+    const labelEvent = 'AT_azul_friday_modal ' + eventLabel;
+
+    console.log('[ModalFacilidades] Analytics event triggered:', labelEvent);
+
+    (function () {
+      var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+      if (!s || typeof s.tl !== 'function') return;
+
+      s.linkTrackVars = 'events,eVar82';
+      s.linkTrackEvents = 'event90';
+      s.events = 'event90';
+      s.eVar82 = labelEvent;
+
+      s.tl(true, 'o', 'target_activity_action');
+    })();
+  }
 
   // Função para obter data atual em Brasília
   function getBrasiliaTime() {
@@ -21,18 +56,41 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     return brasiliaTime;
   }
 
-  // Função para criar data final em Brasília
-  function getEndDate() {
-    const [datePart, timePart] = COUNTDOWN_END_DATE.split(' ');
+  // Função para criar data em Brasília a partir de string
+  function createBrasiliaDate(dateString) {
+    const [datePart, timePart] = dateString.split(' ');
     const [year, month, day] = datePart.split('-').map(Number);
     const [hours, minutes, seconds] = timePart.split(':').map(Number);
 
     // Criar data em UTC e ajustar para Brasília
-    const endDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds));
+    const date = new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds));
     // Ajustar para horário de Brasília (UTC-3)
     const brasiliaOffset = -3 * 60;
-    const utc = endDate.getTime() - brasiliaOffset * 60000;
+    const utc = date.getTime() - brasiliaOffset * 60000;
     return new Date(utc);
+  }
+
+  // Função para criar data final em Brasília (com renovação)
+  function getEndDate() {
+    const now = getBrasiliaTime();
+    const renewalDate1 = createBrasiliaDate(RENEWAL_DATE_PHASE_1);
+    const renewalDate2 = createBrasiliaDate(RENEWAL_DATE_PHASE_2);
+    const phase1EndDate = createBrasiliaDate(COUNTDOWN_END_DATE_PHASE_1);
+    const phase2EndDate = createBrasiliaDate(COUNTDOWN_END_DATE_PHASE_2);
+    const phase3EndDate = createBrasiliaDate(COUNTDOWN_END_DATE_PHASE_3);
+
+    // Se já passou ou chegou na segunda renovação, usar a FASE 3
+    if (now >= renewalDate2) {
+      return phase3EndDate;
+    }
+    // Se já passou ou chegou na primeira renovação, usar a FASE 2
+    else if (now >= renewalDate1) {
+      return phase2EndDate;
+    }
+    // Antes da primeira renovação, usar a FASE 1
+    else {
+      return phase1EndDate;
+    }
   }
 
   // Função para calcular diferença
@@ -203,11 +261,13 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
   function createCountdownSection() {
     const countdownContainer = document.createElement('div');
     countdownContainer.id = 'modal-countdown-container';
+    countdownContainer.className = 'azul-friday-modal-countdown-container';
     countdownContainer.style.cssText =
-      'width: 472px; min-height: 94px; background: #041E42; border: 1px solid #00B4E2; border-radius: 10px; padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; align-items: stretch;';
+      'width: 472px; max-height: 110px; background: #041E42; border: 1px solid #00B4E2; border-radius: 10px; padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; align-items: stretch;';
 
     // Linha com ícone de relógio e texto
     const countdownHeader = document.createElement('div');
+    countdownHeader.className = 'azul-friday-modal-countdown-header';
     countdownHeader.style.cssText =
       'display: flex; flex-direction: row; align-items: center; gap: 8px; flex-shrink: 0; justify-content: center;';
 
@@ -248,6 +308,7 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     clockIcon.appendChild(clockHand2);
 
     const countdownText = document.createElement('span');
+    countdownText.className = 'azul-friday-modal-countdown-text';
     countdownText.textContent = 'Promoção encerra em:';
     countdownText.style.cssText =
       'font-family: "Helvetica Neue", Arial; font-weight: 400; font-size: 14px; line-height: 20px; color: #FFFFFF;';
@@ -259,7 +320,7 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     const countdownDisplay = document.createElement('div');
     countdownDisplay.id = 'modal-countdown-display';
     countdownDisplay.style.cssText =
-      'display: flex; flex-direction: row; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap;';
+      'display: flex; flex-direction: row; gap: 8px; justify-content: center; align-items: center;';
 
     countdownContainer.appendChild(countdownHeader);
     countdownContainer.appendChild(countdownDisplay);
@@ -439,6 +500,178 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     document.head.appendChild(style);
   }
 
+  // Função para adicionar estilos responsivos mobile
+  function addMobileStyles() {
+    if (document.getElementById('azul-friday-modal-mobile-styles')) {
+      return;
+    }
+
+    const style = document.createElement('style');
+    style.id = 'azul-friday-modal-mobile-styles';
+    style.textContent =
+      '@media (max-width: 768px) {' +
+      '.azul-friday-modal {' +
+      'width: 90vw !important;' +
+      'max-width: 328px !important;' +
+      'max-height: 90vh !important;' +
+      'background: linear-gradient(180deg, #00043E 0%, #0E0E0F 100%) !important;' +
+      '}' +
+      '.azul-friday-modal-header {' +
+      'width: 100% !important;' +
+      'max-height: 70px !important;' +
+      'background: linear-gradient(180deg, #0E0E0F 0%, #00043E 100%) !important;' +
+      '}' +
+      '.azul-friday-modal-title-container {' +
+      'width: calc(100% - 32px) !important;' +
+      'max-width: 296px !important;' +
+      'left: 16px !important;' +
+      'top: 16px !important;' +
+      '}' +
+      '.azul-friday-modal-title-line1 {' +
+      'font-size: 16px !important;' +
+      'line-height: 22px !important;' +
+      'max-width: 191px !important;' +
+      'top: -1px !important;' +
+      '}' +
+      '.azul-friday-modal-title-line1::after {' +
+      'content: " multiplicar seus pontos*" !important;' +
+      '}' +
+      '.azul-friday-modal-title-line2 {' +
+      'display: none !important;' +
+      '}' +
+      '.azul-friday-modal-logo {' +
+      'width: 72px !important;' +
+      'height: 42px !important;' +
+      'right: 16px !important;' +
+      'top: 15px !important;' +
+      'left: 64% !important;' +
+      '}' +
+      '.azul-friday-modal-logo svg {' +
+      'width: 100% !important;' +
+      'height: 100% !important;' +
+      '}' +
+      '.azul-friday-modal-close-btn {' +
+      'right: 16px !important;' +
+      'top: 16px !important;' +
+      'left: auto !important;' +
+      'width: 24px !important;' +
+      'height: 24px !important;' +
+      '}' +
+      '.azul-friday-modal-content {' +
+      'width: 100% !important;' +
+      'padding: 20px 16px !important;' +
+      'gap: 20px !important;' +
+      'max-height: calc(90vh - 92px) !important;' +
+      'box-sizing: border-box !important;' +
+      '}' +
+      '.azul-friday-modal-countdown-container {' +
+      'width: 100% !important;' +
+      'max-width: 296px !important;' +
+      'min-height: 140px !important;' +
+      'padding: 16px 16px 0 !important;' +
+      'background: rgba(1, 78, 132, 0.2) !important;' +
+      'border: 1px solid #00043E !important;' +
+      'gap: 12px !important;' +
+      'box-sizing: border-box !important;' +
+      '}' +
+      '.azul-friday-modal-countdown-header {' +
+      'width: 100% !important;' +
+      'max-width: 264px !important;' +
+      'min-height: 21px !important;' +
+      '}' +
+      '.azul-friday-modal-countdown-header svg {' +
+      'width: 20px !important;' +
+      'height: 20px !important;' +
+      'flex-shrink: 0 !important;' +
+      '}' +
+      '.azul-friday-modal-countdown-text {' +
+      'font-size: 14px !important;' +
+      'line-height: 21px !important;' +
+      'flex: 1 !important;' +
+      'min-height: 21px !important;' +
+      '}' +
+      '#modal-countdown-display {' +
+      'width: 100% !important;' +
+      'max-width: 264px !important;' +
+      'min-height: 64px !important;' +
+      'gap: 8px !important;' +
+      '}' +
+      '#modal-countdown-display > div {' +
+      'min-width: 60px !important;' +
+      'flex: 1 1 60px !important;' +
+      'min-height: 64px !important;' +
+      'padding: 12px 16px !important;' +
+      'border-radius: 4px !important;' +
+      'box-sizing: border-box !important;' +
+      '}' +
+      '#modal-countdown-display > div > div:first-child {' +
+      'font-size: 24px !important;' +
+      'line-height: 36px !important;' +
+      'min-height: 36px !important;' +
+      '}' +
+      '#modal-countdown-display > div > div:last-child {' +
+      'font-size: 10px !important;' +
+      'line-height: 15px !important;' +
+      'min-height: 15px !important;' +
+      'color: rgba(255, 255, 255, 0.7) !important;' +
+      '}' +
+      '.azul-friday-modal-offers-list {' +
+      'width: 100% !important;' +
+      'max-width: 296px !important;' +
+      'gap: 12px !important;' +
+      '}' +
+      '.azul-friday-modal-offer-item {' +
+      'width: 100% !important;' +
+      'gap: 12px !important;' +
+      'margin-bottom: 12px !important;' +
+      '}' +
+      '.azul-friday-modal-offer-item:last-child {' +
+      'margin-bottom: 0 !important;' +
+      '}' +
+      '.azul-friday-modal-offer-icon {' +
+      'width: 20px !important;' +
+      'height: 20px !important;' +
+      'flex-shrink: 0 !important;' +
+      '}' +
+      '.azul-friday-modal-offer-icon svg {' +
+      'width: 100% !important;' +
+      'height: 100% !important;' +
+      '}' +
+      '.azul-friday-modal-offer-text {' +
+      'font-size: 14px !important;' +
+      'line-height: 20px !important;' +
+      'flex: 1 !important;' +
+      '}' +
+      '.azul-friday-modal-offer-text strong {' +
+      'font-weight: 700 !important;' +
+      '}' +
+      '.azul-friday-modal-disclaimer {' +
+      'width: 100% !important;' +
+      'max-width: 296px !important;' +
+      'min-height: 16px !important;' +
+      'font-size: 9px !important;' +
+      'line-height: 16px !important;' +
+      '}' +
+      '.azul-friday-modal-cta-button {' +
+      'width: 100% !important;' +
+      'max-width: 296px !important;' +
+      'min-height: 48px !important;' +
+      'font-size: 14px !important;' +
+      'line-height: 20px !important;' +
+      '}' +
+      '.azul-friday-modal-continue-link {' +
+      'width: 100% !important;' +
+      'max-width: 296px !important;' +
+      'min-height: 26px !important;' +
+      'font-size: 13px !important;' +
+      'line-height: 18px !important;' +
+      'padding: 4px 0 0 !important;' +
+      '}' +
+      '}';
+
+    document.head.appendChild(style);
+  }
+
   // Função para criar o modal
   function createModal() {
     if (modalCreated) {
@@ -447,6 +680,8 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
 
     // Adicionar estilos de animação
     addAnimationStyles();
+    // Adicionar estilos mobile
+    addMobileStyles();
 
     // Criar overlay de fundo
     const overlay = document.createElement('div');
@@ -470,21 +705,25 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
 
     // Criar header
     const header = document.createElement('div');
+    header.className = 'azul-friday-modal-header';
     header.style.cssText =
       'width: 520px; height: 126px; background: linear-gradient(90deg, #0E0E0F 0%, #00043E 100%); border-radius: 10px 10px 0 0; position: relative; flex-shrink: 0;';
 
     // Container do título
     const titleContainer = document.createElement('div');
+    titleContainer.className = 'azul-friday-modal-title-container';
     titleContainer.style.cssText =
       'position: absolute; width: 472px; height: 94px; left: 24px; top: 20px;';
 
     // Título principal
     const titleLine1 = document.createElement('div');
+    titleLine1.className = 'azul-friday-modal-title-line1';
     titleLine1.textContent = 'Última chance de';
     titleLine1.style.cssText =
       'position: absolute; width: 200px; height: 30px; left: 0; top: -2px; font-family: "Helvetica Neue", Arial; font-weight: 700; font-size: 24px; line-height: 30px; color: #FFFFFF;';
 
     const titleLine2 = document.createElement('div');
+    titleLine2.className = 'azul-friday-modal-title-line2';
     titleLine2.textContent = 'multiplicar seus pontos*';
     titleLine2.style.cssText =
       'position: absolute; width: 278px; height: 30px; left: 0; top: 28px; font-family: "Helvetica Neue", Arial; font-weight: 700; font-size: 24px; line-height: 30px; color: #FFFFFF;';
@@ -494,16 +733,19 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
 
     // Adicionar logo Azul Friday
     const logo = createAzulFridayLogo();
+    logo.className = 'azul-friday-modal-logo';
     header.appendChild(logo);
 
     // Adicionar botão de fechar
     const closeBtn = createCloseButton();
+    closeBtn.className = 'azul-friday-modal-close-btn';
     header.appendChild(closeBtn);
 
     header.appendChild(titleContainer);
 
     // Criar conteúdo principal
     const content = document.createElement('div');
+    content.className = 'azul-friday-modal-content';
     content.style.cssText =
       'display: flex; flex-direction: column; align-items: flex-start; padding: 24px 24px 20px 24px; gap: 16px; width: 520px; flex: 1; overflow-y: auto; max-height: calc(90vh - 126px); box-sizing: border-box;';
 
@@ -513,17 +755,21 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
 
     // Container de ofertas
     const offersList = document.createElement('div');
+    offersList.className = 'azul-friday-modal-offers-list';
     offersList.style.cssText = 'display: flex; flex-direction: column; gap: 16px; width: 472px;';
 
     // Oferta 1
     const offer1 = document.createElement('div');
+    offer1.className = 'azul-friday-modal-offer-item';
     offer1.style.cssText =
       'display: flex; flex-direction: row; align-items: flex-start; gap: 12px;';
 
     const icon1 = createIcon1();
+    icon1.className = 'azul-friday-modal-offer-icon';
     icon1.style.cssText = 'flex-shrink: 0;';
 
     const offer1Text = document.createElement('div');
+    offer1Text.className = 'azul-friday-modal-offer-text';
     offer1Text.innerHTML =
       'Compre <strong>5.000 pontos</strong> e receba até <strong>21.000 pontos</strong> na sua conta Azul!';
     offer1Text.style.cssText =
@@ -534,13 +780,16 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
 
     // Oferta 2
     const offer2 = document.createElement('div');
+    offer2.className = 'azul-friday-modal-offer-item';
     offer2.style.cssText =
       'display: flex; flex-direction: row; align-items: flex-start; gap: 12px;';
 
     const icon2 = createIcon2();
+    icon2.className = 'azul-friday-modal-offer-icon';
     icon2.style.cssText = 'flex-shrink: 0;';
 
     const offer2Text = document.createElement('div');
+    offer2Text.className = 'azul-friday-modal-offer-text';
     offer2Text.innerHTML =
       '<strong>320% de bônus</strong> exclusivo para assinantes Clube Azul, ganhe <strong>4,2x</strong> mais pontos.';
     offer2Text.style.cssText =
@@ -551,13 +800,16 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
 
     // Oferta 3
     const offer3 = document.createElement('div');
+    offer3.className = 'azul-friday-modal-offer-item';
     offer3.style.cssText =
       'display: flex; flex-direction: row; align-items: flex-start; gap: 12px;';
 
     const icon3 = createIcon3();
+    icon3.className = 'azul-friday-modal-offer-icon';
     icon3.style.cssText = 'flex-shrink: 0;';
 
     const offer3Text = document.createElement('div');
+    offer3Text.className = 'azul-friday-modal-offer-text';
     offer3Text.innerHTML =
       'Aproveite trechos a partir de <strong>3.600 pontos</strong> e voe mais!';
     offer3Text.style.cssText =
@@ -572,6 +824,7 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
 
     // Disclaimer
     const disclaimer = document.createElement('div');
+    disclaimer.className = 'azul-friday-modal-disclaimer';
     disclaimer.style.cssText =
       'display: flex; flex-direction: row; align-items: center; gap: 8px; width: 415px; height: 20px;';
 
@@ -584,18 +837,21 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
 
     // Botão CTA
     const ctaButton = document.createElement('button');
+    ctaButton.className = 'azul-friday-modal-cta-button';
     ctaButton.type = 'button';
     ctaButton.textContent = 'APROVEITAR OFERTA AGORA';
     ctaButton.style.cssText =
       'width: 472px; height: 56px; background: #F50955; box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -4px rgba(0, 0, 0, 0.1); border-radius: 24px; border: none; font-family: "Helvetica Neue", Arial; font-weight: 700; font-size: 16px; line-height: 24px; text-align: center; color: #FFFFFF; cursor: pointer;';
 
     ctaButton.addEventListener('click', function () {
+      analyticsEvent('cta_aproveitar_oferta');
       window.open('https://compradepontos.voeazul.com.br/', '_blank');
       closeModal();
     });
 
     // Link continuar navegando
     const continueLink = document.createElement('button');
+    continueLink.className = 'azul-friday-modal-continue-link';
     continueLink.type = 'button';
     continueLink.textContent = 'Continuar navegando';
     continueLink.style.cssText =

@@ -2,10 +2,21 @@
 // CONFIGURAÇÃO DA DATA FINAL DO COUNTDOWN
 // ============================================
 // Formato: 'YYYY-MM-DD HH:MM:SS' (horário de Brasília)
-// Exemplo: '2024-11-29 23:59:59'
-const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
-
+//
+// LÓGICA DE RENOVAÇÃO:
+// - FASE 1: Conta até 27/11 às 23:59:59
+// - Renovação 1: 28/11 às 00:00:00 (automaticamente muda para FASE 2)
+// - FASE 2: Conta até 30/11 às 23:59:59
+// - Renovação 2: 01/12 às 00:00:00 (automaticamente muda para FASE 3)
+// - FASE 3: Conta até 04/12 às 23:59:59
+//
 (function () {
+  // Constantes de configuração (dentro da IIFE para evitar conflitos)
+  const COUNTDOWN_END_DATE_PHASE_1 = '2025-11-27 23:59:59'; // FASE 1 termina em 27/11 às 23:59:59
+  const RENEWAL_DATE_PHASE_1 = '2025-11-28 00:00:00'; // Renovação 1 em 28/11 à meia-noite
+  const COUNTDOWN_END_DATE_PHASE_2 = '2025-11-30 23:59:59'; // FASE 2 termina em 30/11 às 23:59:59
+  const RENEWAL_DATE_PHASE_2 = '2025-12-01 00:00:00'; // Renovação 2 em 01/12 à meia-noite
+  const COUNTDOWN_END_DATE_PHASE_3 = '2025-12-04 23:59:59'; // FASE 3 termina em 04/12 às 23:59:59
   // Função para obter data atual em Brasília
   function getBrasiliaTime() {
     const now = new Date();
@@ -16,18 +27,41 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     return brasiliaTime;
   }
 
-  // Função para criar data final em Brasília
-  function getEndDate() {
-    const [datePart, timePart] = COUNTDOWN_END_DATE.split(' ');
+  // Função para criar data em Brasília a partir de string
+  function createBrasiliaDate(dateString) {
+    const [datePart, timePart] = dateString.split(' ');
     const [year, month, day] = datePart.split('-').map(Number);
     const [hours, minutes, seconds] = timePart.split(':').map(Number);
 
     // Criar data em UTC e ajustar para Brasília
-    const endDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds));
+    const date = new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds));
     // Ajustar para horário de Brasília (UTC-3)
     const brasiliaOffset = -3 * 60;
-    const utc = endDate.getTime() - brasiliaOffset * 60000;
+    const utc = date.getTime() - brasiliaOffset * 60000;
     return new Date(utc);
+  }
+
+  // Função para criar data final em Brasília (com renovação)
+  function getEndDate() {
+    const now = getBrasiliaTime();
+    const renewalDate1 = createBrasiliaDate(RENEWAL_DATE_PHASE_1);
+    const renewalDate2 = createBrasiliaDate(RENEWAL_DATE_PHASE_2);
+    const phase1EndDate = createBrasiliaDate(COUNTDOWN_END_DATE_PHASE_1);
+    const phase2EndDate = createBrasiliaDate(COUNTDOWN_END_DATE_PHASE_2);
+    const phase3EndDate = createBrasiliaDate(COUNTDOWN_END_DATE_PHASE_3);
+
+    // Se já passou ou chegou na segunda renovação, usar a FASE 3
+    if (now >= renewalDate2) {
+      return phase3EndDate;
+    }
+    // Se já passou ou chegou na primeira renovação, usar a FASE 2
+    else if (now >= renewalDate1) {
+      return phase2EndDate;
+    }
+    // Antes da primeira renovação, usar a FASE 1
+    else {
+      return phase1EndDate;
+    }
   }
 
   // Função para calcular diferença
@@ -137,7 +171,6 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     // Encontrar o button do banner
     const bannerButton = findBannerButton();
     if (!bannerButton) {
-      console.log('Button do banner não encontrado, tentando novamente...');
       setTimeout(createCountdownBanner, 500);
       return;
     }
@@ -145,80 +178,71 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     // Container principal que ocupa toda a largura
     const banner = document.createElement('div');
     banner.id = 'azul-friday-countdown-fullwidth';
-    banner.style.cssText = `
-      width: 100%;
-      height: 148px;
-      background: linear-gradient(0deg, #D8F9FF -63%, #6BD1E3 -19.01%, #56C3E5 24.97%, #008BC4 68.96%, #0061A0 112.95%);
-      border-radius: 0px;
-      margin: 0;
-      padding: 0;
-      position: relative;
-      overflow: hidden;
-    `;
+    banner.style.cssText =
+      'width: 100%;' +
+      'height: 148px;' +
+      'background: linear-gradient(0deg, #D8F9FF -63%, #6BD1E3 -19.01%, #56C3E5 24.97%, #008BC4 68.96%, #0061A0 112.95%);' +
+      'border-radius: 0px;' +
+      'margin: 0;' +
+      'padding: 0;' +
+      'position: relative;' +
+      'overflow: hidden;';
 
     // Container interno com o conteúdo centralizado
     const innerContainer = document.createElement('div');
-    innerContainer.style.cssText = `
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      align-items: center;
-      padding: 29px 30px;
-      gap: 172px;
-      width: 100%;
-      max-width: 1440px;
-      height: 148px;
-      margin: 0 auto;
-      position: relative;
-      isolation: isolate;
-    `;
+    innerContainer.style.cssText =
+      'display: flex;' +
+      'flex-direction: row;' +
+      'justify-content: center;' +
+      'align-items: center;' +
+      'padding: 29px 30px;' +
+      'gap: 172px;' +
+      'width: 100%;' +
+      'max-width: 1440px;' +
+      'height: 148px;' +
+      'margin: 0 auto;' +
+      'position: relative;' +
+      'isolation: isolate;';
 
     // Container do conteúdo (selo + texto/countdown)
     const contentContainer = document.createElement('div');
-    contentContainer.style.cssText = `
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      padding: 0px;
-      gap: 80px;
-      height: 84px;
-      z-index: 1;
-      width: 100%;
-      max-width: 825px;
-    `;
+    contentContainer.style.cssText =
+      'display: flex;' +
+      'flex-direction: row;' +
+      'align-items: center;' +
+      'padding: 0px;' +
+      'gap: 80px;' +
+      'height: 84px;' +
+      'z-index: 1;' +
+      'width: 100%;' +
+      'max-width: 825px;';
 
     // Selo "OFERTAS ANTECIPADAS"
     const seloContainer = document.createElement('div');
-    seloContainer.style.cssText = `
-      width: 114px;
-      height: 66px;
-      flex: none;
-    `;
+    seloContainer.style.cssText = 'width: 114px;' + 'height: 66px;' + 'flex: none;';
     const seloSvg = createSeloSvg();
     seloContainer.appendChild(seloSvg);
 
     // Container do texto "Termina em:" + countdown
     const textCountdownContainer = document.createElement('div');
     textCountdownContainer.setAttribute('data-text-countdown-container', 'true');
-    textCountdownContainer.style.cssText = `
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      padding: 0px;
-      gap: 24px;
-      height: 84px;
-    `;
+    textCountdownContainer.style.cssText =
+      'display: flex;' +
+      'flex-direction: row;' +
+      'align-items: center;' +
+      'padding: 0px;' +
+      'gap: 24px;' +
+      'height: 84px;';
 
     // Grupo "Termina em:" com ícone
     const terminaEmGroup = document.createElement('div');
-    terminaEmGroup.style.cssText = `
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      gap: 10px;
-      width: 275px;
-      height: 44px;
-    `;
+    terminaEmGroup.style.cssText =
+      'display: flex;' +
+      'flex-direction: row;' +
+      'align-items: center;' +
+      'gap: 10px;' +
+      'width: 275px;' +
+      'height: 44px;';
 
     // Ícone de relógio
     const clockIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -251,14 +275,13 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     // Texto "Termina em:"
     const terminaEmText = document.createElement('span');
     terminaEmText.textContent = 'Termina em:';
-    terminaEmText.style.cssText = `
-      font-family: Arial, sans-serif;
-      font-style: normal;
-      font-weight: 700;
-      font-size: 36px;
-      line-height: 41px;
-      color: #FFFFFF;
-    `;
+    terminaEmText.style.cssText =
+      'font-family: Arial, sans-serif;' +
+      'font-style: normal;' +
+      'font-weight: 700;' +
+      'font-size: 36px;' +
+      'line-height: 41px;' +
+      'color: #FFFFFF;';
 
     terminaEmGroup.appendChild(clockIcon);
     terminaEmGroup.appendChild(terminaEmText);
@@ -266,16 +289,15 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     // Container do countdown
     const countdownContainer = document.createElement('div');
     countdownContainer.id = 'countdown-display-fullwidth';
-    countdownContainer.style.cssText = `
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      padding: 0px 2px;
-      gap: 16px;
-      width: 332px;
-      height: 84px;
-      border-radius: 0px;
-    `;
+    countdownContainer.style.cssText =
+      'display: flex;' +
+      'flex-direction: row;' +
+      'align-items: center;' +
+      'padding: 0px 2px;' +
+      'gap: 16px;' +
+      'width: 332px;' +
+      'height: 84px;' +
+      'border-radius: 0px;';
 
     // Montar a estrutura
     textCountdownContainer.appendChild(terminaEmGroup);
@@ -319,11 +341,10 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     const isMobile = window.innerWidth < 768;
 
     if (time.expired) {
-      countdownContainer.innerHTML = `
-        <div style="color: white; font-size: 20px; font-weight: 700;">
-          Oferta encerrada
-        </div>
-      `;
+      countdownContainer.innerHTML =
+        '<div style="color: white; font-size: 20px; font-weight: 700;">' +
+        'Oferta encerrada' +
+        '</div>';
       return;
     }
 
@@ -346,60 +367,66 @@ const COUNTDOWN_END_DATE = '2025-11-29 23:59:59';
     timeUnits.forEach((unit) => {
       // Container wrapper para cada unidade de tempo
       const unitWrapper = document.createElement('div');
-      unitWrapper.style.cssText = `
-        width: ${boxWidth};
-        height: ${wrapperHeight};
-        border-radius: 0px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        position: relative;
-      `;
+      unitWrapper.style.cssText =
+        'width: ' +
+        boxWidth +
+        ';' +
+        'height: ' +
+        wrapperHeight +
+        ';' +
+        'border-radius: 0px;' +
+        'display: flex;' +
+        'flex-direction: column;' +
+        'align-items: center;' +
+        'position: relative;';
 
       // Box do número
       const numberBox = document.createElement('div');
-      numberBox.style.cssText = `
-        position: absolute;
-        width: ${boxWidth};
-        height: ${boxHeight};
-        left: 0px;
-        top: 0px;
-        background: rgba(0, 122, 174, 0.25);
-        box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -4px rgba(0, 0, 0, 0.1);
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      `;
+      numberBox.style.cssText =
+        'position: absolute;' +
+        'width: ' +
+        boxWidth +
+        ';' +
+        'height: ' +
+        boxHeight +
+        ';' +
+        'left: 0px;' +
+        'top: 0px;' +
+        'background: rgba(0, 122, 174, 0.25);' +
+        'box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -4px rgba(0, 0, 0, 0.1);' +
+        'border-radius: 14px;' +
+        'display: flex;' +
+        'align-items: center;' +
+        'justify-content: center;';
 
       const value = document.createElement('div');
       value.textContent = String(unit.value).padStart(2, '0');
-      value.style.cssText = `
-        font-family: Arial, sans-serif;
-        font-style: normal;
-        font-weight: 700;
-        font-size: 30px;
-        line-height: 36px;
-        text-align: center;
-        letter-spacing: 0.395508px;
-        color: #FFFFFF;
-      `;
+      value.style.cssText =
+        'font-family: Arial, sans-serif;' +
+        'font-style: normal;' +
+        'font-weight: 700;' +
+        'font-size: 30px;' +
+        'line-height: 36px;' +
+        'text-align: center;' +
+        'letter-spacing: 0.395508px;' +
+        'color: #FFFFFF;';
 
       // Label em div separada (abaixo do box)
       const label = document.createElement('div');
       label.textContent = unit.label;
-      label.style.cssText = `
-        position: absolute;
-        top: ${labelTop};
-        font-family: Arial, sans-serif;
-        font-style: normal;
-        font-weight: 400;
-        font-size: 12px;
-        line-height: 16px;
-        text-align: center;
-        text-transform: capitalize;
-        color: #FFFFFF;
-      `;
+      label.style.cssText =
+        'position: absolute;' +
+        'top: ' +
+        labelTop +
+        ';' +
+        'font-family: Arial, sans-serif;' +
+        'font-style: normal;' +
+        'font-weight: 400;' +
+        'font-size: 12px;' +
+        'line-height: 16px;' +
+        'text-align: center;' +
+        'text-transform: capitalize;' +
+        'color: #FFFFFF;';
 
       numberBox.appendChild(value);
       unitWrapper.appendChild(numberBox);

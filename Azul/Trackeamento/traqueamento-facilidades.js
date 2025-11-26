@@ -19,11 +19,13 @@
       var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
       if (!s || typeof s.tl !== 'function') return;
 
-      s.linkTrackVars = 'events,eVar82';
+      let pathname = window.location.pathname;
+
+      s.linkTrackVars = 'events,eVar82,eVar84';
       s.linkTrackEvents = 'event90';
       s.events = 'event90';
       s.eVar82 = labelEvent;
-      s.eVar84 = 'AT_BF_lp_Facilidades';
+      s.eVar84 = 'AT_BF_lp_' + pathname;
 
       s.tl(true, 'o', 'target_activity_action');
     })();
