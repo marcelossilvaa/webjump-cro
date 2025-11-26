@@ -18,7 +18,7 @@
     // Criar o texto de apoio
     const supportText = document.createElement('p');
     supportText.innerHTML =
-      'Aproveite <span style="color: #00b4e2;">bônus históricos</span> em compra de pontos, parceiros de varejo e resgates promocionais.';
+      'Aproveite <span style="color: #00b4e2;">bônus exclusivos</span> em compra de pontos, parceiros de varejo e resgates promocionais.';
     supportText.style.cssText =
       'font-size: 18px; font-weight: 400; line-height: 1.5; margin: 0; color: rgb(255, 255, 255); text-align: center; font-family: "Helvetica Neue", Arial;';
 
@@ -28,12 +28,12 @@
 
     // Estilos do container
     container.style.cssText =
-      'padding: 32px 16px 0; max-width: 1200px; margin: 0 auto; box-sizing: border-box;';
+      'padding: 30px 16px 20px; max-width: 1200px; margin: 0 auto; box-sizing: border-box; width: 100%;';
 
     return container;
   }
 
-  // Função para inserir o H1 e texto antes do banner
+  // Função para inserir o H1 e texto dentro do container do banner
   function insertHeading() {
     if (isProcessing) {
       return;
@@ -44,33 +44,18 @@
       return;
     }
 
-    // Buscar o container que contém o banner
-    // Seletor baseado na estrutura fornecida: container-capsule.containerDefaultNoPadding.css-pbbmh8
-    const bannerContainers = document.querySelectorAll(
-      '.container-capsule.containerDefaultNoPadding'
+    // Buscar o container específico: container-capsule.containerDefaultNoPadding.css-pbbmh8
+    const bannerContainer = document.querySelector(
+      '.container-capsule.containerDefaultNoPadding.css-pbbmh8'
     );
 
-    if (bannerContainers.length === 0) {
+    if (!bannerContainer) {
       return;
     }
 
-    // Buscar o container que contém as imagens do banner
-    let targetContainer = null;
-
-    for (let i = 0; i < bannerContainers.length; i++) {
-      const container = bannerContainers[i];
-      // Verificar se contém imagens com os paths específicos do banner
-      const bannerImages = container.querySelectorAll(
-        'img[src*="bnr-header-pontos"], img[src*="19-11"]'
-      );
-
-      if (bannerImages.length > 0) {
-        targetContainer = container;
-        break;
-      }
-    }
-
-    if (!targetContainer) {
+    // Buscar o primeiro div filho que contém o botão
+    const firstDiv = bannerContainer.querySelector('div:first-child');
+    if (!firstDiv) {
       return;
     }
 
@@ -80,14 +65,53 @@
       // Criar o container com H1 e texto
       const headingContainer = createHeadingContainer();
 
-      // Inserir antes do banner
-      targetContainer.parentNode.insertBefore(headingContainer, targetContainer);
+      // Inserir antes do primeiro div (que contém o botão do banner)
+      bannerContainer.insertBefore(headingContainer, firstDiv);
 
-      console.log('H1 e texto de apoio inseridos com sucesso antes do banner');
+      console.log('H1 e texto de apoio inseridos com sucesso dentro do container do banner');
     } catch (error) {
       console.error('Erro ao inserir H1 e texto de apoio:', error);
     } finally {
       isProcessing = false;
+    }
+  }
+
+  // Função para remover o H2 "Junte ainda mais pontos"
+  function removeJuntePontosH2() {
+    if (isProcessing) {
+      return;
+    }
+
+    // Verificar se já foi removido
+    if (document.querySelector('[data-junte-pontos-removed]')) {
+      return;
+    }
+
+    // Buscar o H2 com o texto específico
+    const h2Elements = document.querySelectorAll('h2');
+    let targetH2 = null;
+
+    for (let i = 0; i < h2Elements.length; i++) {
+      const h2 = h2Elements[i];
+      if (
+        h2.textContent.includes('Junte ainda mais pontos para aproveitar a melhor época do ano')
+      ) {
+        targetH2 = h2;
+        break;
+      }
+    }
+
+    if (targetH2) {
+      // Buscar o container pai com classe css-putdhw
+      const parentContainer = targetH2.closest('.css-putdhw');
+      if (parentContainer) {
+        parentContainer.remove();
+        console.log('H2 "Junte ainda mais pontos" removido com sucesso');
+      } else {
+        targetH2.remove();
+        console.log('H2 "Junte ainda mais pontos" removido com sucesso');
+      }
+      document.body.setAttribute('data-junte-pontos-removed', 'true');
     }
   }
 
@@ -687,7 +711,7 @@
       'font-size: 16px !important;' +
       '}' +
       '.azul-friday-hero-heading {' +
-      'padding: 24px 16px 0 16px !important;' +
+      'padding: 30px 16px 20px !important;' +
       '}' +
       '.azul-friday-acumulo-turbo h2 {' +
       'font-size: 22px !important;' +
@@ -762,13 +786,13 @@
       'padding: 12px !important;' +
       '}' +
       '.azul-friday-card-overlay h3 {' +
-      'font-size: 18px !important;' +
-      'margin-bottom: 8px !important;' +
+      'font-size: 16px !important;' +
+      'margin-bottom: 4px !important;' +
       '}' +
       '.azul-friday-card-overlay button {' +
-      'padding: 10px 20px !important;' +
-      'font-size: 16px !important;' +
-      'width: 200px !important;' +
+      'padding: 4px 15px !important;' +
+      'font-size: 14px !important;' +
+      'width: 160px !important;' +
       '}' +
       '}';
 
@@ -782,6 +806,7 @@
 
     // Executar imediatamente
     insertHeading();
+    removeJuntePontosH2();
     insertAcumuloTurbo();
     insertNovosClientes();
     insertParceiros();
@@ -792,6 +817,7 @@
     // Executar novamente após um pequeno delay para garantir que os cards sejam processados
     setTimeout(function () {
       addCardsOverlay();
+      removeJuntePontosH2();
     }, 500);
 
     // Usar MutationObserver para detectar quando os banners são adicionados
@@ -802,6 +828,7 @@
         // Verificar se houve adição de nós
         if (mutation.addedNodes.length > 0) {
           insertHeading();
+          removeJuntePontosH2();
           insertAcumuloTurbo();
           insertNovosClientes();
           insertParceiros();

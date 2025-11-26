@@ -47,12 +47,35 @@
 
     // Mapeia nomes conhecidos para labels mais legíveis
     const nameMap = {
+      // Banners Header
+      'banner-header-mobile-buy': 'Banner Header Compre Pontos',
+      'banner-header-desk-buy': 'Banner Header Compre Pontos',
       'bnr-header-buy-mobile': 'Banner Header Compre Pontos',
       'bnr-header-buy-desktop': 'Banner Header Compre Pontos',
 
+      // Banners de Pontos (valores específicos)
+      'bnr-points-5k': 'Banner 5 mil Pontos',
+      'bnr-points-10k': 'Banner 10 mil Pontos',
+      'bnr-points-25k': 'Banner 25 mil Pontos',
+
+      // Banners de Faixas
+      'bnr-faixa5k': 'Banner Faixa 5 mil',
+      'bnr-faixa20k': 'Banner Faixa 20 mil',
+      'bnr-faixa100k': 'Banner Faixa 100 mil',
+
+      // Banner Pontos Viagens
+      'bnr-points-viagens': 'Banner Pontos Viagens',
+
+      // Banner Regras
+      'banner-regra-mobile-buy': 'Banner Regras Compra',
+      'banner-regra-desk-buy': 'Banner Regras Compra',
+
+      // Banner Fidelidade
+      'bnr-points-fidelidade': 'Banner Pontos Fidelidade',
+
+      // Banners antigos (mantidos para compatibilidade)
       'bnr-bonus-mobile': 'Banner Bonus Pontos',
       'bnr-bonus-desktop': 'Banner Bonus Pontos',
-
       'clube-generico-mobile': 'Banner Clube Azul',
       'clube-generico-desktop': 'Banner Clube Azul',
     };
