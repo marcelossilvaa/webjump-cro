@@ -504,61 +504,114 @@
       return;
     }
 
+    // Detectar se é mobile ou desktop
+    const isMobile = window.innerWidth <= 768;
+
     // Mapeamento dos cards
-    const cardsData = [
-      {
-        title: 'Principais ofertas',
-        buttonText: 'Ver destaques',
-        altText: 'Mulher dirigindo um buggy em dunas de areia',
-        imageSrc: ['bnr-viagem-completa', 'bnr-principal'],
-      },
-      {
-        title: 'Passagens aéreas',
-        buttonText: 'Ver ofertas',
-        altText: 'Avião Azul voando',
-        imageSrc: ['MODULO FIDELIDADE', 'bnr-geral-via_aereo'],
-      },
-      {
-        title: 'Pacotes, hotéis e ingressos',
-        buttonText: 'Ver pacotes',
-        altText: 'Guarda-sol e cadeira em uma praia',
-        imageSrc: ['MODULO VIAGENS'],
-      },
-    ];
+    const cardsData = {
+      desktop: [
+        {
+          title: 'Principais ofertas',
+          buttonText: 'Ver destaques',
+          altText: 'Mulher dirigindo um buggy em dunas de areia',
+          imageSrc: ['MODULO FIDELIDADE', 'MODULO%20FIDELIDADE'],
+        },
+        {
+          title: 'Passagens aéreas',
+          buttonText: 'Ver ofertas',
+          altText: 'Avião Azul voando',
+          imageSrc: ['MODULO VIAGENS', 'MODULO%20VIAGENS'],
+        },
+        {
+          title: 'Pacotes, hotéis e ingressos',
+          buttonText: 'Ver pacotes',
+          altText: 'Guarda-sol e cadeira em uma praia',
+          imageSrc: ['bnr-viagem-completa'],
+        },
+      ],
+      mobile: [
+        {
+          title: 'Principais ofertas',
+          buttonText: 'Ver destaques',
+          altText: 'Mulher dirigindo um buggy em dunas de areia',
+          imageSrc: ['bnr-principal'],
+        },
+        {
+          title: 'Pacotes, hotéis e ingressos',
+          buttonText: 'Ver pacotes',
+          altText: 'Guarda-sol e cadeira em uma praia',
+          imageSrc: ['bnr-viagem-completa'],
+        },
+        {
+          title: 'Passagens aéreas',
+          buttonText: 'Ver ofertas',
+          altText: 'Avião Azul voando',
+          imageSrc: ['bnr-geral-via_aereo-desktop', 'bnr-geral-via_aereo'],
+        },
+      ],
+    };
 
     // Encontrar qual card é baseado na imagem
     let cardData = null;
     const images = button.querySelectorAll('img');
+    const currentCardsData = isMobile ? cardsData.mobile : cardsData.desktop;
 
     for (let i = 0; i < images.length; i++) {
       const imgSrc = images[i].src;
       const decodedSrc = decodeURIComponent(imgSrc);
 
       // Identificar card pela imagem
-      if (
-        imgSrc.includes('bnr-viagem-completa') ||
-        decodedSrc.includes('bnr-viagem-completa') ||
-        imgSrc.includes('bnr-principal') ||
-        decodedSrc.includes('bnr-principal')
-      ) {
-        cardData = cardsData[0]; // Principais ofertas
-        break;
-      } else if (
-        imgSrc.includes('MODULO FIDELIDADE') ||
-        decodedSrc.includes('MODULO FIDELIDADE') ||
-        imgSrc.includes('MODULO%20FIDELIDADE') ||
-        imgSrc.includes('bnr-geral-via_aereo') ||
-        decodedSrc.includes('bnr-geral-via_aereo')
-      ) {
-        cardData = cardsData[1]; // Passagens aéreas
-        break;
-      } else if (
-        imgSrc.includes('MODULO VIAGENS') ||
-        decodedSrc.includes('MODULO VIAGENS') ||
-        imgSrc.includes('MODULO%20VIAGENS')
-      ) {
-        cardData = cardsData[2]; // Pacotes, hotéis e ingressos
-        break;
+      if (isMobile) {
+        // Mobile: bnr-principal → Principais ofertas
+        if (imgSrc.includes('bnr-principal') || decodedSrc.includes('bnr-principal')) {
+          cardData = currentCardsData[0]; // Principais ofertas
+          break;
+        }
+        // Mobile: bnr-viagem-completa → Pacotes, hotéis e ingressos
+        else if (
+          imgSrc.includes('bnr-viagem-completa') ||
+          decodedSrc.includes('bnr-viagem-completa')
+        ) {
+          cardData = currentCardsData[1]; // Pacotes, hotéis e ingressos
+          break;
+        }
+        // Mobile: bnr-geral-via_aereo-desktop → Passagens aéreas
+        else if (
+          imgSrc.includes('bnr-geral-via_aereo-desktop') ||
+          decodedSrc.includes('bnr-geral-via_aereo-desktop') ||
+          imgSrc.includes('bnr-geral-via_aereo') ||
+          decodedSrc.includes('bnr-geral-via_aereo')
+        ) {
+          cardData = currentCardsData[2]; // Passagens aéreas
+          break;
+        }
+      } else {
+        // Desktop: MODULO FIDELIDADE → Principais ofertas
+        if (
+          imgSrc.includes('MODULO FIDELIDADE') ||
+          decodedSrc.includes('MODULO FIDELIDADE') ||
+          imgSrc.includes('MODULO%20FIDELIDADE')
+        ) {
+          cardData = currentCardsData[0]; // Principais ofertas
+          break;
+        }
+        // Desktop: MODULO VIAGENS → Passagens aéreas
+        else if (
+          imgSrc.includes('MODULO VIAGENS') ||
+          decodedSrc.includes('MODULO VIAGENS') ||
+          imgSrc.includes('MODULO%20VIAGENS')
+        ) {
+          cardData = currentCardsData[1]; // Passagens aéreas
+          break;
+        }
+        // Desktop: bnr-viagem-completa → Pacotes, hotéis e ingressos
+        else if (
+          imgSrc.includes('bnr-viagem-completa') ||
+          decodedSrc.includes('bnr-viagem-completa')
+        ) {
+          cardData = currentCardsData[2]; // Pacotes, hotéis e ingressos
+          break;
+        }
       }
     }
 
