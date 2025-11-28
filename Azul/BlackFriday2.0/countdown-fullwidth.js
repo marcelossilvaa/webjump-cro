@@ -3,20 +3,11 @@
 // ============================================
 // Formato: 'YYYY-MM-DD HH:MM:SS' (horário de Brasília)
 //
-// LÓGICA DE RENOVAÇÃO:
-// - FASE 1: Conta até 27/11 às 23:59:59
-// - Renovação 1: 28/11 às 00:00:00 (automaticamente muda para FASE 2)
-// - FASE 2: Conta até 30/11 às 23:59:59
-// - Renovação 2: 01/12 às 00:00:00 (automaticamente muda para FASE 3)
-// - FASE 3: Conta até 04/12 às 23:59:59
+// Data final: 28/11/2025 às 23:59:59
 //
 (function () {
-  // Constantes de configuração (dentro da IIFE para evitar conflitos)
-  const COUNTDOWN_END_DATE_PHASE_1 = '2025-11-27 23:59:59'; // FASE 1 termina em 27/11 às 23:59:59
-  const RENEWAL_DATE_PHASE_1 = '2025-11-28 00:00:00'; // Renovação 1 em 28/11 à meia-noite
-  const COUNTDOWN_END_DATE_PHASE_2 = '2025-11-30 23:59:59'; // FASE 2 termina em 30/11 às 23:59:59
-  const RENEWAL_DATE_PHASE_2 = '2025-12-01 00:00:00'; // Renovação 2 em 01/12 à meia-noite
-  const COUNTDOWN_END_DATE_PHASE_3 = '2025-12-04 23:59:59'; // FASE 3 termina em 04/12 às 23:59:59
+  // Constante de configuração (dentro da IIFE para evitar conflitos)
+  const COUNTDOWN_END_DATE = '2025-11-28 23:59:59'; // Encerra em 28/11 às 23:59:59
   // Função para obter data atual em Brasília
   function getBrasiliaTime() {
     const now = new Date();
@@ -41,27 +32,9 @@
     return new Date(utc);
   }
 
-  // Função para criar data final em Brasília (com renovação)
+  // Função para criar data final em Brasília
   function getEndDate() {
-    const now = getBrasiliaTime();
-    const renewalDate1 = createBrasiliaDate(RENEWAL_DATE_PHASE_1);
-    const renewalDate2 = createBrasiliaDate(RENEWAL_DATE_PHASE_2);
-    const phase1EndDate = createBrasiliaDate(COUNTDOWN_END_DATE_PHASE_1);
-    const phase2EndDate = createBrasiliaDate(COUNTDOWN_END_DATE_PHASE_2);
-    const phase3EndDate = createBrasiliaDate(COUNTDOWN_END_DATE_PHASE_3);
-
-    // Se já passou ou chegou na segunda renovação, usar a FASE 3
-    if (now >= renewalDate2) {
-      return phase3EndDate;
-    }
-    // Se já passou ou chegou na primeira renovação, usar a FASE 2
-    else if (now >= renewalDate1) {
-      return phase2EndDate;
-    }
-    // Antes da primeira renovação, usar a FASE 1
-    else {
-      return phase1EndDate;
-    }
+    return createBrasiliaDate(COUNTDOWN_END_DATE);
   }
 
   // Função para calcular diferença
