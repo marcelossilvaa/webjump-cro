@@ -298,6 +298,10 @@
       'font-size: 19px !important;' +
       'line-height: 58px !important;' +
       '}' +
+      '.azul-friday-modal-passagens-price-points {' +
+      'font-size: 12px !important;' +
+      'line-height: 19px !important;' +
+      '}' +
       '.azul-friday-modal-passagens-price-label {' +
       'font-size: 10px !important;' +
       'line-height: 14px !important;' +
@@ -437,20 +441,20 @@
     title.style.cssText =
       'position: absolute; width: 241px; height: 60px; left: 0; top: -2px; font-family: "Helvetica Neue", Arial; font-weight: 700; font-size: 24px; line-height: 30px; color: #FFFFFF;';
 
-    // Preço "R$ 99,90"
+    // Preço "R$ 85,99"
     const priceMain = document.createElement('div');
     priceMain.className = 'azul-friday-modal-passagens-price';
     priceMain.style.cssText =
-      'position: absolute; width: 139px; height: 75px; left: 85px; top: 70px; font-family: "Helvetica Neue", Arial; font-weight: 700; font-size: 20px; line-height: 20px; color: #FDC700; display: flex; align-items: flex-end;';
+      'position: absolute; width: auto; height: 75px; left: 85px; top: 70px; font-family: "Helvetica Neue", Arial; font-weight: 700; font-size: 20px; line-height: 20px; color: #FDC700; display: flex; align-items: flex-end;';
 
     // "R$"
     const priceSymbol = document.createElement('span');
     priceSymbol.textContent = 'R$';
     priceSymbol.style.cssText = 'font-size: 20px; line-height: 20px;';
 
-    // "99"
+    // "85"
     const priceInteger = document.createElement('span');
-    priceInteger.textContent = ' 99';
+    priceInteger.textContent = ' 85';
     priceInteger.style.cssText = 'font-size: 71px; line-height: 60px;';
 
     // Span vazio
@@ -460,15 +464,22 @@
     // ",90" (com vírgula junto)
     const priceDecimal = document.createElement('span');
     priceDecimal.className = 'azul-friday-modal-passagens-price-decimal';
-    priceDecimal.textContent = ',90';
+    priceDecimal.textContent = ',99';
     priceDecimal.style.cssText =
       'font-size: 27px; line-height: 83px; vertical-align: super; margin-left: 2px;';
+
+    // "ou 3.000 pontos"
+    const pricePoints = document.createElement('span');
+    pricePoints.className = 'azul-friday-modal-passagens-price-points';
+    pricePoints.textContent = 'ou 3.000 pontos';
+    pricePoints.style.cssText = 'font-size: 20px; line-height: 19px; color: #FFFFFF;';
 
     // Montar o preço
     priceMain.appendChild(priceSymbol);
     priceMain.appendChild(priceInteger);
     priceMain.appendChild(priceEmpty);
     priceMain.appendChild(priceDecimal);
+    priceMain.appendChild(pricePoints);
 
     // Label "a partir de"
     const priceLabel = document.createElement('div');

@@ -510,22 +510,22 @@
     // Mapeamento dos cards
     const cardsData = {
       desktop: [
-        {
-          title: 'Principais ofertas',
-          buttonText: 'Ver destaques',
-          altText: 'Mulher dirigindo um buggy em dunas de areia',
+      {
+        title: 'Principais ofertas',
+        buttonText: 'Ver destaques',
+        altText: 'Mulher dirigindo um buggy em dunas de areia',
           imageSrc: ['MODULO FIDELIDADE', 'MODULO%20FIDELIDADE'],
-        },
-        {
-          title: 'Passagens aéreas',
-          buttonText: 'Ver ofertas',
-          altText: 'Avião Azul voando',
+      },
+      {
+        title: 'Passagens aéreas',
+        buttonText: 'Ver ofertas',
+        altText: 'Avião Azul voando',
           imageSrc: ['MODULO VIAGENS', 'MODULO%20VIAGENS'],
-        },
-        {
-          title: 'Pacotes, hotéis e ingressos',
-          buttonText: 'Ver pacotes',
-          altText: 'Guarda-sol e cadeira em uma praia',
+      },
+      {
+        title: 'Pacotes, hotéis e ingressos',
+        buttonText: 'Ver pacotes',
+        altText: 'Guarda-sol e cadeira em uma praia',
           imageSrc: ['bnr-viagem-completa'],
         },
       ],
@@ -541,7 +541,7 @@
           buttonText: 'Ver pacotes',
           altText: 'Guarda-sol e cadeira em uma praia',
           imageSrc: ['bnr-viagem-completa'],
-        },
+      },
         {
           title: 'Passagens aéreas',
           buttonText: 'Ver ofertas',
@@ -569,21 +569,21 @@
         }
         // Mobile: bnr-viagem-completa → Pacotes, hotéis e ingressos
         else if (
-          imgSrc.includes('bnr-viagem-completa') ||
+        imgSrc.includes('bnr-viagem-completa') ||
           decodedSrc.includes('bnr-viagem-completa')
-        ) {
+      ) {
           cardData = currentCardsData[1]; // Pacotes, hotéis e ingressos
-          break;
+        break;
         }
         // Mobile: bnr-geral-via_aereo-desktop → Passagens aéreas
         else if (
           imgSrc.includes('bnr-geral-via_aereo-desktop') ||
           decodedSrc.includes('bnr-geral-via_aereo-desktop') ||
-          imgSrc.includes('bnr-geral-via_aereo') ||
-          decodedSrc.includes('bnr-geral-via_aereo')
-        ) {
+        imgSrc.includes('bnr-geral-via_aereo') ||
+        decodedSrc.includes('bnr-geral-via_aereo')
+      ) {
           cardData = currentCardsData[2]; // Passagens aéreas
-          break;
+        break;
         }
       } else {
         // Desktop: MODULO FIDELIDADE → Principais ofertas
@@ -597,12 +597,12 @@
         }
         // Desktop: MODULO VIAGENS → Passagens aéreas
         else if (
-          imgSrc.includes('MODULO VIAGENS') ||
-          decodedSrc.includes('MODULO VIAGENS') ||
-          imgSrc.includes('MODULO%20VIAGENS')
-        ) {
+        imgSrc.includes('MODULO VIAGENS') ||
+        decodedSrc.includes('MODULO VIAGENS') ||
+        imgSrc.includes('MODULO%20VIAGENS')
+      ) {
           cardData = currentCardsData[1]; // Passagens aéreas
-          break;
+        break;
         }
         // Desktop: bnr-viagem-completa → Pacotes, hotéis e ingressos
         else if (
