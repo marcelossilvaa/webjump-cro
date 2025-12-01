@@ -156,7 +156,12 @@
   // Função para obter os padrões de imagens baseado na LP
   function getImagePatterns(lpType) {
     const patterns = {
-      default: ['header-geral-mobile.png', 'header-geral-desktop.png'],
+      default: [
+        'header-geral-mobile.png',
+        'header-geral-desktop.png',
+        'Banner%20Home%20Nova%201200x416-1.png',
+        'Banner%20Home%20Nova%201200x416%202.png',
+      ],
       pontos: ['header-esfera-mob.png', 'header-esfera-desk.png'],
       'viagem-completa': ['header-azv-35-mobile.png', 'header-azv-35-desktop.png'],
       passagens: ['header-nordeste-mobile.png', 'header-nordeste-desktop.png'],
@@ -170,8 +175,10 @@
     const lpType = detectLandingPage();
     const imagePatterns = getImagePatterns(lpType);
 
-    // Buscar todos os containers
-    const containers = document.querySelectorAll('.container-capsule.containerDefault');
+    // Buscar todos os containers (estrutura antiga e nova, com/sem padding)
+    const containers = document.querySelectorAll(
+      '.container-capsule.containerDefault, .container-capsule.containerDefaultNoPadding'
+    );
 
     for (let i = 0; i < containers.length; i++) {
       const container = containers[i];
@@ -217,7 +224,7 @@
       // Estilos para desktop no banner
       banner.style.setProperty('flex-direction', 'row', 'important');
       banner.style.setProperty('gap', '0', 'important');
-      banner.style.setProperty('margin', '0px auto 20px auto', 'important');
+      banner.style.setProperty('margin', '20px auto 20px auto', 'important');
       banner.style.setProperty('justify-content', 'space-between', 'important');
 
       // Estilos para desktop no textContainer
@@ -241,12 +248,17 @@
       return;
     }
 
+    // Wrapper externo com classe css-oo7lgl
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('css-oo7lgl');
+    wrapper.style.cssText = 'margin: 20px auto 20px auto !important;';
+
+    // Banner interno do countdown
     const banner = document.createElement('div');
     banner.id = 'azul-friday-countdown';
     banner.style.cssText =
       'width: 100%;' +
       'border: 0px;' +
-      'margin: 0px auto 20px auto;' +
       'padding: 20px 24px;' +
       'border-radius: 16px;' +
       'background: linear-gradient(0deg, #D8F9FF -63%, #6BD1E3 -19.01%, #56C3E5 24.97%, #008BC4 68.96%, #0061A0 112.95%);' +
@@ -319,6 +331,9 @@
     banner.appendChild(textContainer);
     banner.appendChild(countdownContainer);
 
+    // Adiciona o banner dentro do wrapper
+    wrapper.appendChild(banner);
+
     // Encontrar a div vazia dentro do container do header para inserir o countdown
     // A estrutura varia por LP:
     // - default/pontos/passagens: container > div > button + div vazia
@@ -338,17 +353,17 @@
         if (buttonParent) {
           // Remover qualquer countdown existente (pode estar na posição errada)
           const existingCountdown = document.getElementById('azul-friday-countdown');
-          if (existingCountdown) {
-            existingCountdown.remove();
+          if (existingCountdown && existingCountdown.parentElement) {
+            existingCountdown.parentElement.remove();
           }
 
           // Inserir o banner no FINAL da div do button (abaixo de tudo)
           // Isso garante que fique abaixo do button e de qualquer div vazia
-          buttonParent.appendChild(banner);
+          buttonParent.appendChild(wrapper);
         } else {
           // Fallback: inserir após o button
           const newDiv = document.createElement('div');
-          newDiv.appendChild(banner);
+          newDiv.appendChild(wrapper);
           headerContainer.appendChild(newDiv);
         }
       } else {
@@ -362,28 +377,28 @@
           }
           if (nextDiv) {
             // Inserir o banner dentro da div vazia
-            nextDiv.appendChild(banner);
+            nextDiv.appendChild(wrapper);
           } else {
             // Se não encontrar, criar uma nova div e inserir após o button
             const newDiv = document.createElement('div');
-            newDiv.appendChild(banner);
+            newDiv.appendChild(wrapper);
             containerInnerDiv.appendChild(newDiv);
           }
         } else {
           // Fallback: inserir após o container do header
           if (headerContainer.parentElement) {
-            headerContainer.parentElement.insertBefore(banner, headerContainer.nextSibling);
+            headerContainer.parentElement.insertBefore(wrapper, headerContainer.nextSibling);
           } else {
-            headerContainer.appendChild(banner);
+            headerContainer.appendChild(wrapper);
           }
         }
       }
     } else {
       // Fallback: inserir após o container do header se não encontrar button
       if (headerContainer.parentElement) {
-        headerContainer.parentElement.insertBefore(banner, headerContainer.nextSibling);
+        headerContainer.parentElement.insertBefore(wrapper, headerContainer.nextSibling);
       } else {
-        headerContainer.appendChild(banner);
+        headerContainer.appendChild(wrapper);
       }
     }
 
