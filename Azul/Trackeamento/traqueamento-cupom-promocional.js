@@ -4,9 +4,6 @@
   // Flag para evitar processamento múltiplo
   let listenersAdicionados = false;
   let intervaloPeriodicoAtivo = null;
-  let observerAtivo = null;
-  let isProcessingError = false;
-  let debounceTimerError = null;
 
   function analyticsEvent(eventAction, couponValue = '') {
     if (!eventAction) {
@@ -22,9 +19,25 @@
     };
 
     const eventType = actionMap[eventAction] || eventAction;
-    const labelEvent = 'AT_cupom_' + eventType;
+    const labelEvent = 'AT_cupom ' + eventType;
 
-    console.log('[Tracking Cupom] Analytics event triggered:', labelEvent, 'Value:', couponValue);
+    // Diferencia o eVar84 baseado no tipo de evento
+    let eVar84Value = '';
+    if (eventAction === 'aplicar_clique') {
+      // No clique, envia o valor do cupom
+      eVar84Value = 'AT_cupom_value ' + (couponValue || 'sem_valor');
+    } else if (eventAction === 'sucesso') {
+      // No sucesso, envia apenas o status
+      eVar84Value = 'AT_cupom_status_sucesso';
+    } else if (eventAction === 'erro') {
+      // No erro, envia apenas o status
+      eVar84Value = 'AT_cupom_status_erro';
+    } else {
+      // Fallback para outros casos
+      eVar84Value = 'AT_cupom_value ' + (couponValue || 'sem_valor');
+    }
+
+    console.log('[Tracking Cupom] Analytics event triggered:', labelEvent, 'eVar84:', eVar84Value);
 
     (function () {
       var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
@@ -34,7 +47,7 @@
       s.linkTrackEvents = 'event90';
       s.events = 'event90';
       s.eVar82 = labelEvent; // Informação principal da ação
-      s.eVar84 = 'AT_cupom_value ' + (couponValue || 'sem_valor'); // Valor do cupom
+      s.eVar84 = eVar84Value; // Diferenciado por tipo de evento
 
       s.tl(true, 'o', 'target_activity_action');
     })();
@@ -46,97 +59,91 @@
     return input ? input.value.trim() : '';
   }
 
-  function observarMensagemErro() {
-    // Observer para detectar mensagens de erro
-    const containerCupom = document.querySelector('.sc-5d84be43-12.eBvBuG');
-    if (!containerCupom) return;
+  function interceptarRequisicoes() {
+    // Intercepta XMLHttpRequest
+    const originalXHROpen = window.XMLHttpRequest.prototype.open;
+    const originalXHRSend = window.XMLHttpRequest.prototype.send;
 
-    // Cria um observer para detectar mudanças no DOM relacionadas ao cupom
-    const errorObserver = new MutationObserver((mutations) => {
-      // Proteção contra loops infinitos
-      if (isProcessingError) {
-        return;
-      }
+    window.XMLHttpRequest.prototype.open = function (method, url) {
+      this._trackingUrl = url;
+      this._trackingMethod = method;
+      return originalXHROpen.apply(this, arguments);
+    };
 
-      // Debounce para evitar processamento excessivo
-      if (debounceTimerError) {
-        clearTimeout(debounceTimerError);
-      }
+    window.XMLHttpRequest.prototype.send = function (body) {
+      const xhr = this;
+      const url = xhr._trackingUrl || '';
 
-      debounceTimerError = setTimeout(() => {
-        isProcessingError = true;
+      // Verifica se é a API de cupom promocional
+      if (url.includes('/promotioncode') || url.includes('promocode')) {
+        console.log('[Tracking Cupom] Requisição de cupom detectada:', url);
 
-        mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            // Verifica se é uma mensagem de erro
-            const textoNode = node.textContent || '';
+        xhr.addEventListener('load', function () {
+          const cupomValue = getInputValue();
+          console.log('[Tracking Cupom] Status da resposta:', xhr.status);
 
-            if (
-              textoNode.includes('Código promocional Inválido') ||
-              textoNode.includes('inválido') ||
-              textoNode.includes('Inválido')
-            ) {
-              console.log('[Tracking Cupom] Erro detectado: Cupom inválido');
-              const cupomValue = getInputValue();
-              analyticsEvent('erro', cupomValue);
-            }
-            // Verifica mensagens de sucesso (pode variar dependendo da implementação)
-            else if (
-              textoNode.includes('aplicado com sucesso') ||
-              textoNode.includes('Cupom aplicado') ||
-              node.classList.contains('success') ||
-              node.classList.contains('sucesso')
-            ) {
-              console.log('[Tracking Cupom] Sucesso detectado: Cupom aplicado');
-              const cupomValue = getInputValue();
-              analyticsEvent('sucesso', cupomValue);
-            }
+          // Sucesso (200-299)
+          if (xhr.status >= 200 && xhr.status < 300) {
+            console.log('[Tracking Cupom] API retornou SUCESSO (status ' + xhr.status + ')');
+            analyticsEvent('sucesso', cupomValue);
+          }
+          // Erro (400, 404, etc)
+          else if (xhr.status >= 400) {
+            console.log('[Tracking Cupom] API retornou ERRO (status ' + xhr.status + ')');
+            analyticsEvent('erro', cupomValue);
           }
         });
 
-        // Verifica mudanças de atributos que possam indicar sucesso/erro
-        if (mutation.type === 'attributes' && mutation.target.nodeType === Node.ELEMENT_NODE) {
-          const target = mutation.target;
+        xhr.addEventListener('error', function () {
+          const cupomValue = getInputValue();
+          console.log('[Tracking Cupom] Erro de rede na requisição');
+          analyticsEvent('erro', cupomValue);
+        });
+      }
 
-          // Verifica classes que indicam erro
-          if (
-            target.classList.contains('error') ||
-            target.classList.contains('invalid') ||
-            target.classList.contains('erro')
-          ) {
-            console.log('[Tracking Cupom] Erro detectado por classe CSS');
-            const cupomValue = getInputValue();
+      return originalXHRSend.apply(this, arguments);
+    };
+
+    // Intercepta Fetch API
+    const originalFetch = window.fetch;
+    window.fetch = function (url, options) {
+      const urlString = typeof url === 'string' ? url : url.url || '';
+
+      // Verifica se é a API de cupom promocional
+      if (urlString.includes('/promotioncode') || urlString.includes('promocode')) {
+        console.log('[Tracking Cupom] Fetch de cupom detectado:', urlString);
+
+        return originalFetch.apply(this, arguments).then(function (response) {
+          const cupomValue = getInputValue();
+          console.log('[Tracking Cupom] Status da resposta (Fetch):', response.status);
+
+          // Clona a resposta para não interferir no fluxo original
+          const responseClone = response.clone();
+
+          // Sucesso (200-299)
+          if (response.status >= 200 && response.status < 300) {
+            console.log('[Tracking Cupom] API retornou SUCESSO (status ' + response.status + ')');
+            analyticsEvent('sucesso', cupomValue);
+          }
+          // Erro (400, 404, etc)
+          else if (response.status >= 400) {
+            console.log('[Tracking Cupom] API retornou ERRO (status ' + response.status + ')');
             analyticsEvent('erro', cupomValue);
           }
 
-          // Verifica classes que indicam sucesso
-          if (
-            target.classList.contains('success') ||
-            target.classList.contains('valid') ||
-            target.classList.contains('sucesso')
-          ) {
-            console.log('[Tracking Cupom] Sucesso detectado por classe CSS');
-            const cupomValue = getInputValue();
-            analyticsEvent('sucesso', cupomValue);
-          }
-        }
-      });
+          return response;
+        }).catch(function (error) {
+          const cupomValue = getInputValue();
+          console.log('[Tracking Cupom] Erro de rede na requisição (Fetch):', error);
+          analyticsEvent('erro', cupomValue);
+          throw error;
+        });
+      }
 
-        isProcessingError = false;
-      }, 100); // Aguarda 100ms antes de processar
-    });
+      return originalFetch.apply(this, arguments);
+    };
 
-    // Observa o container do cupom e seus pais
-    errorObserver.observe(containerCupom.parentElement || containerCupom, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class'],
-    });
-
-    console.log('[Tracking Cupom] Observer de mensagens de erro/sucesso ativado');
-    return errorObserver;
+    console.log('[Tracking Cupom] Interceptação de requisições ativada');
   }
 
   function addClickListeners() {
@@ -167,17 +174,9 @@
       const cupomValue = getInputValue();
       console.log('[Tracking Cupom] Botão "Aplicar" clicado. Valor:', cupomValue);
       analyticsEvent('aplicar_clique', cupomValue);
-
-      // Aguarda um pouco e tenta detectar sucesso/erro
-      setTimeout(() => {
-        verificarResultadoAplicacao();
-      }, 1000);
     });
 
     console.log('[Tracking Cupom] Listener adicionado ao botão "Aplicar"');
-
-    // Inicia o observer de mensagens de erro/sucesso
-    observerAtivo = observarMensagemErro();
 
     listenersAdicionados = true;
 
@@ -191,36 +190,12 @@
     return true;
   }
 
-  function verificarResultadoAplicacao() {
-    // Verifica se há mensagem de erro visível
-    const mensagensErro = document.body.textContent || '';
-    const cupomValue = getInputValue();
 
-    if (
-      mensagensErro.includes('Código promocional Inválido') ||
-      mensagensErro.includes('inválido')
-    ) {
-      console.log('[Tracking Cupom] Verificação: Erro detectado');
-      // Não dispara evento aqui pois o observer já detectou
-      return 'erro';
-    }
-
-    // Verifica se há indicação de sucesso
-    const containerCupom = document.querySelector('.sc-5d84be43-12.eBvBuG');
-    if (containerCupom) {
-      const textoContainer = containerCupom.textContent || '';
-      if (textoContainer.includes('aplicado') || textoContainer.includes('sucesso')) {
-        console.log('[Tracking Cupom] Verificação: Sucesso detectado');
-        // Não dispara evento aqui pois o observer já detectou
-        return 'sucesso';
-      }
-    }
-
-    console.log('[Tracking Cupom] Verificação: Aguardando resposta...');
-    return 'pendente';
-  }
 
   function init() {
+    // Intercepta as requisições para capturar status da API
+    interceptarRequisicoes();
+
     let tentativas = 0;
     const maxTentativas = 10;
 
