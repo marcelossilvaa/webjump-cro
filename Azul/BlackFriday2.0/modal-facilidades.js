@@ -7,7 +7,7 @@
 //
 (function () {
   // Constante de configuração (dentro da IIFE para evitar conflitos)
-  const COUNTDOWN_END_DATE = '2025-11-28 23:59:59'; // Encerra em 28/11 às 23:59:59
+  const COUNTDOWN_END_DATE = '2025-12-28 23:59:59'; // Encerra em 28/11 às 23:59:59
   let observer = null;
   let isProcessing = false;
   let modalCreated = false;
