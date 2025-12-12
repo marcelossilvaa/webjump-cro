@@ -277,7 +277,8 @@
       'display: flex;' +
       'flex-direction: column;' +
       'align-items: center;' +
-      'gap: 0px;';
+      'gap: 0px;' +
+      'margin-top: -6px;';
 
     // Container da faixa rosa 100% width
     const faixaRosa = document.createElement('div');
