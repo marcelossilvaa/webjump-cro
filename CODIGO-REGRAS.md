@@ -525,7 +525,183 @@ Antes de finalizar um script, verifique:
 - [ ] Verificação de DOM ready antes de inicializar
 - [ ] Verificações de segurança (elementos existem antes de manipular)
 - [ ] Console.log sem emojis e em português
+- [ ] Trackeamento de visualização e ações implementado (quando aplicável)
+
+## 13. Trackeamento de Componentes e Ações
+
+### 13.1. Quando Aplicar
+
+**OBRIGATÓRIO**: Sempre que criar ou modificar um componente visual, implemente trackeamento para:
+
+- **Visualização**: Quando o componente é exibido na tela
+- **Ações**: Cliques em botões, banners, cards e elementos interativos
+
+### 13.2. Estrutura da Função de Analytics
+
+Use a seguinte estrutura padrão para enviar eventos ao Adobe Analytics:
+
+```javascript
+function analyticsEvent(eventLabel, eventType) {
+  if (!eventLabel) {
+    console.log('[Tracking NomeComponente] Missing parameters for analytics event.');
+    return;
+  }
+
+  // Monta o label do evento
+  const labelEvent = 'AT_NomeAtividade_' + eventType + ' ' + eventLabel;
+
+  console.log('[Tracking NomeComponente] Analytics event triggered:', labelEvent);
+
+  (function () {
+    var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+    if (!s || typeof s.tl !== 'function') return;
+
+    s.linkTrackVars = 'events,eVar82,eVar84';
+    s.linkTrackEvents = 'event90';
+    s.events = 'event90';
+    s.eVar82 = labelEvent;           // Informação principal da ação
+    s.eVar84 = 'AT_contexto_pagina'; // Contexto adicional
+
+    s.tl(true, 'o', 'target_activity_action');
+  })();
+}
+```
+
+### 13.3. Uso das eVars
+
+- **eVar82**: Informação principal da ação (ex: `AT_cupom cupom_aplicar_clique`, `AT_BF_banner_click_passagens Banner Nordeste`)
+- **eVar84**: Contexto adicional (ex: valor do input, nome da página, status da ação)
+
+#### Exemplos de Uso:
+
+```javascript
+// Trackeamento de clique em banner
+s.eVar82 = 'AT_BF_banner_click_passagens Banner Nordeste';
+s.eVar84 = 'AT_BF_lp_Passagens';
+
+// Trackeamento de ação com valor de input
+s.eVar82 = 'AT_cupom cupom_aplicar_clique';
+s.eVar84 = 'AT_cupom_value DESCONTO10';
+
+// Trackeamento de sucesso/erro
+s.eVar82 = 'AT_cupom cupom_aplicado_sucesso';
+s.eVar84 = 'AT_cupom_status_sucesso';
+```
+
+### 13.4. Tipos de Eventos
+
+Defina tipos de eventos claros para facilitar a análise:
+
+```javascript
+// Mapeamento de ações
+const actionMap = {
+  visualizacao: 'component_view',
+  clique: 'component_click',
+  sucesso: 'action_success',
+  erro: 'action_error',
+};
+
+// Tipos de componentes
+const componentTypes = {
+  banner: 'banner_click',
+  card: 'card_click',
+  mini_banner: 'mini_banner_click',
+  button: 'button_click',
+};
+```
+
+### 13.5. Estrutura de Listeners para Cliques
+
+Sempre use o padrão de verificação `data-analytics-added` antes de adicionar listeners:
+
+```javascript
+function addClickListeners() {
+  const botoes = document.querySelectorAll('button.meu-botao');
+
+  botoes.forEach((botao, index) => {
+    // Verifica se o listener já foi adicionado
+    if (botao.hasAttribute('data-analytics-added')) {
+      return;
+    }
+
+    botao.setAttribute('data-analytics-added', 'true');
+
+    // Extrai informações para o tracking
+    const bannerName = getBannerName(botao);
+
+    botao.addEventListener('click', () => {
+      analyticsEvent(bannerName, 'clique');
+    });
+
+    console.log('[Tracking] Listener adicionado ao botão:', bannerName);
+  });
+}
+```
+
+### 13.6. Trackeamento de Respostas de API
+
+Para ações que envolvem chamadas de API (ex: aplicar cupom), intercepte as requisições:
+
+```javascript
+// Intercepta Fetch API
+const originalFetch = window.fetch;
+window.fetch = function (url, options) {
+  const urlString = typeof url === 'string' ? url : url.url || '';
+
+  // Verifica se é a API desejada
+  if (urlString.includes('/minha-api')) {
+    return originalFetch.apply(this, arguments).then(function (response) {
+      // Sucesso (200-299)
+      if (response.status >= 200 && response.status < 300) {
+        analyticsEvent('sucesso', 'api_response');
+      }
+      // Erro (400, 404, etc)
+      else if (response.status >= 400) {
+        analyticsEvent('erro', 'api_response');
+      }
+      return response;
+    });
+  }
+
+  return originalFetch.apply(this, arguments);
+};
+```
+
+### 13.7. Nomenclatura de Labels
+
+Siga o padrão de nomenclatura para facilitar a análise:
+
+```
+AT_[NomeAtividade]_[tipo_evento]_[contexto] [detalhe]
+```
+
+#### Exemplos:
+
+- `AT_BF_banner_click_passagens Banner Nordeste` → Clique no banner Nordeste da LP Passagens
+- `AT_cupom cupom_aplicar_clique` → Clique no botão aplicar cupom
+- `AT_cupom cupom_aplicado_sucesso` → Cupom aplicado com sucesso
+
+### 13.8. Console.log para Debug
+
+Use console.log com prefixo identificador para facilitar debug:
+
+```javascript
+console.log('[Tracking NomeComponente] Analytics event triggered:', labelEvent);
+console.log('[Tracking NomeComponente] Listener adicionado ao botão:', bannerName);
+console.log('[Tracking NomeComponente] API retornou SUCESSO (status ' + response.status + ')');
+```
+
+### 13.9 Checklist de Trackeamento
+
+Antes de finalizar um script com trackeamento, verifique:
+
+- [ ] Função `analyticsEvent` implementada com eVar82 e eVar84
+- [ ] Verificação de `data-analytics-added` para evitar duplicação de listeners
+- [ ] Labels seguem o padrão de nomenclatura `AT_[nome]_[tipo]`
+- [ ] Console.log com prefixo `[Tracking NomeComponente]`
+- [ ] MutationObserver para elementos carregados dinamicamente (se necessário)
+- [ ] Interceptação de API para trackeamento de sucesso/erro (se aplicável)
 
 ---
 
-**Última atualização**: 2025-01-27
+**Última atualização**: 2025-12-16
