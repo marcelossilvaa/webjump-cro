@@ -754,6 +754,72 @@
     })();
   }
 
+  // Função para normalizar/padronizar o nível escolar para tracking
+  // Garante que todas as variações venham no mesmo formato
+  function normalizeGradeLevel(gradeLevel) {
+    if (!gradeLevel) return null;
+
+    var text = String(gradeLevel).trim();
+    var lowerText = text.toLowerCase();
+
+    // Educação Infantil (1-3 anos)
+    if (/educa[çc][aã]o\s*infantil|infantil|\\bEI\\b/i.test(text)) {
+      if (/\b1\s*anos?/i.test(text)) return '1 ano - Educação Infantil';
+      if (/\b2\s*anos?/i.test(text)) return '2 anos - Educação Infantil';
+      if (/\b3\s*anos?/i.test(text)) return '3 anos - Educação Infantil';
+    }
+
+    // Pré Escola (4-5 anos)
+    if (/pr[ée]\s*escola|pre\s*escola/i.test(text) || (/infantil/i.test(text) && /[45]\s*anos?/i.test(text))) {
+      if (/\b4\s*anos?/i.test(text)) return '4 anos - Pré Escola';
+      if (/\b5\s*anos?/i.test(text)) return '5 anos - Pré Escola';
+    }
+
+    // Ensino Médio / Colegial
+    if (/ensino\s*m[ée]dio|colegial/i.test(text)) {
+      if (/1[º°ª]?\s*(ano|s[ée]rie|colegial)/i.test(text)) return '1º Colegial';
+      if (/2[º°ª]?\s*(ano|s[ée]rie|colegial)/i.test(text)) return '2º Colegial';
+      if (/3[º°ª]?\s*(ano|s[ée]rie|colegial)/i.test(text)) return '3º Colegial';
+    }
+
+    // Anos iniciais (1º ao 5º ano)
+    if (/anos?\s*iniciais|ef\s*1|efai/i.test(text)) {
+      var matchIniciais = text.match(/(\d+)[º°ª]?\s*ano/i);
+      if (matchIniciais) {
+        var ano = parseInt(matchIniciais[1]);
+        if (ano >= 1 && ano <= 5) return ano + 'º ano - Anos iniciais';
+      }
+    }
+
+    // Anos finais (6º ao 9º ano)
+    if (/anos?\s*finais|ef\s*2/i.test(text)) {
+      var matchFinais = text.match(/(\d+)[º°ª]?\s*ano/i);
+      if (matchFinais) {
+        var ano = parseInt(matchFinais[1]);
+        if (ano >= 6 && ano <= 9) return ano + 'º ano - Anos finais';
+      }
+    }
+
+    // Fallback: tenta detectar apenas pelo número do ano
+    var matchAno = text.match(/(\d+)[º°ª]?\s*ano/i);
+    if (matchAno) {
+      var ano = parseInt(matchAno[1]);
+      if (ano >= 1 && ano <= 5) return ano + 'º ano - Anos iniciais';
+      if (ano >= 6 && ano <= 9) return ano + 'º ano - Anos finais';
+    }
+
+    // Fallback: tenta detectar série
+    var matchSerie = text.match(/(\d+)[º°ª]?\s*s[ée]rie/i);
+    if (matchSerie) {
+      var serie = parseInt(matchSerie[1]);
+      if (serie >= 1 && serie <= 5) return serie + 'º ano - Anos iniciais';
+      if (serie >= 6 && serie <= 9) return serie + 'º ano - Anos finais';
+    }
+
+    // Se não conseguiu normalizar, retorna o valor original
+    return text;
+  }
+
   // Função para rastrear o nível escolar do usuário visualizando o componente
   // Dispara um evento de tracking com o gradeLevel detectado
   function trackGradeLevelView(gradeLevel, gradeLevelNumber) {
@@ -761,11 +827,12 @@
       return;
     }
 
-    var gradeLevelFormatted = String(gradeLevel);
+    // Normaliza o nível escolar para garantir consistência
+    var gradeLevelFormatted = normalizeGradeLevel(gradeLevel) || String(gradeLevel);
     var gradeLevelNumValue = gradeLevelNumber ? String(gradeLevelNumber) : '';
     
     // Inclui o nível escolar no valor das eVars existentes
-    var trackingValue = 'grade_level_view|' + gradeLevelFormatted + (gradeLevelNumValue ? '|' + gradeLevelNumValue : '');
+    var trackingValue = 'grade_level_view ' + gradeLevelFormatted;
 
     (function () {
       var s = window.s || (typeof s_gi === 'function' && s_gi('lumisfera'));
@@ -787,11 +854,12 @@
       return;
     }
 
-    var gradeLevelFormatted = String(gradeLevel);
+    // Normaliza o nível escolar para garantir consistência
+    var gradeLevelFormatted = normalizeGradeLevel(gradeLevel) || String(gradeLevel);
     var gradeLevelNumValue = gradeLevelNumber ? String(gradeLevelNumber) : '';
     
     // Inclui o nível escolar no valor das eVars existentes
-    var trackingValue = 'grade_level_add_to_cart|' + gradeLevelFormatted + (gradeLevelNumValue ? '|' + gradeLevelNumValue : '');
+    var trackingValue = 'grade_level_add_to_cart ' + gradeLevelFormatted;
 
     (function () {
       var s = window.s || (typeof s_gi === 'function' && s_gi('lumisfera'));
