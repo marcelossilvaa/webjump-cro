@@ -754,6 +754,59 @@
     })();
   }
 
+  // Função para rastrear o nível escolar do usuário visualizando o componente
+  // Dispara um evento de tracking com o gradeLevel detectado
+  function trackGradeLevelView(gradeLevel, gradeLevelNumber) {
+    if (!gradeLevel) {
+      return;
+    }
+
+    var gradeLevelFormatted = String(gradeLevel);
+    var gradeLevelNumValue = gradeLevelNumber ? String(gradeLevelNumber) : '';
+    
+    // Inclui o nível escolar no valor das eVars existentes
+    var trackingValue = 'grade_level_view|' + gradeLevelFormatted + (gradeLevelNumValue ? '|' + gradeLevelNumValue : '');
+
+    (function () {
+      var s = window.s || (typeof s_gi === 'function' && s_gi('lumisfera'));
+      if (!s || typeof s.tl !== 'function') return;
+
+      s.linkTrackVars = 'events,eVar7,eVar25';
+      s.linkTrackEvents = 'scAdd';
+      s.events = 'scAdd';
+      s.eVar7 = 'AT_evar7_' + trackingValue;
+      s.eVar25 = 'AT_evar25_' + trackingValue;
+
+      s.tl(true, 'o', 'grade_level_view');
+    })();
+  }
+
+  // Função para rastrear o nível escolar do usuário ao adicionar ao carrinho
+  function trackGradeLevelAddToCart(gradeLevel, gradeLevelNumber) {
+    if (!gradeLevel) {
+      return;
+    }
+
+    var gradeLevelFormatted = String(gradeLevel);
+    var gradeLevelNumValue = gradeLevelNumber ? String(gradeLevelNumber) : '';
+    
+    // Inclui o nível escolar no valor das eVars existentes
+    var trackingValue = 'grade_level_add_to_cart|' + gradeLevelFormatted + (gradeLevelNumValue ? '|' + gradeLevelNumValue : '');
+
+    (function () {
+      var s = window.s || (typeof s_gi === 'function' && s_gi('lumisfera'));
+      if (!s || typeof s.tl !== 'function') return;
+
+      s.linkTrackVars = 'events,eVar7,eVar25';
+      s.linkTrackEvents = 'scAdd';
+      s.events = 'scAdd';
+      s.eVar7 = 'AT_evar7_' + trackingValue;
+      s.eVar25 = 'AT_evar25_' + trackingValue;
+
+      s.tl(true, 'o', 'grade_level_add_to_cart');
+    })();
+  }
+
   function fetchCartData() {
     // Adiciona parâmetros necessários para evitar erro 400
     var timestamp = Date.now();
@@ -1432,6 +1485,12 @@
               category
             );
 
+            // Tracking: nível escolar do usuário ao adicionar ao carrinho
+            if (DETECTED_GRADE_LEVEL) {
+              var gradeLevelNumber = convertGradeLevelToNumber(DETECTED_GRADE_LEVEL);
+              trackGradeLevelAddToCart(DETECTED_GRADE_LEVEL, gradeLevelNumber);
+            }
+
             // Reabilita o botão após um tempo
             setTimeout(function () {
               updateButtonContent(btn, 'default');
@@ -1475,6 +1534,12 @@
       var productPrice = data.priceNumber || 0;
       var category = data.category || data.product_category || '';
       analyticsEvent('component_view', productId, productName, productPrice, 1, category);
+
+      // Tracking: nível escolar do usuário visualizando o componente
+      if (DETECTED_GRADE_LEVEL) {
+        var gradeLevelNumber = convertGradeLevelToNumber(DETECTED_GRADE_LEVEL);
+        trackGradeLevelView(DETECTED_GRADE_LEVEL, gradeLevelNumber);
+      }
 
       img.addEventListener('load', function () {
         img.style.opacity = '1';

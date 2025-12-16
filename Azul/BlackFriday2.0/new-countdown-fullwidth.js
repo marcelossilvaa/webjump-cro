@@ -459,7 +459,7 @@
       banner.style.setProperty('height', 'auto', 'important');
       banner.style.setProperty('min-height', '294px', 'important');
       banner.style.setProperty('margin', '0', 'important');
-      banner.style.setProperty('top', '-6px', 'important');
+      banner.style.setProperty('top', '-12px', 'important');
       banner.style.setProperty('overflow', 'visible', 'important');
 
       // Container interno mobile - tudo em coluna (ajustado conforme solicitação)
@@ -499,7 +499,7 @@
 
       // Selo rosa mobile - faixa 100% width acima do banner (ajustado)
       if (poucoTempoSelo) {
-        poucoTempoSelo.style.setProperty('margin-bottom', '-76px', 'important');
+        poucoTempoSelo.style.setProperty('margin-bottom', '-28px', 'important');
         poucoTempoSelo.style.setProperty('padding', '2px 0px', 'important');
         poucoTempoSelo.style.setProperty('width', '100%', 'important');
       }
@@ -508,9 +508,13 @@
       if (seloImageContainer) {
         const seloImage = seloImageContainer.querySelector('img');
         if (seloImage) {
-            seloImage.style.setProperty('max-width', '280px', 'important');
-            seloImage.style.setProperty('max-height', '150px', 'important');
-          }
+          seloImage.style.setProperty('display', 'block', 'important');
+          seloImage.style.setProperty('width', 'auto', 'important');
+          seloImage.style.setProperty('height', 'auto', 'important');
+          seloImage.style.setProperty('object-fit', 'contain', 'important');
+          seloImage.style.setProperty('max-width', '280px', 'important');
+          seloImage.style.setProperty('max-height', '108px', 'important');
+        }
       }
 
       // Selo mobile
@@ -549,6 +553,9 @@
         countdownContainer.style.setProperty('gap', '16px', 'important');
         countdownContainer.style.setProperty('justify-content', 'center', 'important');
         countdownContainer.style.setProperty('flex-direction', 'row', 'important');
+        // Ajuste de posicionamento solicitado (mover o bloco do countdown para cima)
+        // countdownContainer.style.setProperty('position', 'relative', 'important');
+        // countdownContainer.style.setProperty('top', '-56px', 'important');
       }
     } else {
       // Desktop - resetar estilos
@@ -648,7 +655,7 @@
 
     // Atualizar a cada segundo
     setInterval(() => {
-      updateCountdown();
+      // updateCountdown();
     }, 1000);
 
     // Adicionar listener para resize da janela (responsividade)
@@ -663,7 +670,7 @@
 
         // Se mudou de mobile para desktop ou vice-versa, recriar o countdown
         if (wasMobile !== isMobile) {
-          updateCountdown();
+          // updateCountdown();
         } else {
           applyResponsiveStyles();
         }
