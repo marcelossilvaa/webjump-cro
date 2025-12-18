@@ -1603,12 +1603,6 @@
       var category = data.category || data.product_category || '';
       analyticsEvent('component_view', productId, productName, productPrice, 1, category);
 
-      // Tracking: nível escolar do usuário visualizando o componente
-      if (DETECTED_GRADE_LEVEL) {
-        var gradeLevelNumber = convertGradeLevelToNumber(DETECTED_GRADE_LEVEL);
-        trackGradeLevelView(DETECTED_GRADE_LEVEL, gradeLevelNumber);
-      }
-
       img.addEventListener('load', function () {
         img.style.opacity = '1';
         img.dataset.locked = '1';
@@ -2201,5 +2195,47 @@
     window.addEventListener('load', function () {
       setTimeout(run, 25); // Otimizado: reduzido de 50ms para 25ms
     });
+  }
+
+  // Tracking: dispara visualização do nível escolar quando o carrinho é aberto
+  // Usa MutationObserver para detectar quando a classe 'active' é adicionada ao wrapper do carrinho
+  var cartObserver = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+        var target = mutation.target;
+        // Verifica se é o wrapper do carrinho e se tem a classe active
+        if (target.classList.contains('minicart-wrapper') && target.classList.contains('active')) {
+          // Se detectou nível escolar, dispara o tracking
+          if (DETECTED_GRADE_LEVEL) {
+            // Pequeno delay para garantir
+            setTimeout(function() {
+              var gradeLevelNumber = convertGradeLevelToNumber(DETECTED_GRADE_LEVEL);
+              trackGradeLevelView(DETECTED_GRADE_LEVEL, gradeLevelNumber);
+            }, 100);
+          }
+        }
+      }
+    });
+  });
+
+  // Inicia a observação do carrinho
+  function initCartObserver() {
+    var cartWrapper = document.querySelector('.minicart-wrapper') || document.querySelector('[data-block="minicart"]');
+    if (cartWrapper) {
+      cartObserver.observe(cartWrapper, {
+        attributes: true,
+        attributeFilter: ['class']
+      });
+    } else {
+      // Tenta novamente se não encontrar (pode ser carregado dinamicamente)
+      setTimeout(initCartObserver, 1000);
+    }
+  }
+
+  // Inicia quando o DOM estiver pronto
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    initCartObserver();
+  } else {
+    window.addEventListener('load', initCartObserver);
   }
 })();
