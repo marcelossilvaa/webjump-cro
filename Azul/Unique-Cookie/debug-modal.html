@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug Modal Diamante Unique</title>
+  <link href="https://fonts.cdnfonts.com/css/helvetica-neue-55" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Helvetica Neue', sans-serif;
+      background-color: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .controls {
+      margin-bottom: 20px;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      z-index: 100;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #008058;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      margin: 5px;
+    }
+
+    button:hover {
+      background-color: #006646;
+    }
+
+    button.secondary {
+      background-color: #CF527A;
+    }
+
+    button.secondary:hover {
+      background-color: #a83e60;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="controls">
+    <h1>Debug Modal Diamante Unique</h1>
+    <p>Use os botões abaixo para testar o modal e as regras de exibição.</p>
+    <button onclick="showModal()">Forçar Exibição (Ignora Regras)</button>
+    <button class="secondary" onclick="clearSession()">Limpar Sessão (Resetar)</button>
+    <hr>
+    <h3>Controles de Regras</h3>
+    <button onclick="clearInteraction()">Limpar "Já Interagiu Hoje"</button>
+    <button onclick="clearViews()">Resetar Contador de Views (0)</button>
+    <button onclick="simulateScroll()">Simular Scroll</button>
+    <hr>
+    <h3>Controles do Popup (Botão Flutuante)</h3>
+    <button onclick="showPopup()">Abrir Popup</button>
+    <button class="secondary" onclick="hidePopup()">Fechar Popup</button>
+    <button onclick="forceShowButton()">Forçar Exibição Botão</button>
+    <div id="status" style="margin-top: 10px; font-size: 12px; color: #555;"></div>
+  </div>
+
+  <!-- Importando os scripts do modal e popup com cache-buster -->
+  <script>
+    document.write('<script src="unique-cookie.js?v=' + Date.now() + '"><\/script>');
+    document.write('<script src="unique-popup.js?v=' + Date.now() + '"><\/script>');
+  </script>
+
+  <script>
+    function updateStatus() {
+      const interacted = localStorage.getItem('diamante_unique_interacted_date');
+      const views = localStorage.getItem('diamante_unique_views_count');
+      const session = sessionStorage.getItem('diamante_unique_modal_shown');
+
+      document.getElementById('status').innerHTML =
+        '<b>Status Atual:</b><br>' +
+        'Interagiu Hoje: ' + (interacted ? interacted : 'Não') + '<br>' +
+        'Views Hoje: ' + (views ? views : '0') + '<br>' +
+        'Exibido na Sessão: ' + (session ? 'Sim' : 'Não');
+    }
+
+    function showModal() {
+      if (window.TudoAzulCookie) {
+        window.TudoAzulCookie.showModal();
+        updateStatus();
+      }
+    }
+
+    function clearSession() {
+      sessionStorage.removeItem('diamante_unique_modal_shown');
+      updateStatus();
+    }
+
+    function clearInteraction() {
+      localStorage.removeItem('diamante_unique_interacted_date');
+      updateStatus();
+    }
+
+    function clearViews() {
+      localStorage.removeItem('diamante_unique_views_count');
+      localStorage.removeItem('diamante_unique_last_view_date');
+      updateStatus();
+    }
+
+    function simulateScroll() {
+      window.scrollTo(0, 200);
+      setTimeout(() => window.scrollTo(0, 0), 1000);
+    }
+
+    function showPopup() {
+      console.log('[Debug Page] Botão Abrir Popup clicado');
+      if (window.UniquePopup) {
+        window.UniquePopup.show();
+      } else {
+        alert('Script unique-popup.js ainda não carregou.');
+      }
+    }
+
+    function hidePopup() {
+      if (window.UniquePopup) {
+        window.UniquePopup.hide();
+      }
+    }
+
+    function forceShowButton() {
+      if (window.UniquePopup) {
+        window.UniquePopup.showButton();
+      } else {
+        alert('Script unique-popup.js ainda não carregou.');
+      }
+    }
+
+    updateStatus();
+    setInterval(updateStatus, 2000);
+  </script>
+</body>
+
+</html>
