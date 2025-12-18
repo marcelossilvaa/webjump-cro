@@ -5,7 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Debug Modal Diamante Unique</title>
-  <link href="https://fonts.cdnfonts.com/css/helvetica-neue-55" rel="stylesheet">
+  <!-- Importando família Helvetica Neue -->
+  <link href="https://fonts.cdnfonts.com/css/helvetica-neue-9" rel="stylesheet">
   <style>
     body {
       font-family: 'Helvetica Neue', sans-serif;
@@ -59,17 +60,10 @@
     <h1>Debug Modal Diamante Unique</h1>
     <p>Use os botões abaixo para testar o modal e as regras de exibição.</p>
     <button onclick="showModal()">Forçar Exibição (Ignora Regras)</button>
-    <button class="secondary" onclick="clearSession()">Limpar Sessão (Resetar)</button>
     <hr>
-    <h3>Controles de Regras</h3>
-    <button onclick="clearInteraction()">Limpar "Já Interagiu Hoje"</button>
-    <button onclick="clearViews()">Resetar Contador de Views (0)</button>
-    <button onclick="simulateScroll()">Simular Scroll</button>
-    <hr>
+
     <h3>Controles do Popup (Botão Flutuante)</h3>
-    <button onclick="showPopup()">Abrir Popup</button>
-    <button class="secondary" onclick="hidePopup()">Fechar Popup</button>
-    <button onclick="forceShowButton()">Forçar Exibição Botão</button>
+    <button onclick="forceShowButton()">Forçar Exibição Botão Flutuante</button>
     <div id="status" style="margin-top: 10px; font-size: 12px; color: #555;"></div>
   </div>
 
