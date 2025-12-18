@@ -1,6 +1,10 @@
 // MODAL DIAMANTE TUDO AZUL - UNIQUE COOKIE
 
 (function () {
+  const MIN_QUALIFYING_POINTS = 0;
+  const MIN_FLIGHTS = 0; // Definido como 0 para testes
+  //23000 trechos: 26
+
   // Chave para armazenar dados no localStorage
   const STORAGE_KEY = 'tudoazul_users_data';
 
@@ -174,9 +178,6 @@
 
   // Chave para controlar exibicao do modal (evitar mostrar multiplas vezes)
   const MODAL_SHOWN_KEY = 'diamante_unique_modal_shown';
-  const MIN_QUALIFYING_POINTS = 0;
-  const MIN_FLIGHTS = 0; // Definido como 0 para testes
-  //23000 trechos: 26
 
   // Funcao para verificar se o modal ja foi exibido nesta sessao
   function wasModalShown() {
@@ -896,7 +897,7 @@
       '    </div>' +
       '    ' +
       '    <div class="diamante-modal-actions">' +
-      '      <a href="https://www.voeazul.com.br/content/azul/voe-azul/br/pt/programa-fidelidade/acumulo-de-pontos/aereo.html" class="diamante-modal-btn diamante-modal-btn-secondary">Solicitar trechos ou pontos</a>' +
+      '      <a href="https://www.voeazul.com.br/br/pt/programa-fidelidade/acumulo-de-pontos/aereo.html" class="diamante-modal-btn diamante-modal-btn-secondary">Solicitar trechos ou pontos</a>' +
       '      <a href="https://passagens.voeazul.com.br/pt/melhores-ofertas" class="diamante-modal-btn diamante-modal-btn-primary">Voar com a Azul</a>' +
       '    </div>' +
       '    ' +
