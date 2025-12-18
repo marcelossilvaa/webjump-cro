@@ -1,4 +1,4 @@
-// Script para extrair dados do cookie TudoAzul com persistencia em localStorage
+// MODAL DIAMANTE TUDO AZUL - UNIQUE COOKIE
 
 (function () {
   // Chave para armazenar dados no localStorage
@@ -194,6 +194,28 @@
     } catch (error) {
       console.log('[Modal Diamante] Erro ao salvar estado do modal:', error);
     }
+  }
+
+  // Funcao de Analytics
+  function analyticsEvent(eventLabel, eventType) {
+    if (!eventLabel) return;
+    
+    // Padrao: AT_DiamanteUnique_[tipo] [label]
+    var labelEvent = 'AT_DiamanteUnique_' + eventType + ' ' + eventLabel;
+    console.log('[Tracking Modal] ' + labelEvent);
+
+    (function () {
+      var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+      if (!s || typeof s.tl !== 'function') return;
+
+      s.linkTrackVars = 'events,eVar82,eVar84';
+      s.linkTrackEvents = 'event90';
+      s.events = 'event90';
+      s.eVar82 = labelEvent;
+      s.eVar84 = 'AT_DiamanteUnique';
+
+      s.tl(true, 'o', 'target_activity_action');
+    })();
   }
 
   // Funcao para injetar estilos CSS do modal
@@ -572,6 +594,7 @@
       '  display: flex;' +
       '  align-items: center;' +
       '  color: #FFFFFF;' +
+      'text-align: center;' +
       '}' +
       '.diamante-modal-benefits-grid {' +
       '  display: grid;' +
@@ -655,7 +678,7 @@
       '}' +
       '.diamante-modal-footer-text span {' +
       '  font-weight: 300;' +
-      '  color: #FFFFFF' +
+      '  color: #FFFFFF;' +
       '  opacity: 50%;' +
       '}' +
       '.diamante-modal-actions {' +
@@ -680,6 +703,11 @@
       '  text-align: center;' +
       '  text-decoration: none;' +
       '  cursor: pointer;' +
+      '  transition: all 0.3s ease;' +
+      '}' +
+      '.diamante-modal-btn:hover {' +
+      '  opacity: 0.9;' +
+      '  transform: scale(1.02);' +
       '}' +
       '.diamante-modal-btn-primary {' +
       '  background: #008058;' +
@@ -734,6 +762,10 @@
       '    background: transparent;' +
       '    color: #415470;' +
       '  }' +
+
+      '.diamante-modal-footer-text{' +
+      '   text-align: start;' +
+      ' }' +
       '  .diamante-modal-tips-container {' +
       '    margin-bottom: 0px;' +
       '    padding: 14px 0px;' +
@@ -794,7 +826,7 @@
       '      <div class="diamante-modal-deadline">VOCÊ TEM ATÉ DIA <strong>31 DE DEZEMBRO</strong> PARA ALCANÇAR O NOVO NÍVEL</div>' +
       '    </div>' +
       '    ' +
-      '    <div class="diamante-modal-intro-desc"><span>O novo nível Azul Fidelidade chega em </span><strong> 13 de janeiro de 2026</strong>.</div>' +
+      '    <div class="diamante-modal-intro-desc"><span>O novo nível Azul Fidelidade chega em </span><strong>&nbsp;13 de janeiro de 2026</strong>.</div>' +
       '    ' +
       '    <div class="diamante-modal-tips-title"><strong>AINDA DÁ TEMPO!</strong> <br> <span>O QUE PODE AJUDAR AUMENTAR SUAS CHANCES:</span></div>' +
       '    ' +
@@ -805,7 +837,7 @@
       '      </div>' +
       '      <div class="diamante-modal-tip">' +
       '        <div class="diamante-modal-tip-icon">' + starIcon + '</div>' +
-      '        <div class="diamante-modal-tip-badge">Assinando o Clube<br>10mil ou 20mil</div>' +
+      '        <div class="diamante-modal-tip-badge">Assinando o Clube<br>10mil ou 20mil¹</div>' +
       '      </div>' +
       '    </div>' +
       '    ' +
@@ -870,7 +902,7 @@
       '    </div>' +
       '    ' +
       '    <div class="diamante-modal-disclaimer">' +
-      '      ¹Sendo 2 trechos nacionais e 2 nacionais ou internacionais. ²Trechos, pontos qualificáveis ou gastos com voos, upgrades e serviços adicionais acumulados em 2025.' +
+      '      ¹Assinando o clube 10mi ou 20mil você ganha pontos qualificáveis para te ajudar a subir de nível. ²Trechos, pontos qualificáveis ou gastos com voos, upgrades e serviços adicionais acumulados em 2025. ³Sendo 2 trechos nacionais e 2 nacionais ou internacionais.' +
       '    </div>' +
       '  </div>' +
       '</div>';
@@ -969,6 +1001,7 @@
     // Eventos de Interacao
     if (closeBtn) {
       closeBtn.addEventListener('click', function () {
+        analyticsEvent('Fechar', 'clique');
         markInteraction();
         closeDiamanteModal();
       });
@@ -976,6 +1009,7 @@
 
     if (primaryBtn) {
       primaryBtn.addEventListener('click', function () {
+        analyticsEvent('Botao Voar', 'clique');
         markInteraction();
         // Logica adicional de clique se necessario
       });
@@ -983,6 +1017,7 @@
 
     if (secondaryBtn) {
       secondaryBtn.addEventListener('click', function () {
+        analyticsEvent('Botao Solicitar', 'clique');
         markInteraction();
         // Logica adicional de clique se necessario
       });
@@ -992,6 +1027,7 @@
     if (modal) {
       modal.addEventListener('click', function (e) {
         if (e.target === modal) {
+          analyticsEvent('Fechar Overlay', 'clique');
           markInteraction(); // Clicar fora tambem conta como interacao (fechar)
           closeDiamanteModal();
         }
@@ -1002,6 +1038,7 @@
     setTimeout(function () {
       if (modal) {
         modal.classList.add('active');
+        analyticsEvent('Modal', 'visualizacao');
       }
     }, 50);
 
