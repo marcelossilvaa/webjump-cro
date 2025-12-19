@@ -1,8 +1,6 @@
 // POPUP DIAMANTE TUDO AZUL - UNIQUE COOKIE
 
 (function () {
-  console.log('[Popup Unique] Script carregado v4');
-
   var POPUP_ID = 'diamante-unique-popup';
   var BUTTON_ID = 'diamante-unique-floating-btn';
   var MIN_QUALIFYING_POINTS = 26000;
@@ -14,7 +12,6 @@
     
     // Padrao: AT_DiamanteUnique_[tipo] [label]
     var labelEvent = 'AT_DiamanteUnique_' + eventType + ' ' + eventLabel;
-    console.log('[Tracking Popup] ' + labelEvent);
 
     (function () {
       var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
@@ -461,7 +458,6 @@
   }
 
   function markInteraction() {
-    console.log('[Popup Unique] Interacao registrada.');
     setStorage(STORAGE_KEYS.INTERACTED, getTodayDateString());
   }
 
@@ -490,7 +486,6 @@
     const time = getRandomTime(minTime, maxTime);
 
     inactivityTimer = setTimeout(() => {
-      console.log('[Popup Unique] Trigger: Inatividade (' + (time/1000) + 's)');
       triggerPopup();
     }, time);
   }
@@ -532,7 +527,6 @@
     // Verifica se esta na home
     if (!isHomepage()) return;
 
-    console.log('[Popup Unique] Disparando popup via trigger...');
     window.UniquePopup.show();
   }
 
@@ -610,7 +604,6 @@
       // Abertura automatica 1x por dia
       if (!hasInteractedToday()) {
         setTimeout(function() {
-          console.log('[Popup Unique] Abertura automatica diaria...');
           window.UniquePopup.show();
           markInteraction();
         }, 2000);

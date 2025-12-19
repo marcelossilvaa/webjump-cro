@@ -128,13 +128,11 @@
       if (usuarioIndex === -1) {
         // Novo usuario
         usuariosData.push(userData);
-        console.log('[Cookie TudoAzul] Novo usuario adicionado:', userData);
       } else {
         // Atualiza os dados do usuario existente
         usuariosData[usuarioIndex].flights = userData.flights;
         usuariosData[usuarioIndex].qualifyingPoints = userData.qualifyingPoints;
         usuariosData[usuarioIndex].lastUpdated = userData.lastUpdated;
-        console.log('[Cookie TudoAzul] Usuario atualizado:', usuariosData[usuarioIndex]);
       }
 
       // Salva no localStorage apos qualquer alteracao
@@ -204,7 +202,6 @@
     
     // Padrao: AT_DiamanteUnique_[tipo] [label]
     var labelEvent = 'AT_DiamanteUnique_' + eventType + ' ' + eventLabel;
-    console.log('[Tracking Modal] ' + labelEvent);
 
     (function () {
       var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
@@ -976,7 +973,6 @@
   }
 
   function markInteraction() {
-    console.log('[Modal Diamante] Interacao registrada. Modal nao sera exibido novamente hoje.');
     setStorage(STORAGE_KEYS.INTERACTED, getTodayDateString());
   }
 
@@ -1042,8 +1038,6 @@
         analyticsEvent('Modal', 'visualizacao');
       }
     }, 50);
-
-    console.log('[Modal Diamante] Modal exibido');
   }
 
   function closeDiamanteModal() {
@@ -1056,7 +1050,6 @@
         }
       }, 300);
     }
-    console.log('[Modal Diamante] Modal fechado');
   }
 
   // --- Triggers ---
@@ -1079,7 +1072,6 @@
     const time = getRandomTime(minTime, maxTime);
 
     inactivityTimer = setTimeout(() => {
-      console.log('[Modal Diamante] Trigger: Inatividade (' + (time/1000) + 's)');
       triggerModal();
     }, time);
   }
@@ -1099,7 +1091,6 @@
     if (!isMobile()) {
       document.addEventListener('mouseleave', (e) => {
         if (e.clientY <= 0) {
-          // console.log('[Modal Diamante] Trigger: Exit Intent');
           triggerModal();
         }
       });
@@ -1111,7 +1102,6 @@
       if (scrollTimeout) return;
       scrollTimeout = setTimeout(() => {
         if (window.scrollY > 100) { 
-           // console.log('[Modal Diamante] Trigger: Scroll');
            triggerModal();
         }
         scrollTimeout = null;
@@ -1124,7 +1114,6 @@
     if (!userData || userData.qualifyingPoints === undefined || userData.qualifyingPoints === null) return;
 
     if (checkEligibility(userData)) {
-      console.log('[Modal Diamante] Disparando modal via trigger...');
       showDiamanteModal();
       markModalAsShown(); // Marca na sessao
       incrementViews();   // Incrementa contador diario
@@ -1149,13 +1138,11 @@
 
     // 4. Verifica se ja interagiu hoje
     if (hasInteractedToday()) {
-      // console.log('[Modal Diamante] Usuario ja interagiu hoje.');
       return false;
     }
 
     // 5. Verifica limite de visualizacoes diarias (Max 3)
     if (getViewsToday() >= 3) {
-      // console.log('[Modal Diamante] Limite diario atingido.');
       return false;
     }
 
@@ -1165,8 +1152,6 @@
   // --- Inicializacao ---
 
   function init() {
-    console.log('TudoAzul Cookie Script Loaded');
-    
     syncWithCookie();
     const userData = getTudoAzulData();
     
@@ -1179,7 +1164,6 @@
       const isFlightsEligible = flights >= MIN_FLIGHTS && flights < MAX_FLIGHTS;
 
       if ((isPointsEligible || isFlightsEligible) && isHomepage()) {
-        console.log('[Modal Diamante] Inicializando triggers...');
         setupTriggers();
       }
     }
