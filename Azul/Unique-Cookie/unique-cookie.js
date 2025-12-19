@@ -1,9 +1,10 @@
 // MODAL DIAMANTE TUDO AZUL - UNIQUE COOKIE
 
 (function () {
-  const MIN_QUALIFYING_POINTS = 0;
-  const MIN_FLIGHTS = 0; // Definido como 0 para testes
-  //23000 trechos: 26
+  const MIN_QUALIFYING_POINTS = 23000;
+  const MIN_FLIGHTS = 23;
+  const MAX_QUALIFYING_POINTS = 26000;
+  const MAX_FLIGHTS = 26;
 
   // Chave para armazenar dados no localStorage
   const STORAGE_KEY = 'tudoazul_users_data';
@@ -842,7 +843,7 @@
       '    </div>' +
       '    ' +
       '    <div class="diamante-modal-benefits-box">' +
-      '      <div class="diamante-modal-benefits-title">O novo nível Diamante Unique chega dia 13 de Janeiro de 2026, confira os benefícios e como alcança-los:</div>' +
+      '      <div class="diamante-modal-benefits-title">O novo nível DIAMANTE UNIQUE chega dia 13 de Janeiro de 2026, confira os benefícios e como alcançá-los:</div>' +
       '      <div class="diamante-modal-req-card">' +
       '        <div class="diamante-modal-req-item">' +
       '          <span class="diamante-modal-req-value">26</span>' +
@@ -893,7 +894,7 @@
       '    </div>' +
       '    ' +
       '    <div class="diamante-modal-footer-text">' +
-      '      Possui trechos ou pontos qualificáveis para serem solicitados? <span>Acesse sua conta Azul Fidelidades e fique próximo do nível DIAMANTE UNIQUE.</span>' +
+      '      Possui trechos ou pontos qualificáveis para serem solicitados? <span>Acesse sua conta Azul Fidelidade e fique próximo do nível DIAMANTE UNIQUE.</span>' +
       '    </div>' +
       '    ' +
       '    <div class="diamante-modal-actions">' +
@@ -1131,11 +1132,14 @@
   }
 
   function checkEligibility(userData) {
-    // 1. Verifica pontos ou trechos
-    const hasEnoughPoints = userData.qualifyingPoints >= MIN_QUALIFYING_POINTS;
-    const hasEnoughFlights = userData.flights >= MIN_FLIGHTS;
+    // 1. Verifica pontos ou trechos (Faixa de elegibilidade: >= Minimo E < Maximo)
+    const points = userData.qualifyingPoints || 0;
+    const flights = userData.flights || 0;
 
-    if (!hasEnoughPoints && !hasEnoughFlights) return false;
+    const isPointsEligible = points >= MIN_QUALIFYING_POINTS && points < MAX_QUALIFYING_POINTS;
+    const isFlightsEligible = flights >= MIN_FLIGHTS && flights < MAX_FLIGHTS;
+
+    if (!isPointsEligible && !isFlightsEligible) return false;
 
     // 2. Verifica se esta na homepage
     if (!isHomepage()) return false;
@@ -1168,11 +1172,13 @@
     
     if (userData) {
       // Se o usuario tem pontos suficientes e esta na home, configura os triggers
-      // A verificacao final de limites ocorre no momento do disparo
-      const hasEnoughPoints = userData.qualifyingPoints >= MIN_QUALIFYING_POINTS;
-      const hasEnoughFlights = userData.flights >= MIN_FLIGHTS;
+      const points = userData.qualifyingPoints || 0;
+      const flights = userData.flights || 0;
 
-      if ((hasEnoughPoints || hasEnoughFlights) && isHomepage()) {
+      const isPointsEligible = points >= MIN_QUALIFYING_POINTS && points < MAX_QUALIFYING_POINTS;
+      const isFlightsEligible = flights >= MIN_FLIGHTS && flights < MAX_FLIGHTS;
+
+      if ((isPointsEligible || isFlightsEligible) && isHomepage()) {
         console.log('[Modal Diamante] Inicializando triggers...');
         setupTriggers();
       }

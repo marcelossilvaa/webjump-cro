@@ -5,8 +5,8 @@
 
   var POPUP_ID = 'diamante-unique-popup';
   var BUTTON_ID = 'diamante-unique-floating-btn';
-  var MIN_QUALIFYING_POINTS = 0;
-  var MIN_FLIGHTS = 0;
+  var MIN_QUALIFYING_POINTS = 26000;
+  var MIN_FLIGHTS = 26;
 
   // Funcao de Analytics
   function analyticsEvent(eventLabel, eventType) {
@@ -44,9 +44,9 @@
       '#' + BUTTON_ID + ' {' +
       '  position: fixed;' +
       '  bottom: 24px;' +
-      '  right: 18px;' +
-      '  width: 80px;' +
-      '  height: 80px;' +
+      '  right: 22px;' +
+      '  width: 55px;' +
+      '  height: 55px;' +
       '  background: #041E42;' +
       '  border-radius: 50%;' +
       '  cursor: pointer;' +
@@ -56,7 +56,7 @@
       '  filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));' +
       '  z-index: 999998;' +
       '  transition: all 0.3s ease;' +
-      '  animation: diamante-pulse 3s infinite;' +
+      '  animation: diamante-pulse 2s infinite;' +
       '}' +
       '#' + BUTTON_ID + '.visible {' +
       '  display: flex;' +
@@ -67,13 +67,13 @@
       '  filter: drop-shadow(0px 6px 8px rgba(0, 0, 0, 0.3));' +
       '}' +
       '#' + BUTTON_ID + ' svg {' +
-      '  width: 50px;' +
-      '  height: 50px;' +
+      '  width: 35px;' +
+      '  height: 35px;' +
       '}' +
       '.diamante-popup-container {' +
       '  position: fixed;' +
       '  bottom: 24px;' +
-      '  right: 128px;' +
+      '  right: 100px;' +
       '  width: 325px;' +
       '  max-height: calc(100vh - 48px);' +
       '  display: flex;' +
@@ -273,7 +273,7 @@
       /* Seta do Popup */
       '.diamante-popup-arrow {' +
       '  position: absolute;' +
-      '  bottom: 30px;' +
+      '  bottom: 17px;' +
       '  right: -6px;' +
       '  width: 20px;' +
       '  height: 20px;' +
@@ -606,7 +606,15 @@
     if (isEligible && isHomepage()) {
       var btn = document.getElementById(BUTTON_ID);
       if (btn) btn.classList.add('visible');
-      setupTriggers();
+      
+      // Abertura automatica 1x por dia
+      if (!hasInteractedToday()) {
+        setTimeout(function() {
+          console.log('[Popup Unique] Abertura automatica diaria...');
+          window.UniquePopup.show();
+          markInteraction();
+        }, 2000);
+      }
     }
   }
 
