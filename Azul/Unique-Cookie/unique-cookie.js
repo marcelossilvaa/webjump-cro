@@ -895,7 +895,7 @@
       '    </div>' +
       '    ' +
       '    <div class="diamante-modal-actions">' +
-      '      <a href="https://www.voeazul.com.br/br/pt/programa-fidelidade/acumulo-de-pontos/aereo.html" class="diamante-modal-btn diamante-modal-btn-secondary">Solicitar trechos ou pontos</a>' +
+      '      <a href="https://www.voeazul.com.br/br/pt/programa-fidelidade/comunicado-novo-nivel?msockid=2c47c86ae1fb6bc025f9dee6e0e26af0" class="diamante-modal-btn diamante-modal-btn-secondary">Solicitar trechos ou pontos</a>' +
       '      <a href="https://passagens.voeazul.com.br/pt/melhores-ofertas" class="diamante-modal-btn diamante-modal-btn-primary">Voar com a Azul</a>' +
       '    </div>' +
       '    ' +

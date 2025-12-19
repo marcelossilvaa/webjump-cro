@@ -386,7 +386,7 @@
       '      </div>' +
       '      </div>' +
 
-      '      <a href="https://www.voeazul.com.br/br/pt/programa-fidelidade/acumulo-de-pontos/aereo.html" class="diamante-popup-btn">Ver todos os benefícios</a>' +
+      '      <a href="https://www.voeazul.com.br/br/pt/programa-fidelidade/comunicado-novo-nivel?msockid=2c47c86ae1fb6bc025f9dee6e0e26af0" class="diamante-popup-btn">Ver todos os benefícios</a>' +
       '  </div>' +
       '  <div class="diamante-popup-arrow"></div>' +
       '</div>';
