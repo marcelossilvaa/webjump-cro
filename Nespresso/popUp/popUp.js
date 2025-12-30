@@ -680,6 +680,31 @@
     productAddedToCart = false;
   };
 
+  // Função para forçar a abertura do popup (para testes)
+  window.forceRecommendationPopup = async function (sku = '7885.90') {
+    popupShown = false; // Resetar flag para permitir forçar abertura
+    const recommendedSku = RECOMMENDATION_MAP[sku];
+    lastAddedProductName = 'Produto Teste';
+    
+    if (recommendedSku) {
+      currentProductData = await getRecommendedProductData(recommendedSku);
+    }
+
+    // Fallback para teste visual se API falhar ou não existir
+    if (!currentProductData) {
+      currentProductData = {
+        name: 'Produto Recomendado Teste',
+        headline: 'Descrição simulada do produto para visualização do popup.',
+        unitPrice: 3.50,
+        responsiveImages: { plp: 'https://via.placeholder.com/150' },
+        capsuleProperties: { intensity: 9 },
+        id: 'erp.br.b2c/prod/' + (recommendedSku || '0000')
+      };
+    }
+
+    await showPopup(sku);
+  };
+
   // Função para detectar produto adicionado/modificado no carrinho
   async function detectAddedProduct() {
     try {

@@ -900,7 +900,7 @@
       '    </div>' +
       '    ' +
       '    <div class="diamante-modal-disclaimer">' +
-      '      ¹Assinando o clube 10mi ou 20mil você ganha pontos qualificáveis para te ajudar a subir de nível. ²Trechos, pontos qualificáveis ou gastos com voos, upgrades e serviços adicionais acumulados em 2025. ³Sendo 2 trechos nacionais e 2 nacionais ou internacionais.' +
+      '      ¹Assinando o clube 10mil ou 20mil você ganha pontos qualificáveis para te ajudar a subir de nível. ²Trechos, pontos qualificáveis ou gastos com voos, upgrades e serviços adicionais acumulados em 2025. ³Sendo 2 trechos nacionais e 2 nacionais ou internacionais.' +
       '    </div>' +
       '  </div>' +
       '</div>';
