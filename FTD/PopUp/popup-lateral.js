@@ -306,7 +306,7 @@
             '<style>' +
             '#recommendation-popup .AddToBagButtonSmall {' +
             'width: 100% !important;' +
-            'border-radius: 20px !important;' +
+            'border-radius: 8px !important;' +
             '}' +
             '#recommendation-popup .add-to-bag {' +
             'width: 100% !important;' +
@@ -316,7 +316,7 @@
             'padding: 0 !important;' +
             '}' +
             '#recommendation-popup .AddToBagButton__button-Custom {' +
-            'border-radius: 20px !important;' +
+            'border-radius: 8px !important;' +
             '}' +
             '#recommendation-popup .AddToBagButtonSmall__quantity {' +
             'position: unset !important;' +
@@ -346,14 +346,14 @@
             'gap: 3px !important;' +
             'flex-wrap: nowrap !important;' +
             'position: relative !important;' +
-            'background-color: #3d8c4d !important;' +
+            'background-color: var(--color-brand-primary-500)!important;' +
             'height: 40px !important;' +
             'cursor: pointer !important;' +
             'transition: background-color 0.2s !important;' +
             'border: none !important;' +
             '}' +
             '#recommendation-popup .AddToBagButtonSmall:hover {' +
-            'background-color: #2e6b3a !important;' +
+            'background-color: var(--color-brand-primary-500); !important;' +
             '}' +
             '@keyframes slideInLeft {' +
             'from {' +
@@ -454,21 +454,21 @@
 
         const popupHTML =
             '<div id="recommendation-popup" style="position: fixed; bottom: 20px; left: 20px; z-index: 999; max-width: 450px; animation: slideInLeft 0.3s ease-out;">' +
-            '<div style="background: white; border-radius: 8px; padding: 24px 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">' +
-            '<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">' +
+            '<div style="background: white; border-radius: 8px; padding: 16px 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); ">' +
+            '<div style="display: flex; justify-content: space-between; align-items: flex-start;">' +
             '<h3 style="margin: 0; color: #999; font-size: 16px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.5px;">' +
             titleHTML +
             '</h3>' +
             '<button id="close-rec-popup" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #666; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">&times;</button>' +
             '</div>' +
-            '<div style="display: flex; gap: 16px; margin-bottom: 20px;">' +
+            '<div style="display: flex; gap: 16px; margin-bottom: 10px;">' +
             '<img src="' +
             productImage +
             '" alt="' +
             productName +
             '" style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px;">' +
             '<div style="display: flex; flex-direction: column; justify-content: center;">' +
-            '<h4 style="margin: 0 0 8px 0; color: #333; font-size: 18px; font-weight: 700;">' +
+            '<h4 style="margin: 0 0 8px 0; color: #333; font-size: 16px; font-weight: 700; line-height: 1.1;">' +
             productName +
             '</h4>' +
             '<p style="margin: 0 0 12px 0; color: #666; font-size: 14px; line-height: 1.4;">' +
