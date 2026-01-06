@@ -45,7 +45,7 @@
     if (!eventLabel) return;
     const labelEvent = 'AT_pre_select_fare ' + eventLabel;
     (function () {
-      var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+      const s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
       if (!s || typeof s.tl !== 'function') return;
       s.linkTrackVars = 'events,eVar82';
       s.linkTrackEvents = 'event90';
@@ -369,18 +369,18 @@
         // Verifica novamente após 300ms
         if (!isInFirstStep()) {
           if (!isSecondStep) {
-            console.log('[PreSelectFare] Confirmado: NÃO está na primeira etapa - desativando script');
+            // console.log('[PreSelectFare] Confirmado: NÃO está na primeira etapa - desativando script');
             isSecondStep = true;
             resetCurrentSelection();
             if (window._preSelectFareObserver) {
               window._preSelectFareObserver.disconnect();
               window._preSelectFareObserver = null;
             }
-            // IMPORTANTE: Calendar observer continua ativo para detectar retorno
-            console.log('[PreSelectFare] 👁️ Calendar observer permanece ativo');
+            // IMPORTANTE: Calendar observer permanece ativo para detectar retorno
+            // console.log('[PreSelectFare] Calendar observer permanece ativo');
           }
         } else {
-          console.log('[PreSelectFare] Falso positivo detectado - continua na primeira etapa');
+          // console.log('[PreSelectFare] Falso positivo detectado - continua na primeira etapa');
         }
       }, 300);
       
@@ -389,7 +389,7 @@
     
     // **REATIVAÇÃO COMPLETA: Se voltou para primeira etapa, reconstrói tudo**
     if (isSecondStep && currentlyInFirstStep) {
-      console.log('[PreSelectFare] Voltou para primeira etapa - REATIVANDO COMPLETAMENTE');
+      // console.log('[PreSelectFare] Voltou para primeira etapa - REATIVANDO COMPLETAMENTE');
       
       // Reseta TODOS os estados
       isSecondStep = false;
@@ -416,7 +416,7 @@
       setTimeout(() => {
         const fareItems = document.querySelectorAll('.fare-item');
         if (fareItems.length > 0) {
-          console.log('[PreSelectFare] Aplicando seleção após retorno');
+          // console.log('[PreSelectFare] Aplicando seleção após retorno');
           isInitialized = true;
           checkFaresVisibility();
         }
@@ -507,7 +507,7 @@
         
         stepCheckDebounceTimer = setTimeout(() => {
           if (!isInFirstStep() && !isSecondStep) {
-            console.log('[PreSelectFare] Observer confirmou saída da primeira etapa');
+            // console.log('[PreSelectFare] Observer confirmou saída da primeira etapa');
             isSecondStep = true;
             resetCurrentSelection();
             observer.disconnect();
@@ -520,7 +520,7 @@
       
       // **REATIVAÇÃO: Detecta retorno à primeira etapa**
       if (isSecondStep && currentlyInFirstStep) {
-        console.log('[PreSelectFare] Observer detectou retorno à primeira etapa');
+        // console.log('[PreSelectFare] Observer detectou retorno à primeira etapa');
         // Limpa timer de debounce
         if (stepCheckDebounceTimer) {
           clearTimeout(stepCheckDebounceTimer);
@@ -560,14 +560,14 @@
   function setupCalendarObserver() {
     if (calendarObserver) return;
     
-    console.log('[PreSelectFare] Configurando observer do calendário');
+    // console.log('[PreSelectFare] Configurando observer do calendário');
     
     calendarObserver = new MutationObserver((mutations) => {
       // Verifica se o calendário de preços apareceu no DOM
       const priceCalendar = document.querySelector('[aria-label="Calendário de preços. Veja os preços próximos aos dias de sua busca. Selecionar"]');
       
       if (priceCalendar && isSecondStep) {
-        console.log('[PreSelectFare] 🎯 CALENDÁRIO DETECTADO - Reativando script!');
+        // console.log('[PreSelectFare] CALENDÁRIO DETECTADO - Reativando script!');
         
         // Limpa timer de debounce se existir
         if (stepCheckDebounceTimer) {
@@ -594,7 +594,7 @@
         setTimeout(() => {
           const fareItems = document.querySelectorAll('.fare-item');
           if (fareItems.length > 0) {
-            console.log('[PreSelectFare] ✅ Aplicando seleção após detectar calendário');
+            // console.log('[PreSelectFare] Aplicando seleção após detectar calendário');
             isInitialized = true;
             checkFaresVisibility();
           } else {
@@ -602,7 +602,7 @@
             setTimeout(() => {
               const fareItemsRetry = document.querySelectorAll('.fare-item');
               if (fareItemsRetry.length > 0) {
-                console.log('[PreSelectFare] ✅ Aplicando seleção (retry)');
+                // console.log('[PreSelectFare] Aplicando seleção (retry)');
                 isInitialized = true;
                 checkFaresVisibility();
               }
@@ -624,13 +624,13 @@
   function init() {
     // **SÓ inicializa se está na primeira etapa**
     if (!isInFirstStep()) {
-      console.log('[PreSelectFare] Página carregada fora da primeira etapa - não inicializa');
+      // console.log('[PreSelectFare] Página carregada fora da primeira etapa - não inicializa');
       // MAS configura calendar observer para detectar quando voltar
       setupCalendarObserver();
       return;
     }
     
-    console.log('[PreSelectFare] Primeira etapa detectada - inicializando');
+    // console.log('[PreSelectFare] Primeira etapa detectada - inicializando');
     setupObserver();
     setupCalendarObserver(); // SEMPRE configura calendar observer
     const fareItems = document.querySelectorAll('.fare-item');
