@@ -8,6 +8,7 @@
     lastVisibilityState = null;
     isInitialized = false;
     isProcessingChange = false;
+    isSecondStep = false;
 
     const floatingCTA = document.querySelector('.pre-select-floating-cta');
     if (floatingCTA) floatingCTA.remove();
@@ -29,6 +30,11 @@
     highlightedItems.forEach(item => item.classList.remove('fare-item-highlighted'));
 
     document.body.classList.remove('pre-select-fare-active');
+    
+    if (window._preSelectFareObserver) {
+      window._preSelectFareObserver.disconnect();
+      window._preSelectFareObserver = null;
+    }
   };
 
   function onTargetPage() {
@@ -120,8 +126,21 @@
     document.head.appendChild(styles);
   }
 
-  // Injeta estilos IMEDIATAMENTE para evitar flash
   injectStyles();
+
+  // FUNÇÃO INTELIGENTE: Detecta se estamos na PRIMEIRA etapa com debounce
+  function isInFirstStep() {
+    // Indicador DEFINITIVO da primeira etapa:
+    // aria-label fixo do calendário de preços
+    const priceCalendarElement = document.querySelector('[aria-label="Calendário de preços. Veja os preços próximos aos dias de sua busca. Selecionar"]');
+    
+    // Indicadores secundários (caso o calendário esteja sendo recriado)
+    const fareItems = document.querySelectorAll('.fare-item');
+    const hasBookingCalendar = document.querySelector('.booking-calendar__cards');
+    
+    // Se o calendário existe OU (tem tarifas + container do calendário), está na primeira etapa
+    return !!(priceCalendarElement || (fareItems.length > 0 && hasBookingCalendar));
+  }
 
   function checkIfFareAlreadySelected() {
     // Verifica se alguma tarifa foi REALMENTE selecionada pelo usuário
@@ -278,7 +297,6 @@
     return floatingDiv;
   }
 
-  // Função rápida para aplicar seleção
   function applySelection() {
     if (checkIfFareAlreadySelected()) return false;
     const mostExpensiveFare = findMostExpensiveFare();
@@ -290,14 +308,15 @@
     return true;
   }
 
-  // Estado para controle de visibilidade e contexto
   let lastVisibilityState = null;
   let isInitialized = false;
   let currentFareContext = null;
   let isProcessingChange = false;
+  let isSecondStep = false;
+  let stepCheckDebounceTimer = null;
+  let calendarObserver = null; // NOVO: Observer dedicado para o calendário
 
   function getFareContextHash() {
-    // Cria um hash único baseado nos preços das tarifas VISÍVEIS
     const fareItems = document.querySelectorAll('.fare-item');
     const visiblePrices = Array.from(fareItems)
       .filter(item => {
@@ -315,7 +334,6 @@
   }
 
   function resetCurrentSelection() {
-    // Remove todas as modificações anteriores
     const modifiedButtons = document.querySelectorAll('[data-pre-select-modified]');
     modifiedButtons.forEach(btn => {
       btn.removeAttribute('data-pre-select-modified');
@@ -339,7 +357,74 @@
   }
 
   function checkFaresVisibility() {
-    // Evita reprocessamento durante mudanças
+    // **PROTEÇÃO INTELIGENTE: Verifica etapa com debounce para evitar falsos positivos**
+    const currentlyInFirstStep = isInFirstStep();
+    
+    if (!currentlyInFirstStep) {
+      // Aguarda 300ms antes de confirmar que realmente saiu da primeira etapa
+      // (evita falsos positivos quando a div é recriada)
+      if (stepCheckDebounceTimer) clearTimeout(stepCheckDebounceTimer);
+      
+      stepCheckDebounceTimer = setTimeout(() => {
+        // Verifica novamente após 300ms
+        if (!isInFirstStep()) {
+          if (!isSecondStep) {
+            console.log('[PreSelectFare] Confirmado: NÃO está na primeira etapa - desativando script');
+            isSecondStep = true;
+            resetCurrentSelection();
+            if (window._preSelectFareObserver) {
+              window._preSelectFareObserver.disconnect();
+              window._preSelectFareObserver = null;
+            }
+            // IMPORTANTE: Calendar observer continua ativo para detectar retorno
+            console.log('[PreSelectFare] 👁️ Calendar observer permanece ativo');
+          }
+        } else {
+          console.log('[PreSelectFare] Falso positivo detectado - continua na primeira etapa');
+        }
+      }, 300);
+      
+      return;
+    }
+    
+    // **REATIVAÇÃO COMPLETA: Se voltou para primeira etapa, reconstrói tudo**
+    if (isSecondStep && currentlyInFirstStep) {
+      console.log('[PreSelectFare] Voltou para primeira etapa - REATIVANDO COMPLETAMENTE');
+      
+      // Reseta TODOS os estados
+      isSecondStep = false;
+      isInitialized = false;
+      isProcessingChange = false;
+      currentFareContext = null;
+      lastVisibilityState = null;
+      
+      // Limpa qualquer timer pendente
+      if (stepCheckDebounceTimer) {
+        clearTimeout(stepCheckDebounceTimer);
+        stepCheckDebounceTimer = null;
+      }
+      
+      // Limpa modificações anteriores (se houver)
+      resetCurrentSelection();
+      
+      // Reconecta observer
+      if (!window._preSelectFareObserver) {
+        setupObserver();
+      }
+      
+      // Força nova aplicação após um pequeno delay para garantir DOM estável
+      setTimeout(() => {
+        const fareItems = document.querySelectorAll('.fare-item');
+        if (fareItems.length > 0) {
+          console.log('[PreSelectFare] Aplicando seleção após retorno');
+          isInitialized = true;
+          checkFaresVisibility();
+        }
+      }, 100);
+      
+      return;
+    }
+
     if (isProcessingChange) return;
     const fareItems = document.querySelectorAll('.fare-item');
     const visibleFareItems = Array.from(fareItems).filter(item => {
@@ -350,11 +435,11 @@
     const floatingCTA = document.querySelector('.pre-select-floating-cta');
     const hasVisibleFares = visibleFareItems.length > 0;
     const modifiedButton = document.querySelector('[data-pre-select-modified]');
-    // CASO 1: Não tem tarifas visíveis - esconde CTA e reseta contexto
+
     if (!hasVisibleFares) {
       if (lastVisibilityState !== false) {
         lastVisibilityState = false;
-        currentFareContext = null; // Reseta contexto quando recolhe
+        currentFareContext = null;
         if (floatingCTA) {
           floatingCTA.style.display = 'none';
         }
@@ -362,34 +447,23 @@
       }
       return;
     }
-    // CASO 2: Tem tarifas visíveis
+
     const newFareContext = getFareContextHash();
-    // Verifica se mudou o contexto (novo conjunto de tarifas diferente do anterior)
-    // Só considera mudança se JÁ tinha um contexto E é diferente
     const contextChanged = currentFareContext !== null && 
                           currentFareContext !== newFareContext &&
                           modifiedButton !== null;
     
     if (contextChanged) {
-      // Contexto mudou E tinha seleção anterior - precisa resetar
       isProcessingChange = true;
       resetCurrentSelection();
-      
-      // Atualiza contexto IMEDIATAMENTE para evitar loops
       currentFareContext = newFareContext;
-      
-      // Aplica nova seleção após um delay para garantir estabilidade do DOM
       setTimeout(() => {
         const selectionApplied = applySelection();
-        // Atualiza contexto novamente após aplicar (pode ter mudado)
         currentFareContext = getFareContextHash();
         lastVisibilityState = true;
-        
-        // Mantém isProcessingChange por mais tempo para evitar reprocessamento
         setTimeout(() => {
           isProcessingChange = false;
         }, 150);
-        
         if (!selectionApplied) {
           const cta = document.querySelector('.pre-select-floating-cta');
           if (cta) cta.style.display = 'none';
@@ -399,13 +473,10 @@
       return;
     }
     
-    // CASO 3: Não tem seleção modificada - precisa aplicar
     if (!modifiedButton) {
       const selectionApplied = applySelection();
-      // Atualiza contexto APÓS aplicar seleção
       currentFareContext = getFareContextHash();
       lastVisibilityState = true;
-      
       if (!selectionApplied) {
         if (floatingCTA) floatingCTA.style.display = 'none';
         document.body.classList.remove('pre-select-fare-active');
@@ -413,10 +484,7 @@
       return;
     }
     
-    // CASO 4: Já tem seleção válida - apenas mostrar CTA se necessário
-    // Atualiza contexto para o atual (caso tenha mudado sem reset)
     currentFareContext = newFareContext;
-    
     if (lastVisibilityState !== true) {
       lastVisibilityState = true;
       if (floatingCTA) {
@@ -430,10 +498,41 @@
     if (window._preSelectFareObserver) return;
     let debounceTimer = null;
     const observer = new MutationObserver(() => {
-      // Ignora se está processando mudança
+      // **PROTEÇÃO INTELIGENTE: Só marca como saída após confirmar**
+      const currentlyInFirstStep = isInFirstStep();
+      
+      if (!currentlyInFirstStep) {
+        // Aguarda 300ms antes de confirmar saída
+        if (stepCheckDebounceTimer) clearTimeout(stepCheckDebounceTimer);
+        
+        stepCheckDebounceTimer = setTimeout(() => {
+          if (!isInFirstStep() && !isSecondStep) {
+            console.log('[PreSelectFare] Observer confirmou saída da primeira etapa');
+            isSecondStep = true;
+            resetCurrentSelection();
+            observer.disconnect();
+            window._preSelectFareObserver = null;
+          }
+        }, 300);
+        
+        return;
+      }
+      
+      // **REATIVAÇÃO: Detecta retorno à primeira etapa**
+      if (isSecondStep && currentlyInFirstStep) {
+        console.log('[PreSelectFare] Observer detectou retorno à primeira etapa');
+        // Limpa timer de debounce
+        if (stepCheckDebounceTimer) {
+          clearTimeout(stepCheckDebounceTimer);
+          stepCheckDebounceTimer = null;
+        }
+        // Chama checkFaresVisibility que fará a reativação completa
+        checkFaresVisibility();
+        return;
+      }
+      
       if (isProcessingChange) return;
       
-      // Executa IMEDIATAMENTE sem debounce para primeira detecção
       if (!isInitialized) {
         const fareItems = document.querySelectorAll('.fare-item');
         if (fareItems.length > 0) {
@@ -443,7 +542,6 @@
         return;
       }
       
-      // Debounce de 200ms para mudanças subsequentes (equilíbrio entre velocidade e estabilidade)
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(checkFaresVisibility, 200);
     });
@@ -458,8 +556,83 @@
     window._preSelectFareObserver = observer;
   }
 
+  // NOVO: Observer dedicado para detectar retorno do calendário de preços
+  function setupCalendarObserver() {
+    if (calendarObserver) return;
+    
+    console.log('[PreSelectFare] Configurando observer do calendário');
+    
+    calendarObserver = new MutationObserver((mutations) => {
+      // Verifica se o calendário de preços apareceu no DOM
+      const priceCalendar = document.querySelector('[aria-label="Calendário de preços. Veja os preços próximos aos dias de sua busca. Selecionar"]');
+      
+      if (priceCalendar && isSecondStep) {
+        console.log('[PreSelectFare] 🎯 CALENDÁRIO DETECTADO - Reativando script!');
+        
+        // Limpa timer de debounce se existir
+        if (stepCheckDebounceTimer) {
+          clearTimeout(stepCheckDebounceTimer);
+          stepCheckDebounceTimer = null;
+        }
+        
+        // Reseta TODOS os estados
+        isSecondStep = false;
+        isInitialized = false;
+        isProcessingChange = false;
+        currentFareContext = null;
+        lastVisibilityState = null;
+        
+        // Limpa modificações anteriores
+        resetCurrentSelection();
+        
+        // Reconecta observer principal se necessário
+        if (!window._preSelectFareObserver) {
+          setupObserver();
+        }
+        
+        // Aguarda DOM estabilizar e aplica seleção
+        setTimeout(() => {
+          const fareItems = document.querySelectorAll('.fare-item');
+          if (fareItems.length > 0) {
+            console.log('[PreSelectFare] ✅ Aplicando seleção após detectar calendário');
+            isInitialized = true;
+            checkFaresVisibility();
+          } else {
+            // Se ainda não tem tarifas, aguarda mais um pouco
+            setTimeout(() => {
+              const fareItemsRetry = document.querySelectorAll('.fare-item');
+              if (fareItemsRetry.length > 0) {
+                console.log('[PreSelectFare] ✅ Aplicando seleção (retry)');
+                isInitialized = true;
+                checkFaresVisibility();
+              }
+            }, 200);
+          }
+        }, 150);
+      }
+    });
+    
+    // Observa todo o body em busca do calendário
+    calendarObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['aria-label']
+    });
+  }
+
   function init() {
+    // **SÓ inicializa se está na primeira etapa**
+    if (!isInFirstStep()) {
+      console.log('[PreSelectFare] Página carregada fora da primeira etapa - não inicializa');
+      // MAS configura calendar observer para detectar quando voltar
+      setupCalendarObserver();
+      return;
+    }
+    
+    console.log('[PreSelectFare] Primeira etapa detectada - inicializando');
     setupObserver();
+    setupCalendarObserver(); // SEMPRE configura calendar observer
     const fareItems = document.querySelectorAll('.fare-item');
     if (fareItems.length > 0) {
       isInitialized = true;
@@ -474,7 +647,7 @@
   }
 
   requestAnimationFrame(() => {
-    if (!isInitialized) {
+    if (!isInitialized && isInFirstStep()) {
       const fareItems = document.querySelectorAll('.fare-item');
       if (fareItems.length > 0) {
         isInitialized = true;
@@ -487,7 +660,7 @@
   const maxPolls = 20;
   const pollInterval = setInterval(() => {
     pollCount++;
-    if (pollCount >= maxPolls || isInitialized) {
+    if (pollCount >= maxPolls || isInitialized || !isInFirstStep()) {
       clearInterval(pollInterval);
       return;
     }
