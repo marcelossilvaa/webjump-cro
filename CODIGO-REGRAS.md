@@ -286,6 +286,59 @@ function init() {
 }
 ```
 
+### 6.3. Observadores e Polling
+
+**Regra Geral**: Sempre configure os `MutationObserver` e/ou lógica de polling imediatamente, mesmo que os elementos-alvo ainda não estejam presentes no DOM. Isso garante que o script funcione corretamente em páginas com carregamento dinâmico.
+
+#### Exemplo de Configuração de Observadores
+
+```javascript
+function setupObserver() {
+  if (window._exampleObserver) return;
+
+  const observer = new MutationObserver(() => {
+    // Lógica para processar mudanças no DOM
+    processElements();
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+  });
+
+  window._exampleObserver = observer;
+}
+```
+
+#### Exemplo de Polling com Limite de Tentativas
+
+```javascript
+let pollCount = 0;
+const maxPolls = 40; // Tenta por 2 segundos (40 * 50ms)
+
+const pollInterval = setInterval(() => {
+  pollCount++;
+  const targetElement = document.querySelector('.elemento-alvo');
+
+  if (targetElement || pollCount >= maxPolls) {
+    clearInterval(pollInterval);
+
+    if (targetElement) {
+      // Elemento encontrado, inicializar lógica
+      processElements();
+    }
+  }
+}, 50);
+```
+
+**Checklist para Observadores e Polling**:
+
+- [ ] Sempre configure o `MutationObserver` no início do script.
+- [ ] Use polling com limite de tentativas para garantir inicialização em páginas com carregamento dinâmico.
+- [ ] Combine observadores e polling para maior robustez.
+- [ ] Evite loops infinitos com proteção de contadores (`pollCount`) ou debounce.
+
 ## 7. Console.log
 
 ### 7.1. Mensagens de Debug
@@ -559,7 +612,7 @@ function analyticsEvent(eventLabel, eventType) {
     s.linkTrackVars = 'events,eVar82,eVar84';
     s.linkTrackEvents = 'event90';
     s.events = 'event90';
-    s.eVar82 = labelEvent;           // Informação principal da ação
+    s.eVar82 = labelEvent; // Informação principal da ação
     s.eVar84 = 'AT_contexto_pagina'; // Contexto adicional
 
     s.tl(true, 'o', 'target_activity_action');
