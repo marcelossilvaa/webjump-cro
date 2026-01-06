@@ -3,16 +3,217 @@
 (function () {
     'use strict';
 
-    // Configurações
-    const RECOMMENDED_PRODUCT_ID = 53959;
+    // IDs dos produtos disponíveis (copiado do miniCart.js)
+    const PRODUCT_IDS = {
+        MINIDICIONARIO: 56551,
+        DICIONARIO_INGLES: 53959,
+        ESTUDA_COM_ANUAL: 696545,
+        ESTUDA_COM_SEMESTRAL: 696542,
+        REFORCA_ANUAL: 453782,
+        REFORCA_SEMESTRAL: 453779,
+        NUMERODROMO_BICHODARIO: 699322,
+        BICHODARIO: 52144,
+        NO_CAPRICHO_A: 695573,
+        TABUADA_1: 695576,
+        TABUADA_2: 695786,
+        TABUADA_3: 695816,
+        TABUADA_4: 695888,
+        PETER_PAN: 578096,
+        CADE_LIVRO: 56353,
+        MUSEU_EMILIA: 51706,
+        ALICE: 56506,
+        PEQUENO_PRINCIPE: 75016,
+        ENQUANTO_MAMAE_DORMIA: 697535,
+        BENNY_INVENTOR: 697577,
+        SETE_CORVOS: 697628,
+        ANJOS: 697679,
+        MAMAE_GATA: 56572,
+        TUNEL: 56317,
+        ISCA_FAISCA: 52123,
+        OLHO_VIVO: 450491,
+        LIVRO_PASSAROS: 51754,
+        E_DE_MORTE: 53071,
+    };
+
+    // Mapeamento de nível escolar para produtos recomendados em ordem de prioridade
+    // O primeiro produto do array é o mais importante, depois o segundo, etc.
+    // Baseado na tabela completa fornecida
+    const GRADE_RECOMMENDATIONS = {
+        // Educação Infantil - 1 ano
+        1: [
+            PRODUCT_IDS.NUMERODROMO_BICHODARIO,
+            PRODUCT_IDS.BICHODARIO,
+            PRODUCT_IDS.ENQUANTO_MAMAE_DORMIA,
+            PRODUCT_IDS.MAMAE_GATA,
+        ],
+        // Educação Infantil - 2 anos
+        2: [
+            PRODUCT_IDS.NUMERODROMO_BICHODARIO,
+            PRODUCT_IDS.BICHODARIO,
+            PRODUCT_IDS.ENQUANTO_MAMAE_DORMIA,
+            PRODUCT_IDS.MAMAE_GATA,
+        ],
+        // Educação Infantil - 3 anos
+        3: [
+            PRODUCT_IDS.NUMERODROMO_BICHODARIO,
+            PRODUCT_IDS.BICHODARIO,
+            PRODUCT_IDS.ENQUANTO_MAMAE_DORMIA,
+            PRODUCT_IDS.MAMAE_GATA,
+        ],
+        // Pré Escola - 4 anos
+        4: [
+            PRODUCT_IDS.NUMERODROMO_BICHODARIO,
+            PRODUCT_IDS.BICHODARIO,
+            PRODUCT_IDS.ENQUANTO_MAMAE_DORMIA,
+            PRODUCT_IDS.TUNEL,
+        ],
+        // Pré Escola - 5 anos
+        5: [
+            PRODUCT_IDS.NUMERODROMO_BICHODARIO,
+            PRODUCT_IDS.BICHODARIO,
+            PRODUCT_IDS.ENQUANTO_MAMAE_DORMIA,
+            PRODUCT_IDS.TUNEL,
+        ],
+        // 1º Série / 1º ano - Anos iniciais (6 anos)
+        6: [
+            PRODUCT_IDS.MINIDICIONARIO,
+            PRODUCT_IDS.NO_CAPRICHO_A,
+            PRODUCT_IDS.CADE_LIVRO,
+            PRODUCT_IDS.BENNY_INVENTOR,
+            PRODUCT_IDS.ISCA_FAISCA,
+        ],
+        // 2º Série / 2º ano - Anos iniciais (7 anos)
+        7: [
+            PRODUCT_IDS.MINIDICIONARIO,
+            PRODUCT_IDS.TABUADA_1,
+            PRODUCT_IDS.CADE_LIVRO,
+            PRODUCT_IDS.BENNY_INVENTOR,
+            PRODUCT_IDS.ISCA_FAISCA,
+        ],
+        // 3º Série / 3º ano - Anos iniciais (8 anos)
+        8: [
+            PRODUCT_IDS.MINIDICIONARIO,
+            PRODUCT_IDS.TABUADA_2,
+            PRODUCT_IDS.MUSEU_EMILIA,
+            PRODUCT_IDS.BENNY_INVENTOR,
+            PRODUCT_IDS.OLHO_VIVO,
+        ],
+        // 4º Série / 4º ano - Anos iniciais (9 anos)
+        9: [
+            PRODUCT_IDS.MINIDICIONARIO,
+            PRODUCT_IDS.TABUADA_3,
+            PRODUCT_IDS.MUSEU_EMILIA,
+            PRODUCT_IDS.SETE_CORVOS,
+            PRODUCT_IDS.OLHO_VIVO,
+        ],
+        // 5º Série / 5º ano - Anos iniciais (10 anos)
+        10: [
+            PRODUCT_IDS.MINIDICIONARIO,
+            PRODUCT_IDS.TABUADA_4,
+            PRODUCT_IDS.ALICE,
+            PRODUCT_IDS.SETE_CORVOS,
+            PRODUCT_IDS.LIVRO_PASSAROS,
+        ],
+        // 6º Série / 6º ano - Anos finais (11 anos)
+        11: [
+            PRODUCT_IDS.MINIDICIONARIO,
+            PRODUCT_IDS.PETER_PAN,
+            PRODUCT_IDS.ALICE,
+            PRODUCT_IDS.ANJOS,
+            PRODUCT_IDS.LIVRO_PASSAROS,
+        ],
+        // 7º Série / 7º ano - Anos finais (12 anos)
+        12: [
+            PRODUCT_IDS.DICIONARIO_INGLES,
+            PRODUCT_IDS.PETER_PAN,
+            PRODUCT_IDS.PEQUENO_PRINCIPE,
+            PRODUCT_IDS.ANJOS,
+            PRODUCT_IDS.E_DE_MORTE,
+        ],
+        // 8º Série / 8º ano - Anos finais (13 anos)
+        13: [
+            PRODUCT_IDS.DICIONARIO_INGLES,
+            PRODUCT_IDS.PETER_PAN,
+            PRODUCT_IDS.PEQUENO_PRINCIPE,
+            PRODUCT_IDS.ANJOS,
+            PRODUCT_IDS.E_DE_MORTE,
+        ],
+        // 9º Série / 9º ano - Anos finais (14 anos)
+        14: [
+            PRODUCT_IDS.DICIONARIO_INGLES,
+            PRODUCT_IDS.PETER_PAN,
+            PRODUCT_IDS.PEQUENO_PRINCIPE,
+            PRODUCT_IDS.ANJOS,
+            PRODUCT_IDS.E_DE_MORTE,
+        ],
+        // Ensino Médio 1 / 1º Colegial (15 anos)
+        15: [
+            PRODUCT_IDS.ESTUDA_COM_ANUAL,
+            PRODUCT_IDS.ESTUDA_COM_SEMESTRAL,
+            PRODUCT_IDS.REFORCA_ANUAL,
+            PRODUCT_IDS.REFORCA_SEMESTRAL,
+        ],
+        // Ensino Médio 2 / 2º Colegial (16 anos)
+        16: [
+            PRODUCT_IDS.ESTUDA_COM_ANUAL,
+            PRODUCT_IDS.ESTUDA_COM_SEMESTRAL,
+            PRODUCT_IDS.REFORCA_ANUAL,
+            PRODUCT_IDS.REFORCA_SEMESTRAL,
+        ],
+        // Ensino Médio 3 / 3º Colegial (17 anos)
+        17: [
+            PRODUCT_IDS.ESTUDA_COM_ANUAL,
+            PRODUCT_IDS.ESTUDA_COM_SEMESTRAL,
+            PRODUCT_IDS.REFORCA_ANUAL,
+            PRODUCT_IDS.REFORCA_SEMESTRAL,
+        ],
+    };
+
+    // Mapeamento de opções de bundle por produto (copiado do miniCart.js)
+    const BUNDLE_OPTIONS_MAP = {
+        695786: { 'bundle_option[254]': '320', 'bundle_option[257]': '323' },
+        695576: { 'bundle_option[254]': '320', 'bundle_option[257]': '323' },
+        695816: { 'bundle_option[260]': '326', 'bundle_option[263]': '329' },
+        695888: { 'bundle_option[278]': '320', 'bundle_option[281]': '323' },
+        578096: { 'bundle_option[212]': '272', 'bundle_option[215]': '275' },
+        699322: { 'bundle_option[313]': '382', 'bundle_option[316]': '385' },
+        695573: { 'bundle_option[242]': '308', 'bundle_option[245]': '311' },
+    };
 
     const POPUP_ID = 'recommendation-popup';
     const STYLE_ID = 'recommendation-popup-style';
+
+    // Configurações de controle do popup
+    const POPUP_RULES = {
+        MAX_DISPLAYS_PER_DAY: 2,           // Máximo 2 vezes por dia
+        COOLDOWN_MINUTES: 30,              // 30 minutos entre exibições
+        MAX_DISPLAYS_PER_SESSION: 1,       // Máximo 1 vez por sessão
+        INITIAL_DELAY_MS: 3000,            // 3 segundos antes de poder exibir
+        STORAGE_KEY_PREFIX: 'ftd_popup_'   // Prefixo para localStorage
+    };
 
     // Mapeamento de estudante/adoption (Portado do miniCart.js)
     let STUDENT_GRADE_MAP = {};
     let ADOPTION_LIST_GRADE_MAP = {};
     let STUDENTS_DATA_LOADED = false;
+
+    // Controle de sessão
+    let SESSION_POPUP_SHOWN = false;
+    let PAGE_LOAD_TIME = Date.now();
+    // Flag para evitar múltiplos agendamentos enquanto aguardamos o INITIAL_DELAY_MS
+    let initialDelayScheduled = false;
+
+    // Retorna milissegundos restantes até o delay inicial completar (>= 0)
+    function msUntilInitialReady() {
+        try {
+            var elapsed = Date.now() - PAGE_LOAD_TIME;
+            var remaining = POPUP_RULES.INITIAL_DELAY_MS - elapsed;
+            return remaining > 0 ? remaining : 0;
+        } catch (e) {
+            // Em caso de erro, considera pronto (0)
+            return 0;
+        }
+    }
 
     // Funções Auxiliares Comuns
     function fmtBRL(n) {
@@ -59,6 +260,16 @@
         params.set('qty', String(qty || 1));
         params.set('uenc', uenc);
 
+        // Adiciona opções de bundle se o produto estiver no mapeamento
+        const bundleOptions = BUNDLE_OPTIONS_MAP[productId];
+        if (bundleOptions) {
+            for (const optionName in bundleOptions) {
+                if (bundleOptions.hasOwnProperty(optionName)) {
+                    params.set(optionName, bundleOptions[optionName]);
+                }
+            }
+        }
+
         return fetch(url, {
             method: 'POST',
             headers: {
@@ -96,6 +307,72 @@
         });
     }
 
+    // Função para tracking de eventos do popup
+    function analyticsPopupEvent(eventLabel, productId, productName, priceNumber, quantity, category, gradeLevel) {
+        if (eventLabel === undefined || !eventLabel) {
+            return;
+        }
+
+        var productNameFormatted = productName || 'Produto';
+        var quantityValue = quantity || 1;
+        var priceValue = priceNumber || 0;
+        var gradeLevelFormatted = gradeLevel ? String(gradeLevel) : '';
+
+        // Formato: :productName;quantity;price;;
+        var productsString =
+            ':' + productNameFormatted.replace(/,/g, '') + ';' + quantityValue + ';' + priceValue.toFixed(2) + ';;';
+
+        var eVar25Value = 'AT_popup_lateral_' + eventLabel;
+
+        // Adiciona informação do nível escolar se disponível
+        if (gradeLevelFormatted) {
+            eVar25Value += ' ' + gradeLevelFormatted;
+        }
+
+        console.log('[Tracking PopupLateral] Analytics event:', eVar25Value);
+
+        (function () {
+            var s = window.s || (typeof s_gi === 'function' && s_gi('lumisfera'));
+            if (!s || typeof s.tl !== 'function') return;
+
+            s.linkTrackVars = 'products,events,eVar25';
+            s.linkTrackEvents = 'scAdd';
+            s.products = productsString;
+            s.events = 'scAdd';
+            s.eVar25 = eVar25Value;
+
+            s.tl(true, 'o', 'target_activity_action');
+        })();
+    }
+
+    // Função para tracking simplificado (sem produto)
+    function analyticsSimpleEvent(eventLabel, gradeLevel) {
+        if (!eventLabel) {
+            return;
+        }
+
+        var gradeLevelFormatted = gradeLevel ? String(gradeLevel) : '';
+        var eVar25Value = 'AT_popup_lateral_' + eventLabel;
+
+        // Adiciona informação do nível escolar se disponível
+        if (gradeLevelFormatted) {
+            eVar25Value += ' ' + gradeLevelFormatted;
+        }
+
+        console.log('[Tracking PopupLateral] Analytics event:', eVar25Value);
+
+        (function () {
+            var s = window.s || (typeof s_gi === 'function' && s_gi('lumisfera'));
+            if (!s || typeof s.tl !== 'function') return;
+
+            s.linkTrackVars = 'events,eVar25';
+            s.linkTrackEvents = 'scAdd';
+            s.events = 'scAdd';
+            s.eVar25 = eVar25Value;
+
+            s.tl(true, 'o', 'target_activity_action');
+        })();
+    }
 
     // --- Lógica de Detecção de Grau (Portada do miniCart.js) ---
 
@@ -286,18 +563,222 @@
         });
     }
 
+    // Sistema de controle de exibição do popup
+    function getStorageKey(suffix) {
+        return POPUP_RULES.STORAGE_KEY_PREFIX + suffix;
+    }
+
+    function getTodayKey() {
+        return new Date().toDateString(); // Ex: "Mon Dec 16 2024"
+    }
+
+    function canShowPopup(productId, gradeLevel) {
+        var now = Date.now();
+        var today = getTodayKey();
+        
+        // Regra 1: Verificar se ainda não passou o delay inicial
+        if (now - PAGE_LOAD_TIME < POPUP_RULES.INITIAL_DELAY_MS) {
+            console.log('[Popup Rules] Aguardando delay inicial de 3s');
+            return false;
+        }
+
+        // Regra 2: Verificar limite por sessão
+        if (SESSION_POPUP_SHOWN) {
+            console.log('[Popup Rules] Já exibido nesta sessão');
+            return false;
+        }
+
+        try {
+            // Regra 3: Verificar limite diário
+            var dailyData = JSON.parse(localStorage.getItem(getStorageKey('daily_' + today)) || '{}');
+            if (dailyData.count >= POPUP_RULES.MAX_DISPLAYS_PER_DAY) {
+                console.log('[Popup Rules] Limite diário atingido (' + dailyData.count + '/' + POPUP_RULES.MAX_DISPLAYS_PER_DAY + ')');
+                return false;
+            }
+
+            // Regra 4: Verificar cooldown
+            var lastShown = localStorage.getItem(getStorageKey('last_shown'));
+            if (lastShown) {
+                var timeSinceLastShown = now - parseInt(lastShown);
+                var cooldownMs = POPUP_RULES.COOLDOWN_MINUTES * 60 * 1000;
+                if (timeSinceLastShown < cooldownMs) {
+                    var remainingMinutes = Math.ceil((cooldownMs - timeSinceLastShown) / 60000);
+                    console.log('[Popup Rules] Em cooldown. Restam ' + remainingMinutes + ' minutos');
+                    return false;
+                }
+            }
+
+            // Regra 5: Verificar se não foi fechado/rejeitado recentemente para este produto
+            var rejectedData = JSON.parse(localStorage.getItem(getStorageKey('rejected_' + today)) || '{}');
+            if (rejectedData[productId]) {
+                console.log('[Popup Rules] Produto ' + productId + ' foi rejeitado hoje');
+                return false;
+            }
+
+        } catch (e) {
+            console.warn('[Popup Rules] Erro ao verificar localStorage:', e);
+            // Em caso de erro, permite exibir (fallback seguro)
+        }
+
+        console.log('[Popup Rules] Popup pode ser exibido');
+        return true;
+    }
+
+    function recordPopupShown(productId, gradeLevel) {
+        var now = Date.now();
+        var today = getTodayKey();
+        
+        // Marca como exibido na sessão
+        SESSION_POPUP_SHOWN = true;
+        // reset agendamento caso exista
+        initialDelayScheduled = false;
+
+        try {
+            // Atualizar contador diário
+            var dailyData = JSON.parse(localStorage.getItem(getStorageKey('daily_' + today)) || '{}');
+            dailyData.count = (dailyData.count || 0) + 1;
+            dailyData.lastProduct = productId;
+            dailyData.lastGrade = gradeLevel;
+            localStorage.setItem(getStorageKey('daily_' + today), JSON.stringify(dailyData));
+
+            // Atualizar timestamp da última exibição
+            localStorage.setItem(getStorageKey('last_shown'), now.toString());
+
+            console.log('[Popup Rules] Popup registrado como exibido (' + dailyData.count + '/' + POPUP_RULES.MAX_DISPLAYS_PER_DAY + ')');
+
+        } catch (e) {
+            console.warn('[Popup Rules] Erro ao salvar no localStorage:', e);
+        }
+    }
+
+    function recordPopupRejected(productId, action) {
+        var today = getTodayKey();
+        
+        try {
+            // Registrar rejeição específica do produto para hoje
+            var rejectedData = JSON.parse(localStorage.getItem(getStorageKey('rejected_' + today)) || '{}');
+            rejectedData[productId] = {
+                action: action, // 'close_x_click' ou 'close_depois_click'
+                timestamp: Date.now()
+            };
+            localStorage.setItem(getStorageKey('rejected_' + today), JSON.stringify(rejectedData));
+
+            console.log('[Popup Rules] Produto ' + productId + ' marcado como rejeitado (' + action + ')');
+
+        } catch (e) {
+            console.warn('[Popup Rules] Erro ao registrar rejeição:', e);
+        }
+    }
+
+    function recordPopupSuccess(productId) {
+        try {
+            // Limpar rejeições do produto quando ele é adicionado com sucesso
+            var today = getTodayKey();
+            var rejectedData = JSON.parse(localStorage.getItem(getStorageKey('rejected_' + today)) || '{}');
+            if (rejectedData[productId]) {
+                delete rejectedData[productId];
+                localStorage.setItem(getStorageKey('rejected_' + today), JSON.stringify(rejectedData));
+                console.log('[Popup Rules] Rejeição do produto ' + productId + ' removida após sucesso');
+            }
+        } catch (e) {
+            console.warn('[Popup Rules] Erro ao limpar rejeições:', e);
+        }
+    }
+
+    // Função para limpar dados antigos (executar na inicialização)
+    function cleanupOldData() {
+        try {
+            var today = getTodayKey();
+            var keysToRemove = [];
+            
+            // Percorrer todas as chaves do localStorage
+            for (var i = 0; i < localStorage.length; i++) {
+                var key = localStorage.key(i);
+                if (key && key.startsWith(POPUP_RULES.STORAGE_KEY_PREFIX)) {
+                    // Se é uma chave de daily ou rejected, verificar se é de hoje
+                    if (key.includes('daily_') || key.includes('rejected_')) {
+                        var dateInKey = key.split('_').slice(-3).join(' '); // "Mon Dec 16 2024"
+                        if (dateInKey !== today) {
+                            keysToRemove.push(key);
+                        }
+                    }
+                }
+            }
+            
+            // Remover chaves antigas
+            keysToRemove.forEach(function(key) {
+                localStorage.removeItem(key);
+            });
+            
+            if (keysToRemove.length > 0) {
+                console.log('[Popup Rules] Limpeza: ' + keysToRemove.length + ' entradas antigas removidas');
+            }
+            
+        } catch (e) {
+            console.warn('[Popup Rules] Erro na limpeza de dados antigos:', e);
+        }
+    }
+
+    // Função para verificar se um produto está no carrinho
+    function isProductInCart(cartData, productId) {
+        if (!cartData || !cartData.items || !Array.isArray(cartData.items)) {
+            return false;
+        }
+
+        var found = cartData.items.some(function (item) {
+            var itemProductId = Number(item.product_id);
+            var searchProductId = Number(productId);
+            return itemProductId === searchProductId;
+        });
+
+        return found;
+    }
+
+    // Função para determinar qual produto recomendar baseado no nível escolar
+    function getRecommendedProductId(gradeNumber, cartData) {
+        if (!gradeNumber || !GRADE_RECOMMENDATIONS[gradeNumber]) {
+            return null;
+        }
+
+        var recommendations = GRADE_RECOMMENDATIONS[gradeNumber];
+
+        // Valida se é um array
+        if (!Array.isArray(recommendations) || recommendations.length === 0) {
+            return null;
+        }
+
+        // Percorre o array de recomendações em ordem de prioridade
+        // Retorna o primeiro produto que NÃO está no carrinho
+        for (var i = 0; i < recommendations.length; i++) {
+            var productId = recommendations[i];
+
+            // Pula produtos com ID null (ex: REFORCA_ANUAL)
+            if (productId === null || productId === undefined) {
+                continue;
+            }
+
+            var inCart = isProductInCart(cartData, productId);
+
+            if (!inCart) {
+                return productId;
+            }
+        }
+
+        // Se todos os produtos recomendados já estão no carrinho
+        return null;
+    }
+
     // Construção do Popup
     function createSidePopup(product, gradeLevel) {
         const buttonText = 'ADICIONAR';
         const productName = product.name;
         const productImage = product.img;
         const productDescription = product.description;
-        const productIntensity = 0;
 
         // Define título dinâmico
         let titleHTML = '';
         if (gradeLevel) {
-            titleHTML = 'ESSENCIAIS PARA O <span style="font-weight: 600;">' + gradeLevel.toUpperCase() + '</span>';
+            titleHTML = 'LIVRO ESSENCIAL PARA <span style="font-weight: 600;">' + gradeLevel.toUpperCase() + '</span>';
         } else {
             titleHTML = 'RECOMENDAÇÃO ESPECIAL PARA VOCÊ';
         }
@@ -327,7 +808,6 @@
             '}' +
             '#recommendation-popup .add-to-cart-text {' +
             'display: inline-block !important;' +
-            'margin-right: 8px !important;' +
             'font-size: 14px;' +
             'font-weight: bold !important;' +
             'color: white !important;' +
@@ -347,13 +827,13 @@
             'flex-wrap: nowrap !important;' +
             'position: relative !important;' +
             'background-color: var(--color-brand-primary-500)!important;' +
+            'transition: all .3s;' +
             'height: 40px !important;' +
             'cursor: pointer !important;' +
-            'transition: background-color 0.2s !important;' +
             'border: none !important;' +
             '}' +
             '#recommendation-popup .AddToBagButtonSmall:hover {' +
-            'background-color: var(--color-brand-primary-500); !important;' +
+            'background-color: var(--color-brand-primary-600); !important;' +
             '}' +
             '@keyframes slideInLeft {' +
             'from {' +
@@ -456,10 +936,10 @@
             '<div id="recommendation-popup" style="position: fixed; bottom: 20px; left: 20px; z-index: 999; max-width: 450px; animation: slideInLeft 0.3s ease-out;">' +
             '<div style="background: white; border-radius: 8px; padding: 16px 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); ">' +
             '<div style="display: flex; justify-content: space-between; align-items: flex-start;">' +
-            '<h3 style="margin: 0; color: #999; font-size: 16px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.5px;">' +
+            '<h3 style="margin: 0; color: #999; font-size: 16px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.2 margin-bottom: 10px;">' +
             titleHTML +
             '</h3>' +
-            '<button id="close-rec-popup" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #666; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">&times;</button>' +
+            '<button id="close-rec-popup" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #666; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; tranisition: all .3s;">&times;</button>' +
             '</div>' +
             '<div style="display: flex; gap: 16px; margin-bottom: 10px;">' +
             '<img src="' +
@@ -494,7 +974,7 @@
             '</div>' +
             '</div>' +
             '</div>' +
-            '<button id="close-rec-popup-text" style="background: none; border: none; cursor: pointer; font-size: 14px; color: #999; padding: 8px 0; padding-right: 10px;">Depois</button>' +
+            '<button id="close-rec-popup-text" style="background: none; border: none; cursor: pointer; font-size: 14px; color: #999; padding: 8px 0; padding-right: 10px; tranisition: all .3s;">Depois</button>' +
             '</div>' +
             '</div>' +
             '</div>';
@@ -509,6 +989,12 @@
         const addBtn = document.getElementById('btn-add-rec-popup');
         const popup = document.getElementById('recommendation-popup');
 
+        // Registrar que o popup foi exibido
+        recordPopupShown(product.id, gradeLevel);
+
+        // Tracking: popup exibido
+        analyticsPopupEvent('popup_view', product.id, productName, product.price, 1, product.category, gradeLevel);
+
         function close() {
             if (popup) popup.classList.add('closing');
             setTimeout(function () {
@@ -516,11 +1002,33 @@
             }, 300);
         }
 
-        if (closeBtn) closeBtn.onclick = close;
-        if (closeText) closeText.onclick = close;
+        if (closeBtn) {
+            closeBtn.onclick = function() {
+                // Registrar rejeição
+                recordPopupRejected(product.id, 'close_x_click');
+                
+                // Tracking: clique no botão X
+                analyticsSimpleEvent('close_x_click', gradeLevel);
+                close();
+            };
+        }
+
+        if (closeText) {
+            closeText.onclick = function() {
+                // Registrar rejeição
+                recordPopupRejected(product.id, 'close_depois_click');
+                
+                // Tracking: clique no botão "Depois"
+                analyticsSimpleEvent('close_depois_click', gradeLevel);
+                close();
+            };
+        }
 
         if (addBtn) {
             addBtn.onclick = function () {
+                // Tracking: clique no botão adicionar
+                analyticsPopupEvent('add_to_cart_click', product.id, productName, product.price, 1, product.category, gradeLevel);
+
                 addBtn.querySelector('.add-to-cart-text').textContent = 'ADICIONANDO...';
                 addBtn.disabled = true;
 
@@ -537,15 +1045,28 @@
                         if (res.success) {
                             addBtn.querySelector('.add-to-cart-text').textContent = 'ADICIONADO!';
                             reloadCartSection();
+
+                            // Registrar sucesso (remove rejeições)
+                            recordPopupSuccess(product.id);
+
+                            // Tracking: produto adicionado com sucesso
+                            analyticsPopupEvent('add_to_cart_success', product.id, productName, product.price, 1, product.category, gradeLevel);
+
                             setTimeout(close, 1500);
                         } else {
                             addBtn.querySelector('.add-to-cart-text').textContent = 'TENTE NOVAMENTE';
                             addBtn.disabled = false;
+
+                            // Tracking: erro ao adicionar produto
+                            analyticsPopupEvent('add_to_cart_error', product.id, productName, product.price, 1, product.category, gradeLevel);
                         }
                     })
                     .catch(function () {
                         addBtn.querySelector('.add-to-cart-text').textContent = 'ERRO';
                         addBtn.disabled = false;
+
+                        // Tracking: erro ao adicionar produto
+                        analyticsPopupEvent('add_to_cart_error', product.id, productName, product.price, 1, product.category, gradeLevel);
                     });
             };
         }
@@ -573,6 +1094,9 @@
     }
 
     function init() {
+        // Limpar dados antigos primeiro
+        cleanupOldData();
+
         // Prioridade 1: Tenta obter dados do Customer Data local (cache do Magento)
         magentoCustomerData(function (cd) {
             var cartData = cd && cd.get ? cd.get('cart')() : null;
@@ -598,24 +1122,182 @@
         });
     }
 
+    // Função para converter nível escolar detectado para número do nível
+    // Exemplo: "5º ano - Anos iniciais" -> 10 (5º Série)
+    // Versão robusta: normaliza strings e usa regex flexíveis
+    function convertGradeLevelToNumber(gradeLevel) {
+        if (!gradeLevel) return null;
+
+        // Normaliza a string: lowercase, remove espaços extras, remove hífens/traços, remove acentos
+        var normalized = gradeLevel
+            .toLowerCase()
+            .replace(/\s+/g, ' ') // Múltiplos espaços -> 1 espaço
+            .replace(/\s*-\s*/g, ' ') // Remove hífens e espaços ao redor
+            .replace(/[àáâãäå]/g, 'a')
+            .replace(/[èéêë]/g, 'e')
+            .replace(/[ìíîï]/g, 'i')
+            .replace(/[òóôõö]/g, 'o')
+            .replace(/[ùúûü]/g, 'u')
+            .replace(/[ç]/g, 'c')
+            .trim();
+
+        // 1. EDUCAÇÃO INFANTIL (1-5 anos)
+        // Padrões: "1 ano educacao infantil", "2 anos ensino infantil", "3 anos pre escola"
+        if (
+            /educacao\s*infantil|ensino\s*infantil|pre\s*escola/i.test(normalized) ||
+            /\d+\s*anos?\s*(educacao|ensino|infantil|pre)/i.test(normalized)
+        ) {
+            // Extrai o número (1, 2, 3, 4, ou 5)
+            var infantilMatch = normalized.match(/(\d+)\s*anos?/);
+            if (infantilMatch) {
+                var anos = parseInt(infantilMatch[1]);
+                if (anos >= 1 && anos <= 5) {
+                    return anos; // 1 ano -> 1, 2 anos -> 2, ..., 5 anos -> 5
+                }
+            }
+        }
+
+        // 2. ENSINO MÉDIO / COLEGIAL (15, 16, 17)
+        // Padrões: "1º ano ensino medio", "2ª serie ensino medio", "3º colegial"
+        if (/ensino\s*medio|colegial/i.test(normalized)) {
+            // Extrai o número (1, 2, ou 3)
+            var medioMatch = normalized.match(/(\d+)[º°ª]?\s*(ano|serie|colegial)/);
+            if (medioMatch) {
+                var serie = parseInt(medioMatch[1]);
+                if (serie >= 1 && serie <= 3) {
+                    var nivel = 14 + serie; // 1 -> 15, 2 -> 16, 3 -> 17
+                    return nivel;
+                }
+            }
+        }
+
+        // 3. ENSINO FUNDAMENTAL - ANOS INICIAIS (1º ao 5º ano -> 6 a 10)
+        if (/anos?\s*iniciais|ef\s*1|efai/i.test(normalized)) {
+            var iniciaisMatch = normalized.match(/(\d+)[º°ª]?\s*ano/);
+            if (iniciaisMatch) {
+                var ano = parseInt(iniciaisMatch[1]);
+                if (ano >= 1 && ano <= 5) {
+                    var nivel = ano + 5; // 1º -> 6, 2º -> 7, ..., 5º -> 10
+                    return nivel;
+                }
+            }
+        }
+
+        // 4. ENSINO FUNDAMENTAL - ANOS FINAIS (6º ao 9º ano -> 11 a 14)
+        if (/anos?\s*finais|ef\s*2/i.test(normalized)) {
+            var finaisMatch = normalized.match(/(\d+)[º°ª]?\s*ano/);
+            if (finaisMatch) {
+                var ano = parseInt(finaisMatch[1]);
+                if (ano >= 6 && ano <= 9) {
+                    var nivel = ano + 5; // 6º -> 11, 7º -> 12, 8º -> 13, 9º -> 14
+                    return nivel;
+                }
+            }
+        }
+
+        // 5. FALLBACK: Tenta extrair apenas o número e adivinhar pelo contexto
+        // Se tem "ano" ou "série" e um número de 1-9, assume ensino fundamental
+        var fallbackMatch = normalized.match(/(\d+)[º°ª]?\s*(ano|serie)/);
+        if (fallbackMatch) {
+            var num = parseInt(fallbackMatch[1]);
+            // Anos 1-5: provavelmente anos iniciais
+            if (num >= 1 && num <= 5) {
+                return num + 5;
+            }
+            // Anos 6-9: provavelmente anos finais
+            if (num >= 6 && num <= 9) {
+                return num + 5;
+            }
+        }
+
+        return null;
+    }
+
     function processCartAndShowPopup(cartData) {
-        // 3. Detecta Grade
+        // 1. Detecta Grade
         let gradeLevel = null;
+        let recommendedProductId = null;
+        let hasAdoptionList = false;
+
+        // Se ainda estamos no delay inicial, agendamos uma nova tentativa (uma vez)
+        var remainingMs = msUntilInitialReady();
+        if (remainingMs > 0) {
+            console.log('[Popup Rules] Aguardando delay inicial de 3s (restam ' + remainingMs + 'ms)');
+            if (!initialDelayScheduled) {
+                initialDelayScheduled = true;
+                setTimeout(function () {
+                    // limpar flag caso a tentativa ocorra
+                    initialDelayScheduled = false;
+                    try {
+                        processCartAndShowPopup(cartData);
+                    } catch (e) {
+                        console.warn('[Popup Rules] Erro ao re-tentar exibir popup:', e);
+                    }
+                }, remainingMs + 50); // pequeno buffer
+            }
+            return;
+        }
+
         if (cartData) {
             // Normaliza formato se necessário
             if (cartData.cart && cartData.cart.items) cartData = cartData.cart;
 
+            // REGRA OBRIGATÓRIA: Verificar se há lista de adoção no carrinho
+            if (cartData.ftd && cartData.ftd.data && cartData.ftd.data.miniCart && cartData.ftd.data.miniCart.miniCartAdoptionLists) {
+                var adoptionLists = cartData.ftd.data.miniCart.miniCartAdoptionLists;
+                var adoptionListKeys = Object.keys(adoptionLists);
+                hasAdoptionList = adoptionListKeys.length > 0;
+            }
+
+            // Se não há lista de adoção, não exibir popup
+            if (!hasAdoptionList) {
+                console.log('[Popup Rules] Não há lista escolar no carrinho - popup não será exibido');
+                return;
+            }
+
             gradeLevel = detectGradeFromCart(cartData);
+
+            // 2. Se detectou grade, usa as regras inteligentes do GRADE_RECOMMENDATIONS
+            if (gradeLevel) {
+                const gradeNumber = convertGradeLevelToNumber(gradeLevel);
+                if (gradeNumber) {
+                    recommendedProductId = getRecommendedProductId(gradeNumber, cartData);
+                }
+            }
         }
 
-        // 4. Busca Produto Recomendado
-        fetchProductData(RECOMMENDED_PRODUCT_ID).then(function (product) {
+        // Se não há lista escolar, não continuar
+        if (!hasAdoptionList) {
+            return;
+        }
+
+        // 3. Se não encontrou produto recomendado via regras, usa o padrão
+        if (!recommendedProductId) {
+            recommendedProductId = PRODUCT_IDS.DICIONARIO_INGLES; // Produto padrão (ID 53959)
+        }
+
+        // REGRA IMPORTANTE: Verificar se o produto recomendado já está no carrinho
+        if (cartData && isProductInCart(cartData, recommendedProductId)) {
+            console.log('[Popup Rules] Produto recomendado (' + recommendedProductId + ') já está no carrinho');
+            return;
+        }
+
+        // 4. Verificar se pode exibir o popup (todas as regras)
+        if (!canShowPopup(recommendedProductId, gradeLevel)) {
+            return;
+        }
+
+        // 5. Busca dados do produto recomendado
+        fetchProductData(recommendedProductId).then(function (product) {
             if (product) {
+                console.log('[Popup Rules] Exibindo popup para produto:', product.name, 'série:', gradeLevel);
                 setTimeout(function () {
                     createSidePopup(product, gradeLevel);
-                }, 1000);
+                }, 100); // Pequeno delay para garantir que a página está estável
             }
-        }).catch(function (e) { console.error(e); });
+        }).catch(function (e) { 
+            console.error('Erro ao buscar produto:', e); 
+        });
     }
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
