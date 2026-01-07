@@ -312,6 +312,62 @@
     return userSelectedFares;
   }
 
+  // NOVA FUNÇÃO: Detecta quantas tarifas estão selecionadas
+  function countSelectedFares() {
+    let selectedCount = 0;
+    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
+    
+    if (tripContainers.length > 0) {
+      // Verifica cada trecho separadamente
+      tripContainers.forEach((container) => {
+        if (checkIfFareAlreadySelected(container) || 
+            container.querySelector('[data-pre-select-modified]')) {
+          selectedCount++;
+        }
+      });
+    } else {
+      // Fallback para voo simples
+      if (checkIfFareAlreadySelected() || 
+          document.querySelector('[data-pre-select-modified]')) {
+        selectedCount = 1;
+      }
+    }
+    
+    return selectedCount;
+  }
+
+  // NOVA FUNÇÃO: Verifica se há detalhes expandidos que podem ser recolhidos
+  function hasExpandedDetails() {
+    // Verifica se há seções de detalhes abertas/expandidas
+    const expandedSections = document.querySelectorAll('[aria-expanded="true"]');
+    const detailsOpen = document.querySelectorAll('.details-open, .expanded, .show-details');
+    
+    return expandedSections.length > 0 || detailsOpen.length > 0;
+  }
+
+  // NOVA FUNÇÃO: Recolhe detalhes expandidos
+  function collapseDetails() {
+    // Procura por botões que fecham detalhes
+    const collapseButtons = document.querySelectorAll('[aria-expanded="true"], button[aria-label*="Recolher"], button[aria-label*="Fechar"]');
+    
+    collapseButtons.forEach(button => {
+      if (button.getAttribute('aria-expanded') === 'true') {
+        button.click();
+        console.log('[PreSelectFare] Recolheu seção expandida');
+      }
+    });
+
+    // Procura por elementos que podem ter detalhes abertos
+    const detailsElements = document.querySelectorAll('.fare-details.open, .booking-details.expanded');
+    detailsElements.forEach(element => {
+      const closeButton = element.querySelector('button, [role="button"]');
+      if (closeButton) {
+        closeButton.click();
+        console.log('[PreSelectFare] Fechou detalhes');
+      }
+    });
+  }
+
   function updateFloatingCTAState(floatingCTA, originalButton) {
     if (!floatingCTA) return;
     
@@ -323,7 +379,142 @@
     
     floatingCTA.style.display = 'flex';
     document.body.classList.add('pre-select-fare-active');
+
+    // NOVA LÓGICA: Conta tarifas selecionadas
+    const selectedFaresCount = countSelectedFares();
+    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
+    const totalTrips = tripContainers.length || 1;
+    const hasExpanded = hasExpandedDetails();
     
+    console.log('[PreSelectFare] Tarifas selecionadas: ' + selectedFaresCount + '/' + totalTrips);
+    
+    // CASO 1: Todas as tarifas selecionadas - botão ativo "Continuar"
+    if (selectedFaresCount >= totalTrips) {
+      newContinueButton.disabled = false;
+      newContinueButton.classList.remove('disabled');
+      newContinueButton.textContent = 'Continuar';
+      
+      let isProcessing = false;
+      newContinueButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isProcessing) return;
+        isProcessing = true;
+        
+        analyticsEvent('Continuar - Todas tarifas selecionadas');
+        
+        // Procura pelo botão principal "Continuar" da página
+        const mainContinueButtons = document.querySelectorAll('button, [role="button"]');
+        let foundMainContinue = null;
+        
+        for (const btn of mainContinueButtons) {
+          const text = btn.textContent.toLowerCase().trim();
+          if ((text === 'continuar' || text === 'prosseguir' || text.includes('próxim')) && 
+              !btn.closest('.pre-select-floating-cta') &&
+              !btn.hasAttribute('disabled')) {
+            const rect = btn.getBoundingClientRect();
+            if (rect.height > 0 && window.getComputedStyle(btn).display !== 'none') {
+              foundMainContinue = btn;
+              break;
+            }
+          }
+        }
+        
+        if (foundMainContinue) {
+          console.log('[PreSelectFare] Clicando no botão principal "Continuar"');
+          foundMainContinue.click();
+        } else {
+          console.log('[PreSelectFare] Botão principal "Continuar" não encontrado');
+        }
+        
+        setTimeout(() => {
+          floatingCTA.style.display = 'none';
+          document.body.classList.remove('pre-select-fare-active');
+        }, 100);
+      });
+      return;
+    }
+    
+    // CASO 2: NOVA LÓGICA - Seleção parcial (ex: 1/2 tarifas) - "Continuar" para recolher detalhes
+    if (selectedFaresCount > 0 && selectedFaresCount < totalTrips && totalTrips > 1) {
+      newContinueButton.disabled = false;
+      newContinueButton.classList.remove('disabled');
+      newContinueButton.textContent = 'Continuar';
+      
+      let isProcessing = false;
+      newContinueButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isProcessing) return;
+        isProcessing = true;
+        
+        analyticsEvent('Continuar - Recolher detalhes para focar próxima tarifa');
+        
+        // ESTRATÉGIA: Clica em "Alterar tarifa" para recolher os detalhes
+        const alterarTarifaButtons = document.querySelectorAll('[aria-label*="Alterar esta tarifa"]');
+        let foundAlterarButton = null;
+        
+        // Primeiro, tenta encontrar "Alterar tarifa" da IDA (trip-index-0)
+        for (const btn of alterarTarifaButtons) {
+          const tripContainer = btn.closest('[class*="trip-index-0"]');
+          if (tripContainer) {
+            foundAlterarButton = btn;
+            console.log('[PreSelectFare] Encontrou "Alterar tarifa" na IDA');
+            break;
+          }
+        }
+        
+        // Se não achou na ida, procura em qualquer lugar
+        if (!foundAlterarButton && alterarTarifaButtons.length > 0) {
+          foundAlterarButton = alterarTarifaButtons[0];
+          console.log('[PreSelectFare] Encontrou "Alterar tarifa" geral');
+        }
+        
+        if (foundAlterarButton) {
+          console.log('[PreSelectFare] Clicando em "Alterar tarifa" para recolher detalhes e focar na próxima seleção');
+          foundAlterarButton.click();
+        } else {
+          // Fallback: tenta recolher detalhes expandidos
+          console.log('[PreSelectFare] "Alterar tarifa" não encontrado, tentando recolher detalhes');
+          collapseDetails();
+        }
+        
+        // Aguarda um momento e verifica novamente o estado
+        setTimeout(() => {
+          isProcessing = false;
+          checkFaresVisibility(); // Revalida o estado
+        }, 500);
+      });
+      return;
+    }
+    
+    // CASO 3: Pelo menos uma tarifa selecionada + detalhes expandidos - "Recolher detalhes"
+    if (selectedFaresCount > 0 && hasExpanded) {
+      newContinueButton.disabled = false;
+      newContinueButton.classList.remove('disabled');
+      newContinueButton.textContent = 'Recolher detalhes';
+      
+      let isProcessing = false;
+      newContinueButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isProcessing) return;
+        isProcessing = true;
+        
+        analyticsEvent('Recolher detalhes');
+        
+        collapseDetails();
+        
+        // Aguarda um momento e verifica novamente o estado
+        setTimeout(() => {
+          isProcessing = false;
+          checkFaresVisibility(); // Revalida o estado
+        }, 500);
+      });
+      return;
+    }
+    
+    // CASO 4: Tarifa selecionada pelo usuário (sem pré-seleção do script)
     if (originalButton && originalButton.userSelected) {
       newContinueButton.disabled = false;
       newContinueButton.classList.remove('disabled');
@@ -383,6 +574,7 @@
       return;
     }
     
+    // CASO 5: Pré-seleção do script ativa
     if (originalButton && !originalButton.userSelected) {
       newContinueButton.disabled = false;
       newContinueButton.classList.remove('disabled');
@@ -411,6 +603,7 @@
         }, 50);
       });
     } else {
+      // CASO 6: Nenhuma tarifa selecionada - botão inativo
       newContinueButton.disabled = true;
       newContinueButton.classList.add('disabled');
       newContinueButton.textContent = 'Selecione uma tarifa';
@@ -588,8 +781,21 @@
       return;
     }
 
+    // Verifica o número de tarifas selecionadas
+    const selectedCount = countSelectedFares();
+    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
+    const totalTrips = tripContainers.length || 1;
+
+    // PRIORIDADE 1: Se todas as tarifas estão selecionadas, mostra CTA ativo
+    if (selectedCount >= totalTrips) {
+      console.log('[PreSelectFare] Todas as ' + totalTrips + ' tarifas selecionadas - CTA ativo');
+      updateFloatingCTAState(floatingCTA, { allSelected: true });
+      return;
+    }
+
     const userSelectedFares = checkForUserSelectedFares();
     
+    // PRIORIDADE 2: Verifica seleções globais do usuário
     if (userSelectedFares.length > 0 && !modifiedButton) {
       console.log('[PreSelectFare] Detectou ' + userSelectedFares.length + ' indicador(es) de seleção global pelo usuário');
       updateFloatingCTAState(floatingCTA, { userSelected: true });
