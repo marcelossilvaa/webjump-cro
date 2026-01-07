@@ -16,7 +16,7 @@
     console.log('[MoveCTA] Analytics event triggered:', labelEvent);
 
     (function () {
-      var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+      const s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
       if (!s || typeof s.tl !== 'function') return;
 
       s.linkTrackVars = 'events,eVar82';
