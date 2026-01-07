@@ -388,7 +388,7 @@
     
     console.log('[PreSelectFare] Tarifas selecionadas: ' + selectedFaresCount + '/' + totalTrips);
     
-    // CASO 1: Todas as tarifas selecionadas - botão ativo "Continuar"
+    // CASO 1: Todas as tarifas selecionadas - botão ativo "Continuar" (CORRIGIDO)
     if (selectedFaresCount >= totalTrips) {
       newContinueButton.disabled = false;
       newContinueButton.classList.remove('disabled');
@@ -403,33 +403,57 @@
         
         analyticsEvent('Continuar - Todas tarifas selecionadas');
         
-        // Procura pelo botão principal "Continuar" da página
-        const mainContinueButtons = document.querySelectorAll('button, [role="button"]');
-        let foundMainContinue = null;
+        // LÓGICA CORRIGIDA baseada na versão que funcionava
+        // Procura pelos botões modificados pelo script ou selecionados pelo usuário
+        const modifiedButtons = document.querySelectorAll('[data-pre-select-modified]');
+        const userSelectedButtons = document.querySelectorAll('[data-test-id="select-fare"][disabled]');
         
-        for (const btn of mainContinueButtons) {
-          const text = btn.textContent.toLowerCase().trim();
-          if ((text === 'continuar' || text === 'prosseguir' || text.includes('próxim')) && 
-              !btn.closest('.pre-select-floating-cta') &&
-              !btn.hasAttribute('disabled')) {
-            const rect = btn.getBoundingClientRect();
-            if (rect.height > 0 && window.getComputedStyle(btn).display !== 'none') {
-              foundMainContinue = btn;
-              break;
-            }
+        let buttonsToClick = [];
+        
+        // Adiciona botões modificados pelo script
+        modifiedButtons.forEach(btn => {
+          if (!btn.hasAttribute('disabled') || btn.hasAttribute('data-pre-select-modified')) {
+            buttonsToClick.push(btn);
           }
+        });
+        
+        // Se não há botões modificados, procura botões selecionados pelo usuário
+        if (buttonsToClick.length === 0) {
+          userSelectedButtons.forEach(btn => {
+            if (!btn.hasAttribute('data-pre-select-modified')) {
+              const buttonText = btn.textContent.toLowerCase();
+              if (!buttonText.includes('esgotada')) {
+                buttonsToClick.push(btn);
+              }
+            }
+          });
         }
         
-        if (foundMainContinue) {
-          console.log('[PreSelectFare] Clicando no botão principal "Continuar"');
-          foundMainContinue.click();
+        // Clica no primeiro botão encontrado (isso ativa o processo de seleção)
+        if (buttonsToClick.length > 0) {
+          const firstButton = buttonsToClick[0];
+          console.log('[PreSelectFare] Clicando no botão de tarifa selecionada');
+          
+          // Se é um botão modificado pelo script, reativa e clica
+          if (firstButton.hasAttribute('data-pre-select-modified')) {
+            firstButton.classList.remove('fare-selected-disabled');
+            firstButton.removeAttribute('disabled');
+            firstButton.style.pointerEvents = 'auto';
+          }
+          
+          // Dispara eventos de clique
+          firstButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+          firstButton.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+          firstButton.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+          
         } else {
-          console.log('[PreSelectFare] Botão principal "Continuar" não encontrado');
+          console.log('[PreSelectFare] Nenhum botão de tarifa encontrado para clicar');
         }
         
         setTimeout(() => {
           floatingCTA.style.display = 'none';
           document.body.classList.remove('pre-select-fare-active');
+          isProcessing = false;
         }, 100);
       });
       return;
@@ -719,6 +743,154 @@
     return contextParts.join('|');
   }
 
+  let lastVisibilityState = null;
+  let isInitialized = false;
+  let currentFareContext = null;
+  let isProcessingChange = false;
+  let isSecondStep = false;
+  let stepCheckDebounceTimer = null;
+  let calendarObserver = null;
+  let lastApplyAttempt = null;
+  let lastCTAState = null; // NOVA FLAG para controlar estado do CTA
+
+  function checkFaresVisibility() {
+    if (isProcessingChange) return;
+    
+    // NOVA VERIFICAÇÃO: Se não está na primeira etapa, oculta o CTA e para a execução
+    if (!isInFirstStep()) {
+      const floatingCTA = document.querySelector('.pre-select-floating-cta');
+      if (floatingCTA) {
+        floatingCTA.style.display = 'none';
+        document.body.classList.remove('pre-select-fare-active');
+      }
+      return;
+    }
+    
+    const fareItems = document.querySelectorAll('.fare-item');
+    const visibleFareItems = Array.from(fareItems).filter(item => {
+      const rect = item.getBoundingClientRect();
+      const style = window.getComputedStyle(item);
+      return rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+    });
+    
+    const hasVisibleFares = visibleFareItems.length > 0;
+    const modifiedButton = document.querySelector('[data-pre-select-modified]');
+
+    let floatingCTA = document.querySelector('.pre-select-floating-cta');
+    if (!floatingCTA) {
+      floatingCTA = createFloatingCTA(null);
+    }
+
+    if (!hasVisibleFares) {
+      if (lastVisibilityState !== false) {
+        lastVisibilityState = false;
+        currentFareContext = null;
+        lastApplyAttempt = null;
+        lastCTAState = null;
+        updateFloatingCTAState(floatingCTA, null);
+      }
+      return;
+    }
+
+    // Verifica o número de tarifas selecionadas
+    const selectedCount = countSelectedFares();
+    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
+    const totalTrips = tripContainers.length || 1;
+
+    // PRIORIDADE 1: Se todas as tarifas estão selecionadas, mostra CTA ativo (COM PROTEÇÃO CONTRA LOOP)
+    if (selectedCount >= totalTrips) {
+      const currentState = 'all_selected_' + selectedCount + '_' + totalTrips;
+      
+      // PROTEÇÃO: Só atualiza CTA se o estado mudou
+      if (lastCTAState !== currentState) {
+        console.log('[PreSelectFare] Todas as ' + totalTrips + ' tarifas selecionadas - CTA ativo');
+        lastCTAState = currentState;
+        updateFloatingCTAState(floatingCTA, { allSelected: true });
+      }
+      return;
+    }
+
+    const userSelectedFares = checkForUserSelectedFares();
+    
+    // PRIORIDADE 2: Verifica seleções globais do usuário
+    if (userSelectedFares.length > 0 && !modifiedButton) {
+      const currentState = 'user_selected_' + userSelectedFares.length;
+      
+      if (lastCTAState !== currentState) {
+        console.log('[PreSelectFare] Detectou ' + userSelectedFares.length + ' indicador(es) de seleção global pelo usuário');
+        lastCTAState = currentState;
+        updateFloatingCTAState(floatingCTA, { userSelected: true });
+      }
+      return;
+    }
+
+    const newFareContext = getFareContextHash();
+    const contextChanged = currentFareContext !== null &&
+      currentFareContext !== newFareContext &&
+      modifiedButton !== null;
+
+    if (contextChanged) {
+      console.log('[PreSelectFare] Contexto de tarifas mudou, reaplicando seleções');
+      isProcessingChange = true;
+      resetCurrentSelection();
+      currentFareContext = newFareContext;
+      lastApplyAttempt = null;
+      lastCTAState = null; // Reset estado do CTA
+
+      setTimeout(() => {
+        const selectionApplied = applySelection();
+        currentFareContext = getFareContextHash();
+        lastVisibilityState = true;
+        lastApplyAttempt = currentFareContext;
+
+        setTimeout(() => {
+          isProcessingChange = false;
+        }, 150);
+
+        const button = selectionApplied ? document.querySelector('[data-pre-select-modified]') : null;
+        updateFloatingCTAState(floatingCTA, button);
+      }, 100);
+      return;
+    }
+
+    if (!modifiedButton) {
+      if (lastApplyAttempt === newFareContext) {
+        console.log('[PreSelectFare] Já tentou aplicar neste contexto - evitando loop');
+        
+        const currentState = 'loop_protection_' + selectedCount + '_' + userSelectedFares.length;
+        
+        if (lastCTAState !== currentState) {
+          lastCTAState = currentState;
+          if (userSelectedFares.length > 0) {
+            updateFloatingCTAState(floatingCTA, { userSelected: true });
+          } else {
+            updateFloatingCTAState(floatingCTA, null);
+          }
+        }
+        return;
+      }
+
+      console.log('[PreSelectFare] Aplicando pré-seleção inicial');
+      const selectionApplied = applySelection();
+      currentFareContext = getFareContextHash();
+      lastVisibilityState = true;
+      lastApplyAttempt = currentFareContext;
+      lastCTAState = null; // Reset para permitir atualização
+
+      const button = selectionApplied ? document.querySelector('[data-pre-select-modified]') : null;
+      updateFloatingCTAState(floatingCTA, button);
+      return;
+    }
+
+    // CASO: Já tem seleção válida
+    currentFareContext = newFareContext;
+    if (lastVisibilityState !== true) {
+      lastVisibilityState = true;
+      lastCTAState = null; // Reset para permitir atualização
+      updateFloatingCTAState(floatingCTA, modifiedButton);
+    }
+  }
+
   function resetCurrentSelection() {
     const modifiedButtons = document.querySelectorAll('[data-pre-select-modified]');
     modifiedButtons.forEach(btn => {
@@ -742,122 +914,7 @@
     document.body.classList.remove('pre-select-fare-active');
     
     lastApplyAttempt = null;
-  }
-
-  let lastVisibilityState = null;
-  let isInitialized = false;
-  let currentFareContext = null;
-  let isProcessingChange = false;
-  let isSecondStep = false;
-  let stepCheckDebounceTimer = null;
-  let calendarObserver = null;
-  let lastApplyAttempt = null;
-
-  function checkFaresVisibility() {
-    if (isProcessingChange) return;
-    
-    const fareItems = document.querySelectorAll('.fare-item');
-    const visibleFareItems = Array.from(fareItems).filter(item => {
-      const rect = item.getBoundingClientRect();
-      const style = window.getComputedStyle(item);
-      return rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
-    });
-    
-    const hasVisibleFares = visibleFareItems.length > 0;
-    const modifiedButton = document.querySelector('[data-pre-select-modified]');
-
-    let floatingCTA = document.querySelector('.pre-select-floating-cta');
-    if (!floatingCTA) {
-      floatingCTA = createFloatingCTA(null);
-    }
-
-    if (!hasVisibleFares) {
-      if (lastVisibilityState !== false) {
-        lastVisibilityState = false;
-        currentFareContext = null;
-        lastApplyAttempt = null;
-        updateFloatingCTAState(floatingCTA, null);
-      }
-      return;
-    }
-
-    // Verifica o número de tarifas selecionadas
-    const selectedCount = countSelectedFares();
-    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
-    const totalTrips = tripContainers.length || 1;
-
-    // PRIORIDADE 1: Se todas as tarifas estão selecionadas, mostra CTA ativo
-    if (selectedCount >= totalTrips) {
-      console.log('[PreSelectFare] Todas as ' + totalTrips + ' tarifas selecionadas - CTA ativo');
-      updateFloatingCTAState(floatingCTA, { allSelected: true });
-      return;
-    }
-
-    const userSelectedFares = checkForUserSelectedFares();
-    
-    // PRIORIDADE 2: Verifica seleções globais do usuário
-    if (userSelectedFares.length > 0 && !modifiedButton) {
-      console.log('[PreSelectFare] Detectou ' + userSelectedFares.length + ' indicador(es) de seleção global pelo usuário');
-      updateFloatingCTAState(floatingCTA, { userSelected: true });
-      return;
-    }
-
-    const newFareContext = getFareContextHash();
-    const contextChanged = currentFareContext !== null &&
-      currentFareContext !== newFareContext &&
-      modifiedButton !== null;
-
-    if (contextChanged) {
-      console.log('[PreSelectFare] Contexto de tarifas mudou, reaplicando seleções');
-      isProcessingChange = true;
-      resetCurrentSelection();
-      currentFareContext = newFareContext;
-      lastApplyAttempt = null;
-
-      setTimeout(() => {
-        const selectionApplied = applySelection();
-        currentFareContext = getFareContextHash();
-        lastVisibilityState = true;
-        lastApplyAttempt = currentFareContext;
-
-        setTimeout(() => {
-          isProcessingChange = false;
-        }, 150);
-
-        const button = selectionApplied ? document.querySelector('[data-pre-select-modified]') : null;
-        updateFloatingCTAState(floatingCTA, button);
-      }, 100);
-      return;
-    }
-
-    if (!modifiedButton) {
-      if (lastApplyAttempt === newFareContext) {
-        console.log('[PreSelectFare] Já tentou aplicar neste contexto - evitando loop');
-        
-        if (userSelectedFares.length > 0) {
-          updateFloatingCTAState(floatingCTA, { userSelected: true });
-        } else {
-          updateFloatingCTAState(floatingCTA, null);
-        }
-        return;
-      }
-
-      console.log('[PreSelectFare] Aplicando pré-seleção inicial');
-      const selectionApplied = applySelection();
-      currentFareContext = getFareContextHash();
-      lastVisibilityState = true;
-      lastApplyAttempt = currentFareContext;
-
-      const button = selectionApplied ? document.querySelector('[data-pre-select-modified]') : null;
-      updateFloatingCTAState(floatingCTA, button);
-      return;
-    }
-
-    currentFareContext = newFareContext;
-    if (lastVisibilityState !== true) {
-      lastVisibilityState = true;
-      updateFloatingCTAState(floatingCTA, modifiedButton);
-    }
+    lastCTAState = null; // IMPORTANTE: Reset estado do CTA
   }
 
   function setupObserver() {
@@ -889,6 +946,91 @@
     window._preSelectFareObserver = observer;
   }
 
+  function navigateToNextStep() {
+    analyticsEvent('Navegacao automatica - Todas tarifas selecionadas');
+    
+    let foundMainContinue = null;
+    
+    const specificButtons = document.querySelectorAll('[data-test-id*="continue"], [data-test-id*="next"], [data-test-id*="prosseguir"]');
+    for (const btn of specificButtons) {
+      if (!btn.closest('.pre-select-floating-cta') && !btn.hasAttribute('disabled') && !btn.disabled) {
+        const rect = btn.getBoundingClientRect();
+        if (rect.height > 0 && window.getComputedStyle(btn).display !== 'none') {
+          foundMainContinue = btn;
+          console.log('[PreSelectFare] Encontrou botão específico por data-test-id para navegação automática');
+          break;
+        }
+      }
+    }
+    
+    if (!foundMainContinue) {
+      const allButtons = document.querySelectorAll('button, [role="button"], input[type="submit"], input[type="button"]');
+      
+      for (const btn of allButtons) {
+        if (btn.closest('.pre-select-floating-cta')) continue;
+        if (btn.hasAttribute('disabled') || btn.disabled) continue;
+        
+        const text = btn.textContent.toLowerCase().trim();
+        const value = (btn.value || '').toLowerCase().trim();
+        
+        if ((text === 'continuar' || value === 'continuar' || 
+             text === 'prosseguir' || value === 'prosseguir' ||
+             text.includes('próxim') || value.includes('próxim')) &&
+            !text.includes('alterar')) {
+          
+          const rect = btn.getBoundingClientRect();
+          const style = window.getComputedStyle(btn);
+          
+          if (rect.height > 0 && rect.width > 0 && 
+              style.display !== 'none' && 
+              style.visibility !== 'hidden' && 
+              style.opacity !== '0') {
+            foundMainContinue = btn;
+            console.log('[PreSelectFare] Encontrou botão principal por texto para navegação automática: "' + text + '"');
+            break;
+          }
+        }
+      }
+    }
+    
+    if (foundMainContinue) {
+      console.log('[PreSelectFare] NAVEGANDO automaticamente - clicando no botão principal');
+      
+      const floatingCTA = document.querySelector('.pre-select-floating-cta');
+      if (floatingCTA) {
+        floatingCTA.style.display = 'none';
+        document.body.classList.remove('pre-select-fare-active');
+      }
+      
+      isSecondStep = true;
+      
+      foundMainContinue.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+      foundMainContinue.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+      foundMainContinue.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+      
+      setTimeout(() => {
+        if (foundMainContinue && typeof foundMainContinue.click === 'function') {
+          foundMainContinue.click();
+        }
+      }, 50);
+      
+    } else {
+      console.log('[PreSelectFare] ERRO: Não foi possível navegar automaticamente - botão não encontrado');
+      
+      const allButtons = document.querySelectorAll('button, input[type="submit"], input[type="button"]');
+      console.log('[PreSelectFare] Botões disponíveis para debug:');
+      allButtons.forEach((btn, index) => {
+        if (btn.closest('.pre-select-floating-cta')) return;
+        const rect = btn.getBoundingClientRect();
+        if (rect.height > 0 && window.getComputedStyle(btn).display !== 'none') {
+          console.log('[PreSelectFare] Botão ' + index + ': "' + btn.textContent.trim() + '" - disabled: ' + (btn.disabled || btn.hasAttribute('disabled')));
+        }
+      });
+      
+      window._preSelectNavigating = false;
+    }
+  }
+
   function setupCalendarObserver() {
     if (calendarObserver) return;
     
@@ -896,6 +1038,8 @@
       const priceCalendar = document.querySelector('[aria-label="Calendário de preços. Veja os preços próximos aos dias de sua busca. Selecionar"]');
       
       if (priceCalendar && isSecondStep) {
+        console.log('[PreSelectFare] RETORNANDO da segunda etapa - reinicializando');
+        
         if (stepCheckDebounceTimer) {
           clearTimeout(stepCheckDebounceTimer);
           stepCheckDebounceTimer = null;
@@ -906,6 +1050,7 @@
         isProcessingChange = false;
         currentFareContext = null;
         lastVisibilityState = null;
+        window._preSelectNavigating = false;
         
         resetCurrentSelection();
         
