@@ -1,14 +1,27 @@
 // Pre Seleção de Tarifa
 
 (function () {
+  // Variáveis de estado
+  let lastVisibilityState = null;
+  let isInitialized = false;
+  let currentFareContext = null;
+  let isProcessingChange = false;
+  let isSecondStep = false;
+  let calendarObserver = null;
+  let lastApplyAttempt = null;
+  let lastCTAState = null;
+  let consecutiveFailedAttempts = 0;
+
   // Função global para resetar e testar novamente
   window.resetPreSelectFare = function() {
-    window.campaignPreSelectFare = false;
     currentFareContext = null;
     lastVisibilityState = null;
     isInitialized = false;
     isProcessingChange = false;
     isSecondStep = false;
+    consecutiveFailedAttempts = 0;
+    lastApplyAttempt = null;
+    lastCTAState = null;
 
     const floatingCTA = document.querySelector('.pre-select-floating-cta');
     if (floatingCTA) floatingCTA.remove();
@@ -19,10 +32,8 @@
       btn.classList.remove('fare-selected-disabled');
       btn.removeAttribute('disabled');
       btn.style.pointerEvents = '';
-
       const texts = btn.querySelectorAll('.button__text, .button__text--mobile');
       texts.forEach(t => t.textContent = 'Selecionar tarifa');
-
       btn.removeAttribute('data-original-text');
     });
 
@@ -35,12 +46,11 @@
       window._preSelectFareObserver.disconnect();
       window._preSelectFareObserver = null;
     }
+    
+    console.log('[PreSelectFare] Reset completo');
   };
 
-  function onTargetPage() {
-    return true;
-  }
-
+  // Função de analytics
   function analyticsEvent(eventLabel) {
     if (!eventLabel) return;
     const labelEvent = 'AT_pre_select_fare ' + eventLabel;
@@ -55,232 +65,451 @@
     })();
   }
 
+  // Injeção de estilos
   function injectStyles() {
     if (document.getElementById('pre-select-fare-styles')) return;
     const styles = document.createElement('style');
     styles.id = 'pre-select-fare-styles';
-    styles.textContent = `
-      .pre-select-floating-cta {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: #FFFFFF;
-        padding: 20px;
-        z-index: 9999;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
-      }
-      .pre-select-floating-cta .floating-continue-btn {
-        background: rgb(2, 108, 182);
-        color: #FFFFFF;
-        border: none;
-        border-radius: 4px;
-        padding: 14px 48px;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        min-width: 280px;
-        letter-spacing: 0.5px;
-        font-family: "Helvetica Neue Medium", Arial;
-      }
-      .pre-select-floating-cta .floating-continue-btn:hover:not(:disabled) {
-        background: rgb(1, 78, 132);
-      }
-      .pre-select-floating-cta .floating-continue-btn:disabled,
-      .pre-select-floating-cta .floating-continue-btn.disabled {
-        background: #E8E8E8 !important;
-        color: #999999 !important;
-        cursor: not-allowed !important;
-        opacity: 0.7;
-      }
-      .fare-selected-disabled {
-        background: #E8E8E8 !important;
-        color: #666666 !important;
-        cursor: not-allowed !important;
-        pointer-events: none !important;
-        opacity: 0.8 !important;
-        border: solid 2px rgb(0, 128, 88) !important;
-      }
-      .fare-selected-disabled .button__text,
-      .fare-selected-disabled .button__text--mobile {
-        color: #666666 !important;
-      }
-      .fare-item-highlighted {
-        position: relative;
-        border: 1px solid #026CB6 !important;
-        margin-top: 3px;
-        background: rgba(2, 108, 182, 0.04);
-      }
-      body.pre-select-fare-active {
-        padding-bottom: 100px;
-      }
-      @media (max-width: 768px) {
-        .pre-select-floating-cta {
-          padding: 15px;
-          padding-top: 30px;
-        }
-        .pre-select-floating-cta .floating-continue-btn {
-          width: 100%;
-          padding: 14px 24px;
-          font-size: 14px;
-        }
-      }
-    `;
+    styles.textContent = '\
+      .pre-select-floating-cta {\
+        position: fixed;\
+        bottom: 0;\
+        left: 0;\
+        right: 0;\
+        background: #FFFFFF;\
+        padding: 20px;\
+        z-index: 9999;\
+        display: flex;\
+        justify-content: center;\
+        align-items: center;\
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);\
+      }\
+      .pre-select-floating-cta .floating-continue-btn {\
+        background: rgb(2, 108, 182);\
+        color: #FFFFFF;\
+        border: none;\
+        border-radius: 4px;\
+        padding: 14px 48px;\
+        font-size: 16px;\
+        font-weight: 600;\
+        cursor: pointer;\
+        transition: all 0.3s ease;\
+        min-width: 280px;\
+        letter-spacing: 0.5px;\
+        font-family: "Helvetica Neue Medium", Arial;\
+      }\
+      .pre-select-floating-cta .floating-continue-btn:hover:not(:disabled) {\
+        background: rgb(1, 78, 132);\
+      }\
+      .pre-select-floating-cta .floating-continue-btn:disabled,\
+      .pre-select-floating-cta .floating-continue-btn.disabled {\
+        background: #FFF !important;\
+        color: #999999 !important;\
+        cursor: not-allowed !important;\
+        opacity: 0.7;\
+      }\
+      .fare-selected-disabled {\
+        background: #FFF !important;\
+        color: rgb(4, 30, 66) !important;\
+        cursor: not-allowed !important;\
+        pointer-events: none !important;\
+        opacity: 0.8 !important;\
+        border: solid 2px rgb(0, 128, 88) !important;\
+      }\
+      .fare-selected-disabled .button__text,\
+      .fare-selected-disabled .button__text--mobile {\
+        color: rgb(4, 30, 66) !important;\
+      }\
+      .fare-item-highlighted {\
+        position: relative;\
+        border: 1px solid #026CB6 !important;\
+        margin-top: 3px;\
+        background: rgba(2, 108, 182, 0.04);\
+      }\
+      footer.pre-select-footer-adjusted {\
+        position: unset !important;\
+      }\
+      @media (max-width: 768px) {\
+        .pre-select-floating-cta {\
+          padding: 15px;\
+          padding-top: 30px;\
+        }\
+        .pre-select-floating-cta .floating-continue-btn {\
+          width: 100%;\
+          padding: 14px 24px;\
+          font-size: 14px;\
+        }\
+      }\
+    ';
     document.head.appendChild(styles);
   }
 
   injectStyles();
 
-  // FUNÇÃO INTELIGENTE: Detecta se estamos na PRIMEIRA etapa
+  // FUNÇÃO: Detecta se estamos na PRIMEIRA etapa
   function isInFirstStep() {
-    const priceCalendarElement = document.querySelector('[aria-label="Calendário de preços. Veja os preços próximos aos dias de sua busca. Selecionar"]');
+    const priceCalendar = document.querySelector('[aria-label="Calendário de preços. Veja os preços próximos aos dias de sua busca. Selecionar"]');
     const fareItems = document.querySelectorAll('.fare-item');
-    const hasBookingCalendar = document.querySelector('.booking-calendar__cards');
-    return !!(priceCalendarElement || (fareItems.length > 0 && hasBookingCalendar));
+    const bookingCalendar = document.querySelector('.booking-calendar__cards');
+    return !!(priceCalendar || (fareItems.length > 0 && bookingCalendar));
   }
 
-  function checkIfFareAlreadySelected(tripContainer = null) {
-    const searchScope = tripContainer || document;
+  // FUNÇÃO: Identifica a qual trecho um fare-item pertence
+  function identifyFareItemTrip(fareItem) {
+    let current = fareItem;
+    let depth = 0;
     
-    const alterarTarifaButton = searchScope.querySelector('[aria-label*="Alterar esta tarifa"]');
-    const tarifaSelecionadaText = searchScope.querySelector('.css-ou6pmp');
-    if (alterarTarifaButton || tarifaSelecionadaText) {
-      return true;
+    while (current && current !== document.body && depth < 50) {
+      depth++;
+      const className = current.className || '';
+      const classStr = typeof className === 'string' ? className : (className.baseVal || '');
+      
+      if (classStr.indexOf('trip-index-0') !== -1) return 'ida';
+      if (classStr.indexOf('trip-index-1') !== -1) return 'volta';
+      
+      current = current.parentElement;
     }
-
-    const selectedIndicators = [
-      '.fare-item.selected',
-      '.fare-item.active', 
-      '.fare-item [aria-selected="true"]',
-      '.fare-item.is-selected',
-      '.fare-item .selected'
-    ];
-
-    for (const selector of selectedIndicators) {
-      const selected = searchScope.querySelector(selector);
-      if (selected && !selected.hasAttribute('data-pre-select-modified')) {
-        return true;
-      }
-    }
-
-    const elementsInScope = searchScope.querySelectorAll('*');
-    for (const element of elementsInScope) {
-      if (element.textContent && element.textContent.trim() === 'Tarifa selecionada') {
-        return true;
-      }
-    }
-
-    const disabledButtons = searchScope.querySelectorAll('[data-test-id="select-fare"][disabled]');
-    for (const btn of disabledButtons) {
-      if (btn.hasAttribute('data-pre-select-modified')) continue;
-      const buttonText = btn.textContent.toLowerCase();
-      if (buttonText.includes('esgotada')) continue;
-      return true;
-    }
-
-    return false;
+    
+    return 'desconhecido';
   }
 
-  function findMostExpensiveFare(tripContainer = null) {
-    const searchScope = tripContainer || document;
-    const fareItems = searchScope.querySelectorAll('.fare-item');
+  // Obtém fare-items visíveis separados por trecho (sem logs excessivos)
+  function getVisibleFareItemsByTrip(enableLog) {
+    const allFareItems = document.querySelectorAll('.fare-item');
+    const result = { ida: [], volta: [], desconhecido: [] };
     
-    console.log('[PreSelectFare] findMostExpensiveFare: ' + fareItems.length + ' fare-items encontrados no escopo');
+    allFareItems.forEach(fareItem => {
+      const rect = fareItem.getBoundingClientRect();
+      const style = window.getComputedStyle(fareItem);
+      const isVisible = rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+      
+      if (!isVisible) return;
+      
+      const trip = identifyFareItemTrip(fareItem);
+      result[trip].push(fareItem);
+    });
     
-    if (!fareItems.length) return null;
-    
-    const existingModifiedFare = searchScope.querySelector('.fare-item-highlighted');
-    if (existingModifiedFare) {
-      console.log('[PreSelectFare] Retornando fare-item já modificado');
-      return existingModifiedFare;
+    if (enableLog) {
+      console.log('[PreSelectFare] Fare-items: IDA=' + result.ida.length + ' VOLTA=' + result.volta.length);
     }
+    
+    return result;
+  }
+
+  // Encontra a tarifa mais cara em uma lista
+  function findMostExpensiveFromList(fareItems, tripName) {
+    if (!fareItems || fareItems.length === 0) return null;
     
     let maxPrice = -1;
     let mostExpensiveFare = null;
-    let validFareCount = 0;
     
-    fareItems.forEach((fareItem, index) => {
-      console.log('[PreSelectFare] Analisando fare-item ' + index);
+    fareItems.forEach(fareItem => {
+      if (fareItem.classList.contains('fare-item-highlighted')) return;
       
-      // Verifica se é Business
       const fareName = fareItem.querySelector('.promotional, .fare-price p');
-      if (fareName) {
-        const fareNameText = fareName.textContent.toLowerCase();
-        if (fareNameText.includes('business')) {
-          console.log('[PreSelectFare] Fare-item ' + index + ' é Business - ignorando');
-          return;
-        }
-      }
+      if (fareName && fareName.textContent.toLowerCase().includes('business')) return;
       
-      // Verifica botão de seleção
       const selectButton = fareItem.querySelector('[data-test-id="select-fare"]');
-      if (!selectButton) {
-        console.log('[PreSelectFare] Fare-item ' + index + ' não tem botão select-fare');
-        return;
-      }
+      if (!selectButton) return;
+      if (selectButton.textContent.toLowerCase().includes('esgotada')) return;
       
-      const buttonText = selectButton.textContent.toLowerCase();
-      if (buttonText.includes('esgotada')) {
-        console.log('[PreSelectFare] Fare-item ' + index + ' está esgotada');
-        return;
-      }
-      
-      // Verifica preço
       const priceElement = fareItem.querySelector('[data-test-id="fare-price"]');
-      if (!priceElement) {
-        console.log('[PreSelectFare] Fare-item ' + index + ' não tem elemento de preço');
-        return;
-      }
+      if (!priceElement) return;
       
       const rawText = priceElement.textContent;
-      const priceText = rawText
-        .replace(/[^\d.,]/g, '')
-        .replace(/\.(?=\d{3})/g, '')
-        .replace(',', '.');
+      const priceText = rawText.replace(/[^\d.,]/g, '').replace(/\.(?=\d{3})/g, '').replace(',', '.');
       const price = parseFloat(priceText);
       
-      if (isNaN(price)) {
-        console.log('[PreSelectFare] Fare-item ' + index + ' tem preço inválido: "' + rawText + '"');
-        return;
-      }
-      
-      validFareCount++;
-      console.log('[PreSelectFare] Fare-item ' + index + ' válido - preço: ' + price);
-      
-      if (price > maxPrice) {
+      if (!isNaN(price) && price > maxPrice) {
         maxPrice = price;
         mostExpensiveFare = fareItem;
-        console.log('[PreSelectFare] Nova tarifa mais cara encontrada: ' + price);
       }
     });
     
-    console.log('[PreSelectFare] Resultado: ' + validFareCount + ' tarifas válidas, mais cara: ' + (mostExpensiveFare ? maxPrice : 'nenhuma'));
+    if (mostExpensiveFare) {
+      console.log('[PreSelectFare] Tarifa mais cara ' + tripName + ': R$' + maxPrice.toFixed(2));
+    }
     
     return mostExpensiveFare;
   }
 
+  // Verifica se já há tarifa selecionada no container
+  function checkIfFareAlreadySelected(tripContainer) {
+    const searchScope = tripContainer || document;
+    
+    if (searchScope.querySelector('[aria-label*="Alterar esta tarifa"]')) return true;
+    if (searchScope.querySelector('.css-ou6pmp')) return true;
+    
+    const selectedIndicators = ['.fare-item.selected', '.fare-item.active', '.fare-item [aria-selected="true"]'];
+    for (const selector of selectedIndicators) {
+      const selected = searchScope.querySelector(selector);
+      if (selected && !selected.hasAttribute('data-pre-select-modified')) return true;
+    }
+    
+    const disabledButtons = searchScope.querySelectorAll('[data-test-id="select-fare"][disabled]');
+    for (const btn of disabledButtons) {
+      if (btn.hasAttribute('data-pre-select-modified')) continue;
+      if (!btn.textContent.toLowerCase().includes('esgotada')) return true;
+    }
+    
+    return false;
+  }
+
+  // Modifica o botão da tarifa mais cara
   function modifyExpensiveFareButton(fareItem) {
     if (!fareItem) return null;
     const selectButton = fareItem.querySelector('[data-test-id="select-fare"]');
     if (!selectButton) return null;
     if (selectButton.hasAttribute('data-pre-select-modified')) return selectButton;
+    
     selectButton.setAttribute('data-pre-select-modified', 'true');
     if (!selectButton.hasAttribute('data-original-text')) {
       const buttonTexts = selectButton.querySelectorAll('.button__text, .button__text--mobile');
       if (buttonTexts.length > 0) selectButton.setAttribute('data-original-text', buttonTexts[0].textContent);
     }
+    
+    // Ícone de check SVG
+    const checkIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none" style="vertical-align: middle; margin-right: 6px;"><path fill-rule="evenodd" clip-rule="evenodd" d="M0.600098 9.0001C0.600098 4.3591 4.3591 0.600098 9.0001 0.600098C13.6369 0.600098 17.4001 4.3591 17.4001 9.0001C17.4001 13.6376 13.6369 17.4001 9.0001 17.4001C4.3591 17.4001 0.600098 13.6376 0.600098 9.0001ZM5.3587 8.38223L4.8001 8.95508L7.81887 12.0547L13.5819 6.13663L13.024 5.56378L7.81887 10.9083L5.3587 8.38223Z" fill="#008058"/></svg>';
+    
     const buttonTexts = selectButton.querySelectorAll('.button__text, .button__text--mobile');
-    buttonTexts.forEach((textEl) => textEl.textContent = 'Tarifa selecionada');
+    buttonTexts.forEach(textEl => {
+      textEl.innerHTML = checkIcon + 'Tarifa selecionada';
+    });
     selectButton.classList.add('fare-selected-disabled');
     selectButton.setAttribute('disabled', 'true');
     fareItem.classList.add('fare-item-highlighted');
+    
     return selectButton;
   }
 
+  // Conta tarifas selecionadas
+  function countSelectedFares() {
+    let count = 0;
+    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
+    
+    if (tripContainers.length > 0) {
+      tripContainers.forEach(container => {
+        if (checkIfFareAlreadySelected(container)) count++;
+      });
+    } else {
+      if (checkIfFareAlreadySelected()) count = 1;
+    }
+    
+    return count;
+  }
+
+  // Verifica se há botão pré-selecionado visível
+  function hasVisiblePreSelectedButton() {
+    const btn = document.querySelector('[data-pre-select-modified]');
+    if (!btn) return false;
+    const rect = btn.getBoundingClientRect();
+    return rect.height > 0;
+  }
+
+  // Identifica qual trecho está faltando
+  function getMissingTripSelection() {
+    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
+    if (tripContainers.length === 0) return { missing: 'tarifa', idaSelected: false, voltaSelected: false };
+    
+    let idaSelected = false;
+    let voltaSelected = false;
+    
+    tripContainers.forEach(container => {
+      const isIda = container.className.indexOf('trip-index-0') !== -1;
+      const isVolta = container.className.indexOf('trip-index-1') !== -1;
+      const hasSelection = checkIfFareAlreadySelected(container);
+      
+      if (isIda && hasSelection) idaSelected = true;
+      if (isVolta && hasSelection) voltaSelected = true;
+    });
+    
+    let missing = null;
+    if (!idaSelected && !voltaSelected) missing = 'ambas';
+    else if (!idaSelected) missing = 'ida';
+    else if (!voltaSelected) missing = 'volta';
+    
+    return { missing, idaSelected, voltaSelected };
+  }
+
+  // Gera hash do contexto atual (simplificado, sem logs)
+  function getFareContextHash() {
+    const fareItems = getVisibleFareItemsByTrip(false);
+    const idaPrices = fareItems.ida.map(item => {
+      const el = item.querySelector('[data-test-id="fare-price"]');
+      return el ? el.textContent.trim() : '';
+    }).filter(p => p).sort().join(',');
+    
+    const voltaPrices = fareItems.volta.map(item => {
+      const el = item.querySelector('[data-test-id="fare-price"]');
+      return el ? el.textContent.trim() : '';
+    }).filter(p => p).sort().join(',');
+    
+    return 'ida:' + fareItems.ida.length + ':' + idaPrices + '|volta:' + fareItems.volta.length + ':' + voltaPrices;
+  }
+
+  // Adiciona classe ao footer quando a barra está visível
+  function updateFooterStyle(isBarVisible) {
+    const footer = document.querySelector('footer');
+    if (!footer) return;
+    
+    if (isBarVisible) {
+      footer.classList.add('pre-select-footer-adjusted');
+    } else {
+      footer.classList.remove('pre-select-footer-adjusted');
+    }
+  }
+
+  // Atualiza estado do CTA flutuante
+  function updateFloatingCTAState(floatingCTA, originalButton) {
+    if (!floatingCTA) return;
+    
+    const continueButton = floatingCTA.querySelector('.floating-continue-btn');
+    if (!continueButton) return;
+
+    const newBtn = continueButton.cloneNode(true);
+    continueButton.parentNode.replaceChild(newBtn, continueButton);
+    
+    floatingCTA.style.display = 'flex';
+    document.body.classList.add('pre-select-fare-active');
+    updateFooterStyle(true);
+
+    const selectedCount = countSelectedFares();
+    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
+    const totalTrips = tripContainers.length || 1;
+    const hasPreSelectedVisible = hasVisiblePreSelectedButton();
+    const tripStatus = getMissingTripSelection();
+    
+    // Todas selecionadas
+    if (selectedCount >= totalTrips) {
+      newBtn.disabled = false;
+      newBtn.classList.remove('disabled');
+      newBtn.textContent = 'Continuar';
+      
+      newBtn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        analyticsEvent('Continuar - Todas tarifas selecionadas');
+        
+        const modifiedBtn = document.querySelector('[data-pre-select-modified]');
+        if (modifiedBtn) {
+          modifiedBtn.classList.remove('fare-selected-disabled');
+          modifiedBtn.removeAttribute('disabled');
+          modifiedBtn.style.pointerEvents = 'auto';
+          modifiedBtn.click();
+          
+          setTimeout(() => {
+            closeExpandedDetails();
+          }, 150);
+        }
+        
+        setTimeout(() => {
+          floatingCTA.style.display = 'none';
+          document.body.classList.remove('pre-select-fare-active');
+          updateFooterStyle(false);
+        }, 100);
+      });
+      return;
+    }
+    
+    // Seleção parcial com botão visível
+    if (selectedCount > 0 && selectedCount < totalTrips && totalTrips > 1 && hasPreSelectedVisible) {
+      newBtn.disabled = false;
+      newBtn.classList.remove('disabled');
+      newBtn.textContent = 'Continuar';
+      
+      newBtn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        analyticsEvent('Continuar - Confirmar tarifa');
+        
+        const preSelectedBtn = document.querySelector('[data-pre-select-modified]');
+        if (preSelectedBtn) {
+          preSelectedBtn.classList.remove('fare-selected-disabled');
+          preSelectedBtn.removeAttribute('disabled');
+          preSelectedBtn.style.pointerEvents = 'auto';
+          preSelectedBtn.click();
+          
+          setTimeout(() => {
+            closeExpandedDetails();
+          }, 150);
+        }
+      });
+      return;
+    }
+    
+    // Seleção parcial sem botão visível
+    if (selectedCount > 0 && selectedCount < totalTrips && totalTrips > 1) {
+      newBtn.disabled = true;
+      newBtn.classList.add('disabled');
+      
+      if (tripStatus.missing === 'ida') newBtn.textContent = 'Selecione a tarifa de ida';
+      else if (tripStatus.missing === 'volta') newBtn.textContent = 'Selecione a tarifa de volta';
+      else newBtn.textContent = 'Selecione uma tarifa';
+      return;
+    }
+    
+    // Pré-seleção ativa
+    if (originalButton && !originalButton.userSelected) {
+      newBtn.disabled = false;
+      newBtn.classList.remove('disabled');
+      newBtn.textContent = 'Continuar';
+      
+      newBtn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        analyticsEvent('Continuar - Floating CTA');
+        
+        originalButton.classList.remove('fare-selected-disabled');
+        originalButton.removeAttribute('disabled');
+        originalButton.style.pointerEvents = 'auto';
+        originalButton.click();
+        
+        setTimeout(() => {
+          closeExpandedDetails();
+        }, 150);
+        
+        setTimeout(() => {
+          floatingCTA.style.display = 'none';
+          document.body.classList.remove('pre-select-fare-active');
+          updateFooterStyle(false);
+        }, 50);
+      });
+      return;
+    }
+    
+    // Nenhuma tarifa selecionada
+    newBtn.disabled = true;
+    newBtn.classList.add('disabled');
+    newBtn.textContent = 'Selecione uma tarifa';
+  }
+
+  // Fecha detalhes expandidos dos voos
+  function closeExpandedDetails() {
+    // Procura por botões de recolher/fechar detalhes
+    const recolherButtons = document.querySelectorAll('button');
+    
+    recolherButtons.forEach(btn => {
+      const text = btn.textContent.toLowerCase().trim();
+      // Botão "Recolher" dentro do flight-card
+      if (text === 'recolher') {
+        const flightCard = btn.closest('.flight-card');
+        if (flightCard && flightCard.classList.contains('flight-card--opened')) {
+          btn.click();
+        }
+      }
+    });
+    
+    // Também procura por aria-pressed="true" nos botões de expandir
+    const expandedButtons = document.querySelectorAll('.btn-fare[aria-pressed="true"]');
+    expandedButtons.forEach(btn => {
+      const text = btn.textContent.toLowerCase().trim();
+      if (text === 'recolher') {
+        btn.click();
+      }
+    });
+  }
+
+  // Cria o CTA flutuante
   function createFloatingCTA(originalButton) {
     let existingCTA = document.querySelector('.pre-select-floating-cta');
     
@@ -308,808 +537,87 @@
     return floatingDiv;
   }
 
-  function checkForUserSelectedFares() {
-    const userSelectedFares = [];
-    
-    const alterarTarifaButtons = document.querySelectorAll('[aria-label*="Alterar esta tarifa"]');
-    alterarTarifaButtons.forEach(button => {
-      const tripContainer = button.closest('[class*="trip-index"]');
-      if (!tripContainer) {
-        userSelectedFares.push({
-          type: 'alterar_tarifa',
-          element: button
-        });
-      }
-    });
-
-    const mainContinueButtons = document.querySelectorAll('button, [role="button"]');
-    let hasMainContinueButton = false;
-    
-    for (const btn of mainContinueButtons) {
-      const text = btn.textContent.toLowerCase().trim();
-      if ((text === 'continuar' || text === 'próximo' || text === 'prosseguir') && 
-          !btn.closest('[class*="trip-index"]') &&
-          !btn.closest('.pre-select-floating-cta')) {
-        const rect = btn.getBoundingClientRect();
-        if (rect.height > 0 && window.getComputedStyle(btn).display !== 'none') {
-          hasMainContinueButton = true;
-          break;
-        }
-      }
-    }
-    
-    if (hasMainContinueButton) {
-      userSelectedFares.push({
-        type: 'main_continue_button',
-        element: null
-      });
-    }
-
-    return userSelectedFares;
-  }
-
-  // NOVA FUNÇÃO: Detecta quantas tarifas estão selecionadas
-  function countSelectedFares() {
-    let selectedCount = 0;
+  // Aplica pré-seleção
+  function applySelection() {
     const tripContainers = document.querySelectorAll('[class*="trip-index"]');
     
-    if (tripContainers.length > 0) {
-      // Verifica cada trecho separadamente
-      tripContainers.forEach((container) => {
-        // CORREÇÃO: Verifica se há fare-items VISÍVEIS neste container
-        // Se não há fare-items visíveis, não podemos contar como "selecionado pelo script"
-        const fareItemsInContainer = container.querySelectorAll('.fare-item');
-        const hasVisibleFareItems = Array.from(fareItemsInContainer).some(item => {
-          const rect = item.getBoundingClientRect();
-          const style = window.getComputedStyle(item);
-          return rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
-        });
-        
-        // Só conta pré-seleção do script se os fare-items estão visíveis
-        const preSelectedInContainer = container.querySelector('[data-pre-select-modified]');
-        const hasPreSelection = preSelectedInContainer && hasVisibleFareItems;
-        
-        if (checkIfFareAlreadySelected(container) || hasPreSelection) {
-          selectedCount++;
-        }
-      });
-    } else {
-      // Fallback para voo simples (sem trip-index)
-      // CORREÇÃO: Verifica se há fare-items VISÍVEIS
-      const fareItems = document.querySelectorAll('.fare-item');
-      const hasVisibleFareItems = Array.from(fareItems).some(item => {
-        const rect = item.getBoundingClientRect();
-        const style = window.getComputedStyle(item);
-        return rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
-      });
-      
-      // Só conta pré-seleção se os fare-items estão visíveis
-      const preSelected = document.querySelector('[data-pre-select-modified]');
-      const hasPreSelection = preSelected && hasVisibleFareItems;
-      
-      if (checkIfFareAlreadySelected() || hasPreSelection) {
-        selectedCount = 1;
-      }
-    }
-    
-    console.log('[PreSelectFare] countSelectedFares: ' + selectedCount + ' (trip-index containers: ' + tripContainers.length + ')');
-    
-    return selectedCount;
-  }
-
-  // NOVA FUNÇÃO: Verifica se há detalhes expandidos que podem ser recolhidos
-  function hasExpandedDetails() {
-    // Verifica se há seções de detalhes abertas/expandidas
-    const expandedSections = document.querySelectorAll('[aria-expanded="true"]');
-    const detailsOpen = document.querySelectorAll('.details-open, .expanded, .show-details');
-    
-    return expandedSections.length > 0 || detailsOpen.length > 0;
-  }
-
-  // NOVA FUNÇÃO: Recolhe detalhes expandidos
-  function collapseDetails() {
-    // Procura por botões que fecham detalhes
-    const collapseButtons = document.querySelectorAll('[aria-expanded="true"], button[aria-label*="Recolher"], button[aria-label*="Fechar"]');
-    
-    collapseButtons.forEach(button => {
-      if (button.getAttribute('aria-expanded') === 'true') {
-        button.click();
-        // console.log('[PreSelectFare] Recolheu seção expandida');
-      }
-    });
-
-    // Procura por elementos que podem ter detalhes abertos
-    const detailsElements = document.querySelectorAll('.fare-details.open, .booking-details.expanded');
-    detailsElements.forEach(element => {
-      const closeButton = element.querySelector('button, [role="button"]');
-      if (closeButton) {
-        closeButton.click();
-        // console.log('[PreSelectFare] Fechou detalhes');
-      }
-    });
-  }
-
-  // NOVA FUNÇÃO: Verifica se os detalhes da tarifa estão EXPANDIDOS (mostrando fare-items)
-  function hasFareDetailsExpanded() {
-    // Verifica se há fare-items visíveis na tela (significa que os detalhes estão expandidos)
-    const fareItems = document.querySelectorAll('.fare-item');
-    const visibleFareItems = Array.from(fareItems).filter(item => {
-      const rect = item.getBoundingClientRect();
-      const style = window.getComputedStyle(item);
-      return rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
-    });
-    
-    return visibleFareItems.length > 0;
-  }
-
-  // NOVA FUNÇÃO: Verifica se há um botão pré-selecionado VISÍVEL para clicar
-  function hasVisiblePreSelectedButton() {
-    const preSelectedButton = document.querySelector('[data-pre-select-modified]');
-    if (!preSelectedButton) return false;
-    
-    const rect = preSelectedButton.getBoundingClientRect();
-    const style = window.getComputedStyle(preSelectedButton);
-    return rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
-  }
-
-  // NOVA FUNÇÃO: Identifica qual trecho ainda precisa ser selecionado
-  function getMissingTripSelection() {
-    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
-    
+    // Voo simples
     if (tripContainers.length === 0) {
-      return { missing: 'tarifa', idaSelected: false, voltaSelected: false };
+      if (checkIfFareAlreadySelected()) return false;
+      
+      const fareItems = getVisibleFareItemsByTrip(true);
+      const allFares = fareItems.ida.concat(fareItems.volta).concat(fareItems.desconhecido);
+      const mostExpensive = findMostExpensiveFromList(allFares, 'SIMPLES');
+      if (!mostExpensive) return false;
+      
+      const btn = modifyExpensiveFareButton(mostExpensive);
+      if (!btn) return false;
+      
+      createFloatingCTA(btn);
+      return true;
     }
+    
+    // Ida e volta
+    const fareItems = getVisibleFareItemsByTrip(true);
     
     let idaSelected = false;
     let voltaSelected = false;
     
-    tripContainers.forEach((container) => {
-      const isIda = container.className.includes('trip-index-0');
-      const isVolta = container.className.includes('trip-index-1');
+    tripContainers.forEach(container => {
+      const isIda = container.className.indexOf('trip-index-0') !== -1;
+      const isVolta = container.className.indexOf('trip-index-1') !== -1;
       
-      const hasSelection = checkIfFareAlreadySelected(container) || 
-                          container.querySelector('[data-pre-select-modified]');
-      
-      if (isIda && hasSelection) {
-        idaSelected = true;
-      }
-      if (isVolta && hasSelection) {
-        voltaSelected = true;
-      }
+      if (isIda && checkIfFareAlreadySelected(container)) idaSelected = true;
+      if (isVolta && checkIfFareAlreadySelected(container)) voltaSelected = true;
     });
-    
-    // Determina qual está faltando
-    let missing = null;
-    if (!idaSelected && !voltaSelected) {
-      missing = 'ambas';
-    } else if (!idaSelected) {
-      missing = 'ida';
-    } else if (!voltaSelected) {
-      missing = 'volta';
-    } else {
-      missing = null; // Todas selecionadas
-    }
-    
-    return { missing, idaSelected, voltaSelected };
-  }
-
-  function updateFloatingCTAState(floatingCTA, originalButton) {
-    if (!floatingCTA) return;
-    
-    const continueButton = floatingCTA.querySelector('.floating-continue-btn');
-    if (!continueButton) return;
-
-    const newContinueButton = continueButton.cloneNode(true);
-    continueButton.parentNode.replaceChild(newContinueButton, continueButton);
-    
-    floatingCTA.style.display = 'flex';
-    document.body.classList.add('pre-select-fare-active');
-
-    // NOVA LÓGICA: Conta tarifas selecionadas
-    const selectedFaresCount = countSelectedFares();
-    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
-    const totalTrips = tripContainers.length || 1;
-    const hasExpanded = hasExpandedDetails();
-    const hasFareDetailsVisible = hasFareDetailsExpanded();
-    const hasPreSelectedVisible = hasVisiblePreSelectedButton();
-    
-    // NOVA: Obtém informação sobre qual trecho está faltando
-    const tripStatus = getMissingTripSelection();
-    
-    // console.log('[PreSelectFare] Tarifas selecionadas: ' + selectedFaresCount + '/' + totalTrips + ' | Ida: ' + tripStatus.idaSelected + ' | Volta: ' + tripStatus.voltaSelected);
-    
-    // CASO 1: Todas as tarifas selecionadas - botão ativo "Continuar"
-    if (selectedFaresCount >= totalTrips) {
-      newContinueButton.disabled = false;
-      newContinueButton.classList.remove('disabled');
-      newContinueButton.textContent = 'Continuar';
-      
-      let isProcessing = false;
-      newContinueButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (isProcessing) return;
-        isProcessing = true;
-        
-        analyticsEvent('Continuar - Todas tarifas selecionadas');
-        
-        const modifiedButtons = document.querySelectorAll('[data-pre-select-modified]');
-        const userSelectedButtons = document.querySelectorAll('[data-test-id="select-fare"][disabled]');
-        
-        let buttonsToClick = [];
-        
-        modifiedButtons.forEach(btn => {
-          if (!btn.hasAttribute('disabled') || btn.hasAttribute('data-pre-select-modified')) {
-            buttonsToClick.push(btn);
-          }
-        });
-        
-        if (buttonsToClick.length === 0) {
-          userSelectedButtons.forEach(btn => {
-            if (!btn.hasAttribute('data-pre-select-modified')) {
-              const buttonText = btn.textContent.toLowerCase();
-              if (!buttonText.includes('esgotada')) {
-                buttonsToClick.push(btn);
-              }
-            }
-          });
-        }
-        
-        if (buttonsToClick.length > 0) {
-          const firstButton = buttonsToClick[0];
-          console.log('[PreSelectFare] Clicando no botão de tarifa selecionada');
-          
-          if (firstButton.hasAttribute('data-pre-select-modified')) {
-            firstButton.classList.remove('fare-selected-disabled');
-            firstButton.removeAttribute('disabled');
-            firstButton.style.pointerEvents = 'auto';
-          }
-          
-          firstButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
-          firstButton.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
-          firstButton.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-          
-        } else {
-          console.log('[PreSelectFare] Nenhum botão de tarifa encontrado para clicar');
-        }
-        
-        setTimeout(() => {
-          floatingCTA.style.display = 'none';
-          document.body.classList.remove('pre-select-fare-active');
-          isProcessing = false;
-        }, 100);
-      });
-      return;
-    }
-    
-    // CASO 2: Seleção parcial (ex: 1/2 tarifas)
-    if (selectedFaresCount > 0 && selectedFaresCount < totalTrips && totalTrips > 1) {
-      
-      // CASO 2A: Se há botão pré-selecionado VISÍVEL, permite clicar para confirmar
-      if (hasPreSelectedVisible) {
-        newContinueButton.disabled = false;
-        newContinueButton.classList.remove('disabled');
-        newContinueButton.textContent = 'Continuar';
-        
-        let isProcessing = false;
-        newContinueButton.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (isProcessing) return;
-          isProcessing = true;
-          
-          analyticsEvent('Continuar - Confirmar tarifa selecionada');
-          
-          const preSelectedButton = document.querySelector('[data-pre-select-modified]');
-          
-          if (preSelectedButton) {
-            console.log('[PreSelectFare] Clicando no botão de tarifa pré-selecionada para confirmar');
-            
-            preSelectedButton.classList.remove('fare-selected-disabled');
-            preSelectedButton.removeAttribute('disabled');
-            preSelectedButton.style.pointerEvents = 'auto';
-            
-            preSelectedButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
-            preSelectedButton.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
-            preSelectedButton.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-          }
-          
-          setTimeout(() => {
-            isProcessing = false;
-          }, 300);
-        });
-        return;
-      }
-      
-      // CASO 2B: Tarifa selecionada mas detalhes recolhidos - botão DESABILITADO
-      // NOVA LÓGICA: Texto dinâmico baseado em qual trecho está faltando
-      newContinueButton.disabled = true;
-      newContinueButton.classList.add('disabled');
-      
-      // Define o texto baseado em qual trecho está faltando
-      if (tripStatus.missing === 'ida') {
-        newContinueButton.textContent = 'Selecione a tarifa de ida';
-        console.log('[PreSelectFare] Tarifa da volta selecionada, aguardando seleção da ida');
-      } else if (tripStatus.missing === 'volta') {
-        newContinueButton.textContent = 'Selecione a tarifa de volta';
-        console.log('[PreSelectFare] Tarifa da ida selecionada, aguardando seleção da volta');
-      } else {
-        newContinueButton.textContent = 'Selecione uma tarifa';
-        console.log('[PreSelectFare] Aguardando seleção de tarifa');
-      }
-      return;
-    }
-    
-    // CASO 3: Pelo menos uma tarifa selecionada + detalhes expandidos - "Recolher detalhes"
-    if (selectedFaresCount > 0 && hasExpanded) {
-      newContinueButton.disabled = false;
-      newContinueButton.classList.remove('disabled');
-      newContinueButton.textContent = 'Recolher detalhes';
-      
-      let isProcessing = false;
-      newContinueButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (isProcessing) return;
-        isProcessing = true;
-        
-        analyticsEvent('Recolher detalhes');
-        
-        collapseDetails();
-        
-        // Aguarda um momento e verifica novamente o estado
-        setTimeout(() => {
-          isProcessing = false;
-          checkFaresVisibility(); // Revalida o estado
-        }, 500);
-      });
-      return;
-    }
-    
-    // CASO 4: Tarifa selecionada pelo usuário (sem pré-seleção do script)
-    if (originalButton && originalButton.userSelected) {
-      newContinueButton.disabled = false;
-      newContinueButton.classList.remove('disabled');
-      newContinueButton.textContent = 'Continuar';
-      
-      let isProcessing = false;
-      newContinueButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (isProcessing) return;
-        isProcessing = true;
-        
-        analyticsEvent('Continuar - Com tarifa do usuário');
-        
-        const alterarTarifaButtons = document.querySelectorAll('[aria-label*="Alterar esta tarifa"]');
-        let foundAlterarButton = null;
-        
-        for (const btn of alterarTarifaButtons) {
-          const tripContainer = btn.closest('[class*="trip-index-0"]');
-          if (tripContainer) {
-            foundAlterarButton = btn;
-            break;
-          }
-        }
-        
-        if (!foundAlterarButton && alterarTarifaButtons.length > 0) {
-          foundAlterarButton = alterarTarifaButtons[0];
-        }
-        
-        if (foundAlterarButton) {
-          console.log('[PreSelectFare] Clicando em "Alterar tarifa" para mostrar mais opções');
-          foundAlterarButton.click();
-        } else {
-          const continueButtons = document.querySelectorAll('button, [role="button"]');
-          let foundContinueButton = null;
-          
-          for (const btn of continueButtons) {
-            const text = btn.textContent.toLowerCase();
-            if (text.includes('continuar') || text.includes('próximo') || text.includes('prosseguir')) {
-              foundContinueButton = btn;
-              break;
-            }
-          }
-          
-          if (foundContinueButton) {
-            foundContinueButton.click();
-          } else {
-            console.log('[PreSelectFare] Não encontrou botão para continuar');
-          }
-        }
-        
-        setTimeout(() => {
-          floatingCTA.style.display = 'none';
-          document.body.classList.remove('pre-select-fare-active');
-        }, 50);
-      });
-      return;
-    }
-    
-    // CASO 5: Pré-seleção do script ativa
-    if (originalButton && !originalButton.userSelected) {
-      newContinueButton.disabled = false;
-      newContinueButton.classList.remove('disabled');
-      newContinueButton.textContent = 'Continuar';
-      
-      let isProcessing = false;
-      newContinueButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (isProcessing) return;
-        isProcessing = true;
-        
-        analyticsEvent('Continuar - Floating CTA');
-        
-        originalButton.classList.remove('fare-selected-disabled');
-        originalButton.removeAttribute('disabled');
-        originalButton.style.pointerEvents = 'auto';
-        
-        originalButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
-        originalButton.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
-        originalButton.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-        
-        setTimeout(() => {
-          floatingCTA.style.display = 'none';
-          document.body.classList.remove('pre-select-fare-active');
-        }, 50);
-      });
-    } else {
-      // CASO 6: Nenhuma tarifa selecionada - botão inativo
-      newContinueButton.disabled = true;
-      newContinueButton.classList.add('disabled');
-      newContinueButton.textContent = 'Selecione uma tarifa';
-    }
-  }
-
-  function applySelectionForTrip(tripContainer, tripIndex) {
-    if (checkIfFareAlreadySelected(tripContainer)) {
-      console.log('[PreSelectFare] Trecho ' + tripIndex + ' já possui tarifa selecionada');
-      return false;
-    }
-    
-    const mostExpensiveFare = findMostExpensiveFare(tripContainer);
-    if (!mostExpensiveFare) {
-      console.log('[PreSelectFare] Nenhuma tarifa encontrada no trecho ' + tripIndex);
-      return false;
-    }
-    
-    const originalButton = modifyExpensiveFareButton(mostExpensiveFare);
-    if (!originalButton) {
-      console.log('[PreSelectFare] Falha ao modificar botão no trecho ' + tripIndex);
-      return false;
-    }
-    
-    console.log('[PreSelectFare] Pré-seleção aplicada no trecho ' + tripIndex + ' (tarifa mais cara)');
-    return originalButton;
-  }
-
-  function applySelection() {
-    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
-    
-    if (tripContainers.length === 0) {
-      console.log('[PreSelectFare] Não encontrou trip-index, aplicando método padrão');
-      if (checkIfFareAlreadySelected()) return false;
-      
-      const mostExpensiveFare = findMostExpensiveFare();
-      if (!mostExpensiveFare) return false;
-      
-      const originalButton = modifyExpensiveFareButton(mostExpensiveFare);
-      if (!originalButton) return false;
-      
-      const cta = createFloatingCTA(originalButton);
-      return !!cta;
-    }
     
     let appliedSelections = [];
-    let tripProcessedCount = 0;
     
-    tripContainers.forEach((container, index) => {
-      const tripIndex = container.className.includes('trip-index-0') ? 'ida' : 
-                       container.className.includes('trip-index-1') ? 'volta' : 
-                       'trecho-' + index;
-      
-      tripProcessedCount++;
-      const selectedButton = applySelectionForTrip(container, tripIndex);
-      if (selectedButton) {
-        appliedSelections.push(selectedButton);
+    // Processa IDA
+    if (!idaSelected && fareItems.ida.length > 0) {
+      const existing = fareItems.ida.find(item => item.classList.contains('fare-item-highlighted'));
+      if (existing) {
+        const btn = existing.querySelector('[data-pre-select-modified]');
+        if (btn) appliedSelections.push(btn);
+      } else {
+        const mostExpensive = findMostExpensiveFromList(fareItems.ida, 'IDA');
+        if (mostExpensive) {
+          const btn = modifyExpensiveFareButton(mostExpensive);
+          if (btn) {
+            console.log('[PreSelectFare] Pré-seleção aplicada na IDA');
+            appliedSelections.push(btn);
+          }
+        }
       }
-    });
+    }
     
-    console.log('[PreSelectFare] Processados ' + tripProcessedCount + ' trechos, aplicadas ' + appliedSelections.length + ' pré-seleções');
+    // Processa VOLTA
+    if (!voltaSelected && fareItems.volta.length > 0) {
+      const existing = fareItems.volta.find(item => item.classList.contains('fare-item-highlighted'));
+      if (existing) {
+        const btn = existing.querySelector('[data-pre-select-modified]');
+        if (btn) appliedSelections.push(btn);
+      } else {
+        const mostExpensive = findMostExpensiveFromList(fareItems.volta, 'VOLTA');
+        if (mostExpensive) {
+          const btn = modifyExpensiveFareButton(mostExpensive);
+          if (btn) {
+            console.log('[PreSelectFare] Pré-seleção aplicada na VOLTA');
+            appliedSelections.push(btn);
+          }
+        }
+      }
+    }
     
     if (appliedSelections.length > 0) {
-      const cta = createFloatingCTA(appliedSelections[0]);
-      return !!cta;
+      createFloatingCTA(appliedSelections[0]);
+      return true;
     }
     
     return false;
   }
 
-  function getFareContextHash() {
-    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
-    
-    let contextParts = [];
-    
-    if (tripContainers.length > 0) {
-      tripContainers.forEach((container) => {
-        const fareItems = container.querySelectorAll('.fare-item');
-        const visibleFareItems = Array.from(fareItems).filter(item => {
-          const rect = item.getBoundingClientRect();
-          const style = window.getComputedStyle(item);
-          return rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
-        });
-        
-        // CORREÇÃO: Incluir a QUANTIDADE de fare-items visíveis no hash
-        // Isso garante que quando detalhes abrem/fecham, o contexto muda
-        const visibleCount = visibleFareItems.length;
-        
-        const visiblePrices = visibleFareItems
-          .map(item => {
-            const priceEl = item.querySelector('[data-test-id="fare-price"]');
-            return priceEl ? priceEl.textContent.trim().replace(/\s+/g, '') : '';
-          })
-          .filter(price => price)
-          .sort();
-        
-        const tripClass = container.className;
-        // Adiciona contagem de itens visíveis ao hash
-        contextParts.push(tripClass + ':count=' + visibleCount + ':' + visiblePrices.join(','));
-      });
-    } else {
-      const fareItems = document.querySelectorAll('.fare-item');
-      const visibleFareItems = Array.from(fareItems).filter(item => {
-        const rect = item.getBoundingClientRect();
-        const style = window.getComputedStyle(item);
-        return rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
-      });
-      
-      const visibleCount = visibleFareItems.length;
-      const visiblePrices = visibleFareItems
-        .map(item => {
-          const priceEl = item.querySelector('[data-test-id="fare-price"]');
-          return priceEl ? priceEl.textContent.trim().replace(/\s+/g, '') : '';
-        })
-        .filter(price => price)
-        .sort();
-      
-      contextParts.push('single:count=' + visibleCount + ':' + visiblePrices.join(','));
-    }
-    
-    return contextParts.join('|');
-  }
-
-  let lastVisibilityState = null;
-  let isInitialized = false;
-  let currentFareContext = null;
-  let isProcessingChange = false;
-  let isSecondStep = false;
-  let stepCheckDebounceTimer = null;
-  let calendarObserver = null;
-  let lastApplyAttempt = null;
-  let lastCTAState = null;
-  let consecutiveFailedAttempts = 0; // NOVA: Contador de tentativas falhadas
-
-  function checkFaresVisibility() {
-    if (isProcessingChange) return;
-    
-    // NOVA VERIFICAÇÃO: Se não está na primeira etapa, oculta o CTA e para a execução
-    if (!isInFirstStep()) {
-      const floatingCTA = document.querySelector('.pre-select-floating-cta');
-      if (floatingCTA) {
-        floatingCTA.style.display = 'none';
-        document.body.classList.remove('pre-select-fare-active');
-      }
-      return;
-    }
-    
-    const fareItems = document.querySelectorAll('.fare-item');
-    const visibleFareItems = Array.from(fareItems).filter(item => {
-      const rect = item.getBoundingClientRect();
-      const style = window.getComputedStyle(item);
-      return rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
-    });
-    
-    const hasVisibleFares = visibleFareItems.length > 0;
-    const modifiedButton = document.querySelector('[data-pre-select-modified]');
-    
-    // NOVA: Verifica se o botão modificado ainda está visível
-    const isModifiedButtonVisible = modifiedButton ? (function() {
-      const rect = modifiedButton.getBoundingClientRect();
-      const style = window.getComputedStyle(modifiedButton);
-      return rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
-    })() : false;
-
-    let floatingCTA = document.querySelector('.pre-select-floating-cta');
-    if (!floatingCTA) {
-      floatingCTA = createFloatingCTA(null);
-    }
-
-    if (!hasVisibleFares) {
-      if (lastVisibilityState !== false) {
-        lastVisibilityState = false;
-        currentFareContext = null;
-        lastApplyAttempt = null;
-        lastCTAState = null;
-        consecutiveFailedAttempts = 0; // Reset contador
-        updateFloatingCTAState(floatingCTA, null);
-      }
-      return;
-    }
-
-    // Verifica o número de tarifas selecionadas
-    const selectedCount = countSelectedFares();
-    
-    // CORREÇÃO: Detecta corretamente o número total de trechos
-    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
-    let totalTrips = tripContainers.length;
-    
-    // Se não há trip-index, verifica se é voo simples
-    if (totalTrips === 0) {
-      totalTrips = 1;
-    }
-    
-    console.log('[PreSelectFare] Estado: ' + selectedCount + '/' + totalTrips + ' tarifas | visibleFares: ' + visibleFareItems.length + ' | modifiedButton: ' + !!modifiedButton + ' | modifiedVisible: ' + isModifiedButtonVisible + ' | failedAttempts: ' + consecutiveFailedAttempts);
-
-    // PRIORIDADE 1: Se todas as tarifas estão selecionadas, mostra CTA ativo
-    if (selectedCount >= totalTrips && selectedCount > 0) {
-      const currentState = 'all_selected_' + selectedCount + '_' + totalTrips;
-      
-      // PROTEÇÃO: Só atualiza CTA se o estado mudou
-      if (lastCTAState !== currentState) {
-        console.log('[PreSelectFare] Todas as ' + totalTrips + ' tarifas selecionadas - CTA ativo');
-        lastCTAState = currentState;
-        consecutiveFailedAttempts = 0; // Reset contador
-        updateFloatingCTAState(floatingCTA, { allSelected: true });
-      }
-      return;
-    }
-
-    const userSelectedFares = checkForUserSelectedFares();
-    
-    // PRIORIDADE 2: Verifica seleções globais do usuário
-    if (userSelectedFares.length > 0 && !modifiedButton) {
-      const currentState = 'user_selected_' + userSelectedFares.length;
-      
-      if (lastCTAState !== currentState) {
-        console.log('[PreSelectFare] Detectou ' + userSelectedFares.length + ' indicador(es) de seleção global pelo usuário');
-        lastCTAState = currentState;
-        consecutiveFailedAttempts = 0; // Reset contador
-        updateFloatingCTAState(floatingCTA, { userSelected: true });
-      }
-      return;
-    }
-
-    const newFareContext = getFareContextHash();
-    
-    // CORREÇÃO: Se há botão modificado MAS ele não está visível, precisamos tentar aplicar novamente
-    if (modifiedButton && !isModifiedButtonVisible) {
-      console.log('[PreSelectFare] Botão modificado existe mas não está visível - resetando para reaplicar');
-      modifiedButton.removeAttribute('data-pre-select-modified');
-      modifiedButton.classList.remove('fare-selected-disabled');
-      modifiedButton.removeAttribute('disabled');
-      modifiedButton.style.pointerEvents = '';
-      
-      const fareItem = modifiedButton.closest('.fare-item');
-      if (fareItem) {
-        fareItem.classList.remove('fare-item-highlighted');
-      }
-      
-      lastApplyAttempt = null;
-      lastCTAState = null;
-      consecutiveFailedAttempts = 0; // Reset contador
-    }
-    
-    const contextChanged = currentFareContext !== null &&
-      currentFareContext !== newFareContext &&
-      modifiedButton !== null &&
-      isModifiedButtonVisible;
-
-    if (contextChanged) {
-      console.log('[PreSelectFare] Contexto de tarifas mudou, reaplicando seleções');
-      isProcessingChange = true;
-      resetCurrentSelection();
-      currentFareContext = newFareContext;
-      lastApplyAttempt = null;
-      lastCTAState = null;
-      consecutiveFailedAttempts = 0; // Reset contador
-
-      setTimeout(() => {
-        const selectionApplied = applySelection();
-        currentFareContext = getFareContextHash();
-        lastVisibilityState = true;
-        lastApplyAttempt = currentFareContext;
-
-        setTimeout(() => {
-          isProcessingChange = false;
-        }, 150);
-
-        const button = selectionApplied ? document.querySelector('[data-pre-select-modified]') : null;
-        updateFloatingCTAState(floatingCTA, button);
-      }, 100);
-      return;
-    }
-
-    // CORREÇÃO: Verifica se NÃO há botão modificado VISÍVEL
-    const hasVisibleModifiedButton = modifiedButton && isModifiedButtonVisible;
-    
-    if (!hasVisibleModifiedButton) {
-      // NOVA PROTEÇÃO: Se já tentou aplicar muitas vezes sem sucesso, para de tentar
-      if (consecutiveFailedAttempts >= 3) {
-        console.log('[PreSelectFare] Muitas tentativas falhadas (' + consecutiveFailedAttempts + ') - parando para evitar loop');
-        
-        const currentState = 'failed_attempts_' + consecutiveFailedAttempts + '_' + selectedCount;
-        
-        if (lastCTAState !== currentState) {
-          lastCTAState = currentState;
-          if (userSelectedFares.length > 0) {
-            updateFloatingCTAState(floatingCTA, { userSelected: true });
-          } else {
-            updateFloatingCTAState(floatingCTA, null);
-          }
-        }
-        return;
-      }
-      
-      if (lastApplyAttempt === newFareContext) {
-        const hasAnyPreSelected = document.querySelector('[data-pre-select-modified]');
-        const visiblePreSelected = hasAnyPreSelected ? (function() {
-          const rect = hasAnyPreSelected.getBoundingClientRect();
-          return rect.height > 0;
-        })() : false;
-        
-        if (!visiblePreSelected && visibleFareItems.length > 0) {
-          console.log('[PreSelectFare] Há fare-items visíveis sem pré-seleção - forçando aplicação (tentativa ' + (consecutiveFailedAttempts + 1) + ')');
-          lastApplyAttempt = null;
-        } else {
-          console.log('[PreSelectFare] Já tentou aplicar neste contexto - evitando loop');
-          
-          const currentState = 'loop_protection_' + selectedCount + '_' + userSelectedFares.length;
-          
-          if (lastCTAState !== currentState) {
-            lastCTAState = currentState;
-            if (userSelectedFares.length > 0) {
-              updateFloatingCTAState(floatingCTA, { userSelected: true });
-            } else {
-              updateFloatingCTAState(floatingCTA, null);
-            }
-          }
-          return;
-        }
-      }
-
-      console.log('[PreSelectFare] Aplicando pré-seleção inicial (tentativa ' + (consecutiveFailedAttempts + 1) + ')');
-      const selectionApplied = applySelection();
-      
-      // NOVA LÓGICA: Incrementa contador se não conseguiu aplicar nada
-      if (!selectionApplied) {
-        consecutiveFailedAttempts++;
-        console.log('[PreSelectFare] Falha na aplicação - contador: ' + consecutiveFailedAttempts);
-      } else {
-        consecutiveFailedAttempts = 0; // Reset se conseguiu aplicar
-        console.log('[PreSelectFare] Aplicação bem-sucedida - resetando contador');
-      }
-      
-      currentFareContext = getFareContextHash();
-      lastVisibilityState = true;
-      lastApplyAttempt = currentFareContext;
-      lastCTAState = null;
-
-      const button = selectionApplied ? document.querySelector('[data-pre-select-modified]') : null;
-      updateFloatingCTAState(floatingCTA, button);
-      return;
-    }
-
-    // CASO: Já tem seleção válida e visível
-    currentFareContext = newFareContext;
-    if (lastVisibilityState !== true) {
-      lastVisibilityState = true;
-      lastCTAState = null;
-      consecutiveFailedAttempts = 0; // Reset contador
-      updateFloatingCTAState(floatingCTA, modifiedButton);
-    }
-  }
-
+  // Reseta seleção atual
   function resetCurrentSelection() {
     const modifiedButtons = document.querySelectorAll('[data-pre-select-modified]');
     modifiedButtons.forEach(btn => {
@@ -1119,29 +627,211 @@
       btn.style.pointerEvents = '';
       const originalText = btn.getAttribute('data-original-text');
       const texts = btn.querySelectorAll('.button__text, .button__text--mobile');
-      texts.forEach(t => {
-        t.textContent = originalText && originalText.trim() ? originalText.trim() : 'Selecionar tarifa';
-      });
+      texts.forEach(t => t.textContent = originalText || 'Selecionar tarifa');
       btn.removeAttribute('data-original-text');
     });
-    const highlightedItems = document.querySelectorAll('.fare-item-highlighted');
-    highlightedItems.forEach(item => item.classList.remove('fare-item-highlighted'));
-    const floatingCTA = document.querySelector('.pre-select-floating-cta');
-    if (floatingCTA) {
-      floatingCTA.style.display = 'none';
-    }
-    document.body.classList.remove('pre-select-fare-active');
     
+    document.querySelectorAll('.fare-item-highlighted').forEach(item => item.classList.remove('fare-item-highlighted'));
+    
+    const floatingCTA = document.querySelector('.pre-select-floating-cta');
+    if (floatingCTA) floatingCTA.style.display = 'none';
+    
+    document.body.classList.remove('pre-select-fare-active');
+    updateFooterStyle(false);
     lastApplyAttempt = null;
     lastCTAState = null;
-    consecutiveFailedAttempts = 0; // NOVA: Reset contador de tentativas falhadas
+    consecutiveFailedAttempts = 0;
   }
 
+  // Verifica visibilidade das tarifas
+  function checkFaresVisibility() {
+    if (isProcessingChange) return;
+    
+    if (!isInFirstStep()) {
+      const floatingCTA = document.querySelector('.pre-select-floating-cta');
+      if (floatingCTA) {
+        floatingCTA.style.display = 'none';
+        document.body.classList.remove('pre-select-fare-active');
+        updateFooterStyle(false);
+      }
+      return;
+    }
+    
+    const fareItems = getVisibleFareItemsByTrip(false);
+    const totalVisible = fareItems.ida.length + fareItems.volta.length + fareItems.desconhecido.length;
+    
+    if (totalVisible === 0) {
+      if (lastVisibilityState !== false) {
+        lastVisibilityState = false;
+        currentFareContext = null;
+        lastApplyAttempt = null;
+        lastCTAState = null;
+        consecutiveFailedAttempts = 0;
+        const floatingCTA = document.querySelector('.pre-select-floating-cta');
+        if (floatingCTA) updateFloatingCTAState(floatingCTA, null);
+      }
+      return;
+    }
+
+    const modifiedButton = document.querySelector('[data-pre-select-modified]');
+    const isModifiedVisible = modifiedButton ? modifiedButton.getBoundingClientRect().height > 0 : false;
+    
+    let floatingCTA = document.querySelector('.pre-select-floating-cta');
+    if (!floatingCTA) floatingCTA = createFloatingCTA(null);
+
+    const selectedCount = countSelectedFares();
+    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
+    const totalTrips = tripContainers.length || 1;
+    
+    // Todas selecionadas
+    if (selectedCount >= totalTrips && selectedCount > 0) {
+      const currentState = 'all_selected_' + selectedCount;
+      if (lastCTAState !== currentState) {
+        console.log('[PreSelectFare] Todas tarifas selecionadas');
+        lastCTAState = currentState;
+        consecutiveFailedAttempts = 0;
+        updateFloatingCTAState(floatingCTA, { allSelected: true });
+      }
+      return;
+    }
+
+    const newContext = getFareContextHash();
+    
+    // Reseta se botão não visível
+    if (modifiedButton && !isModifiedVisible) {
+      modifiedButton.removeAttribute('data-pre-select-modified');
+      modifiedButton.classList.remove('fare-selected-disabled');
+      modifiedButton.removeAttribute('disabled');
+      modifiedButton.style.pointerEvents = '';
+      
+      const fareItem = modifiedButton.closest('.fare-item');
+      if (fareItem) fareItem.classList.remove('fare-item-highlighted');
+      
+      lastApplyAttempt = null;
+      lastCTAState = null;
+      consecutiveFailedAttempts = 0;
+    }
+    
+    // Detecta mudança de contexto
+    if (currentFareContext && currentFareContext !== newContext && modifiedButton && isModifiedVisible) {
+      console.log('[PreSelectFare] Contexto mudou - reaplicando');
+      isProcessingChange = true;
+      resetCurrentSelection();
+      currentFareContext = newContext;
+      
+      setTimeout(() => {
+        applySelection();
+        currentFareContext = getFareContextHash();
+        lastVisibilityState = true;
+        lastApplyAttempt = currentFareContext;
+        isProcessingChange = false;
+        
+        const btn = document.querySelector('[data-pre-select-modified]');
+        updateFloatingCTAState(floatingCTA, btn);
+      }, 100);
+      return;
+    }
+
+    // Verifica necessidade de aplicar seleção
+    let idaSelected = false;
+    let voltaSelected = false;
+    
+    tripContainers.forEach(container => {
+      const isIda = container.className.indexOf('trip-index-0') !== -1;
+      const isVolta = container.className.indexOf('trip-index-1') !== -1;
+      
+      if (isIda && checkIfFareAlreadySelected(container)) idaSelected = true;
+      if (isVolta && checkIfFareAlreadySelected(container)) voltaSelected = true;
+    });
+    
+    const idaNeedsSelection = !idaSelected && fareItems.ida.length > 0;
+    const voltaNeedsSelection = !voltaSelected && fareItems.volta.length > 0;
+    const hasUnselected = idaNeedsSelection || voltaNeedsSelection;
+    
+    if (!(modifiedButton && isModifiedVisible) && hasUnselected) {
+      if (consecutiveFailedAttempts >= 5) {
+        if (newContext !== lastApplyAttempt) {
+          consecutiveFailedAttempts = 0;
+          lastApplyAttempt = null;
+        } else {
+          updateFloatingCTAState(floatingCTA, null);
+          return;
+        }
+      }
+      
+      const applied = applySelection();
+      
+      if (!applied) consecutiveFailedAttempts++;
+      else consecutiveFailedAttempts = 0;
+      
+      currentFareContext = getFareContextHash();
+      lastVisibilityState = true;
+      lastApplyAttempt = currentFareContext;
+      lastCTAState = null;
+      
+      const btn = applied ? document.querySelector('[data-pre-select-modified]') : null;
+      updateFloatingCTAState(floatingCTA, btn);
+      return;
+    }
+
+    // Já tem seleção válida
+    currentFareContext = newContext;
+    if (lastVisibilityState !== true || (modifiedButton && isModifiedVisible)) {
+      lastVisibilityState = true;
+      lastCTAState = null;
+      consecutiveFailedAttempts = 0;
+      updateFloatingCTAState(floatingCTA, modifiedButton);
+    }
+  }
+
+  // Configura observer principal
   function setupObserver() {
     if (window._preSelectFareObserver) return;
+    
     let debounceTimer = null;
-    const observer = new MutationObserver(() => {
+    const observer = new MutationObserver((mutations) => {
       if (isProcessingChange) return;
+
+      // Filtra mudanças causadas pela própria barra flutuante
+      const shouldIgnore = mutations.some(mutation => {
+        // Ignora mudanças de atributos na barra flutuante ou dentro dela
+        if (mutation.type === 'attributes') {
+          const target = mutation.target;
+          if (target.nodeType === 1) {
+            if (target.classList?.contains('pre-select-floating-cta') ||
+                target.classList?.contains('floating-continue-btn') ||
+                target.closest('.pre-select-floating-cta')) {
+              return true;
+            }
+          }
+        }
+        
+        // Ignora adição/remoção da barra flutuante
+        if (mutation.type === 'childList') {
+          const addedNodes = Array.from(mutation.addedNodes);
+          const removedNodes = Array.from(mutation.removedNodes);
+          
+          const hasFloatingCTA = addedNodes.some(node => 
+            node.nodeType === 1 && 
+            (node.classList?.contains('pre-select-floating-cta') || 
+             node.querySelector?.('.pre-select-floating-cta'))
+          );
+          
+          const removedFloatingCTA = removedNodes.some(node =>
+            node.nodeType === 1 &&
+            (node.classList?.contains('pre-select-floating-cta') ||
+             node.querySelector?.('.pre-select-floating-cta'))
+          );
+          
+          return hasFloatingCTA || removedFloatingCTA;
+        }
+        
+        return false;
+      });
+
+      if (shouldIgnore) {
+        return; // Ignora todas mudanças da barra flutuante
+      }
 
       if (!isInitialized) {
         const fareItems = document.querySelectorAll('.fare-item');
@@ -1153,7 +843,7 @@
       }
 
       if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(checkFaresVisibility, 200);
+      debounceTimer = setTimeout(checkFaresVisibility, 300);
     });
 
     observer.observe(document.body, {
@@ -1166,131 +856,30 @@
     window._preSelectFareObserver = observer;
   }
 
-  function navigateToNextStep() {
-    analyticsEvent('Navegacao automatica - Todas tarifas selecionadas');
-    
-    let foundMainContinue = null;
-    
-    const specificButtons = document.querySelectorAll('[data-test-id*="continue"], [data-test-id*="next"], [data-test-id*="prosseguir"]');
-    for (const btn of specificButtons) {
-      if (!btn.closest('.pre-select-floating-cta') && !btn.hasAttribute('disabled') && !btn.disabled) {
-        const rect = btn.getBoundingClientRect();
-        if (rect.height > 0 && window.getComputedStyle(btn).display !== 'none') {
-          foundMainContinue = btn;
-          console.log('[PreSelectFare] Encontrou botão específico por data-test-id para navegação automática');
-          break;
-        }
-      }
-    }
-    
-    if (!foundMainContinue) {
-      const allButtons = document.querySelectorAll('button, [role="button"], input[type="submit"], input[type="button"]');
-      
-      for (const btn of allButtons) {
-        if (btn.closest('.pre-select-floating-cta')) continue;
-        if (btn.hasAttribute('disabled') || btn.disabled) continue;
-        
-        const text = btn.textContent.toLowerCase().trim();
-        const value = (btn.value || '').toLowerCase().trim();
-        
-        if ((text === 'continuar' || value === 'continuar' || 
-             text === 'prosseguir' || value === 'prosseguir' ||
-             text.includes('próxim') || value.includes('próxim')) &&
-            !text.includes('alterar')) {
-          
-          const rect = btn.getBoundingClientRect();
-          const style = window.getComputedStyle(btn);
-          
-          if (rect.height > 0 && rect.width > 0 && 
-              style.display !== 'none' && 
-              style.visibility !== 'hidden' && 
-              style.opacity !== '0') {
-            foundMainContinue = btn;
-            console.log('[PreSelectFare] Encontrou botão principal por texto para navegação automática: "' + text + '"');
-            break;
-          }
-        }
-      }
-    }
-    
-    if (foundMainContinue) {
-      console.log('[PreSelectFare] NAVEGANDO automaticamente - clicando no botão principal');
-      
-      const floatingCTA = document.querySelector('.pre-select-floating-cta');
-      if (floatingCTA) {
-        floatingCTA.style.display = 'none';
-        document.body.classList.remove('pre-select-fare-active');
-      }
-      
-      isSecondStep = true;
-      
-      foundMainContinue.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
-      foundMainContinue.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
-      foundMainContinue.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-      
-      setTimeout(() => {
-        if (foundMainContinue && typeof foundMainContinue.click === 'function') {
-          foundMainContinue.click();
-        }
-      }, 50);
-      
-    } else {
-      console.log('[PreSelectFare] ERRO: Não foi possível navegar automaticamente - botão não encontrado');
-      
-      const allButtons = document.querySelectorAll('button, input[type="submit"], input[type="button"]');
-      console.log('[PreSelectFare] Botões disponíveis para debug:');
-      allButtons.forEach((btn, index) => {
-        if (btn.closest('.pre-select-floating-cta')) return;
-        const rect = btn.getBoundingClientRect();
-        if (rect.height > 0 && window.getComputedStyle(btn).display !== 'none') {
-          console.log('[PreSelectFare] Botão ' + index + ': "' + btn.textContent.trim() + '" - disabled: ' + (btn.disabled || btn.hasAttribute('disabled')));
-        }
-      });
-      
-      window._preSelectNavigating = false;
-    }
-  }
-
+  // Configura observer do calendário
   function setupCalendarObserver() {
     if (calendarObserver) return;
     
-    calendarObserver = new MutationObserver((mutations) => {
+    calendarObserver = new MutationObserver(() => {
       const priceCalendar = document.querySelector('[aria-label="Calendário de preços. Veja os preços próximos aos dias de sua busca. Selecionar"]');
       
       if (priceCalendar && isSecondStep) {
-        console.log('[PreSelectFare] RETORNANDO da segunda etapa - reinicializando');
-        
-        if (stepCheckDebounceTimer) {
-          clearTimeout(stepCheckDebounceTimer);
-          stepCheckDebounceTimer = null;
-        }
+        console.log('[PreSelectFare] Retornando da segunda etapa');
         
         isSecondStep = false;
         isInitialized = false;
         isProcessingChange = false;
         currentFareContext = null;
         lastVisibilityState = null;
-        window._preSelectNavigating = false;
+        consecutiveFailedAttempts = 0;
         
         resetCurrentSelection();
-        
-        if (!window._preSelectFareObserver) {
-          setupObserver();
-        }
         
         setTimeout(() => {
           const fareItems = document.querySelectorAll('.fare-item');
           if (fareItems.length > 0) {
             isInitialized = true;
             checkFaresVisibility();
-          } else {
-            setTimeout(() => {
-              const fareItemsRetry = document.querySelectorAll('.fare-item');
-              if (fareItemsRetry.length > 0) {
-                isInitialized = true;
-                checkFaresVisibility();
-              }
-            }, 200);
           }
         }, 150);
       }
@@ -1304,7 +893,9 @@
     });
   }
 
+  // Inicialização
   function init() {
+    injectStyles();
     setupObserver();
     setupCalendarObserver();
 
@@ -1321,11 +912,11 @@
     init();
   }
 
+  // Polling para carregamento dinâmico
   let pollCount = 0;
-  const maxPolls = 40;
   const pollInterval = setInterval(() => {
     pollCount++;
-    if (pollCount >= maxPolls || isInitialized) {
+    if (pollCount >= 40 || isInitialized) {
       clearInterval(pollInterval);
       return;
     }
