@@ -114,7 +114,7 @@
         cursor: not-allowed !important;\
         pointer-events: none !important;\
         opacity: 0.8 !important;\
-        border: solid 2px rgb(0, 128, 88) !important;\
+        border: solid 2px rgb(2, 108, 182) !important;\
       }\
       .fare-selected-disabled .button__text,\
       .fare-selected-disabled .button__text--mobile {\
@@ -268,12 +268,9 @@
       if (buttonTexts.length > 0) selectButton.setAttribute('data-original-text', buttonTexts[0].textContent);
     }
     
-    // Ícone de check SVG
-    const checkIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none" style="vertical-align: middle; margin-right: 6px;"><path fill-rule="evenodd" clip-rule="evenodd" d="M0.600098 9.0001C0.600098 4.3591 4.3591 0.600098 9.0001 0.600098C13.6369 0.600098 17.4001 4.3591 17.4001 9.0001C17.4001 13.6376 13.6369 17.4001 9.0001 17.4001C4.3591 17.4001 0.600098 13.6376 0.600098 9.0001ZM5.3587 8.38223L4.8001 8.95508L7.81887 12.0547L13.5819 6.13663L13.024 5.56378L7.81887 10.9083L5.3587 8.38223Z" fill="#008058"/></svg>';
-    
     const buttonTexts = selectButton.querySelectorAll('.button__text, .button__text--mobile');
     buttonTexts.forEach(textEl => {
-      textEl.innerHTML = checkIcon + 'Tarifa selecionada';
+      textEl.textContent = 'Tarifa selecionada';
     });
     selectButton.classList.add('fare-selected-disabled');
     selectButton.setAttribute('disabled', 'true');
@@ -843,7 +840,7 @@
       }
 
       if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(checkFaresVisibility, 300);
+      debounceTimer = setTimeout(checkFaresVisibility, 100); // Reduzido de 300ms para 100ms
     });
 
     observer.observe(document.body, {
@@ -893,6 +890,64 @@
     });
   }
 
+  // Verificador de fallback - força pré-seleção se não houver seleção após delay
+  function setupFallbackChecker() {
+    let fallbackAttempts = 0;
+    const maxFallbackAttempts = 3;
+    
+    const fallbackInterval = setInterval(() => {
+      fallbackAttempts++;
+      
+      // Para após 3 tentativas (3 segundos)
+      if (fallbackAttempts >= maxFallbackAttempts) {
+        clearInterval(fallbackInterval);
+        return;
+      }
+      
+      // Verifica se está na primeira etapa
+      if (!isInFirstStep()) {
+        clearInterval(fallbackInterval);
+        return;
+      }
+      
+      // Verifica se há fare-items visíveis
+      const fareItems = getVisibleFareItemsByTrip(false);
+      const totalVisible = fareItems.ida.length + fareItems.volta.length + fareItems.desconhecido.length;
+      
+      if (totalVisible === 0) {
+        return; // Ainda não há items, continua tentando
+      }
+      
+      // Verifica se já há alguma pré-seleção aplicada
+      const hasPreSelection = document.querySelector('[data-pre-select-modified]');
+      
+      if (hasPreSelection) {
+        console.log('[PreSelectFare] Pré-seleção já aplicada - fallback cancelado');
+        clearInterval(fallbackInterval);
+        return;
+      }
+      
+      // Verifica se usuário já selecionou algo
+      const selectedCount = countSelectedFares();
+      
+      if (selectedCount > 0) {
+        console.log('[PreSelectFare] Usuário já fez seleção - fallback cancelado');
+        clearInterval(fallbackInterval);
+        return;
+      }
+      
+      // Força aplicação da pré-seleção
+      console.log('[PreSelectFare] Fallback: Forçando pré-seleção (tentativa ' + fallbackAttempts + ')');
+      const applied = applySelection();
+      
+      if (applied) {
+        console.log('[PreSelectFare] Fallback: Pré-seleção aplicada com sucesso');
+        clearInterval(fallbackInterval);
+      }
+      
+    }, 1000); // Verifica a cada 1 segundo
+  }
+
   // Inicialização
   function init() {
     injectStyles();
@@ -902,8 +957,12 @@
     const fareItems = document.querySelectorAll('.fare-item');
     if (fareItems.length > 0) {
       isInitialized = true;
+      // Aplica imediatamente
       checkFaresVisibility();
     }
+    
+    // Inicia verificador de fallback
+    setupFallbackChecker();
   }
 
   if (document.readyState === 'loading') {
@@ -912,11 +971,11 @@
     init();
   }
 
-  // Polling para carregamento dinâmico
+  // Polling para carregamento dinâmico (mais agressivo)
   let pollCount = 0;
   const pollInterval = setInterval(() => {
     pollCount++;
-    if (pollCount >= 40 || isInitialized) {
+    if (pollCount >= 60 || isInitialized) { // Aumentado para 60 tentativas (3 segundos)
       clearInterval(pollInterval);
       return;
     }
