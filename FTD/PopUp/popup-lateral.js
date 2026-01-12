@@ -234,7 +234,7 @@
     }
 
     // Função para tracking de eventos do popup
-    function analyticsPopupEvent(eventLabel, productId, productName, priceNumber, quantity, category, gradeLevel) {
+    function analyticsPopupEvent(eventLabel, productId, productName, priceNumber, quantity, category) {
         if (eventLabel === undefined || !eventLabel) {
             return;
         }
@@ -242,18 +242,12 @@
         var productNameFormatted = productName || 'Produto';
         var quantityValue = quantity || 1;
         var priceValue = priceNumber || 0;
-        var gradeLevelFormatted = gradeLevel ? String(gradeLevel) : '';
 
         // Formato: :productName;quantity;price;;
         var productsString =
             ':' + productNameFormatted.replace(/,/g, '') + ';' + quantityValue + ';' + priceValue.toFixed(2) + ';;';
 
         var eVar25Value = 'AT_popup_lateral_' + eventLabel;
-
-        // Adiciona informação do nível escolar se disponível
-        if (gradeLevelFormatted) {
-            eVar25Value += ' ' + gradeLevelFormatted;
-        }
 
         console.log('[Tracking PopupLateral] Analytics event:', eVar25Value);
 
@@ -272,18 +266,12 @@
     }
 
     // Função para tracking simplificado (sem produto)
-    function analyticsSimpleEvent(eventLabel, gradeLevel) {
+    function analyticsSimpleEvent(eventLabel) {
         if (!eventLabel) {
             return;
         }
 
-        var gradeLevelFormatted = gradeLevel ? String(gradeLevel) : '';
         var eVar25Value = 'AT_popup_lateral_' + eventLabel;
-
-        // Adiciona informação do nível escolar se disponível
-        if (gradeLevelFormatted) {
-            eVar25Value += ' ' + gradeLevelFormatted;
-        }
 
         console.log('[Tracking PopupLateral] Analytics event:', eVar25Value);
 
@@ -919,7 +907,7 @@
         recordPopupShown(product.id, gradeLevel);
 
         // Tracking: popup exibido
-        analyticsPopupEvent('popup_view', product.id, productName, product.price, 1, product.category, gradeLevel);
+        analyticsPopupEvent('popup_view', product.id, productName, product.price, 1, product.category);
 
         function close() {
             if (popup) popup.classList.add('closing');
@@ -934,7 +922,7 @@
                 recordPopupRejected(product.id, 'close_x_click');
                 
                 // Tracking: clique no botão X
-                analyticsSimpleEvent('close_x_click', gradeLevel);
+                analyticsSimpleEvent('close_x_click');
                 close();
             };
         }
@@ -945,7 +933,7 @@
                 recordPopupRejected(product.id, 'close_depois_click');
                 
                 // Tracking: clique no botão "Depois"
-                analyticsSimpleEvent('close_depois_click', gradeLevel);
+                analyticsSimpleEvent('close_depois_click');
                 close();
             };
         }
@@ -953,7 +941,7 @@
         if (addBtn) {
             addBtn.onclick = function () {
                 // Tracking: clique no botão adicionar
-                analyticsPopupEvent('add_to_cart_click', product.id, productName, product.price, 1, product.category, gradeLevel);
+                analyticsPopupEvent('add_to_cart_click', product.id, productName, product.price, 1, product.category);
 
                 addBtn.querySelector('.add-to-cart-text').textContent = 'ADICIONANDO...';
                 addBtn.disabled = true;
@@ -976,7 +964,7 @@
                             recordPopupSuccess(product.id);
 
                             // Tracking: produto adicionado com sucesso
-                            analyticsPopupEvent('add_to_cart_success', product.id, productName, product.price, 1, product.category, gradeLevel);
+                            analyticsPopupEvent('add_to_cart_success', product.id, productName, product.price, 1, product.category);
 
                             setTimeout(close, 1500);
                         } else {
@@ -984,7 +972,7 @@
                             addBtn.disabled = false;
 
                             // Tracking: erro ao adicionar produto
-                            analyticsPopupEvent('add_to_cart_error', product.id, productName, product.price, 1, product.category, gradeLevel);
+                            analyticsPopupEvent('add_to_cart_error', product.id, productName, product.price, 1, product.category);
                         }
                     })
                     .catch(function () {
@@ -992,7 +980,7 @@
                         addBtn.disabled = false;
 
                         // Tracking: erro ao adicionar produto
-                        analyticsPopupEvent('add_to_cart_error', product.id, productName, product.price, 1, product.category, gradeLevel);
+                        analyticsPopupEvent('add_to_cart_error', product.id, productName, product.price, 1, product.category);
                     });
             };
         }
