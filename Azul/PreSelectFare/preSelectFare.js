@@ -123,7 +123,7 @@
         position: relative;\
         border: 1px solid #026CB6 !important;\
         margin-top: 3px;\
-        background: rgba(2, 108, 182, 0.04);\
+        background-color: #EBF4FA !important;\
       }\
       footer.pre-select-footer-adjusted {\
         position: unset !important;\
