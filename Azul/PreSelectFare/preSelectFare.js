@@ -122,7 +122,6 @@
       .fare-item-highlighted {\
         position: relative;\
         border: 1px solid #026CB6 !important;\
-        margin-top: 3px;\
         background-color: #EBF4FA !important;\
       }\
       footer.pre-select-footer-adjusted {\
@@ -458,7 +457,7 @@
       newBtn.classList.add('disabled');
       
       if (tripStatus.missing === 'ida') newBtn.textContent = 'Selecione a tarifa de ida';
-      else if (tripStatus.missing === 'volta') newBtn.textContent = 'Selecione a tarifa de volta';
+      else if (tripStatus.missing === 'volta') newBtn.textContent = 'Selecione a tarifa da volta';
       else newBtn.textContent = 'Selecione uma tarifa';
       return;
     }
