@@ -5,180 +5,104 @@
   var PRODUCT_IDS = {
     MINIDICIONARIO: 56551,
     DICIONARIO_INGLES: 53959,
-    ESTUDA_COM_ANUAL: 696545,
-    ESTUDA_COM_SEMESTRAL: 696542,
-    REFORCA_ANUAL: 453782,
-    REFORCA_SEMESTRAL: 453779,
-    NUMERODROMO_BICHODARIO: 699322, // Numeródromo + bichodário (conjunto)
-    BICHODARIO: 52144,
-    NO_CAPRICHO_A: 695573, // No capricho A + Que vergonha que dá!
-    TABUADA_1: 695576, // Nós e a tabuada 1 + No capricho B
-    TABUADA_2: 695786, // Nós e a tabuada 2 + No capricho C
-    TABUADA_3: 695816, // Nós e a tabuada 3 + No capricho D
-    TABUADA_4: 695888, // Nós e a tabuada 4 + No capricho E
-    PETER_PAN: 578096, // Peter Pan + Mágico de Oz
-    CADE_LIVRO: 56353, // Cadê o livro que estava aqui?
-    MUSEU_EMILIA: 51706, // O museu da emília
-    ALICE: 56506, // Alice no País das Maravilhas
-    PEQUENO_PRINCIPE: 75016, // O pequeno príncipe
-    ENQUANTO_MAMAE_DORMIA: 697535, // Enquanto mamãe dormia
-    BENNY_INVENTOR: 697577, // Benny o inventor
-    SETE_CORVOS: 697628, // Sete corvos e oito contos
-    ANJOS: 697679, // Anjos
-    MAMAE_GATA: 56572, // Mamãe gata e seus pintinhos
-    TUNEL: 56317, // O túnel
-    ISCA_FAISCA: 52123, // Isca, Faísca!-Coleção Acalanto
-    OLHO_VIVO: 450491, // Olho vivo, olho mágico
-    LIVRO_PASSAROS: 51754, // O livro dos pássaros mágicos
-    E_DE_MORTE: 53071, // É de morte! - Série Espelhos
+    ENQUANTO_MAMAE_DORMIA: 697535,
+    E_HORA: 697547,
+    TIJOLO_POR_TIJOLO: 697682,
   };
 
   // Mapeamento de nível escolar para produtos recomendados em ordem de prioridade
-  // O primeiro produto do array é o mais importante, depois o segundo, etc.
-  // Baseado na tabela completa fornecida
+  // O primeiro produto do array é o mais importante, depois o segundo
+  // Baseado na nova tabela fornecida (máximo 2 produtos por nível)
   var GRADE_RECOMMENDATIONS = {
     // Educação Infantil - 1 ano
     1: [
-      PRODUCT_IDS.NUMERODROMO_BICHODARIO,
-      PRODUCT_IDS.BICHODARIO,
       PRODUCT_IDS.ENQUANTO_MAMAE_DORMIA,
-      PRODUCT_IDS.MAMAE_GATA,
+      PRODUCT_IDS.E_HORA,
     ],
     // Educação Infantil - 2 anos
     2: [
-      PRODUCT_IDS.NUMERODROMO_BICHODARIO,
-      PRODUCT_IDS.BICHODARIO,
       PRODUCT_IDS.ENQUANTO_MAMAE_DORMIA,
-      PRODUCT_IDS.MAMAE_GATA,
+      PRODUCT_IDS.E_HORA,
     ],
     // Educação Infantil - 3 anos
     3: [
-      PRODUCT_IDS.NUMERODROMO_BICHODARIO,
-      PRODUCT_IDS.BICHODARIO,
       PRODUCT_IDS.ENQUANTO_MAMAE_DORMIA,
-      PRODUCT_IDS.MAMAE_GATA,
+      PRODUCT_IDS.E_HORA,
     ],
     // Pré Escola - 4 anos
     4: [
-      PRODUCT_IDS.NUMERODROMO_BICHODARIO,
-      PRODUCT_IDS.BICHODARIO,
       PRODUCT_IDS.ENQUANTO_MAMAE_DORMIA,
-      PRODUCT_IDS.TUNEL,
+      PRODUCT_IDS.E_HORA,
     ],
     // Pré Escola - 5 anos
     5: [
-      PRODUCT_IDS.NUMERODROMO_BICHODARIO,
-      PRODUCT_IDS.BICHODARIO,
       PRODUCT_IDS.ENQUANTO_MAMAE_DORMIA,
-      PRODUCT_IDS.TUNEL,
+      PRODUCT_IDS.E_HORA,
     ],
     // 1º Série / 1º ano - Anos iniciais (6 anos)
     6: [
       PRODUCT_IDS.MINIDICIONARIO,
-      PRODUCT_IDS.NO_CAPRICHO_A,
-      PRODUCT_IDS.CADE_LIVRO,
-      PRODUCT_IDS.BENNY_INVENTOR,
-      PRODUCT_IDS.ISCA_FAISCA,
+      PRODUCT_IDS.TIJOLO_POR_TIJOLO,
     ],
     // 2º Série / 2º ano - Anos iniciais (7 anos)
     7: [
       PRODUCT_IDS.MINIDICIONARIO,
-      PRODUCT_IDS.TABUADA_1,
-      PRODUCT_IDS.CADE_LIVRO,
-      PRODUCT_IDS.BENNY_INVENTOR,
-      PRODUCT_IDS.ISCA_FAISCA,
+      PRODUCT_IDS.TIJOLO_POR_TIJOLO,
     ],
     // 3º Série / 3º ano - Anos iniciais (8 anos)
     8: [
       PRODUCT_IDS.MINIDICIONARIO,
-      PRODUCT_IDS.TABUADA_2,
-      PRODUCT_IDS.MUSEU_EMILIA,
-      PRODUCT_IDS.BENNY_INVENTOR,
-      PRODUCT_IDS.OLHO_VIVO,
+      PRODUCT_IDS.TIJOLO_POR_TIJOLO,
     ],
     // 4º Série / 4º ano - Anos iniciais (9 anos)
     9: [
       PRODUCT_IDS.MINIDICIONARIO,
-      PRODUCT_IDS.TABUADA_3,
-      PRODUCT_IDS.MUSEU_EMILIA,
-      PRODUCT_IDS.SETE_CORVOS,
-      PRODUCT_IDS.OLHO_VIVO,
+      PRODUCT_IDS.TIJOLO_POR_TIJOLO,
     ],
     // 5º Série / 5º ano - Anos iniciais (10 anos)
     10: [
       PRODUCT_IDS.MINIDICIONARIO,
-      PRODUCT_IDS.TABUADA_4,
-      PRODUCT_IDS.ALICE,
-      PRODUCT_IDS.SETE_CORVOS,
-      PRODUCT_IDS.LIVRO_PASSAROS,
+      PRODUCT_IDS.TIJOLO_POR_TIJOLO,
     ],
     // 6º Série / 6º ano - Anos finais (11 anos)
     11: [
       PRODUCT_IDS.MINIDICIONARIO,
-      PRODUCT_IDS.PETER_PAN,
-      PRODUCT_IDS.ALICE,
-      PRODUCT_IDS.ANJOS,
-      PRODUCT_IDS.LIVRO_PASSAROS,
+      PRODUCT_IDS.TIJOLO_POR_TIJOLO,
     ],
     // 7º Série / 7º ano - Anos finais (12 anos)
     12: [
+      PRODUCT_IDS.MINIDICIONARIO,
       PRODUCT_IDS.DICIONARIO_INGLES,
-      PRODUCT_IDS.PETER_PAN,
-      PRODUCT_IDS.PEQUENO_PRINCIPE,
-      PRODUCT_IDS.ANJOS,
-      PRODUCT_IDS.E_DE_MORTE,
     ],
     // 8º Série / 8º ano - Anos finais (13 anos)
     13: [
+      PRODUCT_IDS.MINIDICIONARIO,
       PRODUCT_IDS.DICIONARIO_INGLES,
-      PRODUCT_IDS.PETER_PAN,
-      PRODUCT_IDS.PEQUENO_PRINCIPE,
-      PRODUCT_IDS.ANJOS,
-      PRODUCT_IDS.E_DE_MORTE,
     ],
     // 9º Série / 9º ano - Anos finais (14 anos)
     14: [
+      PRODUCT_IDS.MINIDICIONARIO,
       PRODUCT_IDS.DICIONARIO_INGLES,
-      PRODUCT_IDS.PETER_PAN,
-      PRODUCT_IDS.PEQUENO_PRINCIPE,
-      PRODUCT_IDS.ANJOS,
-      PRODUCT_IDS.E_DE_MORTE,
     ],
     // Ensino Médio 1 / 1º Colegial (15 anos)
     15: [
-      PRODUCT_IDS.ESTUDA_COM_ANUAL,
-      PRODUCT_IDS.ESTUDA_COM_SEMESTRAL,
-      PRODUCT_IDS.REFORCA_ANUAL,
-      PRODUCT_IDS.REFORCA_SEMESTRAL,
+      PRODUCT_IDS.MINIDICIONARIO,
+      PRODUCT_IDS.DICIONARIO_INGLES,
     ],
     // Ensino Médio 2 / 2º Colegial (16 anos)
     16: [
-      PRODUCT_IDS.ESTUDA_COM_ANUAL,
-      PRODUCT_IDS.ESTUDA_COM_SEMESTRAL,
-      PRODUCT_IDS.REFORCA_ANUAL,
-      PRODUCT_IDS.REFORCA_SEMESTRAL,
+      PRODUCT_IDS.MINIDICIONARIO,
+      PRODUCT_IDS.DICIONARIO_INGLES,
     ],
     // Ensino Médio 3 / 3º Colegial (17 anos)
     17: [
-      PRODUCT_IDS.ESTUDA_COM_ANUAL,
-      PRODUCT_IDS.ESTUDA_COM_SEMESTRAL,
-      PRODUCT_IDS.REFORCA_ANUAL,
-      PRODUCT_IDS.REFORCA_SEMESTRAL,
+      PRODUCT_IDS.MINIDICIONARIO,
+      PRODUCT_IDS.DICIONARIO_INGLES,
     ],
   };
 
-  // Mapeamento de opções de bundle por produto
-  // Formato: productId: { 'bundle_option[X]': 'valueY', ... }
-  var BUNDLE_OPTIONS_MAP = {
-    695786: { 'bundle_option[254]': '320', 'bundle_option[257]': '323' }, // Combo Caligrafia + Tabuada - 3ª Série
-    695576: { 'bundle_option[254]': '320', 'bundle_option[257]': '323' }, // Nós e a tabuada 1 + No capricho B
-    695786: { 'bundle_option[254]': '320', 'bundle_option[257]': '323' }, // Nós e a tabuada 2 + No capricho C
-    695816: { 'bundle_option[260]': '326', 'bundle_option[263]': '329' }, // Nós e a tabuada 3 + No capricho D
-    695888: { 'bundle_option[278]': '320', 'bundle_option[281]': '323' }, // Nós e a tabuada 4 + No capricho E
-    578096: { 'bundle_option[212]': '272', 'bundle_option[215]': '275' }, // Peter Pan + Mágico de Oz
-    699322: { 'bundle_option[313]': '382', 'bundle_option[316]': '385' }, // Numeródromo + bichodário (AJUSTAR COM VALORES REAIS)
-    695573: { 'bundle_option[242]': '308', 'bundle_option[245]': '311' }, // No capricho A + Que vergonha que dá!
-  };
+  // Mapeamento de opções de bundle por produto (removido - não há mais bundles na nova tabela)
+  var BUNDLE_OPTIONS_MAP = {};
 
   var TARGET_ID = 52582; // Valor padrão, será atualizado dinamicamente
   var ANCHOR_SELECTOR = '.actions-info';
@@ -1005,7 +929,7 @@
     // Padrões: "1º ano ensino medio", "2ª serie ensino medio", "3º colegial"
     if (/ensino\s*medio|colegial/i.test(normalized)) {
       // Extrai o número (1, 2, ou 3)
-      var medioMatch = normalized.match(/(\d+)[º°ª]?\s*(ano|serie|colegial)/);
+      var medioMatch = normalized.match(/(\d+)[º°ª]?\s*(ano|série|colegial)/);
       if (medioMatch) {
         var serie = parseInt(medioMatch[1]);
         if (serie >= 1 && serie <= 3) {
