@@ -85,7 +85,7 @@
         box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);\
       }\
       .pre-select-floating-cta .floating-continue-btn {\
-        background: rgb(2, 108, 182);\
+        background: #008058;\
         color: #FFFFFF;\
         border: none;\
         border-radius: 4px;\
@@ -99,7 +99,7 @@
         font-family: "Helvetica Neue Medium", Arial;\
       }\
       .pre-select-floating-cta .floating-continue-btn:hover:not(:disabled) {\
-        background: rgb(1, 78, 132);\
+        opacity: 0.9;\
       }\
       .pre-select-floating-cta .floating-continue-btn:disabled,\
       .pre-select-floating-cta .floating-continue-btn.disabled {\
@@ -108,17 +108,16 @@
         cursor: not-allowed !important;\
         opacity: 0.7;\
       }\
-      .fare-selected-disabled {\
-        background: #FFF !important;\
-        color: rgb(4, 30, 66) !important;\
+      body .fare-selected-disabled {\
+        background: #163B70 !important;\
+        color: #FFF !important;\
         cursor: not-allowed !important;\
         pointer-events: none !important;\
         opacity: 0.8 !important;\
-        border: solid 2px rgb(2, 108, 182) !important;\
       }\
-      .fare-selected-disabled .button__text,\
-      .fare-selected-disabled .button__text--mobile {\
-        color: rgb(4, 30, 66) !important;\
+      body .fare-selected-disabled .button__text,\
+      body .fare-selected-disabled .button__text--mobile {\
+        color: #FFF !important;\
       }\
       .fare-item-highlighted {\
         position: relative;\
@@ -128,6 +127,25 @@
       }\
       footer.pre-select-footer-adjusted {\
         position: unset !important;\
+      }\
+      .css-guj3i2{\
+        background-color: #FFF !important;\
+        color: #026CB6 !important;\
+        border: 1px solid #026CB6 !important;\
+      }\
+      .css-guj3i2:hover{\
+        background-color: #EBF4FA !important;\
+      }\
+      .css-ist1h5{\
+        background-color: #EBF4FA !important;\
+      }\
+      .css-ou6pmp{\
+        background: #163B70 !important;\
+        color: #FFF !important;\
+        cursor: not-allowed !important;\
+        pointer-events: none !important;\
+        opacity: 0.8 !important;\
+        border-radius: 4px !important;\
       }\
       @media (max-width: 768px) {\
         .pre-select-floating-cta {\
