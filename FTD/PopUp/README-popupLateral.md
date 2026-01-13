@@ -303,8 +303,8 @@ localStorage['ftd_popup_rejected_Mon Dec 16 2024'] = {
               ↓
 ┌─────────────────────────────────────────┐
 │ 🛒 Produto já está no carrinho?          │
-│ ✅ SIM → Tenta próximo produto          │
-│ ❌ NÃO → EXIBE POPUP! 🎉               │
+│ ✅ SIM → Tenta próximo produto          |
+│ ❌ NÃO → EXIBE POPUP! 🎉               |
 └─────────────────────────────────────────┘
 ```
 
@@ -517,18 +517,41 @@ function cleanupOldData() {
 
 ```javascript
 function fetchProductData(productId) {
-  return fetch('/catalog/product/view/id/' + productId)
-    .then((res) => res.text())
-    .then((html) => parsePdp(html, productId));
+  return fetchPdpHtml(productId).then(function (html) {
+    return parsePdp(html, productId);
+  });
 }
 
-function parsePdp(html, id) {
-  // 1. Busca script[type="application/ld+json"]
-  // 2. Extrai: name, image, price, url, description
-  // 3. Fallback: meta tags og:* e twitter:*
-  // 4. Limita descrição a 80 caracteres
-  return { id, name, img, price, url, description };
+function fetchPdpHtml(id) {
+  // Não é uma API REST, é a URL da página do produto
+  return fetch('/catalog/product/view/id/' + id, { credentials: 'same-origin' }).then(function (
+    res
+  ) {
+    if (!res.ok) throw new Error('Erro ao carregar página do produto');
+    return res.text(); // Retorna o HTML completo da página
+  });
 }
+```
+
+**Dados extraídos:**
+
+- ✅ **Nome do produto** - JSON-LD ou meta tags
+- ✅ **Imagem** - JSON-LD ou meta og:image
+- ✅ **Preço** - JSON-LD offers.price
+- ✅ **URL** - JSON-LD ou canonical link
+- ✅ **Descrição** - **Hardcoded no código (mapeamento)**
+
+**Descrição:** Não é mais extraída do PDP por scraping. Usamos um mapeamento hardcoded no código (`PRODUCT_DESCRIPTIONS`) para melhor performance e evitar textos inconsistentes/bugados.
+
+```javascript
+// Mapeamento de descrições por produto
+const PRODUCT_DESCRIPTIONS = {
+  56551: 'Dicionário ilustrado essencial para o aprendizado da língua portuguesa.',
+  53959: 'Dicionário bilíngue completo para o aprendizado do inglês.',
+  697535: 'História encantadora sobre amor maternal e imaginação infantil.',
+  697547: 'Livro educativo sobre rotinas e organização do tempo para crianças.',
+  697682: 'Obra que estimula o desenvolvimento da leitura e escrita de forma lúdica.',
+};
 ```
 
 ### **Adicionar ao Carrinho**

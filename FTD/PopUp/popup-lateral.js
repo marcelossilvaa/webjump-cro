@@ -11,6 +11,15 @@
         TIJOLO_POR_TIJOLO: 697682,
     };
 
+    // Descrições dos produtos (hardcoded para performance)
+    const PRODUCT_DESCRIPTIONS = {
+        56551: 'Dicionário ilustrado essencial para o aprendizado da língua portuguesa.',
+        53959: 'Dicionário bilíngue completo para o aprendizado do inglês.',
+        697535: 'Novo livro de Telma Guimarães brinca com os clássicos infantis ao explorar a rotina familiar e a formação do leitor.',
+        697547: 'Narrativa que brinca com a imaginação e revela o prazer da leitura.',
+        697682: 'Crianças unidas vão lutar pelo direito humano à moradia.',
+    };
+
     // Mapeamento de nível escolar para produtos recomendados em ordem de prioridade
     // O primeiro produto do array é o mais importante, depois o segundo
     // Baseado na nova tabela fornecida (máximo 2 produtos por nível)
@@ -437,7 +446,7 @@
                             if (offer && offer.price) data.price = parseFloat(offer.price);
                         }
                         if (product.url) data.url = product.url;
-                        if (product.description) data.description = product.description;
+                        // Não busca mais description do JSON-LD
                     }
                 }
             } catch (e) { }
@@ -452,18 +461,10 @@
             const ogTitle = doc.querySelector('meta[property="og:title"]');
             if (ogTitle) data.name = ogTitle.content;
         }
-        if (!data.description) {
-            const descMeta = doc.querySelector('meta[name="description"]');
-            if (descMeta) data.description = descMeta.content;
-        }
 
-        if (data.description) {
-            const div = document.createElement('div');
-            div.innerHTML = data.description;
-            data.description = div.textContent || div.innerText || '';
-            if (data.description.length > 80) {
-                data.description = data.description.substring(0, 80) + '...';
-            }
+        // Usa descrição hardcoded do mapeamento
+        if (PRODUCT_DESCRIPTIONS[id]) {
+            data.description = PRODUCT_DESCRIPTIONS[id];
         } else {
             data.description = 'Confira este produto incrível.';
         }
@@ -850,7 +851,7 @@
             '<div id="recommendation-popup" style="position: fixed; bottom: 20px; left: 20px; z-index: 999; max-width: 450px; animation: slideInLeft 0.3s ease-out;">' +
             '<div style="background: white; border-radius: 8px; padding: 16px 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); ">' +
             '<div style="display: flex; justify-content: space-between; align-items: flex-start;">' +
-            '<h3 style="margin: 0; color: #999; font-size: 16px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.2 margin-bottom: 10px;">' +
+            '<h3 style="margin: 0; color: #999; font-size: 16px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.2; margin-bottom: 10px;">' +
             titleHTML +
             '</h3>' +
             '<button id="close-rec-popup" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #666; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; tranisition: all .3s;">&times;</button>' +

@@ -10,9 +10,6 @@
     TIJOLO_POR_TIJOLO: 697682,
   };
 
-  // Mapeamento de nível escolar para produtos recomendados em ordem de prioridade
-  // O primeiro produto do array é o mais importante, depois o segundo
-  // Baseado na nova tabela fornecida (máximo 2 produtos por nível)
   var GRADE_RECOMMENDATIONS = {
     // Educação Infantil - 1 ano
     1: [
