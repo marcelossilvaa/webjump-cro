@@ -39,13 +39,13 @@
   // Função de tracking de analytics
   function analyticsEvent(eventLabel) {
     if (eventLabel === undefined || !eventLabel) {
-      console.log('[BannerAssentos] Missing parameters for analytics event.');
+      // console.log('[BannerAssentos] Missing parameters for analytics event.');
       return;
     }
 
     const labelEvent = 'AT_assentos_para_crianças ' + eventLabel;
 
-    console.log('[BannerAssentos] Analytics event triggered:', labelEvent);
+    // console.log('[BannerAssentos] Analytics event triggered:', labelEvent);
 
     (function () {
       var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
@@ -83,6 +83,8 @@
       this.azulTariffTrackingSent = false;
       this.hasFreeSeatTier = false; // Nova flag para tier com assento grátis
       this.freeSeatTierTrackingSent = false;
+      this.isInternationalFlight = false; // Nova flag para voo internacional
+      this.userTierCode = null; // Armazena o tier do usuário
       // Removidas flags de localStorage e tariffObserver
       this.init();
     }
@@ -203,14 +205,14 @@
         this.childAndAdultTrackingSent = true;
       }
 
-      console.log('[BannerAssentos] Verificação de passageiros:', {
-        hasChild,
-        hasAdult,
-        hasChildAndAdult: this.hasChildAndAdult,
-        hasAzulTariff: this.hasAzulTariff,
-        hasFreeSeatTier: this.hasFreeSeatTier,
-        willShowBanner: this.hasChildAndAdult && this.hasAzulTariff && !this.hasFreeSeatTier,
-      });
+      // console.log('[BannerAssentos] Verificação de passageiros:', {
+      //   hasChild,
+      //   hasAdult,
+      //   hasChildAndAdult: this.hasChildAndAdult,
+      //   hasAzulTariff: this.hasAzulTariff,
+      //   hasFreeSeatTier: this.hasFreeSeatTier,
+      //   willShowBanner: this.hasChildAndAdult && this.hasAzulTariff && !this.hasFreeSeatTier,
+      // });
     }
 
     // ========== Verificação de Tarifa Azul ==========
@@ -226,15 +228,27 @@
 
       // Cria novo listener
       this.buttonListener = (e) => {
-        // Verifica se o clique foi em um botão que contém o texto "Informar viajantes"
         const target = e.target;
         const button = target.closest('button');
         
         if (button) {
           const buttonText = button.textContent || button.innerText;
-          if (buttonText.includes('Informar viajantes') || buttonText.includes('informar viajantes')) {
-            console.log('[BannerAssentos] Botão "Informar viajantes" clicado, verificando tarifa...');
+          
+          // 1. Quando clica em "Selecionar tarifa" - captura tarifa E verifica Business
+          if (buttonText.includes('Selecionar tarifa') || buttonText.includes('selecionar tarifa')) {
+            // console.log('[BannerAssentos] Botão "Selecionar tarifa" clicado, capturando tarifa...');
             this.captureCurrentTariff();
+          }
+          
+          // 2. Quando clica em "Informar viajantes" - usa dados já capturados
+          if (buttonText.includes('Informar viajantes') || buttonText.includes('informar viajantes')) {
+            // console.log('[BannerAssentos] Botão "Informar viajantes" clicado');
+            // console.log('[BannerAssentos] Dados já capturados:', {
+            //   hasAzulTariff: this.hasAzulTariff,
+            //   isInternationalFlight: this.isInternationalFlight,
+            //   userTierCode: this.userTierCode,
+            //   hasFreeSeatTier: this.hasFreeSeatTier
+            // });
           }
         }
       };
@@ -245,6 +259,7 @@
 
     captureCurrentTariff() {
       let foundAzulOnly = false;
+      let foundBusiness = false;
       const tarifasEncontradas = [];
 
       // Busca especificamente nos elementos .promotional que indicam a tarifa selecionada
@@ -259,6 +274,11 @@
         if (text === 'Azul') {
           foundAzulOnly = true;
         }
+        
+        // Verifica se existe tarifa Business (indica voo internacional)
+        if (text === 'Business' || text.toLowerCase().includes('business')) {
+          foundBusiness = true;
+        }
       });
 
       // Se não encontrou via .promotional, tenta buscar em elementos com classe que indica seleção
@@ -271,29 +291,91 @@
           if (text === 'Azul') {
             foundAzulOnly = true;
           }
+          if (text === 'Business' || text.toLowerCase().includes('business')) {
+            foundBusiness = true;
+          }
         });
       }
 
-      // Atualiza a flag - só é true se encontrou EXATAMENTE "Azul"
+      // Busca Business em TODOS os elementos de tarifa disponíveis na página
+      // pois a presença de Business indica que é voo internacional
+      if (!foundBusiness) {
+        const allFareElements = document.querySelectorAll('.fare-name, .promotional, [class*="fare"], button[aria-label*="tarifa"]');
+        allFareElements.forEach((el) => {
+          const text = (el.textContent || el.innerText || '').trim();
+          if (text === 'Business' || text.toLowerCase().includes('business')) {
+            foundBusiness = true;
+          }
+        });
+      }
+
+      // Atualiza as flags
       this.hasAzulTariff = foundAzulOnly;
+      this.isInternationalFlight = foundBusiness;
 
-      console.log('[BannerAssentos] Tarifa capturada no clique:', {
-        todasTarifas: tarifasEncontradas,
-        foundAzulOnly,
-        hasAzulTariff: this.hasAzulTariff,
-        contemMaisAzul: tarifasEncontradas.some(t => t.includes('Mais')),
-        contemSuper: tarifasEncontradas.some(t => t.includes('Super')),
-        contemBusiness: tarifasEncontradas.some(t => t.includes('Business'))
-      });
+      // Recalcula hasFreeSeatTier considerando o tipo de voo
+      this.recalculateFreeSeatTier();
 
-      // Envia tracking se for a primeira vez E se for tarifa Azul básica
-      if (this.hasAzulTariff && !this.azulTariffTrackingSent) {
+      // console.log('[BannerAssentos] Tarifa capturada no clique "Selecionar tarifa":', {
+      //   todasTarifas: tarifasEncontradas,
+      //   foundAzulOnly,
+      //   foundBusiness,
+      //   hasAzulTariff: this.hasAzulTariff,
+      //   isInternationalFlight: this.isInternationalFlight,
+      //   userTierCode: this.userTierCode,
+      //   hasFreeSeatTier: this.hasFreeSeatTier,
+      //   contemMaisAzul: tarifasEncontradas.some(t => t.includes('Mais')),
+      //   contemSuper: tarifasEncontradas.some(t => t.includes('Super')),
+      //   contemBusiness: tarifasEncontradas.some(t => t.includes('Business')),
+      //   willShowBannerCard: this.hasAzulTariff && !this.hasFreeSeatTier
+      // });
+
+      // ✅ MUDANÇA: Envia tracking SOMENTE se VAI MOSTRAR (não tem tier com assento grátis)
+      if (this.hasAzulTariff && !this.hasFreeSeatTier && !this.azulTariffTrackingSent) {
         analyticsEvent('has_azul_tariff');
         this.azulTariffTrackingSent = true;
       }
+      
+      // Envia tracking se for voo internacional
+      if (this.isInternationalFlight) {
+        analyticsEvent('international_flight_detected');
+      }
     }
 
-    // REMOVIDO: verifyAzulTariff() - não precisamos mais
+    // ========== Recalcula se tem tier com assento gratuito ==========
+    recalculateFreeSeatTier() {
+      if (!this.userTierCode) {
+        this.hasFreeSeatTier = false;
+        return;
+      }
+
+      const tierCode = this.userTierCode.toUpperCase();
+
+      // Tiers que SEMPRE têm assento gratuito (nacional E internacional)
+      const alwaysFreeSeatTiers = ['UNI', 'ONE'];
+
+      // Tiers que têm assento gratuito APENAS em voos nacionais
+      const nationalOnlyFreeSeatTiers = ['SAF', 'DIA'];
+
+      if (alwaysFreeSeatTiers.includes(tierCode)) {
+        // UNI e ONE sempre têm assento grátis
+        this.hasFreeSeatTier = true;
+      } else if (nationalOnlyFreeSeatTiers.includes(tierCode)) {
+        // SAF e DIA só têm assento grátis em voos NACIONAIS
+        // Se é voo internacional, NÃO tem assento grátis (deve mostrar banner)
+        this.hasFreeSeatTier = !this.isInternationalFlight;
+      } else {
+        // GM, TA+ e outros não têm assento grátis
+        this.hasFreeSeatTier = false;
+      }
+
+      // console.log('[BannerAssentos] Recálculo de FreeSeatTier:', {
+      //   userTierCode: this.userTierCode,
+      //   isInternationalFlight: this.isInternationalFlight,
+      //   hasFreeSeatTier: this.hasFreeSeatTier,
+      //   shouldShowBanner: !this.hasFreeSeatTier
+      // });
+    }
 
     // ========== Verificação de Tier TudoAzul ==========
     checkTudoAzulTier() {
@@ -312,42 +394,38 @@
 
         // Se não encontrou cookie, assume que NÃO tem tier premium (permite mostrar modal)
         if (!tudoAzulCookie) {
-          console.log('[BannerAssentos] Cookie TudoAzul não encontrado - assumindo sem tier premium');
+          // console.log('[BannerAssentos] Cookie TudoAzul não encontrado - assumindo sem tier premium');
           this.hasFreeSeatTier = false;
+          this.userTierCode = null;
           return;
         }
 
         // Decodifica o cookie (URL encoded)
         const decodedCookie = decodeURIComponent(tudoAzulCookie);
-        console.log('[BannerAssentos] Cookie TudoAzul decodificado:', decodedCookie);
+        // console.log('[BannerAssentos] Cookie TudoAzul decodificado:', decodedCookie);
 
         // Parse do JSON
         const tudoAzulData = JSON.parse(decodedCookie);
-        console.log('[BannerAssentos] Dados TudoAzul parseados:', tudoAzulData);
+        // console.log('[BannerAssentos] Dados TudoAzul parseados:', tudoAzulData);
 
         // Verifica o levelCode dentro de program
         const levelCode = tudoAzulData?.program?.levelCode;
-        console.log('[BannerAssentos] Level Code:', levelCode);
+        // console.log('[BannerAssentos] Level Code:', levelCode);
 
-        // Tiers que têm assento gratuito:
-        // - DIAMANTE UNIQUE: código "UNI" 
-        // - DIAMANTE: código "DIA"
-        // - SAFIRA: código "SAF"
-        // - Azul One: código "ONE"
-        // Nota: Azul One não aparece em requiredPoints (é tier especial)
-        // GM = básico, TA+ = Topázio (NÃO têm assento grátis)
-        const freeSeatTiers = ['UNI', 'DIA', 'SAF', 'ONE'];
-        
-        // Se não tem levelCode, assume que não tem tier premium
-        this.hasFreeSeatTier = levelCode ? freeSeatTiers.includes(levelCode.toUpperCase()) : false;
+        // Armazena o tier do usuário para uso posterior
+        this.userTierCode = levelCode || null;
 
-        console.log('[BannerAssentos] Verificação de Tier:', {
-          levelCode,
-          levelName: tudoAzulData?.program?.name,
-          hasFreeSeatTier: this.hasFreeSeatTier,
-          shouldShowBanner: !this.hasFreeSeatTier,
-          freeSeatTiersChecked: freeSeatTiers
-        });
+        // Calcula inicialmente (será recalculado quando soubermos o tipo de voo)
+        this.recalculateFreeSeatTier();
+
+        // console.log('[BannerAssentos] Verificação de Tier:', {
+        //   levelCode,
+        //   levelName: tudoAzulData?.program?.name,
+        //   userTierCode: this.userTierCode,
+        //   hasFreeSeatTier: this.hasFreeSeatTier,
+        //   shouldShowBanner: !this.hasFreeSeatTier,
+        //   note: 'SAF/DIA só têm assento grátis em voos nacionais (sem Business)'
+        // });
 
         // Envia tracking se tiver tier com assento grátis
         if (this.hasFreeSeatTier && !this.freeSeatTierTrackingSent) {
@@ -356,9 +434,10 @@
         }
 
       } catch (error) {
-        console.log('[BannerAssentos] Erro ao verificar tier TudoAzul:', error);
+        // console.log('[BannerAssentos] Erro ao verificar tier TudoAzul:', error);
         // Em caso de erro, assume que NÃO tem tier premium (permite mostrar banner/card)
         this.hasFreeSeatTier = false;
+        this.userTierCode = null;
       }
     }
 
@@ -584,7 +663,7 @@
             if (this.isOnTargetUrl()) {
               const card = document.getElementById('azul-seats-info-card');
               if (!card || !card.isConnected) {
-                console.log('[BannerAssentos] Card não encontrado no DOM, reinserindo...');
+                // console.log('[BannerAssentos] Card não encontrado no DOM, reinserindo...');
                 this.cardInserted = false;
                 clearInterval(this.cardVerificationInterval);
                 this.cardVerificationInterval = null;
@@ -597,7 +676,7 @@
           }, 2000);
         } else {
           // Elemento não foi inserido, reseta flag e tenta novamente
-          console.log('[BannerAssentos] Card não foi inserido corretamente, tentando novamente...');
+          // console.log('[BannerAssentos] Card não foi inserido corretamente, tentando novamente...');
           this.cardInserted = false;
           // Tenta novamente após um delay
           setTimeout(() => {
@@ -738,9 +817,7 @@
             this.mobileCardInserted = true;
           } else {
             // Elemento não foi inserido, reseta flag e tenta novamente
-            console.log(
-              '[BannerAssentos] Card mobile não foi inserido corretamente, tentando novamente...'
-            );
+            // console.log('[BannerAssentos] Card mobile não foi inserido corretamente, tentando novamente...');
             this.mobileCardInserted = false;
             // Tenta novamente após um delay curto
             setTimeout(() => {
