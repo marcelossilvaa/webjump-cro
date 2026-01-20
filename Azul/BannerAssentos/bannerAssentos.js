@@ -85,7 +85,7 @@
       this.freeSeatTierTrackingSent = false;
       this.isInternationalFlight = false; // Nova flag para voo internacional
       this.userTierCode = null; // Armazena o tier do usuário
-      // Removidas flags de localStorage e tariffObserver
+      this.elementViewTrackingSent = false; // ✅ 
       this.init();
     }
 
@@ -639,6 +639,11 @@
           // Elemento foi inserido com sucesso
           this.cardInserted = true;
 
+          if (!this.elementViewTrackingSent) {
+            analyticsEvent('element_view');
+            this.elementViewTrackingSent = true;
+          }
+
           // Para o observer principal após inserir
           if (this.cardObserver) {
             this.cardObserver.disconnect();
@@ -809,12 +814,22 @@
       if (insertedCard && insertedCard.isConnected) {
         // Elemento foi inserido com sucesso
         this.mobileCardInserted = true;
+
+        if (!this.elementViewTrackingSent) {
+          analyticsEvent('element_view');
+          this.elementViewTrackingSent = true;
+        }
       } else {
         // Se não foi inserido imediatamente, verifica após um delay mínimo
         setTimeout(() => {
           const checkCard = document.getElementById('azul-seats-info-card-mobile');
           if (checkCard && checkCard.isConnected) {
             this.mobileCardInserted = true;
+
+            if (!this.elementViewTrackingSent) {
+              analyticsEvent('element_view');
+              this.elementViewTrackingSent = true;
+            }
           } else {
             // Elemento não foi inserido, reseta flag e tenta novamente
             // console.log('[BannerAssentos] Card mobile não foi inserido corretamente, tentando novamente...');
@@ -1142,7 +1157,7 @@
         'overflow: hidden;' +
         'border-radius: 8px 0 0 8px;' +
         '}' +
-        '.azul-banner-image img {' +
+               '.azul-banner-image img {' +
         'width: 100%;' +
         'height: 100%;' +
         'object-fit: cover;' +
@@ -1267,6 +1282,13 @@
       if (!banner) return;
       banner.classList.add('show');
       this.isVisible = true;
+
+
+      if (!this.elementViewTrackingSent) {
+        analyticsEvent('element_view');
+        this.elementViewTrackingSent = true;
+      }
+
       this.trackBannerEvent('show');
     }
 
