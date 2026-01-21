@@ -46,6 +46,8 @@
     const labelEvent = 'AT_assentos_para_crianças ' + eventLabel;
 
     // console.log('[BannerAssentos] Analytics event triggered:', labelEvent);
+    var productsString =
+      ':' + "test" + ';' +  1 + ';' + 10 + ';;';
 
     (function () {
       var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
@@ -54,6 +56,7 @@
       s.linkTrackVars = 'events,eVar82';
       s.linkTrackEvents = 'event90';
       s.events = 'event90';
+      s.products = productsString;
       s.eVar82 = labelEvent;
 
       s.tl(true, 'o', 'target_activity_action');
