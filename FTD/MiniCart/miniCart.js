@@ -655,7 +655,7 @@
 
     // Formato: :productName;quantity;price;;
     var productsString =
-      ':' + productNameFormatted.replace(",", "") + ';' + quantityValue + ';' + priceValue.toFixed(2) + ';;';priceValue.toFixed(2) + ';;';
+      ':' + productNameFormatted.replace(",", "") + ';' + quantityValue + ';' + priceValue.toFixed(2) + ';;';
 
     var eVar7Value = 'AT_evar7_' + eventLabel;
     var eVar25Value = 'AT_evar25_' + eventLabel;
