@@ -1,6 +1,6 @@
 /**
  * Azul - Destaque de Feriados
- * Adiciona botão FERIADOS no header e destaca datas no calendário
+ * Adiciona botão FERIADOS no header e abre calendário modal
  */
 
 (function () {
@@ -8,36 +8,376 @@
 
   // Configuração de feriados 2025 (formato: 'YYYY-MM-DD')
   const FERIADOS_2025 = [
-    '2025-01-01', // Ano Novo
-    '2025-02-28', // Carnaval (sexta)
-    '2025-03-01', // Carnaval (sábado)
-    '2025-03-02', // Carnaval (domingo)
-    '2025-03-03', // Carnaval (segunda)
-    '2025-03-04', // Carnaval (terça)
-    '2025-04-18', // Paixão de Cristo
-    '2025-04-21', // Tiradentes
-    '2025-05-01', // Dia do Trabalho
-    '2025-06-19', // Corpus Christi
-    '2025-09-07', // Independência
-    '2025-10-12', // Nossa Senhora Aparecida
-    '2025-11-02', // Finados
-    '2025-11-15', // Proclamação da República
-    '2025-11-20', // Consciência Negra
-    '2025-12-25', // Natal
-    '2025-12-31', // Réveillon
+    { date: '2025-01-01', name: 'Ano Novo' },
+    { date: '2025-02-28', name: 'Carnaval' },
+    { date: '2025-03-01', name: 'Carnaval' },
+    { date: '2025-03-02', name: 'Carnaval' },
+    { date: '2025-03-03', name: 'Carnaval' },
+    { date: '2025-03-04', name: 'Carnaval' },
+    { date: '2025-04-18', name: 'Paixão de Cristo' },
+    { date: '2025-04-21', name: 'Tiradentes' },
+    { date: '2025-05-01', name: 'Dia do Trabalho' },
+    { date: '2025-06-19', name: 'Corpus Christi' },
+    { date: '2025-09-07', name: 'Independência' },
+    { date: '2025-10-12', name: 'N. Sra. Aparecida' },
+    { date: '2025-11-02', name: 'Finados' },
+    { date: '2025-11-15', name: 'Proc. República' },
+    { date: '2025-11-20', name: 'Consciência Negra' },
+    { date: '2025-12-25', name: 'Natal' },
+    { date: '2025-12-31', name: 'Réveillon' },
   ];
 
   // Configuração
   const CONFIG = {
     feriados: FERIADOS_2025,
     buttonLabel: 'FERIADOS',
-    badgeLabel: 'Feriado',
-    highlightColor: '#FFD700', // Dourado
-    badgeColor: '#FF6B6B', // Vermelho claro
+    highlightColor: '#FFD700',
+    badgeColor: '#FF6B6B',
   };
 
   let observer = null;
   let headerButtonAdded = false;
+  let modalOpen = false;
+
+  // Função de analytics para trackeamento
+  function analyticsEvent(eventLabel, eventType) {
+    if (!eventLabel) {
+      console.log('[Tracking Feriados] Missing parameters for analytics event.');
+      return;
+    }
+
+    const labelEvent = 'AT_Feriados_' + eventType + ' ' + eventLabel;
+
+    console.log('[Tracking Feriados] Analytics event triggered:', labelEvent);
+
+    (function () {
+      var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+      if (!s || typeof s.tl !== 'function') return;
+
+      s.linkTrackVars = 'events,eVar82,eVar84';
+      s.linkTrackEvents = 'event90';
+      s.events = 'event90';
+      s.eVar82 = labelEvent;
+      s.eVar84 = 'AT_Feriados_home';
+
+      s.tl(true, 'o', 'target_activity_action');
+    })();
+  }
+
+  // Função para adicionar estilos do modal
+  function addModalStyles() {
+    if (document.getElementById('feriados-modal-styles')) return;
+
+    const styles = document.createElement('style');
+    styles.id = 'feriados-modal-styles';
+    styles.textContent =
+      '.feriados-modal-overlay {' +
+      'position: fixed;' +
+      'top: 0;' +
+      'left: 0;' +
+      'width: 100%;' +
+      'height: 100%;' +
+      'background-color: rgba(0, 0, 0, 0.5);' +
+      'z-index: 9998;' +
+      'opacity: 0;' +
+      'visibility: hidden;' +
+      'transition: opacity 0.3s ease, visibility 0.3s ease;' +
+      '}' +
+      '.feriados-modal-overlay.open {' +
+      'opacity: 1;' +
+      'visibility: visible;' +
+      '}' +
+      '.feriados-modal-container {' +
+      'position: fixed;' +
+      'top: 80px;' +
+      'right: 20px;' +
+      'width: 90%;' +
+      'max-width: 600px;' +
+      'max-height: calc(100vh - 100px);' +
+      'background: linear-gradient(135deg, #041E42 0%, #0A2F5F 100%);' +
+      'border-radius: 16px;' +
+      'box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);' +
+      'z-index: 9999;' +
+      'opacity: 0;' +
+      'transform: translateY(-20px);' +
+      'visibility: hidden;' +
+      'transition: all 0.3s ease;' +
+      'overflow: hidden;' +
+      '}' +
+      '.feriados-modal-container.open {' +
+      'opacity: 1;' +
+      'transform: translateY(0);' +
+      'visibility: visible;' +
+      '}' +
+      '.feriados-modal-header {' +
+      'padding: 24px 24px 16px;' +
+      'border-bottom: 1px solid rgba(255, 255, 255, 0.1);' +
+      'display: flex;' +
+      'justify-content: space-between;' +
+      'align-items: center;' +
+      '}' +
+      '.feriados-modal-title {' +
+      'font-family: "Inter", sans-serif;' +
+      'font-size: 24px;' +
+      'font-weight: 600;' +
+      'color: #FFFFFF;' +
+      'margin: 0;' +
+      'display: flex;' +
+      'align-items: center;' +
+      'gap: 12px;' +
+      '}' +
+      '.feriados-modal-close {' +
+      'background: none;' +
+      'border: none;' +
+      'color: #FFFFFF;' +
+      'cursor: pointer;' +
+      'padding: 8px;' +
+      'display: flex;' +
+      'align-items: center;' +
+      'justify-content: center;' +
+      'border-radius: 8px;' +
+      'transition: background-color 0.2s ease;' +
+      '}' +
+      '.feriados-modal-close:hover {' +
+      'background-color: rgba(255, 255, 255, 0.1);' +
+      '}' +
+      '.feriados-modal-content {' +
+      'padding: 24px;' +
+      'overflow-y: auto;' +
+      'max-height: calc(100vh - 200px);' +
+      '}' +
+      '.feriados-grid {' +
+      'display: grid;' +
+      'grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));' +
+      'gap: 16px;' +
+      '}' +
+      '.feriado-card {' +
+      'background: rgba(255, 255, 255, 0.08);' +
+      'border: 2px solid rgba(255, 215, 0, 0.3);' +
+      'border-radius: 12px;' +
+      'padding: 16px;' +
+      'text-align: center;' +
+      'transition: all 0.3s ease;' +
+      'cursor: pointer;' +
+      '}' +
+      '.feriado-card:hover {' +
+      'background: rgba(255, 215, 0, 0.15);' +
+      'border-color: #FFD700;' +
+      'transform: translateY(-4px);' +
+      'box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3);' +
+      '}' +
+      '.feriado-date {' +
+      'font-family: "Inter", sans-serif;' +
+      'font-size: 28px;' +
+      'font-weight: 700;' +
+      'color: #FFD700;' +
+      'margin: 0 0 4px 0;' +
+      '}' +
+      '.feriado-month {' +
+      'font-family: "Inter", sans-serif;' +
+      'font-size: 14px;' +
+      'font-weight: 500;' +
+      'color: rgba(255, 255, 255, 0.7);' +
+      'margin: 0 0 12px 0;' +
+      'text-transform: uppercase;' +
+      '}' +
+      '.feriado-name {' +
+      'font-family: "Inter", sans-serif;' +
+      'font-size: 14px;' +
+      'font-weight: 600;' +
+      'color: #FFFFFF;' +
+      'margin: 0;' +
+      'line-height: 1.4;' +
+      '}' +
+      '.feriados-info {' +
+      'margin-top: 24px;' +
+      'padding: 16px;' +
+      'background: rgba(255, 255, 255, 0.05);' +
+      'border-radius: 12px;' +
+      'border-left: 4px solid #FFD700;' +
+      '}' +
+      '.feriados-info-text {' +
+      'font-family: "Inter", sans-serif;' +
+      'font-size: 13px;' +
+      'color: rgba(255, 255, 255, 0.8);' +
+      'margin: 0;' +
+      'line-height: 1.6;' +
+      '}' +
+      '@media (max-width: 768px) {' +
+      '.feriados-modal-container {' +
+      'top: 60px;' +
+      'right: 10px;' +
+      'left: 10px;' +
+      'width: auto;' +
+      'max-width: none;' +
+      '}' +
+      '.feriados-grid {' +
+      'grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));' +
+      'gap: 12px;' +
+      '}' +
+      '.feriado-card {' +
+      'padding: 12px;' +
+      '}' +
+      '.feriado-date {' +
+      'font-size: 24px;' +
+      '}' +
+      '}';
+
+    document.head.appendChild(styles);
+  }
+
+  // Função para formatar data
+  function formatDate(dateStr) {
+    const parts = dateStr.split('-');
+    const day = parts[2];
+    const monthIndex = parseInt(parts[1]) - 1;
+    
+    const months = [
+      'JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN',
+      'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'
+    ];
+    
+    return {
+      day: day,
+      month: months[monthIndex]
+    };
+  }
+
+  // Função para criar modal de calendário
+  function createCalendarModal() {
+    // Remove modal existente
+    const existingModal = document.getElementById('feriados-calendar-modal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+
+    // Cria overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'feriados-modal-overlay';
+    overlay.id = 'feriados-modal-overlay';
+
+    // Cria container do modal
+    const modalContainer = document.createElement('div');
+    modalContainer.className = 'feriados-modal-container';
+    modalContainer.id = 'feriados-calendar-modal';
+
+    // Header do modal
+    const header = document.createElement('div');
+    header.className = 'feriados-modal-header';
+
+    const title = document.createElement('h2');
+    title.className = 'feriados-modal-title';
+    title.innerHTML =
+      '<svg width="28" height="28" viewBox="0 0 1024 1024" fill="none">' +
+      '<path d="M736 256H800V864H224V256H288V192H224C206.3 192 192 206.3 192 224V864C192 881.7 206.3 896 224 896H800C817.7 896 832 881.7 832 864V224C832 206.3 817.7 192 800 192H736V256Z" fill="#FFD700"/>' +
+      '<path d="M320 128H384V320H320V128Z" fill="#FFD700"/>' +
+      '<path d="M640 128H704V320H640V128Z" fill="#FFD700"/>' +
+      '<path d="M288 384H736V448H288V384Z" fill="#FFFFFF"/>' +
+      '<path d="M288 512H480V576H288V512Z" fill="#FFFFFF"/>' +
+      '<path d="M544 512H736V576H544V512Z" fill="#FFFFFF"/>' +
+      '<path d="M288 640H480V704H288V640Z" fill="#FFFFFF"/>' +
+      '<path d="M544 640H736V704H544V640Z" fill="#FFFFFF"/>' +
+      '</svg>' +
+      'Feriados 2025';
+
+    const closeButton = document.createElement('button');
+    closeButton.className = 'feriados-modal-close';
+    closeButton.setAttribute('aria-label', 'Fechar calendário de feriados');
+    closeButton.innerHTML =
+      '<svg width="24" height="24" viewBox="0 0 1024 1024" fill="none">' +
+      '<path d="M224.8 832L512 544.8 799.2 832 832 799.2 544.8 512 832 224.8 799.2 192 512 479.2 224.8 192 192 224.8 479.2 512 192 799.2 224.8 832Z" fill="#FFFFFF"/>' +
+      '</svg>';
+
+    header.appendChild(title);
+    header.appendChild(closeButton);
+
+    // Conteúdo do modal
+    const content = document.createElement('div');
+    content.className = 'feriados-modal-content';
+
+    // Grid de feriados
+    const grid = document.createElement('div');
+    grid.className = 'feriados-grid';
+
+    CONFIG.feriados.forEach(function(feriado) {
+      const formatted = formatDate(feriado.date);
+      
+      const card = document.createElement('div');
+      card.className = 'feriado-card';
+      card.setAttribute('data-feriado-date', feriado.date);
+      
+      card.innerHTML =
+        '<p class="feriado-date">' + formatted.day + '</p>' +
+        '<p class="feriado-month">' + formatted.month + '</p>' +
+        '<p class="feriado-name">' + feriado.name + '</p>';
+      
+      // Adiciona evento de clique no card
+      card.addEventListener('click', function() {
+        analyticsEvent('feriado_card_clique ' + feriado.name, 'click');
+        console.log('[Feriados] Card clicado: ' + feriado.name + ' (' + feriado.date + ')');
+      });
+      
+      grid.appendChild(card);
+    });
+
+    // Informação adicional
+    const info = document.createElement('div');
+    info.className = 'feriados-info';
+    info.innerHTML =
+      '<p class="feriados-info-text">' +
+      'Aproveite os feriados para viajar com a Azul! ' +
+      'Clique em uma data para ver ofertas especiais.' +
+      '</p>';
+
+    content.appendChild(grid);
+    content.appendChild(info);
+
+    // Monta modal
+    modalContainer.appendChild(header);
+    modalContainer.appendChild(content);
+
+    // Adiciona ao body
+    document.body.appendChild(overlay);
+    document.body.appendChild(modalContainer);
+
+    // Event listeners para fechar
+    closeButton.addEventListener('click', closeCalendarModal);
+    overlay.addEventListener('click', closeCalendarModal);
+
+    // Anima abertura
+    setTimeout(function() {
+      overlay.classList.add('open');
+      modalContainer.classList.add('open');
+      modalOpen = true;
+      
+      // Analytics de visualização
+      analyticsEvent('modal_calendario_visualizacao', 'view');
+    }, 10);
+
+    console.log('[Feriados] Modal de calendário criado');
+  }
+
+  // Função para fechar modal
+  function closeCalendarModal() {
+    const overlay = document.getElementById('feriados-modal-overlay');
+    const modal = document.getElementById('feriados-calendar-modal');
+
+    if (overlay && modal) {
+      overlay.classList.remove('open');
+      modal.classList.remove('open');
+      modalOpen = false;
+
+      // Analytics de fechamento
+      analyticsEvent('modal_calendario_fechamento', 'close');
+
+      setTimeout(function() {
+        if (overlay.parentNode) overlay.remove();
+        if (modal.parentNode) modal.remove();
+      }, 300);
+
+      console.log('[Feriados] Modal de calendário fechado');
+    }
+  }
 
   // Função para adicionar botão no header
   function addFeriadosButton() {
@@ -49,18 +389,15 @@
       return;
     }
 
-    // Verifica se botão já existe
     if (document.getElementById('feriados-button-azul')) {
       headerButtonAdded = true;
       return;
     }
 
-    // Cria container para o botão
     const buttonContainer = document.createElement('div');
     buttonContainer.className = 'sc-1670f297-0 dorVXL';
     buttonContainer.id = 'feriados-button-container';
     
-    // HTML do botão (estrutura similar aos outros botões do header)
     const buttonHTML = 
       '<div class="sc-lpYOg fUcwJx">' +
       '<div class="sc-bDumWk jSLXiK">' +
@@ -82,7 +419,6 @@
 
     buttonContainer.innerHTML = buttonHTML;
 
-    // Insere antes do último botão (Menu)
     const menuButton = headerContainer.querySelector('.sc-1670f297-0.dorVXL');
     if (menuButton) {
       headerContainer.insertBefore(buttonContainer, menuButton);
@@ -90,109 +426,25 @@
       headerContainer.appendChild(buttonContainer);
     }
 
-    // Adiciona evento de clique
     const button = document.getElementById('feriados-button-azul');
     if (button) {
-      button.addEventListener('click', scrollToCalendar);
+      if (!button.hasAttribute('data-analytics-added')) {
+        button.addEventListener('click', function() {
+          analyticsEvent('botao_header_clique', 'click');
+          
+          if (modalOpen) {
+            closeCalendarModal();
+          } else {
+            createCalendarModal();
+          }
+        });
+        button.setAttribute('data-analytics-added', 'true');
+      }
+      
       headerButtonAdded = true;
       console.log('[Feriados] Botão adicionado ao header com sucesso');
-    }
-  }
-
-  // Função para rolar até o calendário
-  function scrollToCalendar() {
-    // Procura pelo calendário na página
-    const calendar = document.querySelector('[data-testid="calendar"]') || 
-                     document.querySelector('.react-calendar') ||
-                     document.querySelector('[class*="calendar"]');
-    
-    if (calendar) {
-      calendar.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      console.log('[Feriados] Scrolled para calendário');
-    } else {
-      console.log('[Feriados] Calendário não encontrado na página');
-    }
-  }
-
-  // Função para destacar feriados no calendário
-  function highlightFeriados() {
-    // Procura por elementos de data no calendário
-    const dateElements = document.querySelectorAll(
-      '[class*="calendar"] button[aria-label*="202"], ' +
-      '[class*="react-calendar"] button, ' +
-      '[data-testid="calendar"] button'
-    );
-
-    if (dateElements.length === 0) return;
-
-    let highlightedCount = 0;
-
-    dateElements.forEach((dateEl) => {
-      // Verifica se já foi processado
-      if (dateEl.hasAttribute('data-feriado-processed')) return;
-
-      // Tenta extrair a data do aria-label ou data-date
-      const ariaLabel = dateEl.getAttribute('aria-label') || '';
-      const dataDate = dateEl.getAttribute('data-date') || '';
       
-      let dateStr = '';
-      
-      // Tenta extrair data do aria-label (ex: "15 de janeiro de 2025")
-      const dateMatch = ariaLabel.match(/(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})/);
-      if (dateMatch) {
-        const day = dateMatch[1].padStart(2, '0');
-        const monthName = dateMatch[2];
-        const year = dateMatch[3];
-        
-        const months = {
-          'janeiro': '01', 'fevereiro': '02', 'março': '03', 'abril': '04',
-          'maio': '05', 'junho': '06', 'julho': '07', 'agosto': '08',
-          'setembro': '09', 'outubro': '10', 'novembro': '11', 'dezembro': '12'
-        };
-        
-        const month = months[monthName.toLowerCase()];
-        if (month) {
-          dateStr = year + '-' + month + '-' + day;
-        }
-      } else if (dataDate) {
-        dateStr = dataDate;
-      }
-
-      // Verifica se é feriado
-      if (dateStr && CONFIG.feriados.includes(dateStr)) {
-        // Aplica estilo de destaque
-        dateEl.style.setProperty('background-color', CONFIG.highlightColor, 'important');
-        dateEl.style.setProperty('border', '2px solid ' + CONFIG.badgeColor, 'important');
-        dateEl.style.setProperty('font-weight', '700', 'important');
-        dateEl.style.setProperty('position', 'relative', 'important');
-
-        // Adiciona badge "Feriado" se não existir
-        if (!dateEl.querySelector('.feriado-badge')) {
-          const badge = document.createElement('span');
-          badge.className = 'feriado-badge';
-          badge.textContent = CONFIG.badgeLabel;
-          badge.style.setProperty('position', 'absolute', 'important');
-          badge.style.setProperty('bottom', '2px', 'important');
-          badge.style.setProperty('left', '50%', 'important');
-          badge.style.setProperty('transform', 'translateX(-50%)', 'important');
-          badge.style.setProperty('background-color', CONFIG.badgeColor, 'important');
-          badge.style.setProperty('color', '#FFFFFF', 'important');
-          badge.style.setProperty('font-size', '9px', 'important');
-          badge.style.setProperty('padding', '2px 4px', 'important');
-          badge.style.setProperty('border-radius', '4px', 'important');
-          badge.style.setProperty('font-weight', '600', 'important');
-          badge.style.setProperty('z-index', '10', 'important');
-          
-          dateEl.appendChild(badge);
-        }
-
-        dateEl.setAttribute('data-feriado-processed', 'true');
-        highlightedCount++;
-      }
-    });
-
-    if (highlightedCount > 0) {
-      console.log('[Feriados] Destacados ' + highlightedCount + ' feriados no calendário');
+      analyticsEvent('botao_header_visualizacao', 'view');
     }
   }
 
@@ -200,18 +452,17 @@
   function init() {
     console.log('[Feriados] Iniciando script de destaque de feriados');
 
+    // Adiciona estilos do modal
+    addModalStyles();
+
     // Adiciona botão no header
     addFeriadosButton();
 
-    // Observa mudanças no DOM para detectar calendários
-    observer = new MutationObserver(() => {
-      // Tenta adicionar botão se ainda não foi adicionado
+    // Observa mudanças no DOM
+    observer = new MutationObserver(function() {
       if (!headerButtonAdded) {
         addFeriadosButton();
       }
-
-      // Destaca feriados no calendário
-      highlightFeriados();
     });
 
     observer.observe(document.body, {
@@ -219,10 +470,8 @@
       subtree: true,
     });
 
-    // Execução inicial
-    setTimeout(() => {
+    setTimeout(function() {
       addFeriadosButton();
-      highlightFeriados();
     }, 1000);
 
     console.log('[Feriados] Observador configurado');
