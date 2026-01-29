@@ -3,14 +3,28 @@
 
   // Mapeamento de recomendações
   const RECOMMENDATION_MAP = {
+    // OL
     '7885.90': '7871.90', // Ristretto → Corto
     '7857.90': '7871.90', // Ristretto Decaf → Corto
     '7888.90': '7874.90', // Arpeggio → Indonesia
     '7862.90': '7874.90', // Arpeggio Decaf → Indonesia
     '7865.90': '7892.90', // Volluto → Chiaro
     '7864.90': '7892.90', // Volluto Decaf → Chiaro
+    '7866.90': '7882.90', // Capriccio → Paris Espresso
+    '7863.90': '7856.90', // Cosi → Nicaragua
+    '7855.90': '7893.90', // Livanto → Buenos Aires Lungo
+    '7890.90': '7891.90', // Venezia → Scuro
+    '7895.90': '7884.90', // Napoli → India
+    // VL
     '7011.80': '7042.80', // Ristretto Intenso → Intenso
     '7010.80': '7026.80', // Ristretto Clássico → Mexico
+    '7047.80': '7039.80', // Voltesso → Melozio
+    '7048.80': '7059.80', // Altissio → Fortado
+    '7058.80': '7042.80', // Scuro → Intenso
+    '7060.80': '7042.80', // Il Caffè → Intenso
+    '7085.80': '7030.80', // Dolce → Bianco Forte
+    '7049.80': '7042.80', // Diavolito → Intenso
+    '7279.80': '7015.80', // Chiaro Decaffeinato → Fortado Decaffeinato
   };
 
   let popupShown = false;
@@ -195,6 +209,15 @@
 
     const popupHTML =
       '<style>' +
+      '#streamshop-widget {' +
+          'bottom: 280px!important;' +
+      '}' +
+      '@media (max-width: 768px) {' +
+        'body #streamshop-widget {' +
+          'bottom: 280px!important;' +
+        '}' +
+      '}' +
+
       '#recommendation-popup .AddToBagButtonSmall {' +
       'width: 100% !important;' +
       'border-radius: 20px !important;' +
