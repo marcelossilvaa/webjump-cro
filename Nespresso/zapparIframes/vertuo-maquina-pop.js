@@ -1,27 +1,48 @@
 (function() {
     "use strict";
 
-    const COLOR_MAP = {
-        "vermelho-pimenta": "https://view.loft3di.com/nespresso/vertuo-pop-red",
-        "amarelo-manga": "https://view.loft3di.com/nespresso/vertuo-pop-yellow",
-        "verde-acqua": "https://view.loft3di.com/nespresso/vertuo-pop-aqua",
-        "azul-pacifico": "https://view.loft3di.com/nespresso/vertuo-pop-blue",
-        "branco-coco": "https://view.loft3di.com/nespresso/vertuo-pop-white",
-        "preta": "https://view.loft3di.com/nespresso/vertuo-pop-black",
-        "preto-classico": "https://view.loft3di.com/nespresso/vertuo-pop-black"
-    };
+    // Mapeamento completo de URLs por padrões na URL
+    const PRODUCT_MAP = [
+        // Vertuo Pop - Cores originais
+        { pattern: "vermelho-pimenta", url: "https://view.loft3di.com/nespresso/vertuo-pop-red" },
+        { pattern: "amarelo-manga", url: "https://view.loft3di.com/nespresso/vertuo-pop-yellow" },
+        { pattern: "verde-acqua", url: "https://view.loft3di.com/nespresso/vertuo-pop-aqua" },
+        { pattern: "azul-pacifico", url: "https://view.loft3di.com/nespresso/vertuo-pop-blue" },
+        { pattern: "branco-coco", url: "https://view.loft3di.com/nespresso/vertuo-pop-white" },
+        { pattern: "pop-preta", url: "https://view.loft3di.com/nespresso/vertuo-pop-black" },
+        { pattern: "pop-preto-classico", url: "https://view.loft3di.com/nespresso/vertuo-pop-black" },
+        
+        // Vertuo Pop - Novas cores
+        { pattern: "pop-lilas", url: "https://view.loft3di.com/nespresso/vertuo-pop-c-range-lilac-nespresso" },
+        { pattern: "pop-pistache", url: "https://view.loft3di.com/nespresso/vertuo-pop-pistachio-" },
+        { pattern: "pop-amarelo-summer", url: "https://view.loft3di.com/nespresso/vertuo-pop-pastel-yellow" },
+        { pattern: "pop-rosa-candy", url: "https://view.loft3di.com/nespresso/vertuo-pop-candy-pink-nespresso" },
+        
+        // Vertuo Next - Cherry Red
+        { pattern: "next-vermelho-cereja", url: "https://view.loft3di.com/nespresso/vertuo_next_cherry_red_c_range" },
+        
+        // Vertuo Next - Dark Chrome
+        { pattern: "next-dark-chrome", url: "https://view.loft3di.com/nespresso/nespresso_vertuo_next_deluxe_gcv1_chrome_nespresso" },
+        
+        // Professional Machines
+        { pattern: "aguila-220", url: "https://view.loft3di.com/nespresso/aguila_220_b2b" },
+        { pattern: "momento-100", url: "https://view.loft3di.com/nespresso/momento_100_b2b" },
+        { pattern: "momento-milk", url: "https://view.loft3di.com/nespresso/momento_120_b2b" },
+        { pattern: "zenius", url: "https://view.loft3di.com/nespresso/zenius_b2b" },
+    ];
 
-    function getIframeUrlByColor() {
+    function getIframeUrlByPattern() {
         const currentUrl = window.location.href.toLowerCase();
-        for (const [colorKey, iframeUrl] of Object.entries(COLOR_MAP)) {
-            if (currentUrl.includes(colorKey)) {
-                return iframeUrl;
+        
+        for (const product of PRODUCT_MAP) {
+            if (currentUrl.includes(product.pattern)) {
+                return product.url;
             }
         }
         return null;
     }
 
-    const detectedIframeUrl = getIframeUrlByColor();
+    const detectedIframeUrl = getIframeUrlByPattern();
     if (!detectedIframeUrl) return;
 
     function sendGAEvent(label) {

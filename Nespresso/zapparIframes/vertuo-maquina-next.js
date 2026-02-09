@@ -1,6 +1,24 @@
 (function() {
         "use strict";
 
+        // Mapeamento de variantes do Vertuo Next
+        const NEXT_VARIANTS = [
+            { pattern: "next-vermelho-cereja", url: "https://view.loft3di.com/nespresso/vertuo_next_cherry_red_c_range" },
+            { pattern: "next-dark-chrome", url: "https://view.loft3di.com/nespresso/nespresso_vertuo_next_deluxe_gcv1_chrome_nespresso" },
+        ];
+
+        function getNextIframeUrl() {
+            const currentUrl = window.location.href.toLowerCase();
+            
+            for (const variant of NEXT_VARIANTS) {
+                if (currentUrl.includes(variant.pattern)) {
+                    return variant.url;
+                }
+            }
+            // URL padrão para o configurador de cores
+            return "https://view.loft3di.com/nespresso/next-br-color-configurator";
+        }
+
         function sendGAEvent(label) {
             window.gtmDataObject = window.gtmDataObject || [];
             gtmDataObject.push({
@@ -24,7 +42,7 @@
         // Configurações
         const CONFIG = {
             targetSelector: "nb-cta-3d",
-            iframeUrl: "https://view.loft3di.com/nespresso/next-br-color-configurator",
+            iframeUrl: getNextIframeUrl(),
             modalId: "nespresso-modal",
             iframeId: "nespresso-iframe",
         };
