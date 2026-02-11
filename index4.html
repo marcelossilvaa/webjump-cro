@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lojinha Baby & Me - Nestlé</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;700&family=Lato:wght@400;700&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: #F5F5F5;
+      min-height: 100vh;
+    }
+
+    /* TOPO DA PÁGINA */
+    .topo-site {
+      position: relative;
+      width: 1440px;
+      height: 206px;
+      margin: 0 auto;
+      background: #FFFFFF;
+    }
+
+    .logo-marca {
+      position: absolute;
+      left: 40px;
+      top: 68px;
+      width: 115px;
+      height: 68px;
+    }
+
+    .texto-promocional {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 12px;
+      font-family: 'Lato';
+      font-size: 16px;
+      line-height: 20px;
+      color: #173C56;
+      text-align: center;
+    }
+
+    .linha-divisoria {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 48px;
+      height: 1px;
+      background: #C4C4C4;
+    }
+
+    .caixa-busca {
+      position: absolute;
+      left: 21.32%;
+      right: 29.17%;
+      top: 81px;
+      height: 46px;
+      background: #FFFFFF;
+      border: 1px solid #173C56;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 8px;
+    }
+
+    .icone-busca {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .campo-busca {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-family: 'Lato';
+      font-size: 16px;
+      color: #173C56;
+    }
+
+    .campo-busca::placeholder {
+      color: #94A5B1;
+    }
+
+    .menu-navegacao {
+      position: absolute;
+      width: 1104px;
+      left: calc(50% - 552px);
+      top: 160px;
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .item-menu {
+      font-family: 'Fraunces';
+      font-size: 18px;
+      line-height: 22px;
+      color: #173C56;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: color 0.3s ease;
+    }
+
+    .item-menu:hover {
+      color: #004E99;
+    }
+
+    .acoes-usuario {
+      position: absolute;
+      right: 168px;
+      top: 88px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .link-acesso {
+      font-family: 'Fraunces';
+      font-weight: 700;
+      font-size: 16px;
+      color: #004E99;
+      text-decoration: none;
+    }
+
+    .divisor-texto {
+      font-family: 'Lato';
+      font-size: 16px;
+      color: #173C56;
+    }
+
+    .icone-carrinho {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+
+    .linha-vertical {
+      position: absolute;
+      right: 96px;
+      top: 88px;
+      width: 1px;
+      height: 20px;
+      background: #173C56;
+    }
+
+    /* BANNER DESTAQUE */
+    .banner-destaque {
+      width: 1440px;
+      height: 380px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, #31A8DB 0%, #004E99 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .conteudo-banner {
+      text-align: center;
+      color: white;
+      max-width: 700px;
+      padding: 0 20px;
+      z-index: 2;
+    }
+
+    .titulo-banner {
+      font-family: 'Fraunces';
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .subtitulo-banner {
+      font-size: 20px;
+      line-height: 1.5;
+      margin-bottom: 36px;
+      opacity: 0.95;
+    }
+
+    .botao-banner {
+      background: #FF8300;
+      color: white;
+      font-family: 'Fraunces';
+      font-weight: 700;
+      font-size: 18px;
+      padding: 16px 48px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .botao-banner:hover {
+      background: #E67300;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 131, 0, 0.4);
+    }
+
+    /* ÁREA PRINCIPAL */
+    .area-principal {
+      width: 1440px;
+      margin: 0 auto;
+      background: white;
+      padding: 48px 168px 64px;
+    }
+
+    /* MIGALHAS */
+    .navegacao-migalhas {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+      font-size: 14px;
+    }
+
+    .navegacao-migalhas a {
+      color: #173C56;
+      text-decoration: none;
+    }
+
+    .navegacao-migalhas a:hover {
+      text-decoration: underline;
+    }
+
+    .navegacao-migalhas .divisor {
+      color: #94A5B1;
+    }
+
+    .navegacao-migalhas .pagina-atual {
+      color: #94A5B1;
+    }
+
+    /* CABEÇALHO SEÇÃO */
+    .cabecalho-secao {
+      margin-bottom: 40px;
+    }
+
+    .titulo-secao {
+      font-family: 'Fraunces';
+      font-size: 40px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #173C56;
+      margin-bottom: 16px;
+    }
+
+    .descricao-secao {
+      font-size: 18px;
+      line-height: 1.6;
+      color: #173C56;
+      opacity: 0.8;
+    }
+
+    /* BARRA FILTROS */
+    .barra-filtros {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid #E5E5E5;
+    }
+
+    .grupo-filtros {
+      display: flex;
+      gap: 16px;
+    }
+
+    .botao-filtro {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: white;
+      border: 1px solid #173C56;
+      border-radius: 8px;
+      font-size: 16px;
+      color: #173C56;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .botao-filtro:hover {
+      background: #F0F5F8;
+      border-color: #004E99;
+    }
+
+    .total-resultados {
+      font-size: 16px;
+      color: #173C56;
+      font-weight: 500;
+    }
+
+    /* VITRINE PRODUTOS */
+    .vitrine-produtos {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-bottom: 48px;
+    }
+
+    .card-produto {
+      background: white;
+      border: 1px solid #E5E5E5;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .card-produto:hover {
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+      transform: translateY(-4px);
+    }
+
+    .imagem-produto {
+      width: 100%;
+      height: 280px;
+      background: #F8F8F8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .imagem-produto img {
+      max-width: 80%;
+      max-height: 80%;
+      object-fit: contain;
+    }
+
+    .etiqueta-produto {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: #FF8300;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 6px;
+    }
+
+    .etiqueta-produto.lancamento {
+      background: #004E99;
+    }
+
+    .dados-produto {
+      padding: 20px;
+    }
+
+    .marca-fabricante {
+      font-size: 13px;
+      color: #94A5B1;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nome-produto {
+      font-family: 'Fraunces';
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: #173C56;
+      margin-bottom: 12px;
+      min-height: 48px;
+    }
+
+    .valores-produto {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .valor-atual {
+      font-family: 'Fraunces';
+      font-size: 28px;
+      font-weight: 700;
+      color: #173C56;
+    }
+
+    .valor-anterior {
+      font-size: 18px;
+      color: #94A5B1;
+      text-decoration: line-through;
+    }
+
+    .info-parcelamento {
+      font-size: 14px;
+      color: #173C56;
+      margin-bottom: 16px;
+      opacity: 0.8;
+    }
+
+    .botao-adicionar {
+      width: 100%;
+      padding: 14px;
+      background: #004E99;
+      color: white;
+      font-family: 'Fraunces';
+      font-weight: 700;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .botao-adicionar:hover {
+      background: #003A73;
+      transform: scale(1.02);
+    }
+
+    /* CONTROLE PAGINAÇÃO */
+    .controle-paginacao {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 48px;
+    }
+
+    .btn-pagina {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #E5E5E5;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #173C56;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-pagina:hover {
+      border-color: #004E99;
+      color: #004E99;
+    }
+
+    .btn-pagina.selecionado {
+      background: #004E99;
+      color: white;
+      border-color: #004E99;
+    }
+
+    /* RODAPÉ */
+    .rodape-site {
+      width: 1440px;
+      margin: 0 auto;
+      background: #173C56;
+      color: white;
+      padding: 48px 168px;
+    }
+
+    .conteudo-rodape {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 48px;
+      margin-bottom: 32px;
+    }
+
+    .coluna-rodape h3 {
+      font-family: 'Fraunces';
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .coluna-rodape ul {
+      list-style: none;
+    }
+
+    .coluna-rodape li {
+      margin-bottom: 12px;
+    }
+
+    .coluna-rodape a {
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      opacity: 0.85;
+      transition: opacity 0.3s ease;
+    }
+
+    .coluna-rodape a:hover {
+      opacity: 1;
+    }
+
+    .info-copyright {
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      padding-top: 24px;
+      text-align: center;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- TOPO -->
+  <header class="topo-site">
+    <div class="logo-marca">
+      <svg viewBox="0 0 115 68" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M27.3 0L23.74 13.08L26.26 16.12L30.28 12.08L35.68 11.85L37.68 15.94L44.88 10.05L65.1 1.64L83.57 14.66"
+          fill="#173C56" />
+        <path d="M0 1.82L10.98 10.88" fill="#173C56" />
+        <path d="M14.82 46.78L26.47 41.58L36.87 47.04L62.13 42.04L56.07 46.78L4.08 42.9" fill="#FF8300" />
+        <path d="M48.74 32.32L73.42 46.78L89.84 46.78L79.55 61.8L96.35 61.8L96.1 63.32" fill="#001689" />
+      </svg>
+    </div>
+
+    <div class="texto-promocional">Cadastre-se e Ganhe brindes exclusivos</div>
+    <div class="linha-divisoria"></div>
+
+    <div class="caixa-busca">
+      <svg class="icone-busca" viewBox="0 0 24 24" fill="none">
+        <path
+          d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+          fill="#173C56" />
+      </svg>
+      <input type="text" class="campo-busca" placeholder="O que você está procurando?">
+    </div>
+
+    <nav class="menu-navegacao">
+      <a href="#" class="item-menu">Início</a>
+      <a href="#" class="item-menu">Gravidez e maternidade</a>
+      <a href="#" class="item-menu">0 a 6 meses</a>
+      <a href="#" class="item-menu">6 a 12 meses</a>
+      <a href="#" class="item-menu">1 a 3 anos</a>
+      <a href="#" class="item-menu">Pré-escolares</a>
+      <a href="#" class="item-menu">Receitas</a>
+      <a href="#" class="item-menu">Calculadoras</a>
+      <a href="#" class="item-menu">Amostras</a>
+      <a href="#" class="item-menu">Blog</a>
+    </nav>
+
+    <div class="linha-vertical"></div>
+
+    <div class="acoes-usuario">
+      <a href="#" class="link-acesso">Entrar</a>
+      <span class="divisor-texto">ou</span>
+      <a href="#" class="link-acesso">Cadastrar</a>
+      <svg class="icone-carrinho" viewBox="0 0 24 24" fill="none">
+        <path
+          d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"
+          fill="#173C56" />
+      </svg>
+    </div>
+  </header>
+
+  <!-- BANNER -->
+  <section class="banner-destaque">
+    <div class="conteudo-banner">
+      <h1 class="titulo-banner">Lojinha Baby & Me</h1>
+      <p class="subtitulo-banner">Produtos especiais para você e seu bebê com a qualidade Nestlé</p>
+      <button class="botao-banner">Explorar Produtos</button>
+    </div>
+  </section>
+
+  <!-- CONTEÚDO -->
+  <main class="area-principal">
+    <nav class="navegacao-migalhas">
+      <a href="#">Início</a>
+      <span class="divisor">/</span>
+      <a href="#">Lojinha</a>
+      <span class="divisor">/</span>
+      <span class="pagina-atual">Todos os produtos</span>
+    </nav>
+
+    <div class="cabecalho-secao">
+      <h2 class="titulo-secao">Todos os Produtos</h2>
+      <p class="descricao-secao">Descubra nossa linha completa de produtos desenvolvidos especialmente para mães e bebês
+      </p>
+    </div>
+
+    <div class="barra-filtros">
+      <div class="grupo-filtros">
+        <button class="botao-filtro">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M8 15H12V13H8V15ZM2 5V7H18V5H2ZM4 11H16V9H4V11Z" fill="currentColor" />
+          </svg>
+          Filtros
+        </button>
+        <button class="botao-filtro">
+          Ordenar por
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M7 10L12 15L17 10H7Z" fill="currentColor" />
+          </svg>
+        </button>
+      </div>
+      <span class="total-resultados">48 produtos encontrados</span>
+    </div>
+
+    <div class="vitrine-produtos">
+      <!-- Item 1 -->
+      <div class="card-produto">
+        <div class="imagem-produto">
+          <span class="etiqueta-produto">-15%</span>
+          <img src="https://via.placeholder.com/220x220/F8F8F8/173C56?text=Mucilon" alt="Mucilon Multicereais">
+        </div>
+        <div class="dados-produto">
+          <p class="marca-fabricante">Nestlé</p>
+          <h3 class="nome-produto">Mucilon Multicereais 230g</h3>
+          <div class="valores-produto">
+            <span class="valor-atual">R$ 18,90</span>
+            <span class="valor-anterior">R$ 22,90</span>
+          </div>
+          <p class="info-parcelamento">ou 3x de R$ 6,30 sem juros</p>
+          <button class="botao-adicionar">Adicionar ao Carrinho</button>
+        </div>
+      </div>
+
+      <!-- Item 2 -->
+      <div class="card-produto">
+        <div class="imagem-produto">
+          <img src="https://via.placeholder.com/220x220/F8F8F8/173C56?text=NAN" alt="NAN Comfor">
+        </div>
+        <div class="dados-produto">
+          <p class="marca-fabricante">Nestlé</p>
+          <h3 class="nome-produto">NAN Comfor 1 800g</h3>
+          <div class="valores-produto">
+            <span class="valor-atual">R$ 89,90</span>
+          </div>
+          <p class="info-parcelamento">ou 5x de R$ 17,98 sem juros</p>
+          <button class="botao-adicionar">Adicionar ao Carrinho</button>
+        </div>
+      </div>
+
+      <!-- Item 3 -->
+      <div class="card-produto">
+        <div class="imagem-produto">
+          <span class="etiqueta-produto lancamento">Novidade</span>
+          <img src="https://via.placeholder.com/220x220/F8F8F8/173C56?text=Ninho" alt="Ninho Fases">
+        </div>
+        <div class="dados-produto">
+          <p class="marca-fabricante">Nestlé</p>
+          <h3 class="nome-produto">Ninho Fases 1+ 800g</h3>
+          <div class="valores-produto">
+            <span class="valor-atual">R$ 42,90</span>
+          </div>
+          <p class="info-parcelamento">ou 4x de R$ 10,73 sem juros</p>
+          <button class="botao-adicionar">Adicionar ao Carrinho</button>
+        </div>
+      </div>
+
+      <!-- Item 4 -->
+      <div class="card-produto">
+        <div class="imagem-produto">
+          <img src="https://via.placeholder.com/220x220/F8F8F8/173C56?text=Nestogeno" alt="Nestogeno">
+        </div>
+        <div class="dados-produto">
+          <p class="marca-fabricante">Nestlé</p>
+          <h3 class="nome-produto">Nestogeno 1 800g</h3>
+          <div class="valores-produto">
+            <span class="valor-atual">R$ 64,90</span>
+          </div>
+          <p class="info-parcelamento">ou 4x de R$ 16,23 sem juros</p>
+          <button class="botao-adicionar">Adicionar ao Carrinho</button>
+        </div>
+      </div>
+
+      <!-- Item 5 -->
+      <div class="card-produto">
+        <div class="imagem-produto">
+          <span class="etiqueta-produto">-20%</span>
+          <img src="https://via.placeholder.com/220x220/F8F8F8/173C56?text=Cerelac" alt="Cerelac">
+        </div>
+        <div class="dados-produto">
+          <p class="marca-fabricante">Nestlé</p>
+          <h3 class="nome-produto">Cerelac Tradicional 230g</h3>
+          <div class="valores-produto">
+            <span class="valor-atual">R$ 15,90</span>
+            <span class="valor-anterior">R$ 19,90</span>
+          </div>
+          <p class="info-parcelamento">ou 2x de R$ 7,95 sem juros</p>
+          <button class="botao-adicionar">Adicionar ao Carrinho</button>
+        </div>
+      </div>
+
+      <!-- Item 6 -->
+      <div class="card-produto">
+        <div class="imagem-produto">
+          <img src="https://via.placeholder.com/220x220/F8F8F8/173C56?text=Ninho+Fort" alt="Ninho Fortificado">
+        </div>
+        <div class="dados-produto">
+          <p class="marca-fabricante">Nestlé</p>
+          <h3 class="nome-produto">Ninho Fortificado 800g</h3>
+          <div class="valores-produto">
+            <span class="valor-atual">R$ 38,90</span>
+          </div>
+          <p class="info-parcelamento">ou 3x de R$ 12,97 sem juros</p>
+          <button class="botao-adicionar">Adicionar ao Carrinho</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="controle-paginacao">
+      <div class="btn-pagina">‹</div>
+      <div class="btn-pagina selecionado">1</div>
+      <div class="btn-pagina">2</div>
+      <div class="btn-pagina">3</div>
+      <div class="btn-pagina">4</div>
+      <div class="btn-pagina">›</div>
+    </div>
+  </main>
+
+  <!-- RODAPÉ -->
+  <footer class="rodape-site">
+    <div class="conteudo-rodape">
+      <div class="coluna-rodape">
+        <h3>Sobre Nós</h3>
+        <ul>
+          <li><a href="#">Quem Somos</a></li>
+          <li><a href="#">Nossa História</a></li>
+          <li><a href="#">Trabalhe Conosco</a></li>
+          <li><a href="#">Política de Privacidade</a></li>
+        </ul>
+      </div>
+      <div class="coluna-rodape">
+        <h3>Atendimento</h3>
+        <ul>
+          <li><a href="#">Central de Ajuda</a></li>
+          <li><a href="#">Fale Conosco</a></li>
+          <li><a href="#">Trocas e Devoluções</a></li>
+          <li><a href="#">Rastreamento</a></li>
+        </ul>
+      </div>
+      <div class="coluna-rodape">
+        <h3>Institucional</h3>
+        <ul>
+          <li><a href="#">Termos de Uso</a></li>
+          <li><a href="#">Política de Cookies</a></li>
+          <li><a href="#">Segurança</a></li>
+          <li><a href="#">Certificações</a></li>
+        </ul>
+      </div>
+      <div class="coluna-rodape">
+        <h3>Redes Sociais</h3>
+        <ul>
+          <li><a href="#">Facebook</a></li>
+          <li><a href="#">Instagram</a></li>
+          <li><a href="#">YouTube</a></li>
+          <li><a href="#">LinkedIn</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="info-copyright">
+      <p>© 2024 Nestlé Baby & Me. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+</body>
+
+</html>
