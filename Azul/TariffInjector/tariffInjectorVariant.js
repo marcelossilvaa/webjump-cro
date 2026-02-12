@@ -1,54 +1,74 @@
 (function AzulTariffInjector() {
     'use strict';
 
-    console.clear();
-    console.log("🚀 Iniciando Injetor de Tarifas (API -> Layout)...");
+    console.log('[TariffInjector] Iniciando...');
 
-    // Flag de controle
     let dadosCapturados = false;
 
-    // =========================================================================
-    // 🐛 DEBUG MODE - Ative/Desative aqui
-    // =========================================================================
-    const DEBUG_MODE = true;
+    const DEBUG_MODE = false; // Desativado para limpar logs
 
     function debugLog(titulo, dados) {
         if (!DEBUG_MODE) return;
-        console.group(`🐛 DEBUG: ${titulo}`);
-        console.log(dados);
-        console.groupEnd();
+        console.log('[TariffInjector] ' + titulo + ':', dados);
+    }
+
+    // =========================================================================
+    // NOVO: Sistema de persistência de seleção
+    // =========================================================================
+    // Armazena: { "cardId": "nomeTarifaSelecionada" }
+    window.AZUL_SELECTION_STATE = window.AZUL_SELECTION_STATE || {};
+
+    function salvarSelecao(cardId, fareName) {
+        window.AZUL_SELECTION_STATE[cardId] = fareName;
+        console.log('[SELECAO] Selecao salva - cardId: ' + cardId.substring(0, 30) + '..., tarifa: ' + fareName);
+    }
+
+    function obterSelecaoSalva(cardId) {
+        return window.AZUL_SELECTION_STATE[cardId] || null;
+    }
+
+    function limparSelecaoSalva(cardId) {
+        delete window.AZUL_SELECTION_STATE[cardId];
     }
 
     // =========================================================================
     // 1. CSS (O visual "Clean" que definimos)
     // =========================================================================
     const styles = `
-        .flight-card__info{
+        /* IMPORTANTE: Estilos aplicados APENAS em cards com a classe .tariff-injector-active */
+        .tariff-injector-active .flight-card__info{
             max-width: 312px!important;
             padding: 0px!important;
         }
-        .css-7ip4ly .details > svg{
-                    min-width: 20px;
+        .tariff-injector-active .css-7ip4ly .details > svg{
+            min-width: 20px;
         }
 
-        .flight-card__info .info{
+        .tariff-injector-active .flight-card__info .info{
             max-width: 370px!important;
         }
 
-        .flight-card__container{
+        .tariff-injector-active .flight-card__container{
             justify-content: space-between !important;
             padding: 10px;
+            gap: 4px!important;
         }
 
-        .css-gtajxx{
+        .tariff-injector-active .css-gtajxx{
             max-width: 312px!important;
         }
 
-        .flight-card__fare, .fareIndex-0, .fareIndex-1, .fareIndex-2, .fareIndex-3, .fareIndex-4 {
+        /* Esconde os fare cards APENAS em cards com tariff-injector-active */
+        .tariff-injector-active .flight-card__fare,
+        .tariff-injector-active .fareIndex-0,
+        .tariff-injector-active .fareIndex-1,
+        .tariff-injector-active .fareIndex-2,
+        .tariff-injector-active .fareIndex-3,
+        .tariff-injector-active .fareIndex-4 {
             display: none !important;
         }
 
-        .css-7ip4ly{
+        .tariff-injector-active .css-7ip4ly{
             max-width: calc(80% - 136px)!important;
         }
 
@@ -70,7 +90,7 @@
             background: #fff;
             border: 1px solid #cfcfcf;
             border-radius: 6px;
-            padding: 8px 12px 12px 12px;
+            padding: 12px;
             min-width: 140px;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -78,6 +98,7 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
+            color: #6A7282;
         }
 
         .custom-tariff-card::after {
@@ -106,11 +127,6 @@
         .custom-tariff-card.selected {
             background-color: #026CB6;
             border-color: #026CB6;
-        }
-
-        .custom-tariff-card.selected::after {
-            opacity: 1;
-            background: #fff;
         }
 
         /* Estilo especial para Business */
@@ -161,11 +177,6 @@
         .custom-tariff-card.business.selected .tariff-value .integer,
         .custom-tariff-card.business.selected .tariff-value .cents {
             color: rgb(4, 30, 66);
-        }
-
-        .custom-tariff-card.business.selected::after {
-            background: rgb(4, 30, 66);
-            opacity: 1;
         }
 
         .custom-tariff-card.sold-out {
@@ -339,6 +350,10 @@
             font-size: 14px;
             margin-top: 12px;
         }
+
+        .custom-tariff-card .tariff-subtitle{
+            font-size: 12px;
+        }
     `;
 
     function aplicarEstilos() {
@@ -359,59 +374,29 @@
 
     function processarPayload(data) {
         try {
-            debugLog("Payload Completo Recebido", data);
-
             const trips = data.data?.trips || data.trips || [];
-            debugLog("Trips Encontradas", { total: trips.length, trips });
-
             let foundData = false;
 
-            trips.forEach((trip, tripIndex) => {
+            trips.forEach(function(trip) {
                 const journeys = trip.journeys || [];
-                debugLog(`Trip ${tripIndex} - Journeys`, { total: journeys.length, journeys });
 
-                journeys.forEach((journey, journeyIndex) => {
-                    debugLog(`Journey ${journeyIndex} - Dados Completos`, {
-                        journeyKey: journey.journeyKey,
-                        fares: journey.fares,
-                        designator: journey.designator,
-                        segments: journey.segments
-                    });
-
+                journeys.forEach(function(journey) {
                     if (journey.journeyKey && journey.fares) {
                         window.AZUL_FLIGHT_CACHE[journey.journeyKey] = journey.fares;
                         foundData = true;
-
-                        // Debug detalhado de cada tarifa
-                        journey.fares.forEach((fare, fareIndex) => {
-                            debugLog(`Tarifa ${fareIndex} - ${journey.journeyKey}`, {
-                                nome: fare.productClass?.name,
-                                code: fare.productClass?.code,
-                                preco: fare.paxFares?.[0]?.totalAmount,
-                                fareKey: fare.fareKey,
-                                available: fare.isAvailable,
-                                dadosCompletos: fare
-                            });
-                        });
                     }
                 });
             });
 
             if (foundData) {
-                console.log("📦 Cache Atualizado:", window.AZUL_FLIGHT_CACHE);
-                
                 if (!dadosCapturados) {
                     aplicarEstilos();
                     dadosCapturados = true;
                 }
-                console.log("✅ Dados de tarifas capturados. Atualizando layout...");
                 atualizarLayout();
-            } else {
-                console.warn("⚠️ Nenhum dado válido encontrado no payload");
             }
         } catch (error) {
-            console.error("❌ Erro ao processar payload:", error);
-            debugLog("Erro Detalhado", { error, stack: error.stack });
+            console.error('[TariffInjector] Erro ao processar payload:', error);
         }
     }
 
@@ -450,7 +435,7 @@
     };
 
     // =========================================================================
-    // 3. RENDERIZADOR (O "Painter")
+    // 3. RENDERIZADOR - CORRIGIDO COM PERSISTÊNCIA
     // =========================================================================
     function formatMoney(val) {
         const formatted = val.toLocaleString('pt-BR', { 
@@ -470,7 +455,10 @@
 
     // Nova função para formatar a diferença de preço
     function formatDifference(val) {
-        const formatted = val.toLocaleString('pt-BR', { 
+        const isNegative = val < 0;
+        const absVal = Math.abs(val);
+        
+        const formatted = absVal.toLocaleString('pt-BR', { 
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
@@ -479,119 +467,155 @@
         const integerPart = parts[0];
         const centsPart = parts[1] || '00';
         
-        return `<span class="diff-symbol">+</span> <span class="diff-integer">R$${integerPart}</span><span class="diff-cents">,${centsPart}</span>`;
+        const symbol = isNegative ? '-' : '+';
+        
+        return '<span class="diff-symbol">' + symbol + '</span> <span class="diff-integer">R$' + integerPart + '</span><span class="diff-cents">,' + centsPart + '</span>';
     }
 
     function atualizarLayout() {
         const flightCards = document.querySelectorAll('.flight-card');
-        debugLog("Cards na Página", { total: flightCards.length });
 
-        flightCards.forEach((card, cardIndex) => {
-            if (card.querySelector('.custom-tariff-container')) {
-                debugLog(`Card ${cardIndex}`, "Já possui tarifas customizadas");
+        flightCards.forEach(function(card) {
+            // NOVO: Verifica se o card está exibindo pontos ao invés de dinheiro
+            const fareContainer = card.querySelector('.flight-card__fare');
+            if (fareContainer) {
+                const fareText = fareContainer.textContent || '';
+                // Se contém "pontos" no texto, ignora este card COMPLETAMENTE
+                if (fareText.toLowerCase().includes('pontos')) {
+                    // Remove a classe de ativação caso exista (para quando usuario troca de dinheiro para pontos)
+                    card.classList.remove('tariff-injector-active');
+                    // Remove o container customizado caso exista
+                    const existingContainer = card.querySelector('.custom-tariff-container');
+                    if (existingContainer) {
+                        existingContainer.remove();
+                    }
+                    return;
+                }
+            }
+
+            // ADICIONA a classe que ativa os estilos CSS
+            card.classList.add('tariff-injector-active');
+
+            // Verifica se precisa re-renderizar (container antigo foi removido pelo React)
+            const existingContainer = card.querySelector('.custom-tariff-container');
+            
+            if (existingContainer) {
+                // Container existe, verifica se precisa reaplicar seleção
+                const cardId = card.id;
+                const selecaoSalva = obterSelecaoSalva(cardId);
+                
+                if (selecaoSalva) {
+                    const customCards = existingContainer.querySelectorAll('.custom-tariff-card');
+                    let encontrou = false;
+                    
+                    customCards.forEach(function(customCard) {
+                        const cardFareName = customCard.dataset.fareName || '';
+                        customCard.classList.remove('selected');
+                        
+                        if (cardFareName === selecaoSalva) {
+                            customCard.classList.add('selected');
+                            encontrou = true;
+                        }
+                    });
+                    
+                    if (encontrou) {
+                        console.log('[SELECAO] Selecao reaplicada apos re-render: ' + selecaoSalva);
+                    }
+                }
                 return;
             }
 
             const cardId = card.id;
-            debugLog(`Card ${cardIndex} - Análise`, {
-                id: cardId,
-                classes: card.className,
-                possuiDados: !!window.AZUL_FLIGHT_CACHE[cardId]
-            });
-            
             const faresData = window.AZUL_FLIGHT_CACHE[cardId];
 
             if (faresData && faresData.length > 0) {
-                debugLog(`Card ${cardIndex} - Renderizando`, {
-                    cardId,
-                    quantidadeTarifas: faresData.length,
-                    tarifas: faresData.map(f => ({
-                        nome: f.productClass?.name,
-                        preco: f.paxFares?.[0]?.totalAmount
-                    }))
-                });
                 renderizarTarifasNoCard(card, faresData);
-            } else {
-                debugLog(`Card ${cardIndex} - Sem Dados`, { cardId });
             }
         });
     }
 
     function renderizarTarifasNoCard(card, fares) {
-        debugLog("Renderizando Tarifas", { cardId: card.id, fares });
-
         const container = document.createElement('div');
         container.className = 'custom-tariff-container';
 
-        // Encontra a tarifa base com prioridade: Azul > Mais Azul > Azul Super > Business
-        let tarifaBase = null;
-        let precoBase = 0;
-        
-        // Ordem de prioridade para buscar a tarifa base
-        const ordemPrioridade = ['azul', 'mais azul', 'azul super', 'business'];
-        
-        for (const nomePrioridade of ordemPrioridade) {
-            tarifaBase = fares.find(fare => {
-                const nome = (fare.productClass?.name || "").toLowerCase();
-                const paxFares = fare.paxFares;
-                const temPreco = paxFares && paxFares.length > 0;
-                
-                return nome === nomePrioridade && temPreco;
-            });
+        // Verifica se todas as tarifas estão esgotadas
+        const todasEsgotadas = fares.every(function(fare) {
+            const paxFares = fare.paxFares;
+            return !paxFares || paxFares.length === 0;
+        });
+
+        debugLog("Verificação de Disponibilidade", {
+            cardId: card.id,
+            todasEsgotadas: todasEsgotadas,
+            totalTarifas: fares.length
+        });
+
+        // Se todas estão esgotadas, renderiza apenas um card informativo
+        if (todasEsgotadas) {
+            const box = document.createElement('div');
+            box.className = 'custom-tariff-card sold-out';
+            box.style.cursor = 'not-allowed';
+            box.innerHTML = '<span class="tariff-value">Voo esgotado</span>';
             
-            if (tarifaBase) {
-                precoBase = tarifaBase.paxFares[0].totalAmount;
-                debugLog("Tarifa Base Encontrada", { 
-                    nome: tarifaBase.productClass?.name,
-                    preco: precoBase,
-                    prioridade: nomePrioridade
-                });
-                break;
+            box.onclick = function(e) {
+                e.stopPropagation();
+            };
+            
+            container.appendChild(box);
+            
+            const cardInner = card.querySelector('.card');
+            if (cardInner) {
+                cardInner.appendChild(container);
+                card.classList.add('has-custom-fares');
             }
+            
+            debugLog("Card Esgotado Renderizado", { cardId: card.id });
+            return;
         }
+
+        // Encontra a tarifa MAIS BARATA (base) entre as disponíveis
+        let tarifaBase = null;
+        let precoBase = Infinity;
         
-        // Se ainda não encontrou, pega a primeira tarifa disponível com preço
-        if (!tarifaBase) {
-            tarifaBase = fares.find(fare => {
-                const paxFares = fare.paxFares;
-                return paxFares && paxFares.length > 0;
-            });
+        fares.forEach((fare) => {
+            const paxFares = fare.paxFares;
+            const temPreco = paxFares && paxFares.length > 0;
             
-            if (tarifaBase) {
-                precoBase = tarifaBase.paxFares[0].totalAmount;
-                debugLog("Tarifa Base (Fallback - Primeira Disponível)", { 
-                    nome: tarifaBase.productClass?.name,
-                    preco: precoBase
-                });
+            if (temPreco) {
+                const preco = paxFares[0].totalAmount;
+                if (preco < precoBase) {
+                    precoBase = preco;
+                    tarifaBase = fare;
+                }
             }
+        });
+        
+        if (tarifaBase) {
+            debugLog("Tarifa Base (Mais Barata) Encontrada", { 
+                nome: tarifaBase.productClass?.name,
+                preco: precoBase
+            });
+        } else {
+            precoBase = 0;
         }
 
         const nomeTarifaBase = tarifaBase?.productClass?.name?.toLowerCase() || '';
 
+        // NOVO: Obtém seleção salva para este card
+        const selecaoSalva = obterSelecaoSalva(card.id);
+
         fares.forEach((fare, index) => {
-            const nome = fare.productClass?.name || "Tarifa";
+            const nome = fare.productClass?.name || 'Tarifa';
             const paxFares = fare.paxFares;
             const isSoldOut = !paxFares || paxFares.length === 0;
             const preco = isSoldOut ? 0 : (paxFares[0]?.totalAmount || 0);
 
             const isBusiness = nome.toLowerCase().includes('business');
-            const isAzulTariff = ['azul', 'mais azul', 'super azul'].some(t => 
-                nome.toLowerCase().includes(t.toLowerCase())
-            );
-            const isBaseTariff = nome.toLowerCase() === nomeTarifaBase;
-
-            // Calcula a diferença em relação à tarifa base
-            const diferenca = !isSoldOut && precoBase > 0 && !isBaseTariff ? preco - precoBase : 0;
-
-            debugLog(`Tarifa ${index} - ${nome}`, {
-                esgotada: isSoldOut,
-                isBusiness,
-                isAzulTariff,
-                isTarifaBase: isBaseTariff,
-                preco,
-                precoBase,
-                diferenca
+            const isAzulTariff = ['azul', 'mais azul', 'super azul'].some(function(t) {
+                return nome.toLowerCase().includes(t.toLowerCase());
             });
+            const isBaseTariff = nome.toLowerCase() === nomeTarifaBase;
+            const diferenca = !isSoldOut && precoBase > 0 && !isBaseTariff ? preco - precoBase : 0;
 
             // SVG para tarifas Azul
             const azulIconeSVG = isAzulTariff && !isBusiness ? `
@@ -644,125 +668,106 @@
             const iconeSVG = isBusiness ? businessIconeSVG : azulIconeSVG;
 
             const box = document.createElement('div');
-            box.className = `custom-tariff-card ${isSoldOut ? 'sold-out' : ''} ${isBusiness ? 'business' : ''}`;
-            box.dataset.fareIndex = index;
             
-            // VARIANT: Mostra "a partir de" + preço para tarifa base, diferença para outras
+            // NOVO: Aplica classe selected se esta tarifa estava salva
+            const isSelected = selecaoSalva && selecaoSalva === nome.toLowerCase();
+            
+            box.className = 'custom-tariff-card ' + (isSoldOut ? 'sold-out' : '') + ' ' + (isBusiness ? 'business' : '') + (isSelected ? ' selected' : '');
+            box.dataset.fareIndex = index;
+            box.dataset.fareName = nome.toLowerCase();
+
+            // Conteúdo do preço
             let conteudoPreco;
             if (isSoldOut) {
-                conteudoPreco = '<span class="tariff-value">Esgotada</span>';
+                conteudoPreco = '<span class="tariff-value">Tarifa Esgotada</span>';
             } else if (isBaseTariff) {
-                // Tarifa base: mostra "a partir de" + preço completo
-                conteudoPreco = `
-                    <span class="tariff-subtitle">a partir de</span>
-                    <span class="tariff-value">${formatMoney(preco)}</span>
-                `;
+                conteudoPreco = '<span class="tariff-subtitle" style="font-size: 12px;">a partir de</span><span class="tariff-value">' + formatMoney(preco) + '</span>';
             } else {
-                // Outras tarifas: mostra "a partir de" + preço formatado inline + diferença
-                const precoFormatadoBR = preco.toLocaleString('pt-BR', { 
-                    minimumFractionDigits: 2, 
-                    maximumFractionDigits: 2 
-                });
+                const precoFormatadoBR = preco.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 const partes = precoFormatadoBR.split(',');
                 const inteira = partes[0];
                 const centavos = partes[1] || '00';
                 
-                conteudoPreco = `
-                    <span class="tariff-subtitle">a partir de <span style="white-space: nowrap;">R$${inteira},${centavos}</span></span>
-                    <span class="tariff-difference">${formatDifference(diferenca)}</span>
-                `;
+                conteudoPreco = '<span class="tariff-subtitle" style="font-size: 12px;">a partir de <span style="white-space: nowrap;">R$' + inteira + ',' + centavos + '</span></span><span class="tariff-difference">' + formatDifference(diferenca) + '</span>';
             }
 
-            box.innerHTML = `
-                <span class="tariff-title">${nome}${iconeSVG}</span>
-                ${conteudoPreco}
-            `;
+            box.innerHTML = '<span class="tariff-title">' + nome + iconeSVG + '</span>' + conteudoPreco;
 
-            // --- Lógica de Clique (Proxy) ---
+            // Lógica de clique
             if (!isSoldOut) {
-                box.onclick = async (e) => {
+                box.onclick = async function(e) {
                     e.stopPropagation();
                     e.preventDefault();
                     
-                    const fareIndex = parseInt(box.dataset.fareIndex);
-                    console.log(`🎯 Clicando na tarifa ${nome} (índice: ${fareIndex})`);
+                    const fareName = box.dataset.fareName;
+                    
+                    console.log('[SELECAO] Clique no card - tarifa: ' + fareName);
 
-                    // Visual Selection - marca apenas este card
-                    container.querySelectorAll('.custom-tariff-card').forEach(b => b.classList.remove('selected'));
+                    // Visual Selection
+                    container.querySelectorAll('.custom-tariff-card').forEach(function(b) { 
+                        b.classList.remove('selected'); 
+                    });
                     box.classList.add('selected');
+                    
+                    // NOVO: Salva a seleção
+                    salvarSelecao(card.id, fareName);
 
-                    // 1. Verifica se o card está fechado
+                    // Expande card se fechado
                     const isCardClosed = !card.classList.contains('flight-card--opened');
-                    debugLog("Estado do Card", { isCardClosed, cardClasses: card.className });
 
                     if (isCardClosed) {
-                        // Clica na área do card para expandir
                         const cardClickArea = card.querySelector('.flight-card__info[role="button"]');
                         if (cardClickArea) {
-                            console.log("📂 Expandindo card...");
                             cardClickArea.click();
-                            // Espera mais tempo para o React renderizar
-                            await new Promise(r => setTimeout(r, 500));
+                            await new Promise(function(r) { setTimeout(r, 500); });
                         }
                     }
 
-                    // 2. Aguarda e procura os fare-items
-                    await new Promise(r => setTimeout(r, 200));
+                    await new Promise(function(r) { setTimeout(r, 200); });
                     
-                    // Procura os botões de seleção de tarifa
+                    // Busca fare-item pelo nome
                     const fareItems = card.querySelectorAll('.fare-item');
-                    debugLog("Fare Items Encontrados", { 
-                        total: fareItems.length, 
-                        fareIndex,
-                        items: Array.from(fareItems).map((item, i) => ({
-                            index: i,
-                            text: item.textContent?.substring(0, 50)
-                        }))
+                    let targetItem = null;
+                    
+                    fareItems.forEach(function(item) {
+                        const itemText = (item.textContent || '').toLowerCase();
+                        
+                        if ((fareName === 'azul' && itemText.includes('azul') && !itemText.includes('mais azul') && !itemText.includes('azul super')) ||
+                            (fareName === 'mais azul' && itemText.includes('mais azul')) ||
+                            (fareName === 'azul super' && itemText.includes('azul super')) ||
+                            (fareName === 'business' && itemText.includes('business'))) {
+                            
+                            if (!itemText.includes('esgotada')) {
+                                targetItem = item;
+                            }
+                        }
                     });
 
-                    const targetItem = fareItems[fareIndex];
-                    
                     if (targetItem) {
-                        // Procura o botão "Selecionar" dentro do fare-item
                         const selectBtn = targetItem.querySelector('button[class*="select"], button[class*="btn"]') || 
                                          targetItem.querySelector('button');
                         
                         if (selectBtn) {
-                            console.log(`✅ Clicando no botão de seleção da tarifa ${nome}`);
+                            console.log('[SELECAO] Clicando no botao interno');
                             selectBtn.click();
-                            
-                            // Scroll suave para feedback
-                            targetItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                        } else {
-                            console.warn(`⚠️ Botão de seleção não encontrado para ${nome}`);
-                            // Tenta clicar no próprio fare-item
-                            targetItem.click();
                         }
-                    } else {
-                        console.error(`❌ Fare item não encontrado para índice ${fareIndex}`);
                     }
                 };
             } else {
-                // Para tarifas esgotadas, apenas mostra mensagem
-                box.onclick = (e) => {
+                box.onclick = function(e) {
                     e.stopPropagation();
-                    console.log(`⚠️ Tarifa ${nome} está esgotada`);
                 };
             }
 
             container.appendChild(box);
         });
 
-        // INJEÇÃO: Adiciona dentro do card principal
+        // Injeção
         const cardInner = card.querySelector('.card');
         if (cardInner) {
             cardInner.appendChild(container);
             card.classList.add('has-custom-fares');
-            
-            // Adiciona funcionalidade de fechar
             adicionarFuncaoFechar(card, cardInner);
-            
-            // Adiciona observador para sincronizar seleção interna
             observarSelecaoInterna(card, container);
         }
     }
@@ -771,7 +776,6 @@
     // 4. FUNCIONALIDADE DE FECHAR/RECOLHER
     // =========================================================================
     function adicionarFuncaoFechar(flightCard, cardContainer) {
-        // Remove listener anterior se existir
         if (cardContainer._closeHandler) {
             cardContainer.removeEventListener('click', cardContainer._closeHandler);
         }
@@ -779,31 +783,22 @@
         let isProcessing = false;
         let lastClickTime = 0;
 
-        const closeHandler = (e) => {
-            // Previne processamento múltiplo
+        const closeHandler = function(e) {
             if (isProcessing) return;
             
-            // Debounce de 300ms
             const now = Date.now();
             if (now - lastClickTime < 300) return;
             lastClickTime = now;
             
-            // Verifica se o card está aberto
             const isOpen = flightCard.classList.contains('flight-card--opened');
             if (!isOpen) return;
 
-            // Ignora cliques nas tarifas customizadas
             if (e.target.closest('.custom-tariff-card')) return;
-
-            // Ignora cliques no container de tarifas
             if (e.target.closest('.custom-tariff-container')) return;
-
-            // Ignora cliques em elementos interativos (exceto áreas informativas)
             if (e.target.closest('button:not(.btn-fare):not(.duration):not(.flight-select-see-details)') || 
                 e.target.closest('a') || 
                 e.target.closest('.fare-item')) return;
 
-            // Verifica se clicou em uma área válida para fechar
             const clickedOnValidArea = 
                 e.target === cardContainer ||
                 e.target.classList.contains('flight-card__info') ||
@@ -817,168 +812,127 @@
 
             if (!clickedOnValidArea) return;
 
-            // Para a propagação imediatamente
             e.stopPropagation();
             e.preventDefault();
-
-            // Ativa flag de processamento
             isProcessing = true;
 
-            console.log("🔽 Tentando fechar card...");
-
-            // Pequeno delay para garantir que não vai conflitar
-            setTimeout(() => {
-                // Tenta múltiplas estratégias para fechar
-                
-                // Estratégia 1: Procura botão "Recolher" ou "Fechar"
+            setTimeout(function() {
                 const botoesFechar = flightCard.querySelectorAll('button');
                 let botaoEncontrado = false;
                 
-                for (let btn of botoesFechar) {
+                for (let i = 0; i < botoesFechar.length; i++) {
+                    const btn = botoesFechar[i];
                     const ariaLabel = btn.getAttribute('aria-label') || '';
                     const texto = btn.textContent || '';
                     
                     if (ariaLabel.toLowerCase().includes('fechar') || 
                         ariaLabel.toLowerCase().includes('recolher') ||
                         texto.toLowerCase().includes('recolher')) {
-                        console.log("🔼 Fechando via botão encontrado:", ariaLabel || texto);
                         btn.click();
                         botaoEncontrado = true;
                         break;
                     }
                 }
                 
-                // Estratégia 2: Se não encontrou botão, remove a classe de aberto
                 if (!botaoEncontrado) {
-                    console.log("🔼 Fechando via remoção de classe...");
                     flightCard.classList.remove('flight-card--opened');
-                    
-                    // Remove também o conteúdo expandido se existir
                     const cardContent = flightCard.querySelector('.card-content');
                     if (cardContent) {
                         cardContent.style.display = 'none';
                     }
                 }
 
-                // Libera após delay
-                setTimeout(() => {
+                setTimeout(function() {
                     isProcessing = false;
                 }, 300);
             }, 50);
         };
 
-        // Usa capture phase para pegar o evento antes
         cardContainer._closeHandler = closeHandler;
         cardContainer.addEventListener('click', closeHandler, true);
-        
-        debugLog("Funcionalidade Fechar Adicionada", { cardId: flightCard.id });
     }
 
     // =========================================================================
-    // 4.1 OBSERVADOR DE SELEÇÃO INTERNA
+    // 4.1 OBSERVADOR DE SELEÇÃO INTERNA - ATUALIZADO COM PERSISTÊNCIA
     // =========================================================================
     function observarSelecaoInterna(flightCard, customContainer) {
         let isSyncing = false;
-        let lastSyncedIndex = -1;
         
-        // Função para sincronizar a seleção
-        const sincronizarSelecao = () => {
+        const sincronizarSelecao = function() {
             if (isSyncing) return;
             
-            // Procura os fare-items dentro do card
             const fareItems = flightCard.querySelectorAll('.fare-item');
             const customCards = customContainer.querySelectorAll('.custom-tariff-card');
             
-            let indexSelecionado = -1;
+            let nomeTarifaSelecionada = null;
             
-            fareItems.forEach((fareItem, index) => {
-                // Verifica se o fare-item está selecionado pelo texto "Tarifa selecionada"
-                const textoTarifaSelecionada = fareItem.textContent.includes('Tarifa selecionada');
+            fareItems.forEach(function(fareItem) {
+                const textoCompleto = fareItem.textContent || '';
                 
-                if (textoTarifaSelecionada) {
-                    indexSelecionado = index;
+                if (textoCompleto.includes('Tarifa selecionada')) {
+                    const textoLower = textoCompleto.toLowerCase();
+                    
+                    if (textoLower.includes('business')) {
+                        nomeTarifaSelecionada = 'business';
+                    } else if (textoLower.includes('azul super')) {
+                        nomeTarifaSelecionada = 'azul super';
+                    } else if (textoLower.includes('mais azul')) {
+                        nomeTarifaSelecionada = 'mais azul';
+                    } else if (textoLower.includes('azul')) {
+                        nomeTarifaSelecionada = 'azul';
+                    }
                 }
             });
             
-            // Só sincroniza se encontrou uma seleção diferente da atual
-            if (indexSelecionado >= 0 && indexSelecionado !== lastSyncedIndex) {
+            if (nomeTarifaSelecionada) {
                 isSyncing = true;
-                lastSyncedIndex = indexSelecionado;
                 
-                // Remove seleção de todos e marca apenas este
-                customCards.forEach(c => c.classList.remove('selected'));
-                if (customCards[indexSelecionado]) {
-                    customCards[indexSelecionado].classList.add('selected');
-                    console.log(`✅ Seleção sincronizada: índice ${indexSelecionado}`);
-                }
+                // NOVO: Salva a seleção detectada
+                salvarSelecao(flightCard.id, nomeTarifaSelecionada);
                 
-                // Libera após um delay
-                setTimeout(() => {
+                customCards.forEach(function(customCard) {
+                    const cardFareName = customCard.dataset.fareName || '';
+                    customCard.classList.remove('selected');
+                    
+                    if (cardFareName === nomeTarifaSelecionada) {
+                        customCard.classList.add('selected');
+                        console.log('[SELECAO] Sincronizado: ' + cardFareName);
+                    }
+                });
+                
+                setTimeout(function() {
                     isSyncing = false;
                 }, 100);
             }
         };
 
-        // Adiciona listeners de clique nos botões "Selecionar tarifa" internos
-        const adicionarListenersBotoes = () => {
+        const adicionarListenersBotoes = function() {
             const botoesSelecionar = flightCard.querySelectorAll('button[aria-label*="Selecionar tarifa"], button[data-test-id="select-fare"]');
             
-            botoesSelecionar.forEach((botao) => {
+            botoesSelecionar.forEach(function(botao) {
                 if (!botao._syncListenerAdded) {
                     botao._syncListenerAdded = true;
                     
-                    botao.addEventListener('click', () => {
-                        // Encontra o fare-item pai deste botão
-                        const fareItemPai = botao.closest('.fare-item');
-                        if (fareItemPai) {
-                            const fareItems = flightCard.querySelectorAll('.fare-item');
-                            const customCards = customContainer.querySelectorAll('.custom-tariff-card');
-                            let fareIndex = -1;
-                            
-                            fareItems.forEach((item, i) => {
-                                if (item === fareItemPai) {
-                                    fareIndex = i;
-                                }
-                            });
-                            
-                            if (fareIndex >= 0 && customCards[fareIndex]) {
-                                isSyncing = true;
-                                lastSyncedIndex = fareIndex;
-                                
-                                customCards.forEach(c => c.classList.remove('selected'));
-                                customCards[fareIndex].classList.add('selected');
-                                console.log(`✅ Card customizado ${fareIndex} marcado como selecionado (via botão interno)`);
-                                
-                                setTimeout(() => {
-                                    isSyncing = false;
-                                }, 100);
-                            }
-                        }
+                    botao.addEventListener('click', function() {
+                        setTimeout(sincronizarSelecao, 200);
                     });
                 }
             });
         };
 
-        // Observa quando o card é expandido para adicionar listeners nos botões
-        const observer = new MutationObserver((mutations) => {
+        const observer = new MutationObserver(function(mutations) {
             if (isSyncing) return;
             
-            let shouldAddListeners = false;
             let shouldSync = false;
             
-            mutations.forEach((mutation) => {
-                // Verifica se foram adicionados novos nós (card expandido)
+            mutations.forEach(function(mutation) {
                 if (mutation.addedNodes.length > 0) {
-                    mutation.addedNodes.forEach((node) => {
+                    mutation.addedNodes.forEach(function(node) {
                         if (node.nodeType === 1) {
-                            // Verifica se é um fare-item ou contém fare-items
-                            if (node.classList?.contains('fare-item') || 
-                                node.querySelector?.('.fare-item') ||
-                                node.querySelector?.('button[data-test-id="select-fare"]')) {
-                                shouldAddListeners = true;
+                            if (node.classList?.contains('fare-item') || node.querySelector?.('.fare-item')) {
+                                setTimeout(adicionarListenersBotoes, 100);
                             }
-                            // Verifica se contém "Tarifa selecionada"
-                            if (node.textContent?.includes('Tarifa selecionada')) {
+                            if ((node.textContent || '').includes('Tarifa selecionada')) {
                                 shouldSync = true;
                             }
                         }
@@ -986,52 +940,37 @@
                 }
             });
             
-            if (shouldAddListeners) {
-                setTimeout(adicionarListenersBotoes, 100);
-            }
-            
             if (shouldSync) {
                 setTimeout(sincronizarSelecao, 150);
             }
         });
 
-        // Observa apenas childList (não attributes para evitar loops)
-        observer.observe(flightCard, {
-            childList: true,
-            subtree: true
-        });
+        observer.observe(flightCard, { childList: true, subtree: true });
 
-        // Adiciona listeners iniciais após um delay (para quando o card já está expandido)
-        setTimeout(() => {
+        setTimeout(function() {
             adicionarListenersBotoes();
             sincronizarSelecao();
         }, 500);
-
-        debugLog("Observador de Seleção Interna Adicionado", { cardId: flightCard.id });
     }
 
     // =========================================================================
-    // 5. OBSERVADOR DE NOVOS VOOS (Para botão "Ver mais voos")
+    // 5. OBSERVADOR DE NOVOS VOOS - CORRIGIDO
     // =========================================================================
     function iniciarObservadorDeVoos() {
-        // Procura o container onde os voos são renderizados
         const flightListContainer = document.querySelector('.flight-list, [class*="flight"], main, #root');
         
         if (!flightListContainer) {
-            console.warn("⚠️ Container de voos não encontrado. Tentando novamente em 1s...");
             setTimeout(iniciarObservadorDeVoos, 1000);
             return;
         }
 
-        const observer = new MutationObserver((mutations) => {
+        const observer = new MutationObserver(function(mutations) {
             let novosVoosDetectados = false;
 
-            mutations.forEach((mutation) => {
-                // Verifica se novos nós foram adicionados
+            mutations.forEach(function(mutation) {
                 if (mutation.addedNodes.length > 0) {
-                    mutation.addedNodes.forEach((node) => {
-                        // Verifica se é um elemento HTML e se contém ou é um flight-card
-                        if (node.nodeType === 1) { // Element node
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1) {
                             if (node.classList?.contains('flight-card') || 
                                 node.querySelector?.('.flight-card')) {
                                 novosVoosDetectados = true;
@@ -1041,106 +980,162 @@
                 }
             });
 
+            // REMOVIDO: Não limpa mais automaticamente baseado em cards removidos
+            // A limpeza agora só acontece via botão "Trocar voo"
+
             if (novosVoosDetectados) {
-                console.log("🆕 Novos voos detectados! Atualizando layout...");
-                // Pequeno delay para garantir que o DOM foi completamente renderizado
-                setTimeout(() => {
-                    atualizarLayout();
-                }, 300);
+                setTimeout(atualizarLayout, 300);
             }
         });
 
-        // Observa mudanças no container
         observer.observe(flightListContainer, {
             childList: true,
             subtree: true
         });
-
-        console.log("👀 Observador de novos voos iniciado");
-        debugLog("Container observado", flightListContainer);
     }
 
     // =========================================================================
     // 6. OBSERVADOR DO BOTÃO "VER MAIS VOOS"
     // =========================================================================
     function observarBotaoVerMais() {
-        // Adiciona listener ao botão "Ver mais voos"
-        const addListenerToBotao = () => {
+        const addListenerToBotao = function() {
             const botaoVerMais = document.querySelector('#load-more-button, button[id*="load-more"]');
             
             if (botaoVerMais && !botaoVerMais._listenerAdded) {
                 botaoVerMais._listenerAdded = true;
-                
-                botaoVerMais.addEventListener('click', () => {
-                    console.log("🔄 Botão 'Ver mais voos' clicado. Aguardando novos voos...");
-                    // O MutationObserver vai detectar os novos cards automaticamente
-                });
-                
-                debugLog("Listener adicionado ao botão Ver mais", botaoVerMais);
+                botaoVerMais.addEventListener('click', function() {});
             }
         };
 
-        // Tenta adicionar o listener imediatamente
         addListenerToBotao();
 
-        // Observa se o botão aparece depois (caso não exista no início)
-        const buttonObserver = new MutationObserver(() => {
-            addListenerToBotao();
-        });
-
-        buttonObserver.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
+        const buttonObserver = new MutationObserver(addListenerToBotao);
+        buttonObserver.observe(document.body, { childList: true, subtree: true });
     }
 
-    // Tenta rodar uma vez no início caso o cache já tenha algo (se recarregou script)
+    // =========================================================================
+    // 7. FUNÇÃO PARA LIMPAR SELEÇÕES - ATUALIZADA POR TRECHO
+    // =========================================================================
+    
+    // Limpa apenas visual (não o estado salvo) - para um trecho específico
+    function limparSelecoesVisuaisPorTrecho(tripIndex) {
+        // Encontra o container do trecho específico
+        const tripContainer = document.querySelector('.trip-index-' + tripIndex);
+        
+        if (tripContainer) {
+            const selecoes = tripContainer.querySelectorAll('.custom-tariff-card.selected');
+            
+            selecoes.forEach(function(card) {
+                card.classList.remove('selected');
+            });
+            
+            console.log('[SELECAO] Selecoes visuais limpas no trecho ' + tripIndex + ': ' + selecoes.length);
+        }
+    }
+    
+    // Limpa estado salvo apenas para cards de um trecho específico
+    function limparEstadoSalvoPorTrecho(tripIndex) {
+        const tripContainer = document.querySelector('.trip-index-' + tripIndex);
+        
+        if (tripContainer) {
+            const flightCards = tripContainer.querySelectorAll('.flight-card');
+            
+            flightCards.forEach(function(card) {
+                const cardId = card.id;
+                if (cardId && window.AZUL_SELECTION_STATE[cardId]) {
+                    delete window.AZUL_SELECTION_STATE[cardId];
+                    console.log('[SELECAO] Estado limpo para cardId: ' + cardId.substring(0, 30) + '...');
+                }
+            });
+        }
+    }
+    
+    // Limpa tudo de um trecho específico (visual + estado salvo)
+    function limparSelecoesPorTrecho(tripIndex) {
+        limparSelecoesVisuaisPorTrecho(tripIndex);
+        limparEstadoSalvoPorTrecho(tripIndex);
+        console.log('[SELECAO] Selecoes do trecho ' + tripIndex + ' limpas');
+    }
+    
+    // Limpa tudo (todos os trechos) - usado em casos específicos
+    function limparTodasSelecoes() {
+        const todasAsSelecoes = document.querySelectorAll('.custom-tariff-card.selected');
+        
+        todasAsSelecoes.forEach(function(card) {
+            card.classList.remove('selected');
+        });
+        
+        window.AZUL_SELECTION_STATE = {};
+        console.log('[SELECAO] Todas as selecoes limpas (todos os trechos)');
+    }
+
+    // =========================================================================
+    // 8. OBSERVADOR DO BOTÃO "TROCAR VOO" - ATUALIZADO POR TRECHO
+    // =========================================================================
+    function observarBotaoTrocarVoo() {
+        const addListenerToBotao = function() {
+            // Busca todos os botões de trocar voo
+            const botoesTrocar = document.querySelectorAll('button[aria-label*="TBD"], button[aria-label*="trocar"], button[aria-label*="Trocar"]');
+            
+            botoesTrocar.forEach(function(botao) {
+                if (botao._trocarVooListenerAdded) return;
+                
+                botao._trocarVooListenerAdded = true;
+                
+                botao.addEventListener('click', function() {
+                    // Encontra qual trecho (trip) este botão pertence
+                    const tripContainer = botao.closest('.trip-index-0, .trip-index-1, [class*="trip-index"]');
+                    
+                    let tripIndex = null;
+                    
+                    if (tripContainer) {
+                        // Extrai o índice do trecho da classe
+                        const classes = tripContainer.className.split(' ');
+                        for (let i = 0; i < classes.length; i++) {
+                            const match = classes[i].match(/trip-index-(\d+)/);
+                            if (match) {
+                                tripIndex = match[1];
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (tripIndex !== null) {
+                        console.log('[SELECAO] Botao Trocar voo clicado no trecho ' + tripIndex);
+                        limparSelecoesPorTrecho(tripIndex);
+                        
+                        // Limpa novamente após um delay (garantia)
+                        setTimeout(function() {
+                            limparSelecoesPorTrecho(tripIndex);
+                        }, 500);
+                    } else {
+                        // Fallback: se não conseguir identificar o trecho, limpa tudo
+                        console.log('[SELECAO] Botao Trocar voo clicado - trecho nao identificado, limpando tudo');
+                        limparTodasSelecoes();
+                    }
+                });
+                
+                console.log('[Observador] Listener adicionado ao botao Trocar voo');
+            });
+        };
+
+        addListenerToBotao();
+
+        const buttonObserver = new MutationObserver(addListenerToBotao);
+        buttonObserver.observe(document.body, { childList: true, subtree: true });
+    }
+
+    // =========================================================================
+    // INICIALIZAÇÃO
+    // =========================================================================
     if (Object.keys(window.AZUL_FLIGHT_CACHE).length > 0) {
-        console.log("🔄 Cache existente detectado");
-        debugLog("Cache Inicial", window.AZUL_FLIGHT_CACHE);
         aplicarEstilos();
         dadosCapturados = true;
         atualizarLayout();
     }
 
-    // Inicia os observadores
     iniciarObservadorDeVoos();
     observarBotaoVerMais();
-
-    // =========================================================================
-    // 🛠️ UTILITÁRIOS DE DEBUG (Comandos no Console)
-    // =========================================================================
-    window.AZUL_DEBUG = {
-        verCache: () => {
-            console.table(Object.entries(window.AZUL_FLIGHT_CACHE).map(([key, fares]) => ({
-                journeyKey: key,
-                tarifas: fares.length,
-                nomes: fares.map(f => f.productClass?.name).join(', ')
-            })));
-        },
-        verCards: () => {
-            const cards = document.querySelectorAll('.flight-card');
-            console.table(Array.from(cards).map((card, i) => ({
-                index: i,
-                id: card.id,
-                temTarifas: !!card.querySelector('.custom-tariff-container'),
-                classes: card.className
-            })));
-        },
-        forcarAtualizacao: () => {
-            console.log("🔄 Forçando atualização...");
-            atualizarLayout();
-        },
-        limparCache: () => {
-            window.AZUL_FLIGHT_CACHE = {};
-            console.log("🗑️ Cache limpo");
-        }
-    };
-
-    console.log("💡 Comandos disponíveis no console:");
-    console.log("   AZUL_DEBUG.verCache() - Ver dados em cache");
-    console.log("   AZUL_DEBUG.verCards() - Ver cards na página");
-    console.log("   AZUL_DEBUG.forcarAtualizacao() - Forçar renderização");
-    console.log("   AZUL_DEBUG.limparCache() - Limpar cache");
+    observarBotaoTrocarVoo();
 
 })();

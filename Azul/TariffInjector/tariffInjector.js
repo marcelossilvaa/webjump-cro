@@ -23,32 +23,40 @@
     // 1. CSS (O visual "Clean" que definimos)
     // =========================================================================
     const styles = `
-        .flight-card__info{
+        /* IMPORTANTE: Estilos aplicados APENAS em cards com a classe .tariff-injector-active */
+        .tariff-injector-active .flight-card__info{
             max-width: 312px!important;
             padding: 0px!important;
         }
-        .css-7ip4ly .details > svg{
-                    min-width: 20px;
+        .tariff-injector-active .css-7ip4ly .details > svg{
+            min-width: 20px;
         }
 
-        .flight-card__info .info{
+        .tariff-injector-active .flight-card__info .info{
             max-width: 370px!important;
         }
 
-        .flight-card__container{
+        .tariff-injector-active .flight-card__container{
             justify-content: space-between !important;
             padding: 10px;
+            gap: 4px!important;
         }
 
-        .css-gtajxx{
+        .tariff-injector-active .css-gtajxx{
             max-width: 312px!important;
         }
 
-        .flight-card__fare, .fareIndex-0, .fareIndex-1, .fareIndex-2, .fareIndex-3, .fareIndex-4 {
+        /* Esconde os fare cards APENAS em cards com tariff-injector-active */
+        .tariff-injector-active .flight-card__fare,
+        .tariff-injector-active .fareIndex-0,
+        .tariff-injector-active .fareIndex-1,
+        .tariff-injector-active .fareIndex-2,
+        .tariff-injector-active .fareIndex-3,
+        .tariff-injector-active .fareIndex-4 {
             display: none !important;
         }
 
-        .css-7ip4ly{
+        .tariff-injector-active .css-7ip4ly{
             max-width: calc(80% - 136px)!important;
         }
 
@@ -108,11 +116,6 @@
             border-color: #026CB6;
         }
 
-        .custom-tariff-card.selected::after {
-            opacity: 1;
-            background: #fff;
-        }
-
         /* Estilo especial para Business */
         .custom-tariff-card.business {
             background: linear-gradient(91.12deg, rgb(31, 81, 141) 0%, rgb(18, 56, 105) 53.65%, rgb(4, 30, 66) 100%);
@@ -161,11 +164,6 @@
         .custom-tariff-card.business.selected .tariff-value .integer,
         .custom-tariff-card.business.selected .tariff-value .cents {
             color: rgb(4, 30, 66);
-        }
-
-        .custom-tariff-card.business.selected::after {
-            background: rgb(4, 30, 66);
-            opacity: 1;
         }
 
         .custom-tariff-card.sold-out {
@@ -423,8 +421,29 @@
         debugLog("Cards na Página", { total: flightCards.length });
 
         flightCards.forEach((card, cardIndex) => {
+            // NOVO: Verifica se o card está exibindo pontos ao invés de dinheiro
+            const fareContainer = card.querySelector('.flight-card__fare');
+            if (fareContainer) {
+                const fareText = fareContainer.textContent || '';
+                // Se contém "pontos" no texto, ignora este card COMPLETAMENTE
+                if (fareText.toLowerCase().includes('pontos')) {
+                    debugLog('Card ' + cardIndex, 'Ignorado - exibindo pontos ao inves de dinheiro');
+                    // Remove a classe de ativação caso exista
+                    card.classList.remove('tariff-injector-active');
+                    // Remove o container customizado caso exista
+                    const existingContainer = card.querySelector('.custom-tariff-container');
+                    if (existingContainer) {
+                        existingContainer.remove();
+                    }
+                    return;
+                }
+            }
+
+            // ADICIONA a classe que ativa os estilos CSS
+            card.classList.add('tariff-injector-active');
+
             if (card.querySelector('.custom-tariff-container')) {
-                debugLog(`Card ${cardIndex}`, "Já possui tarifas customizadas");
+                debugLog('Card ' + cardIndex, "Já possui tarifas customizadas");
                 return;
             }
 
@@ -877,20 +896,20 @@
         const flightListContainer = document.querySelector('.flight-list, [class*="flight"], main, #root');
         
         if (!flightListContainer) {
-            console.warn("⚠️ Container de voos não encontrado. Tentando novamente em 1s...");
+            console.warn('Container de voos nao encontrado. Tentando novamente em 1s...');
             setTimeout(iniciarObservadorDeVoos, 1000);
             return;
         }
 
-        const observer = new MutationObserver((mutations) => {
+        const observer = new MutationObserver(function(mutations) {
             let novosVoosDetectados = false;
+            let cardsRemovidosNestaBatch = 0;
 
-            mutations.forEach((mutation) => {
+            mutations.forEach(function(mutation) {
                 // Verifica se novos nós foram adicionados
                 if (mutation.addedNodes.length > 0) {
-                    mutation.addedNodes.forEach((node) => {
-                        // Verifica se é um elemento HTML e se contém ou é um flight-card
-                        if (node.nodeType === 1) { // Element node
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1) {
                             if (node.classList?.contains('flight-card') || 
                                 node.querySelector?.('.flight-card')) {
                                 novosVoosDetectados = true;
@@ -898,12 +917,36 @@
                         }
                     });
                 }
+
+                // Verifica se cards foram removidos (conta quantos nesta batch)
+                if (mutation.removedNodes.length > 0) {
+                    mutation.removedNodes.forEach(function(node) {
+                        if (node.nodeType === 1) {
+                            // Só conta se for um flight-card REAL (com id de journey)
+                            if (node.classList?.contains('flight-card') && node.id && node.id.length > 20) {
+                                cardsRemovidosNestaBatch++;
+                            } else if (node.querySelector?.('.flight-card')) {
+                                const removedCards = node.querySelectorAll('.flight-card');
+                                removedCards.forEach(function(rc) {
+                                    if (rc.id && rc.id.length > 20) {
+                                        cardsRemovidosNestaBatch++;
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
             });
 
+            // CRÍTICO: Só limpa se houve remoção MASSIVA (5+ cards = troca de voo completa)
+            if (cardsRemovidosNestaBatch >= 5) {
+                console.log('Mudanca significativa detectada (' + cardsRemovidosNestaBatch + ' cards removidos). Limpando selecoes...');
+                limparTodasSelecoes();
+            }
+
             if (novosVoosDetectados) {
-                console.log("🆕 Novos voos detectados! Atualizando layout...");
-                // Pequeno delay para garantir que o DOM foi completamente renderizado
-                setTimeout(() => {
+                console.log('Novos voos detectados! Atualizando layout...');
+                setTimeout(function() {
                     atualizarLayout();
                 }, 300);
             }
@@ -915,8 +958,8 @@
             subtree: true
         });
 
-        console.log("👀 Observador de novos voos iniciado");
-        debugLog("Container observado", flightListContainer);
+        console.log('Observador de novos voos iniciado');
+        debugLog('Container observado', flightListContainer);
     }
 
     // =========================================================================
@@ -924,13 +967,13 @@
     // =========================================================================
     function observarBotaoVerMais() {
         // Adiciona listener ao botão "Ver mais voos"
-        const addListenerToBotao = () => {
+        const addListenerToBotao = function() {
             const botaoVerMais = document.querySelector('#load-more-button, button[id*="load-more"]');
             
             if (botaoVerMais && !botaoVerMais._listenerAdded) {
                 botaoVerMais._listenerAdded = true;
                 
-                botaoVerMais.addEventListener('click', () => {
+                botaoVerMais.addEventListener('click', function() {
                     console.log("🔄 Botão 'Ver mais voos' clicado. Aguardando novos voos...");
                     // O MutationObserver vai detectar os novos cards automaticamente
                 });
@@ -943,7 +986,7 @@
         addListenerToBotao();
 
         // Observa se o botão aparece depois (caso não exista no início)
-        const buttonObserver = new MutationObserver(() => {
+        const buttonObserver = new MutationObserver(function() {
             addListenerToBotao();
         });
 
@@ -951,6 +994,93 @@
             childList: true,
             subtree: true
         });
+    }
+
+    // =========================================================================
+    // 7. FUNÇÃO PARA LIMPAR SELEÇÕES - ATUALIZADA POR TRECHO
+    // =========================================================================
+    
+    // Limpa apenas visual para um trecho específico
+    function limparSelecoesVisuaisPorTrecho(tripIndex) {
+        const tripContainer = document.querySelector('.trip-index-' + tripIndex);
+        
+        if (tripContainer) {
+            const selecoes = tripContainer.querySelectorAll('.custom-tariff-card.selected');
+            
+            selecoes.forEach(function(card) {
+                card.classList.remove('selected');
+            });
+            
+            console.log('[SELECAO] Selecoes visuais limpas no trecho ' + tripIndex + ': ' + selecoes.length);
+        }
+    }
+    
+    // Limpa tudo de um trecho específico
+    function limparSelecoesPorTrecho(tripIndex) {
+        limparSelecoesVisuaisPorTrecho(tripIndex);
+        console.log('[SELECAO] Selecoes do trecho ' + tripIndex + ' limpas');
+    }
+    
+    // Limpa tudo (todos os trechos)
+    function limparTodasSelecoes() {
+        const todasAsSelecoes = document.querySelectorAll('.custom-tariff-card.selected');
+        
+        todasAsSelecoes.forEach(function(card) {
+            card.classList.remove('selected');
+        });
+
+        console.log('[SELECAO] Todas as selecoes limpas');
+    }
+
+    // =========================================================================
+    // 8. OBSERVADOR DO BOTÃO "TROCAR VOO" - ATUALIZADO POR TRECHO
+    // =========================================================================
+    function observarBotaoTrocarVoo() {
+        const addListenerToBotao = function() {
+            const botoesTrocar = document.querySelectorAll('button[aria-label*="TBD"], button[aria-label*="trocar"], button[aria-label*="Trocar"]');
+            
+            botoesTrocar.forEach(function(botao) {
+                if (botao._trocarVooListenerAdded) return;
+                
+                botao._trocarVooListenerAdded = true;
+                
+                botao.addEventListener('click', function() {
+                    const tripContainer = botao.closest('.trip-index-0, .trip-index-1, [class*="trip-index"]');
+                    
+                    let tripIndex = null;
+                    
+                    if (tripContainer) {
+                        const classes = tripContainer.className.split(' ');
+                        for (let i = 0; i < classes.length; i++) {
+                            const match = classes[i].match(/trip-index-(\d+)/);
+                            if (match) {
+                                tripIndex = match[1];
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (tripIndex !== null) {
+                        console.log('[SELECAO] Botao Trocar voo clicado no trecho ' + tripIndex);
+                        limparSelecoesPorTrecho(tripIndex);
+                        
+                        setTimeout(function() {
+                            limparSelecoesPorTrecho(tripIndex);
+                        }, 500);
+                    } else {
+                        console.log('[SELECAO] Botao Trocar voo clicado - trecho nao identificado, limpando tudo');
+                        limparTodasSelecoes();
+                    }
+                });
+                
+                console.log('[Observador] Listener adicionado ao botao Trocar voo');
+            });
+        };
+
+        addListenerToBotao();
+
+        const buttonObserver = new MutationObserver(addListenerToBotao);
+        buttonObserver.observe(document.body, { childList: true, subtree: true });
     }
 
     // Tenta rodar uma vez no início caso o cache já tenha algo (se recarregou script)
@@ -965,6 +1095,7 @@
     // Inicia os observadores
     iniciarObservadorDeVoos();
     observarBotaoVerMais();
+    observarBotaoTrocarVoo();
 
     // =========================================================================
     // 🛠️ UTILITÁRIOS DE DEBUG (Comandos no Console)
