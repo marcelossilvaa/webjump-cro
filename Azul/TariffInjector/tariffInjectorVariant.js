@@ -231,6 +231,8 @@
             flex-shrink: 0;
         }
 
+        .sold-out .tariff-title svg
+
         .tariff-subtitle {
             font-size: 12px;
             font-weight: 400;
@@ -239,7 +241,7 @@
         }
 
         .tariff-value {
-            color: #026CB6;
+            color: #0084D1;
             letter-spacing: -0.5px;
             line-height: 1;
             display: flex;
@@ -268,6 +270,54 @@
             line-height: 16px;
         }
         
+        .tariff-difference {
+            color: #0084D1;
+            line-height: 1;
+            display: flex;
+            align-items: baseline;
+            gap: 2px;
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+
+        .tariff-difference .diff-symbol {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .tariff-difference .diff-integer {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .tariff-difference .diff-cents {
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .custom-tariff-card.selected .tariff-difference,
+        .custom-tariff-card.selected .tariff-difference .diff-symbol,
+        .custom-tariff-card.selected .tariff-difference .diff-integer,
+        .custom-tariff-card.selected .tariff-difference .diff-cents {
+            color: #fff;
+        }
+
+        .custom-tariff-card.business .tariff-difference,
+        .custom-tariff-card.business .tariff-difference .diff-symbol,
+        .custom-tariff-card.business .tariff-difference .diff-integer,
+        .custom-tariff-card.business .tariff-difference .diff-cents {
+            color: #fff;
+        }
+
+        .custom-tariff-card.business.selected .tariff-difference,
+        .custom-tariff-card.business.selected .tariff-difference .diff-symbol,
+        .custom-tariff-card.business.selected .tariff-difference .diff-integer,
+        .custom-tariff-card.business.selected .tariff-difference .diff-cents {
+            color: rgb(4, 30, 66);
+        }
+
+        /* Estilos existentes para as tarifas */
         .custom-tariff-card.selected .tariff-value,
         .custom-tariff-card.selected .tariff-value .currency,
         .custom-tariff-card.selected .tariff-value .integer,
@@ -285,9 +335,9 @@
             color: rgb(96, 96, 96);
         }
         .custom-tariff-card.sold-out .tariff-value { 
-            color: rgb(96, 96, 96); 
+            color: #6A7282; 
             font-size: 14px;
-            font-weight: 600;
+            margin-top: 12px;
         }
     `;
 
@@ -418,6 +468,20 @@
         return `<span class="currency">R$</span><span class="integer">${integerPart}</span><span class="cents">,${centsPart}</span>`;
     }
 
+    // Nova função para formatar a diferença de preço
+    function formatDifference(val) {
+        const formatted = val.toLocaleString('pt-BR', { 
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        
+        const parts = formatted.split(',');
+        const integerPart = parts[0];
+        const centsPart = parts[1] || '00';
+        
+        return `<span class="diff-symbol">+</span> <span class="diff-integer">R$${integerPart}</span><span class="diff-cents">,${centsPart}</span>`;
+    }
+
     function atualizarLayout() {
         const flightCards = document.querySelectorAll('.flight-card');
         debugLog("Cards na Página", { total: flightCards.length });
@@ -459,6 +523,51 @@
         const container = document.createElement('div');
         container.className = 'custom-tariff-container';
 
+        // Encontra a tarifa base com prioridade: Azul > Mais Azul > Azul Super > Business
+        let tarifaBase = null;
+        let precoBase = 0;
+        
+        // Ordem de prioridade para buscar a tarifa base
+        const ordemPrioridade = ['azul', 'mais azul', 'azul super', 'business'];
+        
+        for (const nomePrioridade of ordemPrioridade) {
+            tarifaBase = fares.find(fare => {
+                const nome = (fare.productClass?.name || "").toLowerCase();
+                const paxFares = fare.paxFares;
+                const temPreco = paxFares && paxFares.length > 0;
+                
+                return nome === nomePrioridade && temPreco;
+            });
+            
+            if (tarifaBase) {
+                precoBase = tarifaBase.paxFares[0].totalAmount;
+                debugLog("Tarifa Base Encontrada", { 
+                    nome: tarifaBase.productClass?.name,
+                    preco: precoBase,
+                    prioridade: nomePrioridade
+                });
+                break;
+            }
+        }
+        
+        // Se ainda não encontrou, pega a primeira tarifa disponível com preço
+        if (!tarifaBase) {
+            tarifaBase = fares.find(fare => {
+                const paxFares = fare.paxFares;
+                return paxFares && paxFares.length > 0;
+            });
+            
+            if (tarifaBase) {
+                precoBase = tarifaBase.paxFares[0].totalAmount;
+                debugLog("Tarifa Base (Fallback - Primeira Disponível)", { 
+                    nome: tarifaBase.productClass?.name,
+                    preco: precoBase
+                });
+            }
+        }
+
+        const nomeTarifaBase = tarifaBase?.productClass?.name?.toLowerCase() || '';
+
         fares.forEach((fare, index) => {
             const nome = fare.productClass?.name || "Tarifa";
             const paxFares = fare.paxFares;
@@ -469,13 +578,19 @@
             const isAzulTariff = ['azul', 'mais azul', 'super azul'].some(t => 
                 nome.toLowerCase().includes(t.toLowerCase())
             );
+            const isBaseTariff = nome.toLowerCase() === nomeTarifaBase;
+
+            // Calcula a diferença em relação à tarifa base
+            const diferenca = !isSoldOut && precoBase > 0 && !isBaseTariff ? preco - precoBase : 0;
 
             debugLog(`Tarifa ${index} - ${nome}`, {
                 esgotada: isSoldOut,
                 isBusiness,
                 isAzulTariff,
-                paxFares,
-                preco
+                isTarifaBase: isBaseTariff,
+                preco,
+                precoBase,
+                diferenca
             });
 
             // SVG para tarifas Azul
@@ -531,10 +646,36 @@
             const box = document.createElement('div');
             box.className = `custom-tariff-card ${isSoldOut ? 'sold-out' : ''} ${isBusiness ? 'business' : ''}`;
             box.dataset.fareIndex = index;
+            
+            // VARIANT: Mostra "a partir de" + preço para tarifa base, diferença para outras
+            let conteudoPreco;
+            if (isSoldOut) {
+                conteudoPreco = '<span class="tariff-value">Esgotada</span>';
+            } else if (isBaseTariff) {
+                // Tarifa base: mostra "a partir de" + preço completo
+                conteudoPreco = `
+                    <span class="tariff-subtitle">a partir de</span>
+                    <span class="tariff-value">${formatMoney(preco)}</span>
+                `;
+            } else {
+                // Outras tarifas: mostra "a partir de" + preço formatado inline + diferença
+                const precoFormatadoBR = preco.toLocaleString('pt-BR', { 
+                    minimumFractionDigits: 2, 
+                    maximumFractionDigits: 2 
+                });
+                const partes = precoFormatadoBR.split(',');
+                const inteira = partes[0];
+                const centavos = partes[1] || '00';
+                
+                conteudoPreco = `
+                    <span class="tariff-subtitle">a partir de <span style="white-space: nowrap;">R$${inteira},${centavos}</span></span>
+                    <span class="tariff-difference">${formatDifference(diferenca)}</span>
+                `;
+            }
+
             box.innerHTML = `
                 <span class="tariff-title">${nome}${iconeSVG}</span>
-                ${!isSoldOut ? '<span class="tariff-subtitle">a partir de</span>' : ''}
-                <span class="tariff-value">${isSoldOut ? 'Esgotada' : formatMoney(preco)}</span>
+                ${conteudoPreco}
             `;
 
             // --- Lógica de Clique (Proxy) ---
