@@ -36,29 +36,60 @@
     // =========================================================================
     const styles = `
         /* IMPORTANTE: Estilos aplicados APENAS em cards com a classe .tariff-injector-active */
-        .tariff-injector-active .flight-card__info{
+        .flight-card__info{
             max-width: 312px!important;
             padding: 0px!important;
-        }
-        .tariff-injector-active .css-7ip4ly .details > svg{
+        }        .css-7ip4ly .details > svg{
             min-width: 20px;
         }
 
-        .tariff-injector-active .flight-card__info .info{
+        .flight-card .info-details,
+        .flight-card__container .info-details,
+        .tariff-injector-active .info-details,
+        div.info-details,
+        body .info-details{
+            width: 160px !important;
+            min-width: 160px !important;
+            max-width: fit-content !important;
+        }
+
+        .flight-card__info .info{
             max-width: 370px!important;
         }
 
-        .tariff-injector-active .flight-card__container{
+        .flight-card__container{
             justify-content: space-between !important;
             padding: 10px;
             gap: 4px!important;
         }
 
-        .tariff-injector-active .css-gtajxx{
+        .css-gtajxx{
             max-width: 312px!important;
         }
 
-        /* Esconde os fare cards APENAS em cards com tariff-injector-active */
+        /* Esconde os fare cards SEMPRE - com ou sem tariff-injector-active */
+        .flight-card__fare.right-container,
+        .flight-card .fareIndex-0,
+        .flight-card .fareIndex-1,
+        .flight-card .fareIndex-2,
+        .flight-card .fareIndex-3,
+        .flight-card .fareIndex-4,
+        .flight-card .btn-fare,
+        .flight-card .fare-container.right {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            width: 0 !important;
+            max-height: 0 !important;
+            max-width: 0 !important;
+            overflow: hidden !important;
+            position: absolute !important;
+            pointer-events: none !important;
+            z-index: -9999 !important;
+        }
+
+        /* Força esconder também em cards com tariff-injector-active */
         .tariff-injector-active .flight-card__fare,
         .tariff-injector-active .fareIndex-0,
         .tariff-injector-active .fareIndex-1,
@@ -66,6 +97,13 @@
         .tariff-injector-active .fareIndex-3,
         .tariff-injector-active .fareIndex-4 {
             display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            width: 0 !important;
+            overflow: hidden !important;
+            position: absolute !important;
+            pointer-events: none !important;
         }
 
         .tariff-injector-active .css-7ip4ly{
@@ -99,6 +137,7 @@
             flex-direction: column;
             gap: 4px;
             color: #6A7282;
+            width: 140px;
         }
 
         .custom-tariff-card::after {
@@ -532,44 +571,37 @@
                 renderizarTarifasNoCard(card, faresData);
             }
         });
-    }
-
-    function renderizarTarifasNoCard(card, fares) {
+    }    function renderizarTarifasNoCard(card, fares) {
         const container = document.createElement('div');
         container.className = 'custom-tariff-container';
 
-        // Verifica se todas as tarifas estão esgotadas
+        // Verifica se TODAS as tarifas estão esgotadas
         const todasEsgotadas = fares.every(function(fare) {
             const paxFares = fare.paxFares;
             return !paxFares || paxFares.length === 0;
         });
 
-        debugLog("Verificação de Disponibilidade", {
-            cardId: card.id,
-            todasEsgotadas: todasEsgotadas,
-            totalTarifas: fares.length
-        });
-
-        // Se todas estão esgotadas, renderiza apenas um card informativo
+        // Se todas estão esgotadas, renderiza apenas um card único
         if (todasEsgotadas) {
-            const box = document.createElement('div');
-            box.className = 'custom-tariff-card sold-out';
-            box.style.cursor = 'not-allowed';
-            box.innerHTML = '<span class="tariff-value">Voo esgotado</span>';
+            const boxEsgotado = document.createElement('div');
+            boxEsgotado.className = 'custom-tariff-card sold-out';
+            boxEsgotado.innerHTML = '<span class="tariff-title">Voo Esgotado</span><span class="tariff-value">Indisponível</span>';
             
-            box.onclick = function(e) {
+            boxEsgotado.onclick = function(e) {
                 e.stopPropagation();
+                console.log('Voo completamente esgotado');
             };
             
-            container.appendChild(box);
+            container.appendChild(boxEsgotado);
             
+            // Adiciona ao card e retorna
             const cardInner = card.querySelector('.card');
             if (cardInner) {
                 cardInner.appendChild(container);
                 card.classList.add('has-custom-fares');
             }
             
-            debugLog("Card Esgotado Renderizado", { cardId: card.id });
+            console.log('Voo esgotado renderizado para card: ' + card.id);
             return;
         }
 

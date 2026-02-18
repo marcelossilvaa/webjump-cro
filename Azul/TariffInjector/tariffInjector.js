@@ -1,20 +1,38 @@
 (function AzulTariffInjector() {
     'use strict';
-
+    
     console.clear();
-    console.log("🚀 Iniciando Injetor de Tarifas (API -> Layout)...");
-
-    // Flag de controle
+    console.log("Iniciando Injetor de Tarifas (API -> Layout)...");    // Flag de controle
     let dadosCapturados = false;
 
     // =========================================================================
-    // 🐛 DEBUG MODE - Ative/Desative aqui
+    // DEBUG MODE - Ative/Desative aqui
     // =========================================================================
     const DEBUG_MODE = true;
 
+    // =========================================================================
+    // SISTEMA DE PERSISTÊNCIA DE SELEÇÃO
+    // =========================================================================
+    // Armazena: { "cardId": "nomeTarifaSelecionada" }
+    window.AZUL_SELECTION_STATE = window.AZUL_SELECTION_STATE || {};
+
+    function salvarSelecao(cardId, fareName) {
+        window.AZUL_SELECTION_STATE[cardId] = fareName;
+        debugLog('Selecao Salva', { cardId: cardId, fareName: fareName });
+    }
+
+    function obterSelecaoSalva(cardId) {
+        return window.AZUL_SELECTION_STATE[cardId] || null;
+    }
+
+    function limparSelecaoSalva(cardId) {
+        delete window.AZUL_SELECTION_STATE[cardId];
+        debugLog('Selecao Limpa', { cardId: cardId });
+    }
+
     function debugLog(titulo, dados) {
         if (!DEBUG_MODE) return;
-        console.group(`🐛 DEBUG: ${titulo}`);
+        console.group('DEBUG: ' + titulo);
         console.log(dados);
         console.groupEnd();
     }
@@ -24,29 +42,59 @@
     // =========================================================================
     const styles = `
         /* IMPORTANTE: Estilos aplicados APENAS em cards com a classe .tariff-injector-active */
-        .tariff-injector-active .flight-card__info{
+         .flight-card__info{
             max-width: 312px!important;
             padding: 0px!important;
-        }
-        .tariff-injector-active .css-7ip4ly .details > svg{
+        }         
+        .css-7ip4ly .details > svg{
             min-width: 20px;
         }
 
-        .tariff-injector-active .flight-card__info .info{
+        .flight-card .info-details,
+        .flight-card__container .info-details,
+        .tariff-injector-active .info-details,
+        div.info-details,
+        body .info-details{
+            width: 160px !important;
+            min-width: 160px !important;
+            max-width: fit-content !important;
+        }
+
+         .flight-card__info .info{
             max-width: 370px!important;
         }
 
-        .tariff-injector-active .flight-card__container{
+         .flight-card__container{
             justify-content: space-between !important;
             padding: 10px;
             gap: 4px!important;
-        }
-
-        .tariff-injector-active .css-gtajxx{
+        }         .css-gtajxx{
             max-width: 312px!important;
         }
 
-        /* Esconde os fare cards APENAS em cards com tariff-injector-active */
+        /* Esconde os fare cards SEMPRE - com ou sem tariff-injector-active */
+        .flight-card__fare.right-container,
+        .flight-card .fareIndex-0,
+        .flight-card .fareIndex-1,
+        .flight-card .fareIndex-2,
+        .flight-card .fareIndex-3,
+        .flight-card .fareIndex-4,
+        .flight-card .btn-fare,
+        .flight-card .fare-container.right {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            width: 0 !important;
+            max-height: 0 !important;
+            max-width: 0 !important;
+            overflow: hidden !important;
+            position: absolute !important;
+            pointer-events: none !important;
+            z-index: -9999 !important;
+        }
+
+        /* Força esconder também em cards com tariff-injector-active */
         .tariff-injector-active .flight-card__fare,
         .tariff-injector-active .fareIndex-0,
         .tariff-injector-active .fareIndex-1,
@@ -54,6 +102,13 @@
         .tariff-injector-active .fareIndex-3,
         .tariff-injector-active .fareIndex-4 {
             display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            width: 0 !important;
+            overflow: hidden !important;
+            position: absolute !important;
+            pointer-events: none !important;
         }
 
         .tariff-injector-active .css-7ip4ly{
@@ -281,21 +336,20 @@
         }
         .custom-tariff-card.sold-out .tariff-subtitle {
             color: rgb(96, 96, 96);
-        }
-        .custom-tariff-card.sold-out .tariff-value { 
+        }        .custom-tariff-card.sold-out .tariff-value { 
             color: rgb(96, 96, 96); 
             font-size: 14px;
             font-weight: 600;
         }
     `;
-
+    
     function aplicarEstilos() {
         if (!document.getElementById('azul-injector-styles')) {
             const styleSheet = document.createElement("style");
             styleSheet.id = 'azul-injector-styles';
             styleSheet.innerText = styles;
             document.head.appendChild(styleSheet);
-            console.log("✅ CSS aplicado com sucesso");
+            console.log("CSS aplicado com sucesso");
         }
     }
 
@@ -312,14 +366,12 @@
             const trips = data.data?.trips || data.trips || [];
             debugLog("Trips Encontradas", { total: trips.length, trips });
 
-            let foundData = false;
-
-            trips.forEach((trip, tripIndex) => {
+            let foundData = false;            trips.forEach((trip, tripIndex) => {
                 const journeys = trip.journeys || [];
-                debugLog(`Trip ${tripIndex} - Journeys`, { total: journeys.length, journeys });
+                debugLog('Trip ' + tripIndex + ' - Journeys', { total: journeys.length, journeys });
 
                 journeys.forEach((journey, journeyIndex) => {
-                    debugLog(`Journey ${journeyIndex} - Dados Completos`, {
+                    debugLog('Journey ' + journeyIndex + ' - Dados Completos', {
                         journeyKey: journey.journeyKey,
                         fares: journey.fares,
                         designator: journey.designator,
@@ -332,7 +384,7 @@
 
                         // Debug detalhado de cada tarifa
                         journey.fares.forEach((fare, fareIndex) => {
-                            debugLog(`Tarifa ${fareIndex} - ${journey.journeyKey}`, {
+                            debugLog('Tarifa ' + fareIndex + ' - ' + journey.journeyKey, {
                                 nome: fare.productClass?.name,
                                 code: fare.productClass?.code,
                                 preco: fare.paxFares?.[0]?.totalAmount,
@@ -346,19 +398,19 @@
             });
 
             if (foundData) {
-                console.log("📦 Cache Atualizado:", window.AZUL_FLIGHT_CACHE);
+                console.log("Cache Atualizado:", window.AZUL_FLIGHT_CACHE);
                 
                 if (!dadosCapturados) {
                     aplicarEstilos();
                     dadosCapturados = true;
                 }
-                console.log("✅ Dados de tarifas capturados. Atualizando layout...");
+                console.log("Dados de tarifas capturados. Atualizando layout...");
                 atualizarLayout();
             } else {
-                console.warn("⚠️ Nenhum dado válido encontrado no payload");
+                console.warn("Nenhum dado valido encontrado no payload");
             }
         } catch (error) {
-            console.error("❌ Erro ao processar payload:", error);
+            console.error("Erro ao processar payload:", error);
             debugLog("Erro Detalhado", { error, stack: error.stack });
         }
     }
@@ -368,12 +420,11 @@
     window.XMLHttpRequest.prototype.open = function(method, url) {
         this.addEventListener('load', function() {
             if (url.includes('availability') || url.includes('bookings')) {
-                debugLog("XHR Interceptado", { method, url, status: this.status });
-                try {
+                debugLog("XHR Interceptado", { method, url, status: this.status });                try {
                     const response = JSON.parse(this.responseText);
                     processarPayload(response);
                 } catch (e) {
-                    console.error("❌ Erro ao parsear resposta XHR:", e);
+                    console.error("Erro ao parsear resposta XHR:", e);
                     debugLog("Resposta XHR Raw", this.responseText.substring(0, 500));
                 }
             }
@@ -390,16 +441,15 @@
             debugLog("Fetch Interceptado", { url, status: response.status });
             const clone = response.clone();
             clone.json().then(processarPayload).catch((e) => {
-                console.error("❌ Erro ao processar fetch:", e);
+                console.error("Erro ao processar fetch:", e);
                 debugLog("Erro no Fetch", e);
             });
         }
         return response;
-    };
-
-    // =========================================================================
+    };    // =========================================================================
     // 3. RENDERIZADOR (O "Painter")
     // =========================================================================
+    
     function formatMoney(val) {
         const formatted = val.toLocaleString('pt-BR', { 
             style: 'currency', 
@@ -413,7 +463,7 @@
         const integerPart = parts[0];
         const centsPart = parts[1] || '00';
         
-        return `<span class="currency">R$</span><span class="integer">${integerPart}</span><span class="cents">,${centsPart}</span>`;
+        return '<span class="currency">R$</span><span class="integer">' + integerPart + '</span><span class="cents">,' + centsPart + '</span>';
     }
 
     function atualizarLayout() {
@@ -445,10 +495,8 @@
             if (card.querySelector('.custom-tariff-container')) {
                 debugLog('Card ' + cardIndex, "Já possui tarifas customizadas");
                 return;
-            }
-
-            const cardId = card.id;
-            debugLog(`Card ${cardIndex} - Análise`, {
+            }            const cardId = card.id;
+            debugLog('Card ' + cardIndex + ' - Analise', {
                 id: cardId,
                 classes: card.className,
                 possuiDados: !!window.AZUL_FLIGHT_CACHE[cardId]
@@ -457,7 +505,7 @@
             const faresData = window.AZUL_FLIGHT_CACHE[cardId];
 
             if (faresData && faresData.length > 0) {
-                debugLog(`Card ${cardIndex} - Renderizando`, {
+                debugLog('Card ' + cardIndex + ' - Renderizando', {
                     cardId,
                     quantidadeTarifas: faresData.length,
                     tarifas: faresData.map(f => ({
@@ -467,17 +515,46 @@
                 });
                 renderizarTarifasNoCard(card, faresData);
             } else {
-                debugLog(`Card ${cardIndex} - Sem Dados`, { cardId });
+                debugLog('Card ' + cardIndex + ' - Sem Dados', { cardId });
             }
         });
-    }
-
-    function renderizarTarifasNoCard(card, fares) {
+    }    function renderizarTarifasNoCard(card, fares) {
         debugLog("Renderizando Tarifas", { cardId: card.id, fares });
 
         const container = document.createElement('div');
         container.className = 'custom-tariff-container';
 
+        // Verifica se TODAS as tarifas estão esgotadas
+        const todasEsgotadas = fares.every(fare => {
+            const paxFares = fare.paxFares;
+            return !paxFares || paxFares.length === 0;
+        });
+
+        // Se todas estão esgotadas, renderiza apenas um card único
+        if (todasEsgotadas) {
+            const boxEsgotado = document.createElement('div');
+            boxEsgotado.className = 'custom-tariff-card sold-out';
+            boxEsgotado.innerHTML = '<span class="tariff-title">Voo Esgotado</span><span class="tariff-value">Indisponível</span>';
+            
+            boxEsgotado.onclick = (e) => {
+                e.stopPropagation();
+                console.log('Voo completamente esgotado');
+            };
+            
+            container.appendChild(boxEsgotado);
+            
+            // Adiciona ao card e retorna
+            const cardInner = card.querySelector('.card');
+            if (cardInner) {
+                cardInner.appendChild(container);
+                card.classList.add('has-custom-fares');
+            }
+            
+            console.log('Voo esgotado renderizado para card: ' + card.id);
+            return;
+        }
+
+        // Caso contrário, renderiza normalmente apenas as tarifas disponíveis
         fares.forEach((fare, index) => {
             const nome = fare.productClass?.name || "Tarifa";
             const paxFares = fare.paxFares;
@@ -487,9 +564,7 @@
             const isBusiness = nome.toLowerCase().includes('business');
             const isAzulTariff = ['azul', 'mais azul', 'super azul'].some(t => 
                 nome.toLowerCase().includes(t.toLowerCase())
-            );
-
-            debugLog(`Tarifa ${index} - ${nome}`, {
+            );debugLog('Tarifa ' + index + ' - ' + nome, {
                 esgotada: isSoldOut,
                 isBusiness,
                 isAzulTariff,
@@ -498,72 +573,25 @@
             });
 
             // SVG para tarifas Azul
-            const azulIconeSVG = isAzulTariff && !isBusiness ? `
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 17 20">
-                    <g filter="url(#filter0_d_${card.id}_${index})">
-                        <rect width="6" height="6" x="8.5" y="4.5" fill="url(#paint0_linear_${card.id}_${index})" rx="1.5" transform="rotate(45 8.5 4.5)"></rect>
-                    </g>
-                    <defs>
-                        <filter id="filter0_d_${card.id}_${index}" width="15.243" height="15.243" x="0.879" y="5.121" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
-                            <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
-                            <feColorMatrix in="SourceAlpha" result="hardAlpha" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"></feColorMatrix>
-                            <feOffset dy="4"></feOffset>
-                            <feGaussianBlur stdDeviation="2"></feGaussianBlur>
-                            <feColorMatrix values="0 0 0 0 0.286275 0 0 0 0 0.501961 0 0 0 0 0.909804 0 0 0 0.2 0"></feColorMatrix>
-                            <feBlend in2="BackgroundImageFix" result="effect1_dropShadow"></feBlend>
-                            <feBlend in="SourceGraphic" in2="effect1_dropShadow" result="shape"></feBlend>
-                        </filter>
-                        <linearGradient id="paint0_linear_${card.id}_${index}" x1="11.5" x2="11.5" y1="4.5" y2="10.5" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#026CB6"></stop>
-                            <stop offset="1" stop-color="#6087F8"></stop>
-                        </linearGradient>
-                    </defs>
-                </svg>
-            ` : '';
+            const azulIconeSVG = isAzulTariff && !isBusiness ? '\n                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 17 20">\n                    <g filter="url(#filter0_d_' + card.id + '_' + index + ')">\n                        <rect width="6" height="6" x="8.5" y="4.5" fill="url(#paint0_linear_' + card.id + '_' + index + ')" rx="1.5" transform="rotate(45 8.5 4.5)"></rect>\n                    </g>\n                    <defs>\n                        <filter id="filter0_d_' + card.id + '_' + index + '" width="15.243" height="15.243" x="0.879" y="5.121" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">\n                            <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>\n                            <feColorMatrix in="SourceAlpha" result="hardAlpha" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"></feColorMatrix>\n                            <feOffset dy="4"></feOffset>\n                            <feGaussianBlur stdDeviation="2"></feGaussianBlur>\n                            <feColorMatrix values="0 0 0 0 0.286275 0 0 0 0 0.501961 0 0 0 0 0.909804 0 0 0 0.2 0"></feColorMatrix>\n                            <feBlend in2="BackgroundImageFix" result="effect1_dropShadow"></feBlend>\n                            <feBlend in="SourceGraphic" in2="effect1_dropShadow" result="shape"></feBlend>\n                        </filter>\n                        <linearGradient id="paint0_linear_' + card.id + '_' + index + '" x1="11.5" x2="11.5" y1="4.5" y2="10.5" gradientUnits="userSpaceOnUse">\n                            <stop stop-color="#026CB6"></stop>\n                            <stop offset="1" stop-color="#6087F8"></stop>\n                        </linearGradient>\n                    </defs>\n                </svg>\n            ' : '';
 
             // Ícone diamante para Business
-            const businessIconeSVG = isBusiness ? `
-                <svg width="14" height="14" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g filter="url(#dia${card.id}_${index})">
-                        <rect x="8.5" y="4.5" width="6" height="6" rx="1.5" transform="rotate(45 8.5 4.5)" fill="url(#grad${card.id}_${index})"/>
-                    </g>
-                    <defs>
-                        <filter id="dia${card.id}_${index}" x="0.878662" y="5.12109" width="15.2427" height="15.2432" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                            <feOffset dy="4"/>
-                            <feGaussianBlur stdDeviation="2"/>
-                            <feColorMatrix type="matrix" values="0 0 0 0 0.0156863 0 0 0 0 0.117647 0 0 0 0 0.258824 0 0 0 0.12 0"/>
-                            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
-                            <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
-                        </filter>
-                        <linearGradient id="grad${card.id}_${index}" x1="11.5" y1="4.5" x2="11.5" y2="10.5" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="white"/>
-                            <stop offset="1" stop-color="#8D8D8D"/>
-                        </linearGradient>
-                    </defs>
-                </svg>
-            ` : '';
+            const businessIconeSVG = isBusiness ? '\n                <svg width="14" height="14" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">\n                    <g filter="url(#dia' + card.id + '_' + index + ')">\n                        <rect x="8.5" y="4.5" width="6" height="6" rx="1.5" transform="rotate(45 8.5 4.5)" fill="url(#grad' + card.id + '_' + index + ')"/>\n                    </g>\n                    <defs>\n                        <filter id="dia' + card.id + '_' + index + '" x="0.878662" y="5.12109" width="15.2427" height="15.2432" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">\n                            <feFlood flood-opacity="0" result="BackgroundImageFix"/>\n                            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>\n                            <feOffset dy="4"/>\n                            <feGaussianBlur stdDeviation="2"/>\n                            <feColorMatrix type="matrix" values="0 0 0 0 0.0156863 0 0 0 0 0.117647 0 0 0 0 0.258824 0 0 0 0.12 0"/>\n                            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>\n                            <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>\n                        </filter>\n                        <linearGradient id="grad' + card.id + '_' + index + '" x1="11.5" y1="4.5" x2="11.5" y2="10.5" gradientUnits="userSpaceOnUse">\n                            <stop stop-color="white"/>\n                            <stop offset="1" stop-color="#8D8D8D"/>\n                        </linearGradient>\n                    </defs>\n                </svg>\n            ' : '';
 
             const iconeSVG = isBusiness ? businessIconeSVG : azulIconeSVG;
 
             const box = document.createElement('div');
-            box.className = `custom-tariff-card ${isSoldOut ? 'sold-out' : ''} ${isBusiness ? 'business' : ''}`;
+            box.className = 'custom-tariff-card ' + (isSoldOut ? 'sold-out' : '') + ' ' + (isBusiness ? 'business' : '');
             box.dataset.fareIndex = index;
-            box.innerHTML = `
-                <span class="tariff-title">${nome}${iconeSVG}</span>
-                ${!isSoldOut ? '<span class="tariff-subtitle">a partir de</span>' : ''}
-                <span class="tariff-value">${isSoldOut ? 'Esgotada' : formatMoney(preco)}</span>
-            `;
+            box.innerHTML = '\n                <span class="tariff-title">' + nome + iconeSVG + '</span>\n                ' + (!isSoldOut ? '<span class="tariff-subtitle">a partir de</span>' : '') + '\n                <span class="tariff-value">' + (isSoldOut ? 'Esgotada' : formatMoney(preco)) + '</span>\n            ';
 
             // --- Lógica de Clique (Proxy) ---
             if (!isSoldOut) {
-                box.onclick = async (e) => {
-                    e.stopPropagation();
+                box.onclick = async (e) => {                    e.stopPropagation();
                     e.preventDefault();
                     
                     const fareIndex = parseInt(box.dataset.fareIndex);
-                    console.log(`🎯 Clicando na tarifa ${nome} (índice: ${fareIndex})`);
+                    console.log('Clicando na tarifa ' + nome + ' (indice: ' + fareIndex + ')');
 
                     // Visual Selection - marca apenas este card
                     container.querySelectorAll('.custom-tariff-card').forEach(b => b.classList.remove('selected'));
@@ -577,7 +605,7 @@
                         // Clica na área do card para expandir
                         const cardClickArea = card.querySelector('.flight-card__info[role="button"]');
                         if (cardClickArea) {
-                            console.log("📂 Expandindo card...");
+                            console.log("Expandindo card...");
                             cardClickArea.click();
                             // Espera mais tempo para o React renderizar
                             await new Promise(r => setTimeout(r, 500));
@@ -606,25 +634,25 @@
                                          targetItem.querySelector('button');
                         
                         if (selectBtn) {
-                            console.log(`✅ Clicando no botão de seleção da tarifa ${nome}`);
+                            console.log('Clicando no botao de selecao da tarifa ' + nome);
                             selectBtn.click();
                             
                             // Scroll suave para feedback
                             targetItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                         } else {
-                            console.warn(`⚠️ Botão de seleção não encontrado para ${nome}`);
+                            console.warn('Botao de selecao nao encontrado para ' + nome);
                             // Tenta clicar no próprio fare-item
                             targetItem.click();
                         }
                     } else {
-                        console.error(`❌ Fare item não encontrado para índice ${fareIndex}`);
+                        console.error('Fare item nao encontrado para indice ' + fareIndex);
                     }
                 };
             } else {
                 // Para tarifas esgotadas, apenas mostra mensagem
                 box.onclick = (e) => {
                     e.stopPropagation();
-                    console.log(`⚠️ Tarifa ${nome} está esgotada`);
+                    console.log('Tarifa ' + nome + ' esta esgotada');
                 };
             }
 
@@ -697,12 +725,10 @@
 
             // Para a propagação imediatamente
             e.stopPropagation();
-            e.preventDefault();
-
-            // Ativa flag de processamento
+            e.preventDefault();            // Ativa flag de processamento
             isProcessing = true;
 
-            console.log("🔽 Tentando fechar card...");
+            console.log("Tentando fechar card...");
 
             // Pequeno delay para garantir que não vai conflitar
             setTimeout(() => {
@@ -719,7 +745,7 @@
                     if (ariaLabel.toLowerCase().includes('fechar') || 
                         ariaLabel.toLowerCase().includes('recolher') ||
                         texto.toLowerCase().includes('recolher')) {
-                        console.log("🔼 Fechando via botão encontrado:", ariaLabel || texto);
+                        console.log("Fechando via botao encontrado:", ariaLabel || texto);
                         btn.click();
                         botaoEncontrado = true;
                         break;
@@ -728,7 +754,7 @@
                 
                 // Estratégia 2: Se não encontrou botão, remove a classe de aberto
                 if (!botaoEncontrado) {
-                    console.log("🔼 Fechando via remoção de classe...");
+                    console.log("Fechando via remocao de classe...");
                     flightCard.classList.remove('flight-card--opened');
                     
                     // Remove também o conteúdo expandido se existir
@@ -782,12 +808,11 @@
             if (indexSelecionado >= 0 && indexSelecionado !== lastSyncedIndex) {
                 isSyncing = true;
                 lastSyncedIndex = indexSelecionado;
-                
-                // Remove seleção de todos e marca apenas este
+                  // Remove seleção de todos e marca apenas este
                 customCards.forEach(c => c.classList.remove('selected'));
                 if (customCards[indexSelecionado]) {
                     customCards[indexSelecionado].classList.add('selected');
-                    console.log(`✅ Seleção sincronizada: índice ${indexSelecionado}`);
+                    console.log('Selecao sincronizada: indice ' + indexSelecionado);
                 }
                 
                 // Libera após um delay
@@ -821,11 +846,10 @@
                             
                             if (fareIndex >= 0 && customCards[fareIndex]) {
                                 isSyncing = true;
-                                lastSyncedIndex = fareIndex;
-                                
+                                lastSyncedIndex = fareIndex;                                
                                 customCards.forEach(c => c.classList.remove('selected'));
                                 customCards[fareIndex].classList.add('selected');
-                                console.log(`✅ Card customizado ${fareIndex} marcado como selecionado (via botão interno)`);
+                                console.log('Card customizado ' + fareIndex + ' marcado como selecionado (via botao interno)');
                                 
                                 setTimeout(() => {
                                     isSyncing = false;
@@ -936,9 +960,7 @@
                         }
                     });
                 }
-            });
-
-            // CRÍTICO: Só limpa se houve remoção MASSIVA (5+ cards = troca de voo completa)
+            });            // CRÍTICO: Só limpa se houve remoção MASSIVA (5+ cards = troca de voo completa)
             if (cardsRemovidosNestaBatch >= 5) {
                 console.log('Mudanca significativa detectada (' + cardsRemovidosNestaBatch + ' cards removidos). Limpando selecoes...');
                 limparTodasSelecoes();
@@ -972,9 +994,8 @@
             
             if (botaoVerMais && !botaoVerMais._listenerAdded) {
                 botaoVerMais._listenerAdded = true;
-                
-                botaoVerMais.addEventListener('click', function() {
-                    console.log("🔄 Botão 'Ver mais voos' clicado. Aguardando novos voos...");
+                  botaoVerMais.addEventListener('click', function() {
+                    console.log("Botao Ver mais voos clicado. Aguardando novos voos...");
                     // O MutationObserver vai detectar os novos cards automaticamente
                 });
                 
@@ -1081,11 +1102,9 @@
 
         const buttonObserver = new MutationObserver(addListenerToBotao);
         buttonObserver.observe(document.body, { childList: true, subtree: true });
-    }
-
-    // Tenta rodar uma vez no início caso o cache já tenha algo (se recarregou script)
+    }    // Tenta rodar uma vez no início caso o cache já tenha algo (se recarregou script)
     if (Object.keys(window.AZUL_FLIGHT_CACHE).length > 0) {
-        console.log("🔄 Cache existente detectado");
+        console.log("Cache existente detectado");
         debugLog("Cache Inicial", window.AZUL_FLIGHT_CACHE);
         aplicarEstilos();
         dadosCapturados = true;
@@ -1098,7 +1117,7 @@
     observarBotaoTrocarVoo();
 
     // =========================================================================
-    // 🛠️ UTILITÁRIOS DE DEBUG (Comandos no Console)
+    // UTILITARIOS DE DEBUG (Comandos no Console)
     // =========================================================================
     window.AZUL_DEBUG = {
         verCache: () => {
@@ -1118,19 +1137,19 @@
             })));
         },
         forcarAtualizacao: () => {
-            console.log("🔄 Forçando atualização...");
+            console.log("Forcando atualizacao...");
             atualizarLayout();
         },
         limparCache: () => {
             window.AZUL_FLIGHT_CACHE = {};
-            console.log("🗑️ Cache limpo");
+            console.log("Cache limpo");
         }
     };
 
-    console.log("💡 Comandos disponíveis no console:");
+    console.log("Comandos disponiveis no console:");
     console.log("   AZUL_DEBUG.verCache() - Ver dados em cache");
-    console.log("   AZUL_DEBUG.verCards() - Ver cards na página");
-    console.log("   AZUL_DEBUG.forcarAtualizacao() - Forçar renderização");
+    console.log("   AZUL_DEBUG.verCards() - Ver cards na pagina");
+    console.log("   AZUL_DEBUG.forcarAtualizacao() - Forcar renderizacao");
     console.log("   AZUL_DEBUG.limparCache() - Limpar cache");
 
 })();
