@@ -205,14 +205,14 @@
         }
 
         .custom-tariff-card.business.selected {
-            background: linear-gradient(91.12deg, rgb(255, 255, 255) 0%, rgb(230, 240, 250) 53.65%, rgb(200, 220, 240) 100%);
+            background-color: #026CB6;
             border-color: #026CB6;
-            box-shadow: 0 0 0 2px #026CB6;
+            box-shadow: none;
         }
 
         .custom-tariff-card.business.selected .tariff-title {
-            color: rgb(4, 30, 66);
-            background: rgba(4, 30, 66, 0.1)!important;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.15)!important;
         }
 
         .custom-tariff-card.business.selected .tariff-subtitle,
@@ -220,7 +220,7 @@
         .custom-tariff-card.business.selected .tariff-value .currency,
         .custom-tariff-card.business.selected .tariff-value .integer,
         .custom-tariff-card.business.selected .tariff-value .cents {
-            color: rgb(4, 30, 66);
+            color: #fff;
         }
 
         .custom-tariff-card.sold-out {
@@ -893,9 +893,7 @@
   // =========================================================================
   function observarSelecaoInterna(flightCard, customContainer) {
     let isSyncing = false;
-    let bloqueioManual = false;
-
-    // Funcao para sincronizar a selecao baseada no nome da tarifa
+    let bloqueioManual = false; // Funcao para sincronizar a selecao baseada no nome da tarifa
     const sincronizarSelecao = function () {
       if (isSyncing) return;
       // Se houve clique manual recente, ignora a sincronizacao automatica
@@ -923,6 +921,11 @@
           }
         }
       });
+
+      // Se nao encontrou fare-items (card fechado), usa a selecao salva
+      if (!nomeTarifaSelecionada && fareItems.length === 0) {
+        nomeTarifaSelecionada = obterSelecaoSalva(flightCard.id);
+      }
 
       if (nomeTarifaSelecionada) {
         isSyncing = true;
@@ -971,9 +974,7 @@
           });
         }
       });
-    };
-
-    // Observador de mudancas no DOM para detectar selecao
+    }; // Observador de mudancas no DOM para detectar selecao
     const observer = new MutationObserver(function (mutations) {
       if (isSyncing) return;
 
@@ -990,6 +991,20 @@
                 setTimeout(adicionarListenersBotoes, 100);
               }
               if ((node.textContent || '').includes('Tarifa selecionada')) {
+                shouldSync = true;
+              }
+            }
+          });
+        }
+
+        // Detecta remocao de fare-items (card fechando) para reaplicar selecao salva
+        if (mutation.removedNodes.length > 0) {
+          mutation.removedNodes.forEach(function (node) {
+            if (node.nodeType === 1) {
+              if (
+                (node.classList && node.classList.contains('fare-item')) ||
+                (node.querySelector && node.querySelector('.fare-item'))
+              ) {
                 shouldSync = true;
               }
             }
@@ -1026,13 +1041,10 @@
       setTimeout(iniciarObservadorDeVoos, 1000);
       return;
     }
-
     const observer = new MutationObserver(function (mutations) {
       let novosVoosDetectados = false;
-      let cardsRemovidosNestaBatch = 0;
 
       mutations.forEach(function (mutation) {
-        // Verifica se novos nós foram adicionados
         if (mutation.addedNodes.length > 0) {
           mutation.addedNodes.forEach(function (node) {
             if (node.nodeType === 1) {
@@ -1042,34 +1054,10 @@
             }
           });
         }
+      });
 
-        // Verifica se cards foram removidos (conta quantos nesta batch)
-        if (mutation.removedNodes.length > 0) {
-          mutation.removedNodes.forEach(function (node) {
-            if (node.nodeType === 1) {
-              // Só conta se for um flight-card REAL (com id de journey)
-              if (node.classList?.contains('flight-card') && node.id && node.id.length > 20) {
-                cardsRemovidosNestaBatch++;
-              } else if (node.querySelector?.('.flight-card')) {
-                const removedCards = node.querySelectorAll('.flight-card');
-                removedCards.forEach(function (rc) {
-                  if (rc.id && rc.id.length > 20) {
-                    cardsRemovidosNestaBatch++;
-                  }
-                });
-              }
-            }
-          });
-        }
-      }); // CRÍTICO: Só limpa se houve remoção MASSIVA (5+ cards = troca de voo completa)
-      if (cardsRemovidosNestaBatch >= 5) {
-        console.log(
-          'Mudanca significativa detectada (' +
-            cardsRemovidosNestaBatch +
-            ' cards removidos). Limpando selecoes...',
-        );
-        limparTodasSelecoes();
-      }
+      // Nao limpa automaticamente baseado em cards removidos
+      // A limpeza agora so acontece via botao "Trocar voo"
 
       if (novosVoosDetectados) {
         console.log('Novos voos detectados! Atualizando layout...');
@@ -1143,11 +1131,30 @@
     }
   }
 
-  // Limpa tudo de um trecho específico
+  // Limpa estado salvo apenas para cards de um trecho específico
+  function limparEstadoSalvoPorTrecho(tripIndex) {
+    const tripContainer = document.querySelector('.trip-index-' + tripIndex);
+
+    if (tripContainer) {
+      const flightCards = tripContainer.querySelectorAll('.flight-card');
+
+      flightCards.forEach(function (card) {
+        const cardId = card.id;
+        if (cardId && window.AZUL_SELECTION_STATE[cardId]) {
+          delete window.AZUL_SELECTION_STATE[cardId];
+          console.log('[SELECAO] Estado limpo para cardId: ' + cardId.substring(0, 30) + '...');
+        }
+      });
+    }
+  }
+
+  // Limpa tudo de um trecho específico (visual + estado salvo)
   function limparSelecoesPorTrecho(tripIndex) {
     limparSelecoesVisuaisPorTrecho(tripIndex);
+    limparEstadoSalvoPorTrecho(tripIndex);
     console.log('[SELECAO] Selecoes do trecho ' + tripIndex + ' limpas');
   }
+
   // Limpa tudo (todos os trechos)
   function limparTodasSelecoes() {
     const todasAsSelecoes = document.querySelectorAll('.custom-tariff-card.selected');

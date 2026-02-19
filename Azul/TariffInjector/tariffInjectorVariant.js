@@ -204,14 +204,14 @@
         }
 
         .custom-tariff-card.business.selected {
-            background: linear-gradient(91.12deg, rgb(255, 255, 255) 0%, rgb(230, 240, 250) 53.65%, rgb(200, 220, 240) 100%);
+            background-color: #026CB6;
             border-color: #026CB6;
-            box-shadow: 0 0 0 2px #026CB6;
+            box-shadow: none;
         }
 
         .custom-tariff-card.business.selected .tariff-title {
-            color: rgb(4, 30, 66);
-            background: rgba(4, 30, 66, 0.1)!important;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.15)!important;
         }
 
         .custom-tariff-card.business.selected .tariff-subtitle,
@@ -219,7 +219,7 @@
         .custom-tariff-card.business.selected .tariff-value .currency,
         .custom-tariff-card.business.selected .tariff-value .integer,
         .custom-tariff-card.business.selected .tariff-value .cents {
-            color: rgb(4, 30, 66);
+            color: #fff;
         }
 
         .custom-tariff-card.sold-out {
@@ -364,7 +364,7 @@
         .custom-tariff-card.business.selected .tariff-difference .diff-symbol,
         .custom-tariff-card.business.selected .tariff-difference .diff-integer,
         .custom-tariff-card.business.selected .tariff-difference .diff-cents {
-            color: rgb(4, 30, 66);
+            color: #fff;
         }
 
         /* Estilos existentes para as tarifas */
