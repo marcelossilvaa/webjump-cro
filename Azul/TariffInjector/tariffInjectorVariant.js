@@ -155,7 +155,7 @@
 
         .custom-tariff-card.business .tariff-title {
             color: #fff;
-            background: rgba(255, 255, 255, 0.10)!important;
+            background: rgba(255, 255, 255, 0.10)!important;c
         }
 
         .custom-tariff-card.business .tariff-subtitle,
@@ -219,7 +219,6 @@
 
         .custom-tariff-card.business.sold-out .tariff-title {
             color: rgb(96, 96, 96)!important;
-            background: transparent!important;
         }
 
         .custom-tariff-card.business.sold-out .tariff-subtitle,
@@ -247,6 +246,7 @@
             width: max-content;
             padding: 2px 4px;
             border-radius: 4px;
+            margin-bottom: 2px;
         }
         
         .tariff-title svg {
