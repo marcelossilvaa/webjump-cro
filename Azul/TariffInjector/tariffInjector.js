@@ -36,66 +36,43 @@
   // 1. CSS (O visual "Clean" que definimos)
   // =========================================================================
   const styles = `
-        /* Estilos aplicados APENAS em cards com a classe .tariff-injector-active (modo Reais) */
-        .flight-card__info{
+        /* Estilos ativados via :has() — detecta automaticamente a presença do nosso container */
+
+        .flight-card:has(.custom-tariff-container) .flight-card__info{
             max-width: 312px!important;
             padding: 0px!important;
         }
 
-        .css-7ip4ly .details > svg{
+        .flight-card:has(.custom-tariff-container) .css-7ip4ly .details > svg{
             min-width: 20px;
         }
 
-        .info-details{
+        .flight-card:has(.custom-tariff-container) .info-details{
             width: 160px !important;
             min-width: 160px !important;
             max-width: fit-content !important;
         }
 
-        .flight-card__info .info{
+        .flight-card:has(.custom-tariff-container) .flight-card__info .info{
             max-width: 370px!important;
         }
 
-        .flight-card__container,
-        .flight-card__container{
+        .flight-card:has(.custom-tariff-container) .flight-card__container{
             justify-content: space-between !important;
             padding: 10px;
             gap: 4px!important;
         }
 
-        .css-gtajxx{
+        .flight-card:has(.custom-tariff-container) .css-gtajxx{
             max-width: 312px!important;
         }
 
-        /* Esconde os fare cards originais APENAS em cards customizados */
-        .flight-card__fare,
-        .flight-card__fare.right-container,
-        .fareIndex-0,
-        .fareIndex-1,
-        .fareIndex-2,
-        .fareIndex-3,
-        .fareIndex-4,
-        .btn-fare,
-        .fare-container.right {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            height: 0 !important;
-            width: 0 !important;
-            max-height: 0 !important;
-            max-width: 0 !important;
-            overflow: hidden !important;
-            position: absolute !important;
-            pointer-events: none !important;
-            z-index: -9999 !important;
-        }
-
-        .tariff-injector-active .css-7ip4ly{
+        .flight-card:has(.custom-tariff-container) .css-7ip4ly{
             max-width: calc(80% - 136px)!important;
         }
 
         /* Remove box-shadow/z-index residual quando o card está fechado */
-        .tariff-injector-active:not(.flight-card--opened) > div {
+        .flight-card:has(.custom-tariff-container):not(.flight-card--opened) > div {
             box-shadow: none !important;
             z-index: auto !important;
         }
@@ -320,7 +297,7 @@ c        }
             border-radius: 4px;
             position: absolute;
             top: -10px;
-            right: 32px;
+            right: 36px;
             white-space: nowrap;
             line-height: 16px;
         }
@@ -347,7 +324,7 @@ c        }
         }
 
         /* Oculta badge de promoção original quando o injector está ativo */
-        .tariff-injector-active [class*="TagPromocodeContainer"] {
+        .flight-card:has(.custom-tariff-container) [class*="TagPromocodeContainer"] {
             display: none !important;
         }
     `;
@@ -491,13 +468,15 @@ c        }
     debugLog('Cards na Página', { total: flightCards.length });
 
     flightCards.forEach((card, cardIndex) => {
-      // Verifica se o card está exibindo pontos ao invés de reais
       const cardContainer = card.querySelector('.flight-card__container');
-      const cardText = cardContainer ? cardContainer.textContent || '' : card.textContent || '';
       const originalFare = card.querySelector('.flight-card__fare');
 
-      if (cardText.toLowerCase().includes('pontos')) {
-        card.classList.remove('tariff-injector-active');
+      // Detecção de pontos: usa data-test-id como check primário, texto como fallback
+      const fareWithPoints = card.querySelector('[data-test-id*="with-points"]');
+      const cardText = cardContainer ? cardContainer.textContent || '' : card.textContent || '';
+      const isPontos = !!fareWithPoints || cardText.toLowerCase().includes('pontos');
+
+      if (isPontos) {
         if (originalFare) originalFare.style.cssText = '';
         var infoDetailsPontos = card.querySelector('.info-details');
         if (infoDetailsPontos) infoDetailsPontos.style.cssText = '';
@@ -508,12 +487,10 @@ c        }
         return;
       }
 
-      // ADICIONA a classe que ativa os estilos CSS
-      card.classList.add('tariff-injector-active');
-
-      // Esconde o fare card original via JS
+      // Esconde o fare card original via JS inline (fonte única de verdade para ocultação)
       if (originalFare) {
-        originalFare.style.cssText = 'display:none!important;';
+        originalFare.style.cssText =
+          'display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;';
       }
 
       // Aplica estilos do info-details via JS (CSS-in-JS da Azul pode sobrescrever)
@@ -606,7 +583,6 @@ c        }
       const cardInner = card.querySelector('.card');
       if (cardInner) {
         cardInner.appendChild(container);
-        card.classList.add('has-custom-fares');
       }
 
       debugLog('Voo esgotado renderizado', card.id);
@@ -820,7 +796,6 @@ c        }
     const cardInner = card.querySelector('.card');
     if (cardInner) {
       cardInner.appendChild(container);
-      card.classList.add('has-custom-fares');
 
       // Adiciona funcionalidade de fechar
       adicionarFuncaoFechar(card, cardInner);
@@ -954,7 +929,9 @@ c        }
       customCards.forEach(function (cc) {
         if (cc.dataset.fareName) nomes.push(cc.dataset.fareName);
       });
-      nomes.sort(function (a, b) { return b.length - a.length; });
+      nomes.sort(function (a, b) {
+        return b.length - a.length;
+      });
 
       for (var i = 0; i < nomes.length; i++) {
         var palavras = nomes[i].split(' ');
@@ -989,10 +966,15 @@ c        }
         cc.classList.remove('selected');
         if (cc.dataset.fareName === nomeTarifa) {
           cc.classList.add('selected');
-          debugLog('[SELECAO] Sincronizado externamente via ' + (source || 'desconhecido'), cc.dataset.fareName);
+          debugLog(
+            '[SELECAO] Sincronizado externamente via ' + (source || 'desconhecido'),
+            cc.dataset.fareName,
+          );
         }
       });
-      setTimeout(function () { isSyncing = false; }, 100);
+      setTimeout(function () {
+        isSyncing = false;
+      }, 100);
     };
 
     const sincronizarSelecao = function () {
@@ -1011,6 +993,18 @@ c        }
 
       if (nomeTarifaSelecionada) {
         atualizarSelecaoExterna(nomeTarifaSelecionada, 'sincronizarSelecao');
+      } else if (fareItems.length > 0) {
+        // Card aberto mas nenhuma tarifa selecionada internamente → limpa seleção stale
+        isSyncing = true;
+        delete window.AZUL_SELECTION_STATE[flightCard.id];
+        var customCards = customContainer.querySelectorAll('.custom-tariff-card');
+        customCards.forEach(function (cc) {
+          cc.classList.remove('selected');
+        });
+        debugLog('[SELECAO] Seleção limpa - card aberto sem tarifa selecionada internamente');
+        setTimeout(function () {
+          isSyncing = false;
+        }, 100);
       }
     };
 
@@ -1079,7 +1073,9 @@ c        }
                 if (Date.now() - lastExternalUpdate < 2000) return;
 
                 // Narrow down: busca no fare-item específico que contém "Tarifa selecionada"
-                var fareItemsInNode = node.querySelectorAll ? node.querySelectorAll('.fare-item') : [];
+                var fareItemsInNode = node.querySelectorAll
+                  ? node.querySelectorAll('.fare-item')
+                  : [];
                 var found = false;
 
                 fareItemsInNode.forEach(function (fi) {
@@ -1114,11 +1110,13 @@ c        }
 
     observer.observe(flightCard, { childList: true, subtree: true });
 
-    // Observa abertura do card para adicionar listeners nos botoes internos
+    // Observa abertura do card para adicionar listeners e sincronizar seleção
     var classObserver = new MutationObserver(function () {
       if (flightCard.classList.contains('flight-card--opened')) {
         setTimeout(adicionarListenersBotoes, 200);
         setTimeout(adicionarListenersBotoes, 500);
+        // Sincroniza quando o card abre (limpa seleção stale se nenhuma tarifa interna selecionada)
+        setTimeout(sincronizarSelecao, 600);
       }
     });
     classObserver.observe(flightCard, { attributes: true, attributeFilter: ['class'] });

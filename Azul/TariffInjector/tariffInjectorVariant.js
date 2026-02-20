@@ -3,11 +3,9 @@
 (function AzulTariffInjector() {
   'use strict';
 
-  console.log('[TariffInjector] Iniciando...');
-
   let dadosCapturados = false;
 
-  const DEBUG_MODE = true;
+  const DEBUG_MODE = false;
 
   function debugLog(titulo, dados) {
     if (!DEBUG_MODE) return;
@@ -22,9 +20,7 @@
 
   function salvarSelecao(cardId, fareName) {
     window.AZUL_SELECTION_STATE[cardId] = fareName;
-    console.log(
-      '[SELECAO] Selecao salva - cardId: ' + cardId.substring(0, 30) + '..., tarifa: ' + fareName,
-    );
+    debugLog('Selecao salva', { cardId: cardId.substring(0, 30), fareName });
   }
 
   function obterSelecaoSalva(cardId) {
@@ -46,65 +42,41 @@
         .css-d28rej{
           width: 1100px!important;
         }
-        .flight-card__info{
+        .flight-card:has(.custom-tariff-container) .flight-card__info{
             max-width: 312px!important;
             padding: 0px!important;
         }
 
-        .css-7ip4ly .details > svg{
+        .flight-card:has(.custom-tariff-container) .css-7ip4ly .details > svg{
             min-width: 20px;
         }
 
-        .info-details{
+        .flight-card:has(.custom-tariff-container) .info-details{
             width: 160px !important;
             min-width: 160px !important;
             max-width: fit-content !important;
         }
 
-        .flight-card__info .info{
+        .flight-card:has(.custom-tariff-container) .flight-card__info .info{
             max-width: 370px!important;
         }
 
-        .flight-card__container,
-        .flight-card__container{
+        .flight-card:has(.custom-tariff-container) .flight-card__container{
             justify-content: space-between !important;
             padding: 10px;
             gap: 4px!important;
         }
 
-        .css-gtajxx{
+        .flight-card:has(.custom-tariff-container) .css-gtajxx{
             max-width: 312px!important;
         }
 
-        /* Esconde os fare cards originais APENAS em cards customizados */
-        .flight-card__fare,
-        .flight-card__fare.right-container,
-        .fareIndex-0,
-        .fareIndex-1,
-        .fareIndex-2,
-        .fareIndex-3,
-        .fareIndex-4,
-        .btn-fare,
-        .fare-container.right {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            height: 0 !important;
-            width: 0 !important;
-            max-height: 0 !important;
-            max-width: 0 !important;
-            overflow: hidden !important;
-            position: absolute !important;
-            pointer-events: none !important;
-            z-index: -9999 !important;
-        }
-
-        .tariff-injector-active .css-7ip4ly{
+        .flight-card:has(.custom-tariff-container) .css-7ip4ly{
             max-width: calc(80% - 136px)!important;
         }
 
         /* Remove box-shadow/z-index residual quando o card está fechado */
-        .tariff-injector-active:not(.flight-card--opened) > div {
+        .flight-card:has(.custom-tariff-container):not(.flight-card--opened) > div {
             box-shadow: none !important;
             z-index: auto !important;
         }
@@ -363,7 +335,7 @@
             border-radius: 4px;
             position: absolute;
             top: -10px;
-            right: 42px;
+            right: 44px;
             white-space: nowrap;
             line-height: 16px;
         }
@@ -394,7 +366,7 @@
             color: rgba(255, 255, 255, 0.6);
         }
 
-        [class*="TagPromocodeContainer"] {
+        .flight-card:has(.custom-tariff-container) [class*="TagPromocodeContainer"] {
             display: none !important;
         }
     `;
@@ -405,7 +377,7 @@
       styleSheet.id = 'azul-injector-styles';
       styleSheet.innerText = styles;
       document.head.appendChild(styleSheet);
-      console.log('CSS aplicado com sucesso');
+      debugLog('CSS aplicado com sucesso');
     }
   }
 
@@ -452,7 +424,7 @@
         atualizarLayout();
       }
     } catch (error) {
-      console.error('[TariffInjector] Erro ao processar payload:', error);
+      debugLog('Erro ao processar payload', error);
     }
   }
 
@@ -466,8 +438,7 @@
           const response = JSON.parse(this.responseText);
           processarPayload(response);
         } catch (e) {
-          console.error('Erro ao parsear resposta XHR:', e);
-          debugLog('Resposta XHR Raw', this.responseText.substring(0, 500));
+          debugLog('Erro ao parsear resposta XHR', e);
         }
       }
     });
@@ -486,8 +457,7 @@
         .json()
         .then(processarPayload)
         .catch((e) => {
-          console.error('Erro ao processar fetch:', e);
-          debugLog('Erro no Fetch', e);
+          debugLog('Erro ao processar fetch', e);
         });
     }
     return response;
@@ -563,13 +533,15 @@
     const flightCards = document.querySelectorAll('.flight-card');
 
     flightCards.forEach(function (card) {
-      // Verifica se o card está exibindo pontos ao invés de reais
       const cardContainer = card.querySelector('.flight-card__container');
-      const cardText = cardContainer ? cardContainer.textContent || '' : card.textContent || '';
       const originalFare = card.querySelector('.flight-card__fare');
 
-      if (cardText.toLowerCase().includes('pontos')) {
-        card.classList.remove('tariff-injector-active');
+      // Detecção de pontos: usa data-test-id como check primário, texto como fallback
+      const fareWithPoints = card.querySelector('[data-test-id*="with-points"]');
+      const cardText = cardContainer ? cardContainer.textContent || '' : card.textContent || '';
+      const isPontos = !!fareWithPoints || cardText.toLowerCase().includes('pontos');
+
+      if (isPontos) {
         if (originalFare) originalFare.style.cssText = '';
         var infoDetailsPontos = card.querySelector('.info-details');
         if (infoDetailsPontos) infoDetailsPontos.style.cssText = '';
@@ -580,12 +552,10 @@
         return;
       }
 
-      // ADICIONA a classe que ativa os estilos CSS
-      card.classList.add('tariff-injector-active');
-
-      // Esconde o fare card original via JS
+      // Esconde o fare card original via JS inline (fonte única de verdade para ocultação)
       if (originalFare) {
-        originalFare.style.cssText = 'display:none!important;';
+        originalFare.style.cssText =
+          'display:none!important;visibility:hidden!important;height:0!important;overflow:hidden!important;';
       }
 
       // Aplica estilos do info-details via JS (CSS-in-JS da Azul pode sobrescrever)
@@ -618,7 +588,7 @@
           });
 
           if (encontrou) {
-            console.log('[SELECAO] Selecao reaplicada apos re-render: ' + selecaoSalva);
+            debugLog('Selecao reaplicada apos re-render', selecaoSalva);
           }
         }
         return;
@@ -652,7 +622,7 @@
 
       boxEsgotado.onclick = function (e) {
         e.stopPropagation();
-        console.log('Voo completamente esgotado');
+        debugLog('Voo completamente esgotado');
       };
 
       container.appendChild(boxEsgotado);
@@ -661,10 +631,9 @@
       const cardInner = card.querySelector('.card');
       if (cardInner) {
         cardInner.appendChild(container);
-        card.classList.add('has-custom-fares');
       }
 
-      console.log('Voo esgotado renderizado para card: ' + card.id);
+      debugLog('Voo esgotado renderizado', card.id);
       return;
     }
 
@@ -952,7 +921,6 @@
     const cardInner = card.querySelector('.card');
     if (cardInner) {
       cardInner.appendChild(container);
-      card.classList.add('has-custom-fares');
       adicionarFuncaoFechar(card, cardInner);
       observarSelecaoInterna(card, container);
     }
@@ -1123,6 +1091,18 @@
 
       if (nomeTarifaSelecionada) {
         atualizarSelecaoExterna(nomeTarifaSelecionada, 'sincronizarSelecao');
+      } else if (fareItems.length > 0) {
+        // Card aberto mas nenhuma tarifa selecionada internamente → limpa seleção stale
+        isSyncing = true;
+        delete window.AZUL_SELECTION_STATE[flightCard.id];
+        var customCards = customContainer.querySelectorAll('.custom-tariff-card');
+        customCards.forEach(function (cc) {
+          cc.classList.remove('selected');
+        });
+        debugLog('[SELECAO] Seleção limpa - card aberto sem tarifa selecionada internamente');
+        setTimeout(function () {
+          isSyncing = false;
+        }, 100);
       }
     };
 
@@ -1228,11 +1208,13 @@
 
     observer.observe(flightCard, { childList: true, subtree: true });
 
-    // Observa abertura do card para adicionar listeners nos botoes internos
+    // Observa abertura do card para adicionar listeners e sincronizar seleção
     var classObserver = new MutationObserver(function () {
       if (flightCard.classList.contains('flight-card--opened')) {
         setTimeout(adicionarListenersBotoes, 200);
         setTimeout(adicionarListenersBotoes, 500);
+        // Sincroniza quando o card abre (limpa seleção stale se nenhuma tarifa interna selecionada)
+        setTimeout(sincronizarSelecao, 600);
       }
     });
     classObserver.observe(flightCard, { attributes: true, attributeFilter: ['class'] });
@@ -1320,9 +1302,7 @@
         card.classList.remove('selected');
       });
 
-      console.log(
-        '[SELECAO] Selecoes visuais limpas no trecho ' + tripIndex + ': ' + selecoes.length,
-      );
+      debugLog('Selecoes visuais limpas no trecho ' + tripIndex, selecoes.length);
     }
   }
 
@@ -1337,7 +1317,7 @@
         const cardId = card.id;
         if (cardId && window.AZUL_SELECTION_STATE[cardId]) {
           delete window.AZUL_SELECTION_STATE[cardId];
-          console.log('[SELECAO] Estado limpo para cardId: ' + cardId.substring(0, 30) + '...');
+          debugLog('Estado limpo para cardId', cardId.substring(0, 30));
         }
       });
     }
@@ -1347,7 +1327,7 @@
   function limparSelecoesPorTrecho(tripIndex) {
     limparSelecoesVisuaisPorTrecho(tripIndex);
     limparEstadoSalvoPorTrecho(tripIndex);
-    console.log('[SELECAO] Selecoes do trecho ' + tripIndex + ' limpas');
+    debugLog('Selecoes do trecho ' + tripIndex + ' limpas');
   }
 
   // Limpa tudo (todos os trechos) - usado em casos específicos
@@ -1359,7 +1339,7 @@
     });
 
     window.AZUL_SELECTION_STATE = {};
-    console.log('[SELECAO] Todas as selecoes limpas (todos os trechos)');
+    debugLog('Todas as selecoes limpas');
   }
 
   // =========================================================================
@@ -1398,7 +1378,7 @@
           }
 
           if (tripIndex !== null) {
-            console.log('[SELECAO] Botao Trocar voo clicado no trecho ' + tripIndex);
+            debugLog('Botao Trocar voo clicado no trecho', tripIndex);
             limparSelecoesPorTrecho(tripIndex);
 
             // Limpa novamente após um delay (garantia)
@@ -1407,14 +1387,12 @@
             }, 500);
           } else {
             // Fallback: se não conseguir identificar o trecho, limpa tudo
-            console.log(
-              '[SELECAO] Botao Trocar voo clicado - trecho nao identificado, limpando tudo',
-            );
+            debugLog('Botao Trocar voo clicado - trecho nao identificado, limpando tudo');
             limparTodasSelecoes();
           }
         });
 
-        console.log('[Observador] Listener adicionado ao botao Trocar voo');
+        debugLog('Listener adicionado ao botao Trocar voo');
       });
     };
 
