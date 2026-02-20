@@ -3,14 +3,9 @@
 (function AzulTariffInjector() {
   'use strict';
 
-  console.clear();
-  console.log('Iniciando Injetor de Tarifas (API -> Layout)...'); // Flag de controle
   let dadosCapturados = false;
 
-  // =========================================================================
-  // DEBUG MODE - Ative/Desative aqui
-  // =========================================================================
-  const DEBUG_MODE = true;
+  const DEBUG_MODE = false;
 
   // =========================================================================
   // SISTEMA DE PERSISTÊNCIA DE SELEÇÃO
@@ -20,7 +15,6 @@
 
   function salvarSelecao(cardId, fareName) {
     window.AZUL_SELECTION_STATE[cardId] = fareName;
-    debugLog('Selecao Salva', { cardId: cardId, fareName: fareName });
   }
 
   function obterSelecaoSalva(cardId) {
@@ -29,7 +23,6 @@
 
   function limparSelecaoSalva(cardId) {
     delete window.AZUL_SELECTION_STATE[cardId];
-    debugLog('Selecao Limpa', { cardId: cardId });
   }
 
   function debugLog(titulo, dados) {
@@ -43,46 +36,47 @@
   // 1. CSS (O visual "Clean" que definimos)
   // =========================================================================
   const styles = `
-        /* IMPORTANTE: Estilos aplicados APENAS em cards com a classe .tariff-injector-active */
-         .flight-card__info{
+        /* Estilos aplicados APENAS em cards com a classe .tariff-injector-active (modo Reais) */
+        .flight-card__info{
             max-width: 312px!important;
             padding: 0px!important;
-        }         
+        }
+
         .css-7ip4ly .details > svg{
             min-width: 20px;
         }
 
-        .flight-card .info-details,
-        .flight-card__container .info-details,
-        .tariff-injector-active .info-details,
-        div.info-details,
-        body .info-details{
+        .info-details{
             width: 160px !important;
             min-width: 160px !important;
             max-width: fit-content !important;
         }
 
-         .flight-card__info .info{
+        .flight-card__info .info{
             max-width: 370px!important;
         }
 
-         .flight-card__container{
+        .flight-card__container,
+        .flight-card__container{
             justify-content: space-between !important;
             padding: 10px;
             gap: 4px!important;
-        }         .css-gtajxx{
+        }
+
+        .css-gtajxx{
             max-width: 312px!important;
         }
 
-        /* Esconde os fare cards SEMPRE - com ou sem tariff-injector-active */
+        /* Esconde os fare cards originais APENAS em cards customizados */
+        .flight-card__fare,
         .flight-card__fare.right-container,
-        .flight-card .fareIndex-0,
-        .flight-card .fareIndex-1,
-        .flight-card .fareIndex-2,
-        .flight-card .fareIndex-3,
-        .flight-card .fareIndex-4,
-        .flight-card .btn-fare,
-        .flight-card .fare-container.right {
+        .fareIndex-0,
+        .fareIndex-1,
+        .fareIndex-2,
+        .fareIndex-3,
+        .fareIndex-4,
+        .btn-fare,
+        .fare-container.right {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
@@ -96,25 +90,14 @@
             z-index: -9999 !important;
         }
 
-        /* Força esconder também em cards com tariff-injector-active */
-        .tariff-injector-active .flight-card__fare,
-        .tariff-injector-active .fareIndex-0,
-        .tariff-injector-active .fareIndex-1,
-        .tariff-injector-active .fareIndex-2,
-        .tariff-injector-active .fareIndex-3,
-        .tariff-injector-active .fareIndex-4 {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            height: 0 !important;
-            width: 0 !important;
-            overflow: hidden !important;
-            position: absolute !important;
-            pointer-events: none !important;
-        }
-
         .tariff-injector-active .css-7ip4ly{
             max-width: calc(80% - 136px)!important;
+        }
+
+        /* Remove box-shadow/z-index residual quando o card está fechado */
+        .tariff-injector-active:not(.flight-card--opened) > div {
+            box-shadow: none !important;
+            z-index: auto !important;
         }
 
         .custom-tariff-container {
@@ -135,7 +118,7 @@
             background: #fff;
             border: 1px solid #cfcfcf;
             border-radius: 6px;
-            padding: 8px 12px 12px 12px;
+            padding: c12px;
             min-width: 140px;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -169,8 +152,12 @@
         }
 
         .custom-tariff-card.selected {
-            background-color: #026CB6;
-            border-color: #026CB6;
+            border: 2px solid #026CB6;
+            box-shadow: 0 0 0 1px #026CB6;
+        }
+
+        .custom-tariff-card.selected .tariff-badge {
+            display: flex;
         }
 
         /* Estilo especial para Business */
@@ -205,14 +192,14 @@
         }
 
         .custom-tariff-card.business.selected {
-            background-color: #026CB6;
-            border-color: #026CB6;
-            box-shadow: none;
+            border: 2px solid #026CB6;
+            box-shadow: 0 0 0 1px #026CB6;
+            background: linear-gradient(91.12deg, rgb(31, 81, 141) 0%, rgb(18, 56, 105) 53.65%, rgb(4, 30, 66) 100%);
         }
 
         .custom-tariff-card.business.selected .tariff-title {
             color: #fff;
-            background: rgba(255, 255, 255, 0.15)!important;
+            background: rgba(255, 255, 255, 0.10)!important;
         }
 
         .custom-tariff-card.business.selected .tariff-subtitle,
@@ -323,15 +310,21 @@
             line-height: 16px;
         }
         
-        .custom-tariff-card.selected .tariff-value,
-        .custom-tariff-card.selected .tariff-value .currency,
-        .custom-tariff-card.selected .tariff-value .integer,
-        .custom-tariff-card.selected .tariff-value .cents,
-        .custom-tariff-card.selected .tariff-subtitle { 
-            color: #fff; 
-        }
-        .custom-tariff-card.selected .tariff-title { 
-            color: #fff; 
+        .tariff-badge {
+            display: none;
+            align-items: center;
+            gap: 4px;
+            background: #026CB6;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            position: absolute;
+            top: -10px;
+            right: 32px;
+            white-space: nowrap;
+            line-height: 16px;
         }
         .custom-tariff-card.sold-out .tariff-title { 
             color: rgb(96, 96, 96); 
@@ -351,7 +344,7 @@
       styleSheet.id = 'azul-injector-styles';
       styleSheet.innerText = styles;
       document.head.appendChild(styleSheet);
-      console.log('CSS aplicado com sucesso');
+      debugLog('CSS aplicado');
     }
   }
 
@@ -401,20 +394,14 @@
       });
 
       if (foundData) {
-        console.log('Cache Atualizado:', window.AZUL_FLIGHT_CACHE);
-
         if (!dadosCapturados) {
           aplicarEstilos();
           dadosCapturados = true;
         }
-        console.log('Dados de tarifas capturados. Atualizando layout...');
         atualizarLayout();
-      } else {
-        console.warn('Nenhum dado valido encontrado no payload');
       }
     } catch (error) {
-      console.error('Erro ao processar payload:', error);
-      debugLog('Erro Detalhado', { error, stack: error.stack });
+      debugLog('Erro ao processar payload', error);
     }
   }
 
@@ -428,7 +415,7 @@
           const response = JSON.parse(this.responseText);
           processarPayload(response);
         } catch (e) {
-          console.error('Erro ao parsear resposta XHR:', e);
+          debugLog('Erro ao parsear resposta XHR', e);
           debugLog('Resposta XHR Raw', this.responseText.substring(0, 500));
         }
       }
@@ -448,7 +435,7 @@
         .json()
         .then(processarPayload)
         .catch((e) => {
-          console.error('Erro ao processar fetch:', e);
+          debugLog('Erro ao processar fetch', e);
           debugLog('Erro no Fetch', e);
         });
     }
@@ -484,24 +471,37 @@
     debugLog('Cards na Página', { total: flightCards.length });
 
     flightCards.forEach((card, cardIndex) => {
-      // NOVO: Verifica se o card está exibindo pontos ao invés de dinheiro
-      const fareContainer = card.querySelector('.flight-card__fare');
-      if (fareContainer) {
-        const fareText = fareContainer.textContent || '';
-        // Se contém "pontos" no texto, ignora este card COMPLETAMENTE
-        if (fareText.toLowerCase().includes('pontos')) {
-          debugLog('Card ' + cardIndex, 'Ignorado - exibindo pontos ao inves de dinheiro');
-          // Remove a classe de ativação caso exista
-          card.classList.remove('tariff-injector-active');
-          // Remove o container customizado caso exista
-          const existingContainer = card.querySelector('.custom-tariff-container');
-          if (existingContainer) {
-            existingContainer.remove();
-          }
-          return;
+      // Verifica se o card está exibindo pontos ao invés de reais
+      const cardContainer = card.querySelector('.flight-card__container');
+      const cardText = cardContainer ? cardContainer.textContent || '' : card.textContent || '';
+      const originalFare = card.querySelector('.flight-card__fare');
+
+      if (cardText.toLowerCase().includes('pontos')) {
+        card.classList.remove('tariff-injector-active');
+        if (originalFare) originalFare.style.cssText = '';
+        var infoDetailsPontos = card.querySelector('.info-details');
+        if (infoDetailsPontos) infoDetailsPontos.style.cssText = '';
+        const existingContainer = card.querySelector('.custom-tariff-container');
+        if (existingContainer) {
+          existingContainer.remove();
         }
-      } // ADICIONA a classe que ativa os estilos CSS
+        return;
+      }
+
+      // ADICIONA a classe que ativa os estilos CSS
       card.classList.add('tariff-injector-active');
+
+      // Esconde o fare card original via JS
+      if (originalFare) {
+        originalFare.style.cssText = 'display:none!important;';
+      }
+
+      // Aplica estilos do info-details via JS (CSS-in-JS da Azul pode sobrescrever)
+      var infoDetails = card.querySelector('.info-details');
+      if (infoDetails) {
+        infoDetails.style.cssText =
+          'width:160px!important;min-width:160px!important;max-width:fit-content!important;';
+      }
 
       // Verifica se precisa re-renderizar (container antigo foi removido pelo React)
       const existingContainer = card.querySelector('.custom-tariff-container');
@@ -526,7 +526,7 @@
           });
 
           if (encontrou) {
-            console.log('[SELECAO] Selecao reaplicada apos re-render: ' + selecaoSalva);
+            debugLog('Selecao reaplicada', selecaoSalva);
           }
         }
         return;
@@ -577,7 +577,7 @@
 
       boxEsgotado.onclick = (e) => {
         e.stopPropagation();
-        console.log('Voo completamente esgotado');
+        debugLog('Voo esgotado');
       };
 
       container.appendChild(boxEsgotado);
@@ -589,7 +589,7 @@
         card.classList.add('has-custom-fares');
       }
 
-      console.log('Voo esgotado renderizado para card: ' + card.id);
+      debugLog('Voo esgotado renderizado', card.id);
       return;
     }
 
@@ -671,47 +671,48 @@
       box.dataset.fareIndex = index;
       box.dataset.fareName = nome.toLowerCase();
       box.innerHTML =
-        '\n                <span class="tariff-title">' +
+        '<span class="tariff-badge">Escolhida</span>' +
+        '<span class="tariff-title">' +
         nome +
         iconeSVG +
-        '</span>\n                ' +
+        '</span>' +
         (!isSoldOut ? '<span class="tariff-subtitle">a partir de</span>' : '') +
-        '\n                <span class="tariff-value">' +
+        '<span class="tariff-value">' +
         (isSoldOut ? 'Esgotada' : formatMoney(preco)) +
-        '</span>\n            '; // --- Logica de Clique (Proxy) ---
+        '</span>'; // --- Logica de Clique (Proxy) ---
       if (!isSoldOut) {
         box.onclick = async function (e) {
           e.stopPropagation();
           e.preventDefault();
 
           const fareName = box.dataset.fareName;
-          console.log('[SELECAO] Clique no card - tarifa: ' + fareName);
 
-          // Visual Selection - marca apenas este card
+          // Visual Selection
           container.querySelectorAll('.custom-tariff-card').forEach(function (b) {
             b.classList.remove('selected');
           });
           box.classList.add('selected');
 
-          // Salva a selecao
           salvarSelecao(card.id, fareName);
 
-          // Bloqueia sincronizacao automatica durante o clique manual
           if (container._bloquearSync) {
             container._bloquearSync();
           }
 
-          // Expande card se fechado
+          // Expande card se fechado (travando altura para evitar flash visual)
           const isCardClosed = !card.classList.contains('flight-card--opened');
-          debugLog('Estado do Card', { isCardClosed: isCardClosed, cardClasses: card.className });
 
           if (isCardClosed) {
-            const cardClickArea = card.querySelector('.flight-card__info[role="button"]');
+            var alturaAtual = card.offsetHeight;
+            card.style.maxHeight = alturaAtual + 'px';
+            card.style.overflow = 'hidden';
+            card.style.transition = 'none';
+
+            var cardClickArea = card.querySelector('.flight-card__info[role="button"]');
             if (cardClickArea) {
-              console.log('Expandindo card...');
               cardClickArea.click();
               await new Promise(function (r) {
-                setTimeout(r, 500);
+                setTimeout(r, 600);
               });
             }
           }
@@ -720,12 +721,11 @@
             setTimeout(r, 200);
           });
 
-          // Busca fare-item pelo nome da tarifa (igual a Variant)
-          const fareItems = card.querySelectorAll('.fare-item');
-          let targetItem = null;
+          var fareItems = card.querySelectorAll('.fare-item');
+          var targetItem = null;
 
           fareItems.forEach(function (item) {
-            const itemText = (item.textContent || '').toLowerCase();
+            var itemText = (item.textContent || '').toLowerCase();
 
             if (
               (fareName === 'azul' &&
@@ -743,23 +743,42 @@
           });
 
           if (targetItem) {
-            const selectBtn =
-              targetItem.querySelector('button[class*="select"], button[class*="btn"]') ||
+            var selectBtn =
+              targetItem.querySelector("button[class*='select'], button[class*='btn']") ||
               targetItem.querySelector('button');
 
             if (selectBtn) {
-              console.log('[SELECAO] Clicando no botao interno');
               selectBtn.click();
             }
-          } else {
-            console.warn('[SELECAO] Fare item nao encontrado para: ' + fareName);
+          }
+
+          // Fecha o card (ainda com clipping) e depois restaura
+          if (isCardClosed) {
+            var botoesFechar = card.querySelectorAll('button');
+            for (var i = 0; i < botoesFechar.length; i++) {
+              var ariaLabel = botoesFechar[i].getAttribute('aria-label') || '';
+              var texto = botoesFechar[i].textContent || '';
+              if (
+                ariaLabel.toLowerCase().includes('fechar') ||
+                ariaLabel.toLowerCase().includes('recolher') ||
+                texto.toLowerCase().includes('recolher')
+              ) {
+                botoesFechar[i].click();
+                break;
+              }
+            }
+
+            await new Promise(function (r) {
+              setTimeout(r, 400);
+            });
+            card.style.maxHeight = '';
+            card.style.overflow = '';
+            card.style.transition = '';
           }
         };
       } else {
-        // Para tarifas esgotadas, apenas mostra mensagem
         box.onclick = function (e) {
           e.stopPropagation();
-          console.log('Tarifa ' + nome + ' esta esgotada');
         };
       }
 
@@ -838,7 +857,7 @@
       e.preventDefault(); // Ativa flag de processamento
       isProcessing = true;
 
-      console.log('Tentando fechar card...');
+      debugLog('Tentando fechar card');
 
       // Pequeno delay para garantir que não vai conflitar
       setTimeout(() => {
@@ -857,7 +876,7 @@
             ariaLabel.toLowerCase().includes('recolher') ||
             texto.toLowerCase().includes('recolher')
           ) {
-            console.log('Fechando via botao encontrado:', ariaLabel || texto);
+            debugLog('Fechando via botao', ariaLabel || texto);
             btn.click();
             botaoEncontrado = true;
             break;
@@ -866,7 +885,7 @@
 
         // Estratégia 2: Se não encontrou botão, remove a classe de aberto
         if (!botaoEncontrado) {
-          console.log('Fechando via remocao de classe...');
+          debugLog('Fechando via remocao de classe');
           flightCard.classList.remove('flight-card--opened');
 
           // Remove também o conteúdo expandido se existir
@@ -939,7 +958,7 @@
 
           if (cardFareName === nomeTarifaSelecionada) {
             customCard.classList.add('selected');
-            console.log('[SELECAO] Sincronizado: ' + cardFareName);
+            debugLog('Sincronizado', cardFareName);
           }
         });
 
@@ -1037,7 +1056,7 @@
     );
 
     if (!flightListContainer) {
-      console.warn('Container de voos nao encontrado. Tentando novamente em 1s...');
+      debugLog('Container de voos nao encontrado, retry em 1s');
       setTimeout(iniciarObservadorDeVoos, 1000);
       return;
     }
@@ -1060,7 +1079,7 @@
       // A limpeza agora so acontece via botao "Trocar voo"
 
       if (novosVoosDetectados) {
-        console.log('Novos voos detectados! Atualizando layout...');
+        debugLog('Novos voos detectados');
         setTimeout(function () {
           atualizarLayout();
         }, 300);
@@ -1073,7 +1092,7 @@
       subtree: true,
     });
 
-    console.log('Observador de novos voos iniciado');
+    debugLog('Observador de novos voos iniciado');
     debugLog('Container observado', flightListContainer);
   }
 
@@ -1087,12 +1106,7 @@
 
       if (botaoVerMais && !botaoVerMais._listenerAdded) {
         botaoVerMais._listenerAdded = true;
-        botaoVerMais.addEventListener('click', function () {
-          console.log('Botao Ver mais voos clicado. Aguardando novos voos...');
-          // O MutationObserver vai detectar os novos cards automaticamente
-        });
-
-        debugLog('Listener adicionado ao botão Ver mais', botaoVerMais);
+        botaoVerMais.addEventListener('click', function () {});
       }
     };
 
@@ -1125,9 +1139,7 @@
         card.classList.remove('selected');
       });
 
-      console.log(
-        '[SELECAO] Selecoes visuais limpas no trecho ' + tripIndex + ': ' + selecoes.length,
-      );
+      debugLog('Selecoes visuais limpas no trecho ' + tripIndex, selecoes.length);
     }
   }
 
@@ -1142,7 +1154,7 @@
         const cardId = card.id;
         if (cardId && window.AZUL_SELECTION_STATE[cardId]) {
           delete window.AZUL_SELECTION_STATE[cardId];
-          console.log('[SELECAO] Estado limpo para cardId: ' + cardId.substring(0, 30) + '...');
+          debugLog('Estado limpo para cardId', cardId.substring(0, 30));
         }
       });
     }
@@ -1152,7 +1164,7 @@
   function limparSelecoesPorTrecho(tripIndex) {
     limparSelecoesVisuaisPorTrecho(tripIndex);
     limparEstadoSalvoPorTrecho(tripIndex);
-    console.log('[SELECAO] Selecoes do trecho ' + tripIndex + ' limpas');
+    debugLog('Selecoes do trecho limpas', tripIndex);
   }
 
   // Limpa tudo (todos os trechos)
@@ -1164,7 +1176,7 @@
     });
 
     window.AZUL_SELECTION_STATE = {};
-    console.log('[SELECAO] Todas as selecoes limpas (todos os trechos)');
+    debugLog('Todas as selecoes limpas');
   }
 
   // =========================================================================
@@ -1200,21 +1212,19 @@
           }
 
           if (tripIndex !== null) {
-            console.log('[SELECAO] Botao Trocar voo clicado no trecho ' + tripIndex);
+            debugLog('Botao Trocar voo clicado no trecho', tripIndex);
             limparSelecoesPorTrecho(tripIndex);
 
             setTimeout(function () {
               limparSelecoesPorTrecho(tripIndex);
             }, 500);
           } else {
-            console.log(
-              '[SELECAO] Botao Trocar voo clicado - trecho nao identificado, limpando tudo',
-            );
+            debugLog('Trocar voo - trecho nao identificado, limpando tudo');
             limparTodasSelecoes();
           }
         });
 
-        console.log('[Observador] Listener adicionado ao botao Trocar voo');
+        debugLog('Listener adicionado ao botao Trocar voo');
       });
     };
 
@@ -1224,7 +1234,7 @@
     buttonObserver.observe(document.body, { childList: true, subtree: true });
   } // Tenta rodar uma vez no início caso o cache já tenha algo (se recarregou script)
   if (Object.keys(window.AZUL_FLIGHT_CACHE).length > 0) {
-    console.log('Cache existente detectado');
+    debugLog('Cache existente detectado');
     debugLog('Cache Inicial', window.AZUL_FLIGHT_CACHE);
     aplicarEstilos();
     dadosCapturados = true;
@@ -1235,44 +1245,4 @@
   iniciarObservadorDeVoos();
   observarBotaoVerMais();
   observarBotaoTrocarVoo();
-
-  // =========================================================================
-  // UTILITARIOS DE DEBUG (Comandos no Console)
-  // =========================================================================
-  window.AZUL_DEBUG = {
-    verCache: () => {
-      console.table(
-        Object.entries(window.AZUL_FLIGHT_CACHE).map(([key, fares]) => ({
-          journeyKey: key,
-          tarifas: fares.length,
-          nomes: fares.map((f) => f.productClass?.name).join(', '),
-        })),
-      );
-    },
-    verCards: () => {
-      const cards = document.querySelectorAll('.flight-card');
-      console.table(
-        Array.from(cards).map((card, i) => ({
-          index: i,
-          id: card.id,
-          temTarifas: !!card.querySelector('.custom-tariff-container'),
-          classes: card.className,
-        })),
-      );
-    },
-    forcarAtualizacao: () => {
-      console.log('Forcando atualizacao...');
-      atualizarLayout();
-    },
-    limparCache: () => {
-      window.AZUL_FLIGHT_CACHE = {};
-      console.log('Cache limpo');
-    },
-  };
-
-  console.log('Comandos disponiveis no console:');
-  console.log('   AZUL_DEBUG.verCache() - Ver dados em cache');
-  console.log('   AZUL_DEBUG.verCards() - Ver cards na pagina');
-  console.log('   AZUL_DEBUG.forcarAtualizacao() - Forcar renderizacao');
-  console.log('   AZUL_DEBUG.limparCache() - Limpar cache');
 })();

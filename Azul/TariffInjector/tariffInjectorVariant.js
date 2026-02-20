@@ -39,19 +39,23 @@
   // 1. CSS (O visual "Clean" que definimos)
   // =========================================================================
   const styles = `
-        /* IMPORTANTE: Estilos aplicados APENAS em cards com a classe .tariff-injector-active */
+        /* Estilos aplicados APENAS em cards com a classe .tariff-injector-active (modo Reais) */c
+      
+        .availability,
+        .azul-container,
+        .css-d28rej{
+          width: 1100px!important;
+        }
         .flight-card__info{
             max-width: 312px!important;
             padding: 0px!important;
-        }        .css-7ip4ly .details > svg{
+        }
+
+        .css-7ip4ly .details > svg{
             min-width: 20px;
         }
 
-        .flight-card .info-details,
-        .flight-card__container .info-details,
-        .tariff-injector-active .info-details,
-        div.info-details,
-        body .info-details{
+        .info-details{
             width: 160px !important;
             min-width: 160px !important;
             max-width: fit-content !important;
@@ -61,6 +65,7 @@
             max-width: 370px!important;
         }
 
+        .flight-card__container,
         .flight-card__container{
             justify-content: space-between !important;
             padding: 10px;
@@ -71,15 +76,16 @@
             max-width: 312px!important;
         }
 
-        /* Esconde os fare cards SEMPRE - com ou sem tariff-injector-active */
+        /* Esconde os fare cards originais APENAS em cards customizados */
+        .flight-card__fare,
         .flight-card__fare.right-container,
-        .flight-card .fareIndex-0,
-        .flight-card .fareIndex-1,
-        .flight-card .fareIndex-2,
-        .flight-card .fareIndex-3,
-        .flight-card .fareIndex-4,
-        .flight-card .btn-fare,
-        .flight-card .fare-container.right {
+        .fareIndex-0,
+        .fareIndex-1,
+        .fareIndex-2,
+        .fareIndex-3,
+        .fareIndex-4,
+        .btn-fare,
+        .fare-container.right {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
@@ -93,25 +99,14 @@
             z-index: -9999 !important;
         }
 
-        /* Força esconder também em cards com tariff-injector-active */
-        .tariff-injector-active .flight-card__fare,
-        .tariff-injector-active .fareIndex-0,
-        .tariff-injector-active .fareIndex-1,
-        .tariff-injector-active .fareIndex-2,
-        .tariff-injector-active .fareIndex-3,
-        .tariff-injector-active .fareIndex-4 {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            height: 0 !important;
-            width: 0 !important;
-            overflow: hidden !important;
-            position: absolute !important;
-            pointer-events: none !important;
-        }
-
         .tariff-injector-active .css-7ip4ly{
             max-width: calc(80% - 136px)!important;
+        }
+
+        /* Remove box-shadow/z-index residual quando o card está fechado */
+        .tariff-injector-active:not(.flight-card--opened) > div {
+            box-shadow: none !important;
+            z-index: auto !important;
         }
 
         .custom-tariff-container {
@@ -133,7 +128,7 @@
             border: 1px solid #cfcfcf;
             border-radius: 6px;
             padding: 12px;
-            min-width: 140px;
+            min-width: 155px;
             cursor: pointer;
             transition: all 0.2s ease;
             position: relative;
@@ -168,8 +163,12 @@
         }
 
         .custom-tariff-card.selected {
-            background-color: #026CB6;
-            border-color: #026CB6;
+            border: 2px solid #026CB6;
+            box-shadow: 0 0 0 1px #026CB6;
+        }
+
+        .custom-tariff-card.selected .tariff-badge {
+            display: flex;
         }
 
         /* Estilo especial para Business */
@@ -204,14 +203,14 @@
         }
 
         .custom-tariff-card.business.selected {
-            background-color: #026CB6;
-            border-color: #026CB6;
-            box-shadow: none;
+            border: 2px solid #026CB6;
+            box-shadow: 0 0 0 1px #026CB6;
+            background: linear-gradient(91.12deg, rgb(31, 81, 141) 0%, rgb(18, 56, 105) 53.65%, rgb(4, 30, 66) 100%);
         }
 
         .custom-tariff-card.business.selected .tariff-title {
             color: #fff;
-            background: rgba(255, 255, 255, 0.15)!important;
+            background: rgba(255, 255, 255, 0.10)!important;
         }
 
         .custom-tariff-card.business.selected .tariff-subtitle,
@@ -346,13 +345,6 @@
             font-weight: 700;
         }
 
-        .custom-tariff-card.selected .tariff-difference,
-        .custom-tariff-card.selected .tariff-difference .diff-symbol,
-        .custom-tariff-card.selected .tariff-difference .diff-integer,
-        .custom-tariff-card.selected .tariff-difference .diff-cents {
-            color: #fff;
-        }
-
         .custom-tariff-card.business .tariff-difference,
         .custom-tariff-card.business .tariff-difference .diff-symbol,
         .custom-tariff-card.business .tariff-difference .diff-integer,
@@ -360,23 +352,21 @@
             color: #fff;
         }
 
-        .custom-tariff-card.business.selected .tariff-difference,
-        .custom-tariff-card.business.selected .tariff-difference .diff-symbol,
-        .custom-tariff-card.business.selected .tariff-difference .diff-integer,
-        .custom-tariff-card.business.selected .tariff-difference .diff-cents {
+        .tariff-badge {
+            display: none;
+            align-items: center;
+            gap: 4px;
+            background: #026CB6;
             color: #fff;
-        }
-
-        /* Estilos existentes para as tarifas */
-        .custom-tariff-card.selected .tariff-value,
-        .custom-tariff-card.selected .tariff-value .currency,
-        .custom-tariff-card.selected .tariff-value .integer,
-        .custom-tariff-card.selected .tariff-value .cents,
-        .custom-tariff-card.selected .tariff-subtitle { 
-            color: #fff; 
-        }
-        .custom-tariff-card.selected .tariff-title { 
-            color: #fff; 
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            position: absolute;
+            top: -10px;
+            right: 32px;
+            white-space: nowrap;
+            line-height: 16px;
         }
         .custom-tariff-card.sold-out .tariff-title { 
             color: rgb(96, 96, 96); 
@@ -520,7 +510,7 @@
     return (
       '<span class="diff-symbol">' +
       symbol +
-      '</span> <span class="diff-integer">R$' +
+      '</span> <span class="diff-integer"><span style="font-size: 14px;">R$</span><span class="integer">' +
       integerPart +
       '</span><span class="diff-cents">,' +
       centsPart +
@@ -532,25 +522,37 @@
     const flightCards = document.querySelectorAll('.flight-card');
 
     flightCards.forEach(function (card) {
-      // NOVO: Verifica se o card está exibindo pontos ao invés de dinheiro
-      const fareContainer = card.querySelector('.flight-card__fare');
-      if (fareContainer) {
-        const fareText = fareContainer.textContent || '';
-        // Se contém "pontos" no texto, ignora este card COMPLETAMENTE
-        if (fareText.toLowerCase().includes('pontos')) {
-          // Remove a classe de ativação caso exista (para quando usuario troca de dinheiro para pontos)
-          card.classList.remove('tariff-injector-active');
-          // Remove o container customizado caso exista
-          const existingContainer = card.querySelector('.custom-tariff-container');
-          if (existingContainer) {
-            existingContainer.remove();
-          }
-          return;
+      // Verifica se o card está exibindo pontos ao invés de reais
+      const cardContainer = card.querySelector('.flight-card__container');
+      const cardText = cardContainer ? cardContainer.textContent || '' : card.textContent || '';
+      const originalFare = card.querySelector('.flight-card__fare');
+
+      if (cardText.toLowerCase().includes('pontos')) {
+        card.classList.remove('tariff-injector-active');
+        if (originalFare) originalFare.style.cssText = '';
+        var infoDetailsPontos = card.querySelector('.info-details');
+        if (infoDetailsPontos) infoDetailsPontos.style.cssText = '';
+        const existingContainer = card.querySelector('.custom-tariff-container');
+        if (existingContainer) {
+          existingContainer.remove();
         }
+        return;
       }
 
       // ADICIONA a classe que ativa os estilos CSS
       card.classList.add('tariff-injector-active');
+
+      // Esconde o fare card original via JS
+      if (originalFare) {
+        originalFare.style.cssText = 'display:none!important;';
+      }
+
+      // Aplica estilos do info-details via JS (CSS-in-JS da Azul pode sobrescrever)
+      var infoDetails = card.querySelector('.info-details');
+      if (infoDetails) {
+        infoDetails.style.cssText =
+          'width:160px!important;min-width:160px!important;max-width:fit-content!important;';
+      }
 
       // Verifica se precisa re-renderizar (container antigo foi removido pelo React)
       const existingContainer = card.querySelector('.custom-tariff-container');
@@ -736,11 +738,11 @@
           formatMoney(preco) +
           '</span>';
       } else {
-        const precoFormatadoBR = preco.toLocaleString('pt-BR', {
+        const baseFormatadoBR = precoBase.toLocaleString('pt-BR', {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         });
-        const partes = precoFormatadoBR.split(',');
+        const partes = baseFormatadoBR.split(',');
         const inteira = partes[0];
         const centavos = partes[1] || '00';
 
@@ -754,7 +756,12 @@
           '</span>';
       }
 
-      box.innerHTML = '<span class="tariff-title">' + nome + iconeSVG + '</span>' + conteudoPreco;
+      box.innerHTML =
+        '<span class="tariff-badge">Escolhida</span><span class="tariff-title">' +
+        nome +
+        iconeSVG +
+        '</span>' +
+        conteudoPreco;
 
       // Lógica de clique
       if (!isSoldOut) {
@@ -764,31 +771,32 @@
 
           const fareName = box.dataset.fareName;
 
-          console.log('[SELECAO] Clique no card - tarifa: ' + fareName);
-
           // Visual Selection
           container.querySelectorAll('.custom-tariff-card').forEach(function (b) {
             b.classList.remove('selected');
           });
           box.classList.add('selected');
 
-          // Salva a selecao
           salvarSelecao(card.id, fareName);
 
-          // Bloqueia sincronizacao automatica durante o clique manual
           if (container._bloquearSync) {
             container._bloquearSync();
           }
 
-          // Expande card se fechado
+          // Expande card se fechado (travando altura para evitar flash visual)
           const isCardClosed = !card.classList.contains('flight-card--opened');
 
           if (isCardClosed) {
-            const cardClickArea = card.querySelector('.flight-card__info[role="button"]');
+            var alturaAtual = card.offsetHeight;
+            card.style.maxHeight = alturaAtual + 'px';
+            card.style.overflow = 'hidden';
+            card.style.transition = 'none';
+
+            var cardClickArea = card.querySelector('.flight-card__info[role="button"]');
             if (cardClickArea) {
               cardClickArea.click();
               await new Promise(function (r) {
-                setTimeout(r, 500);
+                setTimeout(r, 600);
               });
             }
           }
@@ -797,12 +805,11 @@
             setTimeout(r, 200);
           });
 
-          // Busca fare-item pelo nome
-          const fareItems = card.querySelectorAll('.fare-item');
-          let targetItem = null;
+          var fareItems = card.querySelectorAll('.fare-item');
+          var targetItem = null;
 
           fareItems.forEach(function (item) {
-            const itemText = (item.textContent || '').toLowerCase();
+            var itemText = (item.textContent || '').toLowerCase();
 
             if (
               (fareName === 'azul' &&
@@ -820,14 +827,37 @@
           });
 
           if (targetItem) {
-            const selectBtn =
+            var selectBtn =
               targetItem.querySelector("button[class*='select'], button[class*='btn']") ||
               targetItem.querySelector('button');
 
             if (selectBtn) {
-              console.log('[SELECAO] Clicando no botao interno');
               selectBtn.click();
             }
+          }
+
+          // Fecha o card (ainda com clipping) e depois restaura
+          if (isCardClosed) {
+            var botoesFechar = card.querySelectorAll('button');
+            for (var i = 0; i < botoesFechar.length; i++) {
+              var ariaLabel = botoesFechar[i].getAttribute('aria-label') || '';
+              var texto = botoesFechar[i].textContent || '';
+              if (
+                ariaLabel.toLowerCase().includes('fechar') ||
+                ariaLabel.toLowerCase().includes('recolher') ||
+                texto.toLowerCase().includes('recolher')
+              ) {
+                botoesFechar[i].click();
+                break;
+              }
+            }
+
+            await new Promise(function (r) {
+              setTimeout(r, 400);
+            });
+            card.style.maxHeight = '';
+            card.style.overflow = '';
+            card.style.transition = '';
           }
         };
       } else {
