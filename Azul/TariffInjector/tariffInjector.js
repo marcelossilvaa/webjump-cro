@@ -118,15 +118,14 @@
             background: #fff;
             border: 1px solid #cfcfcf;
             border-radius: 6px;
-            padding: c12px;
+            padding: 12px;
             min-width: 140px;
             cursor: pointer;
             transition: all 0.2s ease;
             position: relative;
             display: flex;
             flex-direction: column;
-            gap: 4px;
-        }
+c        }
 
         .custom-tariff-card::after {
             content: '';
@@ -277,7 +276,6 @@
             font-size: 12px;
             font-weight: 400;
             color: #6A7282;
-            margin-bottom: -6px;
         }
 
         .tariff-value {
@@ -335,6 +333,22 @@
             color: rgb(96, 96, 96); 
             font-size: 14px;
             font-weight: 600;
+        }
+
+        .tariff-original-price {
+            font-size: 14px;
+            text-decoration: line-through;
+            color: #999;
+            line-height: 1.2;
+        }
+
+        .custom-tariff-card.business .tariff-original-price {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Oculta badge de promoção original quando o injector está ativo */
+        .tariff-injector-active [class*="TagPromocodeContainer"] {
+            display: none !important;
         }
     `;
 
@@ -463,6 +477,12 @@
       '</span><span class="cents">,' +
       centsPart +
       '</span>'
+    );
+  }
+
+  function formatMoneySimple(val) {
+    return (
+      'R$ ' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     );
   }
 
@@ -599,6 +619,8 @@
       const paxFares = fare.paxFares;
       const isSoldOut = !paxFares || paxFares.length === 0;
       const preco = isSoldOut ? 0 : paxFares[0]?.totalAmount || 0;
+      const temDesconto = !isSoldOut && paxFares[0]?.discount?.promotionCodeApplied === true;
+      const precoOriginal = temDesconto ? paxFares[0]?.originalAmount || preco : preco;
 
       const isBusiness = nome.toLowerCase().includes('business');
       const isAzulTariff = ['azul', 'mais azul', 'super azul'].some((t) =>
@@ -670,16 +692,25 @@
         (isSelected ? ' selected' : '');
       box.dataset.fareIndex = index;
       box.dataset.fareName = nome.toLowerCase();
+      let conteudoPreco;
+      if (isSoldOut) {
+        conteudoPreco = '<span class="tariff-value">Esgotada</span>';
+      } else {
+        conteudoPreco = '<span class="tariff-subtitle">a partir de</span>';
+        if (temDesconto && precoOriginal > preco) {
+          conteudoPreco +=
+            '<span class="tariff-original-price">' + formatMoneySimple(precoOriginal) + '</span>';
+        }
+        conteudoPreco += '<span class="tariff-value">' + formatMoney(preco) + '</span>';
+      }
+
       box.innerHTML =
         '<span class="tariff-badge">Escolhida</span>' +
         '<span class="tariff-title">' +
         nome +
         iconeSVG +
         '</span>' +
-        (!isSoldOut ? '<span class="tariff-subtitle">a partir de</span>' : '') +
-        '<span class="tariff-value">' +
-        (isSoldOut ? 'Esgotada' : formatMoney(preco)) +
-        '</span>'; // --- Logica de Clique (Proxy) ---
+        conteudoPreco; // --- Logica de Clique (Proxy) ---
       if (!isSoldOut) {
         box.onclick = async function (e) {
           e.stopPropagation();
@@ -912,92 +943,122 @@
   // =========================================================================
   function observarSelecaoInterna(flightCard, customContainer) {
     let isSyncing = false;
-    let bloqueioManual = false; // Funcao para sincronizar a selecao baseada no nome da tarifa
+    let bloqueioManual = false;
+    let lastExternalUpdate = 0;
+
+    // Helper: encontra o nome da tarifa no texto baseado nos nomes dos custom cards
+    const encontrarNomeTarifa = function (texto) {
+      var textoLower = texto.toLowerCase();
+      var customCards = customContainer.querySelectorAll('.custom-tariff-card');
+      var nomes = [];
+      customCards.forEach(function (cc) {
+        if (cc.dataset.fareName) nomes.push(cc.dataset.fareName);
+      });
+      nomes.sort(function (a, b) { return b.length - a.length; });
+
+      for (var i = 0; i < nomes.length; i++) {
+        var palavras = nomes[i].split(' ');
+        var invertido = palavras.slice().reverse().join(' ');
+        if (textoLower.includes(nomes[i]) || textoLower.includes(invertido)) {
+          return nomes[i];
+        }
+      }
+
+      if (textoLower.includes('business')) return 'business';
+      if (textoLower.includes('super') && textoLower.includes('azul')) {
+        var found = null;
+        customCards.forEach(function (cc) {
+          var n = cc.dataset.fareName || '';
+          if (n.includes('super') && n.includes('azul')) found = n;
+        });
+        return found;
+      }
+      if (textoLower.includes('mais azul')) return 'mais azul';
+      if (textoLower.includes('azul')) return 'azul';
+      return null;
+    };
+
+    // Helper: atualiza o card externo com a tarifa encontrada
+    const atualizarSelecaoExterna = function (nomeTarifa, source) {
+      if (!nomeTarifa) return;
+      isSyncing = true;
+      lastExternalUpdate = Date.now();
+      salvarSelecao(flightCard.id, nomeTarifa);
+      var customCards = customContainer.querySelectorAll('.custom-tariff-card');
+      customCards.forEach(function (cc) {
+        cc.classList.remove('selected');
+        if (cc.dataset.fareName === nomeTarifa) {
+          cc.classList.add('selected');
+          debugLog('[SELECAO] Sincronizado externamente via ' + (source || 'desconhecido'), cc.dataset.fareName);
+        }
+      });
+      setTimeout(function () { isSyncing = false; }, 100);
+    };
+
     const sincronizarSelecao = function () {
       if (isSyncing) return;
-      // Se houve clique manual recente, ignora a sincronizacao automatica
       if (bloqueioManual) return;
 
-      const fareItems = flightCard.querySelectorAll('.fare-item');
-      const customCards = customContainer.querySelectorAll('.custom-tariff-card');
-
-      let nomeTarifaSelecionada = null;
+      var fareItems = flightCard.querySelectorAll('.fare-item');
+      var nomeTarifaSelecionada = null;
 
       fareItems.forEach(function (fareItem) {
-        const textoCompleto = fareItem.textContent || '';
-
+        var textoCompleto = fareItem.textContent || '';
         if (textoCompleto.includes('Tarifa selecionada')) {
-          const textoLower = textoCompleto.toLowerCase();
-
-          if (textoLower.includes('business')) {
-            nomeTarifaSelecionada = 'business';
-          } else if (textoLower.includes('azul super')) {
-            nomeTarifaSelecionada = 'azul super';
-          } else if (textoLower.includes('mais azul')) {
-            nomeTarifaSelecionada = 'mais azul';
-          } else if (textoLower.includes('azul')) {
-            nomeTarifaSelecionada = 'azul';
-          }
+          nomeTarifaSelecionada = encontrarNomeTarifa(textoCompleto);
         }
       });
 
-      // Se nao encontrou fare-items (card fechado), usa a selecao salva
-      if (!nomeTarifaSelecionada && fareItems.length === 0) {
-        nomeTarifaSelecionada = obterSelecaoSalva(flightCard.id);
-      }
-
       if (nomeTarifaSelecionada) {
-        isSyncing = true;
-
-        // Salva a selecao detectada
-        salvarSelecao(flightCard.id, nomeTarifaSelecionada);
-
-        customCards.forEach(function (customCard) {
-          const cardFareName = customCard.dataset.fareName || '';
-          customCard.classList.remove('selected');
-
-          if (cardFareName === nomeTarifaSelecionada) {
-            customCard.classList.add('selected');
-            debugLog('Sincronizado', cardFareName);
-          }
-        });
-
-        setTimeout(function () {
-          isSyncing = false;
-        }, 100);
+        atualizarSelecaoExterna(nomeTarifaSelecionada, 'sincronizarSelecao');
       }
     };
 
-    // Funcao publica para bloquear sincronizacao durante clique manual
     customContainer._bloquearSync = function () {
       bloqueioManual = true;
       setTimeout(function () {
         bloqueioManual = false;
-        // Sincroniza apos o bloqueio para pegar o estado final
         setTimeout(sincronizarSelecao, 300);
       }, 1500);
     };
 
-    // Adiciona listeners nos botoes internos de selecao
     const adicionarListenersBotoes = function () {
-      const botoesSelecionar = flightCard.querySelectorAll(
+      var botoesSelecionar = flightCard.querySelectorAll(
         'button[aria-label*="Selecionar tarifa"], button[data-test-id="select-fare"]',
       );
 
       botoesSelecionar.forEach(function (botao) {
         if (!botao._syncListenerAdded) {
           botao._syncListenerAdded = true;
+          debugLog('[Observador] Listener adicionado ao botao Selecionar tarifa');
 
           botao.addEventListener('click', function () {
-            setTimeout(sincronizarSelecao, 200);
+            if (bloqueioManual) return;
+
+            // Captura IMEDIATA: encontra o fare-item que contem este botao
+            var fareItem = this.closest('.fare-item');
+            if (fareItem) {
+              var nomeTarifa = encontrarNomeTarifa(fareItem.textContent || '');
+              if (nomeTarifa) {
+                debugLog('[SELECAO] Captura direta no clique interno', nomeTarifa);
+                atualizarSelecaoExterna(nomeTarifa, 'clique-direto');
+                return;
+              }
+            }
+
+            // Fallback: tenta sincronizar após delays
+            setTimeout(sincronizarSelecao, 300);
+            setTimeout(sincronizarSelecao, 600);
+            setTimeout(sincronizarSelecao, 1000);
           });
         }
       });
-    }; // Observador de mudancas no DOM para detectar selecao
-    const observer = new MutationObserver(function (mutations) {
+    };
+
+    var observer = new MutationObserver(function (mutations) {
       if (isSyncing) return;
 
-      let shouldSync = false;
+      var shouldAddListeners = false;
 
       mutations.forEach(function (mutation) {
         if (mutation.addedNodes.length > 0) {
@@ -1005,38 +1066,62 @@
             if (node.nodeType === 1) {
               if (
                 (node.classList && node.classList.contains('fare-item')) ||
-                (node.querySelector && node.querySelector('.fare-item'))
+                (node.querySelector && node.querySelector('.fare-item')) ||
+                (node.querySelector && node.querySelector('[data-test-id="select-fare"]'))
               ) {
-                setTimeout(adicionarListenersBotoes, 100);
+                shouldAddListeners = true;
               }
-              if ((node.textContent || '').includes('Tarifa selecionada')) {
-                shouldSync = true;
-              }
-            }
-          });
-        }
 
-        // Detecta remocao de fare-items (card fechando) para reaplicar selecao salva
-        if (mutation.removedNodes.length > 0) {
-          mutation.removedNodes.forEach(function (node) {
-            if (node.nodeType === 1) {
-              if (
-                (node.classList && node.classList.contains('fare-item')) ||
-                (node.querySelector && node.querySelector('.fare-item'))
-              ) {
-                shouldSync = true;
+              // Captura IMEDIATA quando "Tarifa selecionada" aparece no DOM
+              var nodeText = node.textContent || '';
+              if (nodeText.includes('Tarifa selecionada') && !bloqueioManual) {
+                // Guard: não sobrescrever se houve atualização recente (ex: clique direto)
+                if (Date.now() - lastExternalUpdate < 2000) return;
+
+                // Narrow down: busca no fare-item específico que contém "Tarifa selecionada"
+                var fareItemsInNode = node.querySelectorAll ? node.querySelectorAll('.fare-item') : [];
+                var found = false;
+
+                fareItemsInNode.forEach(function (fi) {
+                  if (!found && (fi.textContent || '').includes('Tarifa selecionada')) {
+                    var nomeTarifa = encontrarNomeTarifa(fi.textContent);
+                    if (nomeTarifa) {
+                      debugLog('[SELECAO] Captura via Observer (fare-item)', nomeTarifa);
+                      atualizarSelecaoExterna(nomeTarifa, 'observer-fareitem');
+                      found = true;
+                    }
+                  }
+                });
+
+                // Se o nó é ele mesmo um fare-item
+                if (!found && node.classList?.contains('fare-item')) {
+                  var nomeTarifa = encontrarNomeTarifa(nodeText);
+                  if (nomeTarifa) {
+                    debugLog('[SELECAO] Captura via Observer (nó direto)', nomeTarifa);
+                    atualizarSelecaoExterna(nomeTarifa, 'observer-direto');
+                  }
+                }
               }
             }
           });
         }
       });
 
-      if (shouldSync) {
-        setTimeout(sincronizarSelecao, 150);
+      if (shouldAddListeners) {
+        setTimeout(adicionarListenersBotoes, 100);
       }
     });
 
     observer.observe(flightCard, { childList: true, subtree: true });
+
+    // Observa abertura do card para adicionar listeners nos botoes internos
+    var classObserver = new MutationObserver(function () {
+      if (flightCard.classList.contains('flight-card--opened')) {
+        setTimeout(adicionarListenersBotoes, 200);
+        setTimeout(adicionarListenersBotoes, 500);
+      }
+    });
+    classObserver.observe(flightCard, { attributes: true, attributeFilter: ['class'] });
 
     setTimeout(function () {
       adicionarListenersBotoes();

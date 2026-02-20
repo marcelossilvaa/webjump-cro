@@ -7,7 +7,7 @@
 
   let dadosCapturados = false;
 
-  const DEBUG_MODE = false; // Desativado para limpar logs
+  const DEBUG_MODE = true;
 
   function debugLog(titulo, dados) {
     if (!DEBUG_MODE) return;
@@ -134,7 +134,6 @@
             position: relative;
             display: flex;
             flex-direction: column;
-            gap: 4px;
             color: #6A7282;
             width: 140px;
         }
@@ -282,11 +281,11 @@
             width: 14px;
             height: 14px;
             flex-shrink: 0;
-        }        .tariff-subtitle {
+        }        
+        .tariff-subtitle {
             font-size: 12px;
             font-weight: 400;
             color: #6A7282;
-            margin-bottom: -6px;
         }
 
         .tariff-value {
@@ -364,7 +363,7 @@
             border-radius: 4px;
             position: absolute;
             top: -10px;
-            right: 32px;
+            right: 42px;
             white-space: nowrap;
             line-height: 16px;
         }
@@ -382,6 +381,21 @@
 
         .custom-tariff-card .tariff-subtitle{
             font-size: 12px;
+        }
+
+        .tariff-original-price {
+            font-size: 14px;
+            text-decoration: line-through;
+            color: #999;
+            line-height: 1.2;
+        }
+
+        .custom-tariff-card.business .tariff-original-price {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        [class*="TagPromocodeContainer"] {
+            display: none !important;
         }
     `;
 
@@ -413,6 +427,19 @@
           if (journey.journeyKey && journey.fares) {
             window.AZUL_FLIGHT_CACHE[journey.journeyKey] = journey.fares;
             foundData = true;
+
+            debugLog(
+              'Fares completas para journey ' + journey.journeyKey.substring(0, 30),
+              journey.fares,
+            );
+            journey.fares.forEach(function (fare, idx) {
+              debugLog('Fare[' + idx + '] - ' + (fare.productClass?.name || 'N/A'), {
+                productClass: fare.productClass,
+                paxFares: fare.paxFares,
+                fareKey: fare.fareKey,
+                allProperties: Object.keys(fare),
+              });
+            });
           }
         });
       });
@@ -491,7 +518,21 @@
     );
   }
 
-  // Nova função para formatar a diferença de preço
+  function formatMoneySimple(val) {
+    return (
+      'R$ ' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    );
+  }
+
+  function formatDifferenceSimple(val) {
+    var sign = val >= 0 ? '+ ' : '- ';
+    return (
+      sign +
+      'R$ ' +
+      Math.abs(val).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    );
+  }
+
   function formatDifference(val) {
     const isNegative = val < 0;
     const absVal = Math.abs(val);
@@ -655,6 +696,32 @@
 
     const nomeTarifaBase = tarifaBase?.productClass?.name?.toLowerCase() || '';
 
+    // Constrói mapa de preço da tarifa anterior (ordenado por preço crescente)
+    const faresComPreco = [];
+    fares.forEach(function (fare) {
+      const pf = fare.paxFares;
+      if (pf && pf.length > 0) {
+        faresComPreco.push({
+          nome: (fare.productClass?.name || '').toLowerCase(),
+          preco: pf[0].totalAmount,
+        });
+      }
+    });
+    faresComPreco.sort(function (a, b) {
+      return a.preco - b.preco;
+    });
+
+    const precoAnteriorMap = {};
+    for (let i = 0; i < faresComPreco.length; i++) {
+      if (i === 0) {
+        precoAnteriorMap[faresComPreco[i].nome] = null;
+      } else {
+        precoAnteriorMap[faresComPreco[i].nome] = faresComPreco[i - 1].preco;
+      }
+    }
+
+    debugLog('Mapa de preço anterior', precoAnteriorMap);
+
     // NOVO: Obtém seleção salva para este card
     const selecaoSalva = obterSelecaoSalva(card.id);
 
@@ -663,13 +730,16 @@
       const paxFares = fare.paxFares;
       const isSoldOut = !paxFares || paxFares.length === 0;
       const preco = isSoldOut ? 0 : paxFares[0]?.totalAmount || 0;
+      const temDesconto = !isSoldOut && paxFares[0]?.discount?.promotionCodeApplied === true;
+      const precoOriginal = temDesconto ? paxFares[0]?.originalAmount || preco : preco;
 
       const isBusiness = nome.toLowerCase().includes('business');
       const isAzulTariff = ['azul', 'mais azul', 'super azul'].some(function (t) {
         return nome.toLowerCase().includes(t.toLowerCase());
       });
-      const isBaseTariff = nome.toLowerCase() === nomeTarifaBase;
-      const diferenca = !isSoldOut && precoBase > 0 && !isBaseTariff ? preco - precoBase : 0; // SVG para tarifas Azul
+      const precoAnterior = precoAnteriorMap[nome.toLowerCase()];
+      const isBaseTariff = precoAnterior === null || precoAnterior === undefined;
+      const diferenca = !isSoldOut && !isBaseTariff ? preco - precoAnterior : 0; // SVG para tarifas Azul
       const azulIconeSVG =
         isAzulTariff && !isBusiness
           ? '\n                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 17 20">\n                    <g filter="url(#filter0_d_' +
@@ -733,16 +803,18 @@
       if (isSoldOut) {
         conteudoPreco = '<span class="tariff-value">Tarifa Esgotada</span>';
       } else if (isBaseTariff) {
-        conteudoPreco =
-          '<span class="tariff-subtitle" style="font-size: 12px;">a partir de</span><span class="tariff-value">' +
-          formatMoney(preco) +
-          '</span>';
+        conteudoPreco = '<span class="tariff-subtitle" style="font-size: 12px;">a partir de</span>';
+        if (temDesconto && precoOriginal > preco) {
+          conteudoPreco +=
+            '<span class="tariff-original-price">' + formatMoneySimple(precoOriginal) + '</span>';
+        }
+        conteudoPreco += '<span class="tariff-value">' + formatMoney(preco) + '</span>';
       } else {
-        const baseFormatadoBR = precoBase.toLocaleString('pt-BR', {
+        const anteriorFormatadoBR = precoAnterior.toLocaleString('pt-BR', {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         });
-        const partes = baseFormatadoBR.split(',');
+        const partes = anteriorFormatadoBR.split(',');
         const inteira = partes[0];
         const centavos = partes[1] || '00';
 
@@ -751,9 +823,16 @@
           inteira +
           ',' +
           centavos +
-          '</span></span><span class="tariff-difference">' +
-          formatDifference(diferenca) +
-          '</span>';
+          '</span></span>';
+        if (temDesconto && precoOriginal > preco) {
+          const diferencaOriginal = precoOriginal - precoAnterior;
+          conteudoPreco +=
+            '<span class="tariff-original-price">' +
+            formatDifferenceSimple(diferencaOriginal) +
+            '</span>';
+        }
+        conteudoPreco +=
+          '<span class="tariff-difference">' + formatDifference(diferenca) + '</span>';
       }
 
       box.innerHTML =
@@ -970,108 +1049,193 @@
   function observarSelecaoInterna(flightCard, customContainer) {
     let isSyncing = false;
     let bloqueioManual = false;
+    let lastExternalUpdate = 0;
+
+    // Helper: encontra o nome da tarifa no texto baseado nos nomes dos custom cards
+    const encontrarNomeTarifa = function (texto) {
+      var textoLower = texto.toLowerCase();
+      var customCards = customContainer.querySelectorAll('.custom-tariff-card');
+      var nomes = [];
+      customCards.forEach(function (cc) {
+        if (cc.dataset.fareName) nomes.push(cc.dataset.fareName);
+      });
+      nomes.sort(function (a, b) {
+        return b.length - a.length;
+      });
+
+      for (var i = 0; i < nomes.length; i++) {
+        var palavras = nomes[i].split(' ');
+        var invertido = palavras.slice().reverse().join(' ');
+        if (textoLower.includes(nomes[i]) || textoLower.includes(invertido)) {
+          return nomes[i];
+        }
+      }
+
+      if (textoLower.includes('business')) return 'business';
+      if (textoLower.includes('super') && textoLower.includes('azul')) {
+        var found = null;
+        customCards.forEach(function (cc) {
+          var n = cc.dataset.fareName || '';
+          if (n.includes('super') && n.includes('azul')) found = n;
+        });
+        return found;
+      }
+      if (textoLower.includes('mais azul')) return 'mais azul';
+      if (textoLower.includes('azul')) return 'azul';
+      return null;
+    };
+
+    // Helper: atualiza o card externo com a tarifa encontrada
+    const atualizarSelecaoExterna = function (nomeTarifa, source) {
+      if (!nomeTarifa) return;
+      isSyncing = true;
+      lastExternalUpdate = Date.now();
+      salvarSelecao(flightCard.id, nomeTarifa);
+      var customCards = customContainer.querySelectorAll('.custom-tariff-card');
+      customCards.forEach(function (cc) {
+        cc.classList.remove('selected');
+        if (cc.dataset.fareName === nomeTarifa) {
+          cc.classList.add('selected');
+          debugLog(
+            '[SELECAO] Sincronizado externamente via ' + (source || 'desconhecido'),
+            cc.dataset.fareName,
+          );
+        }
+      });
+      setTimeout(function () {
+        isSyncing = false;
+      }, 100);
+    };
 
     const sincronizarSelecao = function () {
       if (isSyncing) return;
-      // Se houve clique manual recente, ignora a sincronizacao automatica
       if (bloqueioManual) return;
 
-      const fareItems = flightCard.querySelectorAll('.fare-item');
-      const customCards = customContainer.querySelectorAll('.custom-tariff-card');
-
-      let nomeTarifaSelecionada = null;
+      var fareItems = flightCard.querySelectorAll('.fare-item');
+      var nomeTarifaSelecionada = null;
 
       fareItems.forEach(function (fareItem) {
-        const textoCompleto = fareItem.textContent || '';
-
+        var textoCompleto = fareItem.textContent || '';
         if (textoCompleto.includes('Tarifa selecionada')) {
-          const textoLower = textoCompleto.toLowerCase();
-
-          if (textoLower.includes('business')) {
-            nomeTarifaSelecionada = 'business';
-          } else if (textoLower.includes('azul super')) {
-            nomeTarifaSelecionada = 'azul super';
-          } else if (textoLower.includes('mais azul')) {
-            nomeTarifaSelecionada = 'mais azul';
-          } else if (textoLower.includes('azul')) {
-            nomeTarifaSelecionada = 'azul';
-          }
+          nomeTarifaSelecionada = encontrarNomeTarifa(textoCompleto);
         }
       });
 
       if (nomeTarifaSelecionada) {
-        isSyncing = true;
-
-        salvarSelecao(flightCard.id, nomeTarifaSelecionada);
-
-        customCards.forEach(function (customCard) {
-          const cardFareName = customCard.dataset.fareName || '';
-          customCard.classList.remove('selected');
-
-          if (cardFareName === nomeTarifaSelecionada) {
-            customCard.classList.add('selected');
-            console.log('[SELECAO] Sincronizado: ' + cardFareName);
-          }
-        });
-
-        setTimeout(function () {
-          isSyncing = false;
-        }, 100);
+        atualizarSelecaoExterna(nomeTarifaSelecionada, 'sincronizarSelecao');
       }
     };
 
-    // Funcao publica para bloquear sincronizacao durante clique manual
     customContainer._bloquearSync = function () {
       bloqueioManual = true;
       setTimeout(function () {
         bloqueioManual = false;
-        // Sincroniza apos o bloqueio para pegar o estado final
         setTimeout(sincronizarSelecao, 300);
       }, 1500);
     };
 
     const adicionarListenersBotoes = function () {
-      const botoesSelecionar = flightCard.querySelectorAll(
+      var botoesSelecionar = flightCard.querySelectorAll(
         'button[aria-label*="Selecionar tarifa"], button[data-test-id="select-fare"]',
       );
 
       botoesSelecionar.forEach(function (botao) {
         if (!botao._syncListenerAdded) {
           botao._syncListenerAdded = true;
+          debugLog('[Observador] Listener adicionado ao botao Selecionar tarifa');
 
           botao.addEventListener('click', function () {
-            setTimeout(sincronizarSelecao, 200);
+            if (bloqueioManual) return;
+
+            // Captura IMEDIATA: encontra o fare-item que contem este botao
+            var fareItem = this.closest('.fare-item');
+            if (fareItem) {
+              var nomeTarifa = encontrarNomeTarifa(fareItem.textContent || '');
+              if (nomeTarifa) {
+                debugLog('[SELECAO] Captura direta no clique interno', nomeTarifa);
+                atualizarSelecaoExterna(nomeTarifa, 'clique-direto');
+                return;
+              }
+            }
+
+            // Fallback: tenta sincronizar após delays
+            setTimeout(sincronizarSelecao, 300);
+            setTimeout(sincronizarSelecao, 600);
+            setTimeout(sincronizarSelecao, 1000);
           });
         }
       });
     };
 
-    const observer = new MutationObserver(function (mutations) {
+    var observer = new MutationObserver(function (mutations) {
       if (isSyncing) return;
 
-      let shouldSync = false;
+      var shouldAddListeners = false;
 
       mutations.forEach(function (mutation) {
         if (mutation.addedNodes.length > 0) {
           mutation.addedNodes.forEach(function (node) {
             if (node.nodeType === 1) {
-              if (node.classList?.contains('fare-item') || node.querySelector?.('.fare-item')) {
-                setTimeout(adicionarListenersBotoes, 100);
+              if (
+                node.classList?.contains('fare-item') ||
+                node.querySelector?.('.fare-item') ||
+                node.querySelector?.('[data-test-id="select-fare"]')
+              ) {
+                shouldAddListeners = true;
               }
-              if ((node.textContent || '').includes('Tarifa selecionada')) {
-                shouldSync = true;
+
+              // Captura IMEDIATA quando "Tarifa selecionada" aparece no DOM
+              var nodeText = node.textContent || '';
+              if (nodeText.includes('Tarifa selecionada') && !bloqueioManual) {
+                // Guard: não sobrescrever se houve atualização recente (ex: clique direto)
+                if (Date.now() - lastExternalUpdate < 2000) return;
+
+                // Narrow down: busca no fare-item específico que contém "Tarifa selecionada"
+                var fareItemsInNode = node.querySelectorAll
+                  ? node.querySelectorAll('.fare-item')
+                  : [];
+                var found = false;
+
+                fareItemsInNode.forEach(function (fi) {
+                  if (!found && (fi.textContent || '').includes('Tarifa selecionada')) {
+                    var nomeTarifa = encontrarNomeTarifa(fi.textContent);
+                    if (nomeTarifa) {
+                      debugLog('[SELECAO] Captura via Observer (fare-item)', nomeTarifa);
+                      atualizarSelecaoExterna(nomeTarifa, 'observer-fareitem');
+                      found = true;
+                    }
+                  }
+                });
+
+                // Se o nó é ele mesmo um fare-item
+                if (!found && node.classList?.contains('fare-item')) {
+                  var nomeTarifa = encontrarNomeTarifa(nodeText);
+                  if (nomeTarifa) {
+                    debugLog('[SELECAO] Captura via Observer (nó direto)', nomeTarifa);
+                    atualizarSelecaoExterna(nomeTarifa, 'observer-direto');
+                  }
+                }
               }
             }
           });
         }
       });
 
-      if (shouldSync) {
-        setTimeout(sincronizarSelecao, 150);
+      if (shouldAddListeners) {
+        setTimeout(adicionarListenersBotoes, 100);
       }
     });
 
     observer.observe(flightCard, { childList: true, subtree: true });
+
+    // Observa abertura do card para adicionar listeners nos botoes internos
+    var classObserver = new MutationObserver(function () {
+      if (flightCard.classList.contains('flight-card--opened')) {
+        setTimeout(adicionarListenersBotoes, 200);
+        setTimeout(adicionarListenersBotoes, 500);
+      }
+    });
+    classObserver.observe(flightCard, { attributes: true, attributeFilter: ['class'] });
 
     setTimeout(function () {
       adicionarListenersBotoes();
