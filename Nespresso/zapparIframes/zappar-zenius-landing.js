@@ -28,166 +28,164 @@
     experiment_variant: '${campaign.recipe.name}',
   });
 
-  const ICON_360_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16.56 7.44C15.8 3.61 14.06 1 12 1 9.94 1 8.21 3.61 7.44 7.44 3.6 8.22 1 9.94 1 12c0 2.06 2.61 3.78 6.44 4.56C8.2 20.39 9.94 23 12 23c2.06 0 3.79-2.61 4.56-6.44C20.4 15.78 23 14.06 23 12c0-2.06-2.61-3.78-6.44-4.56ZM12 22c-1.36 0-2.78-2-3.5-5.26a23.98 23.98 0 0 0 7.02 0C14.77 20 13.35 22 11.99 22Zm3.7-6.3a23.64 23.64 0 0 1-6.7.1c-.9-.1-1.74-.27-2.5-.48C3.69 14.55 2 13.25 2 12c0-1.36 2-2.78 5.25-3.5C7.1 9.6 7 10.76 7 12v.3l-2-2v1.4l2.5 2.51 2.5-2.5V10.3l-2 1.99V12c0-.88.05-1.71.13-2.5.12-1.1.3-2.1.55-3C9.45 3.7 10.75 2 12 2c1.36 0 2.78 2 3.5 5.26C14.42 7.09 13.24 7 12 7l-.3.01 2-2H12.3l-2.5 2.5 2.5 2.5h1.42l-2-2H12c1.35 0 2.58.1 3.7.29a22.91 22.91 0 0 1 0 7.4Zm1.05-.2a23.94 23.94 0 0 0 0-7C20 9.21 22 10.63 22 12c0 1.36-2 2.78-5.25 3.5Z"></path></svg>`;
+  const ICON_360_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16.56 7.44C15.8 3.61 14.06 1 12 1 9.94 1 8.21 3.61 7.44 7.44 3.6 8.22 1 9.94 1 12c0 2.06 2.61 3.78 6.44 4.56C8.2 20.39 9.94 23 12 23c2.06 0 3.79-2.61 4.56-6.44C20.4 15.78 23 14.06 23 12c0-2.06-2.61-3.78-6.44-4.56ZM12 22c-1.36 0-2.78-2-3.5-5.26a23.98 23.98 0 0 0 7.02 0C14.77 20 13.35 22 11.99 22Zm3.7-6.3a23.64 23.64 0 0 1-6.7.1c-.9-.1-1.74-.27-2.5-.48C3.69 14.55 2 13.25 2 12c0-1.36 2-2.78 5.25-3.5C7.1 9.6 7 10.76 7 12v.3l-2-2v1.4l2.5 2.51 2.5-2.5V10.3l-2 1.99V12c0-.88.05-1.71.13-2.5.12-1.1.3-2.1.55-3C9.45 3.7 10.75 2 12 2c1.36 0 2.78 2 3.5 5.26C14.42 7.09 13.24 7 12 7l-.3.01 2-2H12.3l-2.5 2.5 2.5 2.5h1.42l-2-2H12c1.35 0 2.58.1 3.7.29a22.91 22.91 0 0 1 0 7.4Zm1.05-.2a23.94 23.94 0 0 0 0-7C20 9.21 22 10.63 22 12c0 1.36-2 2.78-5.25 3.5Z"></path></svg>';
 
-  const STYLES = `
-    .cta-3d-zenius {
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      gap: 8px !important;
-      min-height: 3rem !important;
-      height: min-content !important;
-      padding: .75rem 1.5rem !important;
-      border: solid 1px #17171a !important;
-      border-radius: 62.4375rem !important;
-      margin: auto 0 !important;
-      color: #fff !important;
-      background: #17171a !important;
-      white-space: normal !important;
-      overflow: hidden !important;
-      text-decoration: none !important;
-      position: relative !important;
-      vertical-align: top !important;
-      font-family: inherit !important;
-      font-size: 14px !important;
-      font-weight: 500 !important;
-      letter-spacing: 0.5px !important;
-      cursor: pointer !important;
-      line-height: normal !important;
-      text-transform: none !important;
-      box-sizing: border-box !important;
-      outline: none !important;
-      -webkit-appearance: none !important;
-      appearance: none !important;
-      transition: .3s ease-in-out !important;
-      transition-property: background-color, color, border, box-shadow, text-shadow !important;
-    }
-    .cta-3d-zenius:hover {
-      color: #17171a !important;
-      background: #fff !important;
-      border-color: #17171a !important;
-    }
-    .cta-3d-zenius:hover svg {
-      fill: #17171a !important;
-    }
-    .cta-3d-zenius svg {
-      width: 20px !important;
-      height: 20px !important;
-      fill: currentColor !important;
-      transition: fill .3s ease-in-out !important;
-    }
-
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.8);
-      z-index: 9999;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    .modal-overlay.active {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .modal-overlay.show {
-      opacity: 1;
-    }
-    .modal-container {
-      position: relative;
-      width: 90%;
-      height: 90%;
-      max-width: 1200px;
-      max-height: 800px;
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-      transform: scale(0.9);
-      transition: transform 0.3s ease;
-    }
-    .modal-overlay.show .modal-container {
-      transform: scale(1);
-    }
-    .modal-close {
-      position: absolute;
-      top: -40px;
-      right: 0;
-      width: 32px;
-      height: 32px;
-      background-color: #fff;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: transform 0.2s ease, background-color 0.2s ease;
-      z-index: 10;
-    }
-    .modal-close:hover {
-      transform: scale(1.1);
-      background-color: #f0f0f0;
-    }
-    .modal-close:before,
-    .modal-close:after {
-      content: '';
-      position: absolute;
-      width: 16px;
-      height: 2px;
-      background-color: #333;
-      transition: background-color 0.2s ease;
-    }
-    .modal-close:before {
-      transform: rotate(45deg);
-    }
-    .modal-close:after {
-      transform: rotate(-45deg);
-    }
-    .modal-iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      border-radius: 8px;
-      transform-origin: 0 0;
-      overflow: hidden;
-      -webkit-overflow-scrolling: touch;
-    }
-    .modal-loading {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-family: Arial, sans-serif;
-      color: #666;
-      font-size: 16px;
-    }
-    @media (max-width: 768px) {
-      .modal-container {
-        width: 90%;
-        height: 90%;
-        max-width: 100%;
-        max-height: 100%;
-        border-radius: 0;
-      }
-      .modal-close {
-        top: -38px;
-        right: 0px;
-        background-color: rgba(255, 255, 255, 0.9);
-      }
-      .modal-iframe {
-        border-radius: 0;
-      }
-      .cta-3d-zenius {
-        font-size: 22px !important;
-        margin-top: 10px !important;
-      }
-    }
-  `;
+  const STYLES =
+    '.cta-3d-zenius {' +
+    '  display: inline-flex !important;' +
+    '  align-items: center !important;' +
+    '  justify-content: center !important;' +
+    '  gap: 8px !important;' +
+    '  min-height: 3rem !important;' +
+    '  height: min-content !important;' +
+    '  padding: .75rem 1.5rem !important;' +
+    '  border: solid 1px #17171a !important;' +
+    '  border-radius: 62.4375rem !important;' +
+    '  margin: auto 0 !important;' +
+    '  color: #fff !important;' +
+    '  background: #17171a !important;' +
+    '  white-space: normal !important;' +
+    '  overflow: hidden !important;' +
+    '  text-decoration: none !important;' +
+    '  position: relative !important;' +
+    '  vertical-align: top !important;' +
+    '  font-family: inherit !important;' +
+    '  font-size: 16px !important;' +
+    '  font-weight: 500 !important;' +
+    '  letter-spacing: 0.5px !important;' +
+    '  cursor: pointer !important;' +
+    '  line-height: normal !important;' +
+    '  text-transform: none !important;' +
+    '  box-sizing: border-box !important;' +
+    '  outline: none !important;' +
+    '  -webkit-appearance: none !important;' +
+    '  appearance: none !important;' +
+    '  transition: .3s ease-in-out !important;' +
+    '  transition-property: background-color, color, border, box-shadow, text-shadow !important;' +
+    '}' +
+    '.cta-3d-zenius:hover {' +
+    '  color: #17171a !important;' +
+    '  background: #fff !important;' +
+    '  border-color: #17171a !important;' +
+    '}' +
+    '.cta-3d-zenius:hover svg {' +
+    '  fill: #17171a !important;' +
+    '}' +
+    '.cta-3d-zenius svg {' +
+    '  width: 20px !important;' +
+    '  height: 20px !important;' +
+    '  fill: currentColor !important;' +
+    '  transition: fill .3s ease-in-out !important;' +
+    '}' +
+    '.modal-overlay {' +
+    '  display: none;' +
+    '  position: fixed;' +
+    '  top: 0;' +
+    '  left: 0;' +
+    '  width: 100%;' +
+    '  height: 100%;' +
+    '  background-color: rgba(0, 0, 0, 0.8);' +
+    '  z-index: 9999;' +
+    '  opacity: 0;' +
+    '  transition: opacity 0.3s ease;' +
+    '}' +
+    '.modal-overlay.active {' +
+    '  display: flex;' +
+    '  justify-content: center;' +
+    '  align-items: center;' +
+    '}' +
+    '.modal-overlay.show {' +
+    '  opacity: 1;' +
+    '}' +
+    '.modal-container {' +
+    '  position: relative;' +
+    '  width: 90%;' +
+    '  height: 90%;' +
+    '  max-width: 1200px;' +
+    '  max-height: 800px;' +
+    '  background-color: #fff;' +
+    '  border-radius: 8px;' +
+    '  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);' +
+    '  transform: scale(0.9);' +
+    '  transition: transform 0.3s ease;' +
+    '}' +
+    '.modal-overlay.show .modal-container {' +
+    '  transform: scale(1);' +
+    '}' +
+    '.modal-close {' +
+    '  position: absolute;' +
+    '  top: -40px;' +
+    '  right: 0;' +
+    '  width: 32px;' +
+    '  height: 32px;' +
+    '  background-color: #fff;' +
+    '  border: none;' +
+    '  border-radius: 50%;' +
+    '  cursor: pointer;' +
+    '  display: flex;' +
+    '  justify-content: center;' +
+    '  align-items: center;' +
+    '  transition: transform 0.2s ease, background-color 0.2s ease;' +
+    '  z-index: 10;' +
+    '}' +
+    '.modal-close:hover {' +
+    '  transform: scale(1.1);' +
+    '  background-color: #f0f0f0;' +
+    '}' +
+    '.modal-close:before,' +
+    '.modal-close:after {' +
+    "  content: '';" +
+    '  position: absolute;' +
+    '  width: 16px;' +
+    '  height: 2px;' +
+    '  background-color: #333;' +
+    '  transition: background-color 0.2s ease;' +
+    '}' +
+    '.modal-close:before {' +
+    '  transform: rotate(45deg);' +
+    '}' +
+    '.modal-close:after {' +
+    '  transform: rotate(-45deg);' +
+    '}' +
+    '.modal-iframe {' +
+    '  width: 100%;' +
+    '  height: 100%;' +
+    '  border: none;' +
+    '  border-radius: 8px;' +
+    '  transform-origin: 0 0;' +
+    '  overflow: hidden;' +
+    '  -webkit-overflow-scrolling: touch;' +
+    '}' +
+    '.modal-loading {' +
+    '  position: absolute;' +
+    '  top: 50%;' +
+    '  left: 50%;' +
+    '  transform: translate(-50%, -50%);' +
+    '  font-family: Arial, sans-serif;' +
+    '  color: #666;' +
+    '  font-size: 16px;' +
+    '}' +
+    '@media (max-width: 768px) {' +
+    '  .modal-container {' +
+    '    width: 90%;' +
+    '    height: 90%;' +
+    '    max-width: 100%;' +
+    '    max-height: 100%;' +
+    '    border-radius: 0;' +
+    '  }' +
+    '  .modal-close {' +
+    '    top: -38px;' +
+    '    right: 0px;' +
+    '    background-color: rgba(255, 255, 255, 0.9);' +
+    '  }' +
+    '  .modal-iframe {' +
+    '    border-radius: 0;' +
+    '  }' +
+    '  .cta-3d-zenius {' +
+    '    font-size: 22px !important;' +
+    '    margin-top: 10px !important;' +
+    '  }' +
+    '}';
 
   class ZeniusLandingModal {
     constructor() {
@@ -239,7 +237,7 @@
       btn.className = 'cta-3d-zenius';
       btn.setAttribute('role', 'button');
       btn.setAttribute('aria-label', 'Veja em 3D');
-      btn.innerHTML = `<span>Veja em 3D</span>${ICON_360_SVG}`;
+      btn.innerHTML = '<span>Veja em 3D</span>' + ICON_360_SVG;
 
       btn.addEventListener(
         'click',
@@ -327,10 +325,9 @@
           iframeDoc.head.appendChild(meta);
         }
         const style = iframeDoc.createElement('style');
-        style.textContent = `
-          * { -webkit-text-size-adjust: 100% !important; -moz-text-size-adjust: 100% !important; -ms-text-size-adjust: 100% !important; text-size-adjust: 100% !important; }
-          html, body { overflow-x: hidden !important; max-width: 100% !important; }
-        `;
+        style.textContent =
+          '* { -webkit-text-size-adjust: 100% !important; -moz-text-size-adjust: 100% !important; -ms-text-size-adjust: 100% !important; text-size-adjust: 100% !important; }' +
+          'html, body { overflow-x: hidden !important; max-width: 100% !important; }';
         iframeDoc.head.appendChild(style);
         if (iframeDoc.body) {
           iframeDoc.body.style.zoom = '1';
