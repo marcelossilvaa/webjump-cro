@@ -38,6 +38,14 @@
   const styles = `
         /* Estilos ativados via :has() — detecta automaticamente a presença do nosso container */
 
+        .flight-select-see-details{
+            font-size: 14px!important;
+            width: 120px!important;
+            height: 25px!important;
+            color: rgb(2, 108, 182)!important;
+            border-radius: 6px!important;
+        }
+
         .flight-card:has(.custom-tariff-container) .flight-card__info{
             max-width: 312px!important;
             padding: 0px!important;

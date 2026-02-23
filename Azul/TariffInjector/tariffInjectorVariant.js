@@ -35,7 +35,16 @@
   // 1. CSS (O visual "Clean" que definimos)
   // =========================================================================
   const styles = `
-        /* Estilos aplicados APENAS em cards com a classe .tariff-injector-active (modo Reais) */c
+        /* Estilos aplicados APENAS em cards com a classe .tariff-injector-active (modo Reais) */
+
+        
+        .flight-select-see-details{
+            font-size: 14px!important;
+            width: 120px!important;
+            height: 25px!important;
+            color: rgb(2, 108, 182)!important;
+            border-radius: 6px!important;
+        }
       
         .availability,
         .azul-container,
