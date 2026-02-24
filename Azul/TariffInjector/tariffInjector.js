@@ -680,7 +680,7 @@ c        }
       if (isSoldOut) {
         conteudoPreco = '<span class="tariff-value">Esgotada</span>';
       } else {
-        conteudoPreco = '<span class="tariff-subtitle">a partir de</span>';
+        conteudoPreco = '';
         if (temDesconto && precoOriginal > preco) {
           conteudoPreco +=
             '<span class="tariff-original-price">' + formatMoneySimple(precoOriginal) + '</span>';

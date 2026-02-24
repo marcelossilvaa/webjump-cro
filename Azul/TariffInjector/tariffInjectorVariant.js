@@ -646,59 +646,19 @@
       return;
     }
 
-    // Encontra a tarifa MAIS BARATA (base) entre as disponíveis
-    let tarifaBase = null;
-    let precoBase = Infinity;
-
-    fares.forEach((fare) => {
-      const paxFares = fare.paxFares;
-      const temPreco = paxFares && paxFares.length > 0;
-
-      if (temPreco) {
-        const preco = paxFares[0].totalAmount;
-        if (preco < precoBase) {
-          precoBase = preco;
-          tarifaBase = fare;
-        }
-      }
+    // Tarifa base para comparação: PRIMEIRA tarifa disponível na ordem exibida
+    const firstAvailableFareIndex = fares.findIndex(function (fare) {
+      return fare.paxFares && fare.paxFares.length > 0;
     });
+    const precoBase =
+      firstAvailableFareIndex >= 0
+        ? fares[firstAvailableFareIndex].paxFares[0]?.totalAmount || 0
+        : 0;
 
-    if (tarifaBase) {
-      debugLog('Tarifa Base (Mais Barata) Encontrada', {
-        nome: tarifaBase.productClass?.name,
-        preco: precoBase,
-      });
-    } else {
-      precoBase = 0;
-    }
-
-    const nomeTarifaBase = tarifaBase?.productClass?.name?.toLowerCase() || '';
-
-    // Constrói mapa de preço da tarifa anterior (ordenado por preço crescente)
-    const faresComPreco = [];
-    fares.forEach(function (fare) {
-      const pf = fare.paxFares;
-      if (pf && pf.length > 0) {
-        faresComPreco.push({
-          nome: (fare.productClass?.name || '').toLowerCase(),
-          preco: pf[0].totalAmount,
-        });
-      }
+    debugLog('Tarifa Base (Primeira Disponível)', {
+      index: firstAvailableFareIndex,
+      preco: precoBase,
     });
-    faresComPreco.sort(function (a, b) {
-      return a.preco - b.preco;
-    });
-
-    const precoAnteriorMap = {};
-    for (let i = 0; i < faresComPreco.length; i++) {
-      if (i === 0) {
-        precoAnteriorMap[faresComPreco[i].nome] = null;
-      } else {
-        precoAnteriorMap[faresComPreco[i].nome] = faresComPreco[i - 1].preco;
-      }
-    }
-
-    debugLog('Mapa de preço anterior', precoAnteriorMap);
 
     // NOVO: Obtém seleção salva para este card
     const selecaoSalva = obterSelecaoSalva(card.id);
@@ -715,9 +675,8 @@
       const isAzulTariff = ['azul', 'mais azul', 'super azul'].some(function (t) {
         return nome.toLowerCase().includes(t.toLowerCase());
       });
-      const precoAnterior = precoAnteriorMap[nome.toLowerCase()];
-      const isBaseTariff = precoAnterior === null || precoAnterior === undefined;
-      const diferenca = !isSoldOut && !isBaseTariff ? preco - precoAnterior : 0; // SVG para tarifas Azul
+      const isBaseTariff = !isSoldOut && index === firstAvailableFareIndex;
+      const diferenca = !isSoldOut && !isBaseTariff ? preco - precoBase : 0;
       const azulIconeSVG =
         isAzulTariff && !isBusiness
           ? '\n                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 17 20">\n                    <g filter="url(#filter0_d_' +
@@ -781,29 +740,29 @@
       if (isSoldOut) {
         conteudoPreco = '<span class="tariff-value">Tarifa Esgotada</span>';
       } else if (isBaseTariff) {
-        conteudoPreco = '<span class="tariff-subtitle" style="font-size: 12px;">a partir de</span>';
+        conteudoPreco = '';
         if (temDesconto && precoOriginal > preco) {
           conteudoPreco +=
             '<span class="tariff-original-price">' + formatMoneySimple(precoOriginal) + '</span>';
         }
         conteudoPreco += '<span class="tariff-value">' + formatMoney(preco) + '</span>';
       } else {
-        const anteriorFormatadoBR = precoAnterior.toLocaleString('pt-BR', {
+        const baseFormatadoBR = precoBase.toLocaleString('pt-BR', {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         });
-        const partes = anteriorFormatadoBR.split(',');
-        const inteira = partes[0];
-        const centavos = partes[1] || '00';
+        const partesBase = baseFormatadoBR.split(',');
+        const inteiraBase = partesBase[0];
+        const centavosBase = partesBase[1] || '00';
 
         conteudoPreco =
-          '<span class="tariff-subtitle" style="font-size: 12px;">a partir de <span style="white-space: nowrap;">R$' +
-          inteira +
+          '<span class="tariff-subtitle" style="font-size: 12px;"><span style="white-space: nowrap;">R$' +
+          inteiraBase +
           ',' +
-          centavos +
+          centavosBase +
           '</span></span>';
         if (temDesconto && precoOriginal > preco) {
-          const diferencaOriginal = precoOriginal - precoAnterior;
+          const diferencaOriginal = precoOriginal - precoBase;
           conteudoPreco +=
             '<span class="tariff-original-price">' +
             formatDifferenceSimple(diferencaOriginal) +
