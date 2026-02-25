@@ -4,6 +4,8 @@
   'use strict';
 
   let dadosCapturados = false;
+  const MIN_DESKTOP_WIDTH = 1024;
+  const viewedCustomCards = new WeakSet();
 
   const DEBUG_MODE = false;
 
@@ -30,6 +32,80 @@
     console.group('DEBUG: ' + titulo);
     console.log(dados);
     console.groupEnd();
+  }
+
+  function isDesktopViewport() {
+    return window.innerWidth >= MIN_DESKTOP_WIDTH;
+  }
+
+  function enviarTrackingVisualizacaoCards(card, fares) {
+    if (!card || viewedCustomCards.has(card)) return;
+
+    viewedCustomCards.add(card);
+
+    const fareNames = (fares || [])
+      .map(function (fare) {
+        return fare?.productClass?.name || '';
+      })
+      .filter(Boolean)
+      .join(' | ');
+
+    const payload = {
+      event: 'azul_tariff_cards_view',
+      event_category: 'TariffInjector',
+      event_action: 'cards_visualizados',
+      event_label: fareNames || 'sem-fares',
+      card_id: card.id || 'sem-id',
+      viewport: window.innerWidth + 'x' + window.innerHeight,
+    };
+
+    if (Array.isArray(window.dataLayer)) {
+      window.dataLayer.push(payload);
+    }
+
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', 'azul_tariff_cards_view', {
+        event_category: payload.event_category,
+        event_label: payload.event_label,
+        card_id: payload.card_id,
+      });
+    }
+
+    try {
+      var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+      if (s && typeof s.tl === 'function') {
+        s.linkTrackVars = 'events,eVar84';
+        s.linkTrackEvents = 'event90';
+        s.events = 'event90';
+        s.eVar84 = 'AT_tariff_injector_view_cards';
+        s.tl(true, 'o', 'target_activity_action');
+      }
+    } catch (e) {
+      debugLog('Erro no tracking Adobe', e);
+    }
+  }
+
+  function observarVisualizacaoCards(card, fares) {
+    if (!card || viewedCustomCards.has(card)) return;
+
+    if (!('IntersectionObserver' in window)) {
+      enviarTrackingVisualizacaoCards(card, fares);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.4) {
+            enviarTrackingVisualizacaoCards(card, fares);
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: [0.4] },
+    );
+
+    observer.observe(card);
   }
 
   // =========================================================================
@@ -354,6 +430,7 @@ c        }
   window.AZUL_FLIGHT_CACHE = {};
 
   function processarPayload(data) {
+    if (!isDesktopViewport()) return;
     try {
       debugLog('Payload Completo Recebido', data);
 
@@ -472,6 +549,7 @@ c        }
   }
 
   function atualizarLayout() {
+    if (!isDesktopViewport()) return;
     const flightCards = document.querySelectorAll('.flight-card');
     debugLog('Cards na Página', { total: flightCards.length });
 
@@ -591,6 +669,7 @@ c        }
       const cardInner = card.querySelector('.card');
       if (cardInner) {
         cardInner.appendChild(container);
+        observarVisualizacaoCards(card, fares);
       }
 
       debugLog('Voo esgotado renderizado', card.id);
@@ -810,6 +889,7 @@ c        }
 
       // Adiciona observador para sincronizar seleção interna
       observarSelecaoInterna(card, container);
+      observarVisualizacaoCards(card, fares);
     }
   }
 
@@ -1141,6 +1221,7 @@ c        }
   // 5. OBSERVADOR DE NOVOS VOOS (Para botão "Ver mais voos")
   // =========================================================================
   function iniciarObservadorDeVoos() {
+    if (!isDesktopViewport()) return;
     // Procura o container onde os voos são renderizados
     const flightListContainer = document.querySelector(
       '.flight-list, [class*="flight"], main, #root',
@@ -1191,6 +1272,7 @@ c        }
   // 6. OBSERVADOR DO BOTÃO "VER MAIS VOOS"
   // =========================================================================
   function observarBotaoVerMais() {
+    if (!isDesktopViewport()) return;
     // Adiciona listener ao botão "Ver mais voos"
     const addListenerToBotao = function () {
       const botaoVerMais = document.querySelector('#load-more-button, button[id*="load-more"]');
@@ -1274,6 +1356,7 @@ c        }
   // 8. OBSERVADOR DO BOTÃO "TROCAR VOO" - ATUALIZADO POR TRECHO
   // =========================================================================
   function observarBotaoTrocarVoo() {
+    if (!isDesktopViewport()) return;
     const addListenerToBotao = function () {
       const botoesTrocar = document.querySelectorAll(
         'button[aria-label*="TBD"], button[aria-label*="trocar"], button[aria-label*="Trocar"]',
@@ -1324,6 +1407,8 @@ c        }
     const buttonObserver = new MutationObserver(addListenerToBotao);
     buttonObserver.observe(document.body, { childList: true, subtree: true });
   } // Tenta rodar uma vez no início caso o cache já tenha algo (se recarregou script)
+  if (!isDesktopViewport()) return;
+
   if (Object.keys(window.AZUL_FLIGHT_CACHE).length > 0) {
     debugLog('Cache existente detectado');
     debugLog('Cache Inicial', window.AZUL_FLIGHT_CACHE);
