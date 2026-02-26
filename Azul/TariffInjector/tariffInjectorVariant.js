@@ -5,7 +5,8 @@
 
   let dadosCapturados = false;
   const MIN_DESKTOP_WIDTH = 1024;
-  const viewedCustomCards = new WeakSet();
+  let hasSentCustomCardsViewEvent = false;
+  let currentSearchTrackingKey = '';
 
   const DEBUG_MODE = false;
 
@@ -18,10 +19,24 @@
     return window.innerWidth >= MIN_DESKTOP_WIDTH;
   }
 
-  function enviarTrackingVisualizacaoCards(card, fares) {
-    if (!card || viewedCustomCards.has(card)) return;
+  function gerarChaveDaBusca(trips) {
+    const journeyKeys = [];
+    (trips || []).forEach(function (trip) {
+      (trip.journeys || []).forEach(function (journey) {
+        if (journey && journey.journeyKey) {
+          journeyKeys.push(journey.journeyKey);
+        }
+      });
+    });
 
-    viewedCustomCards.add(card);
+    if (!journeyKeys.length) return '';
+    journeyKeys.sort();
+    return journeyKeys.join('|');
+  }
+
+  function enviarTrackingVisualizacaoCards(card, fares) {
+    if (!card || hasSentCustomCardsViewEvent) return;
+    hasSentCustomCardsViewEvent = true;
 
     const fareNames = (fares || [])
       .map(function (fare) {
@@ -54,11 +69,10 @@
     try {
       var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
       if (s && typeof s.tl === 'function') {
-        s.linkTrackVars = 'events,eVar82,eVar84';
+        s.linkTrackVars = 'events,eVar84';
         s.linkTrackEvents = 'event90';
         s.events = 'event90';
-        s.eVar82 = 'AT_tariff_injector_view_cards ' + payload.event_label;
-        s.eVar84 = 'TariffInjector';
+        s.eVar84 = 'AT_tariff_injector_view_cards';
         s.tl(true, 'o', 'target_activity_action');
       }
     } catch (e) {
@@ -67,7 +81,7 @@
   }
 
   function observarVisualizacaoCards(card, fares) {
-    if (!card || viewedCustomCards.has(card)) return;
+    if (!card || hasSentCustomCardsViewEvent) return;
 
     if (!('IntersectionObserver' in window)) {
       enviarTrackingVisualizacaoCards(card, fares);
@@ -477,6 +491,7 @@
     if (!isDesktopViewport()) return;
     try {
       const trips = data.data?.trips || data.trips || [];
+      const searchKey = gerarChaveDaBusca(trips);
       let foundData = false;
 
       trips.forEach(function (trip) {
@@ -504,6 +519,12 @@
       });
 
       if (foundData) {
+        if (searchKey && searchKey !== currentSearchTrackingKey) {
+          currentSearchTrackingKey = searchKey;
+          hasSentCustomCardsViewEvent = false;
+          debugLog('Nova busca detectada - tracking de visualizacao resetado', searchKey);
+        }
+
         if (!dadosCapturados) {
           aplicarEstilos();
           dadosCapturados = true;

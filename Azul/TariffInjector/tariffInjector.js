@@ -5,7 +5,8 @@
 
   let dadosCapturados = false;
   const MIN_DESKTOP_WIDTH = 1024;
-  const viewedCustomCards = new WeakSet();
+  let hasSentCustomCardsViewEvent = false;
+  let currentSearchTrackingKey = '';
 
   const DEBUG_MODE = false;
 
@@ -38,10 +39,24 @@
     return window.innerWidth >= MIN_DESKTOP_WIDTH;
   }
 
-  function enviarTrackingVisualizacaoCards(card, fares) {
-    if (!card || viewedCustomCards.has(card)) return;
+  function gerarChaveDaBusca(trips) {
+    const journeyKeys = [];
+    (trips || []).forEach(function (trip) {
+      (trip.journeys || []).forEach(function (journey) {
+        if (journey && journey.journeyKey) {
+          journeyKeys.push(journey.journeyKey);
+        }
+      });
+    });
 
-    viewedCustomCards.add(card);
+    if (!journeyKeys.length) return '';
+    journeyKeys.sort();
+    return journeyKeys.join('|');
+  }
+
+  function enviarTrackingVisualizacaoCards(card, fares) {
+    if (!card || hasSentCustomCardsViewEvent) return;
+    hasSentCustomCardsViewEvent = true;
 
     const fareNames = (fares || [])
       .map(function (fare) {
@@ -86,7 +101,7 @@
   }
 
   function observarVisualizacaoCards(card, fares) {
-    if (!card || viewedCustomCards.has(card)) return;
+    if (!card || hasSentCustomCardsViewEvent) return;
 
     if (!('IntersectionObserver' in window)) {
       enviarTrackingVisualizacaoCards(card, fares);
@@ -436,6 +451,7 @@ c        }
 
       const trips = data.data?.trips || data.trips || [];
       debugLog('Trips Encontradas', { total: trips.length, trips });
+      const searchKey = gerarChaveDaBusca(trips);
 
       let foundData = false;
       trips.forEach((trip, tripIndex) => {
@@ -470,6 +486,12 @@ c        }
       });
 
       if (foundData) {
+        if (searchKey && searchKey !== currentSearchTrackingKey) {
+          currentSearchTrackingKey = searchKey;
+          hasSentCustomCardsViewEvent = false;
+          debugLog('Nova busca detectada - tracking de visualizacao resetado', searchKey);
+        }
+
         if (!dadosCapturados) {
           aplicarEstilos();
           dadosCapturados = true;
