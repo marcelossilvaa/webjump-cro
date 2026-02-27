@@ -218,7 +218,7 @@
     return '' + '<div class="mdc-lp-tier-strip">' + createTierIconsHTML() + '</div>';
   }
 
-  function createPopupHTML(esimVolume) {
+  function createPopupHTML() {
     return (
       '<button id="' +
       BUTTON_ID +
@@ -242,9 +242,7 @@
       createImgurIconHTML('MR6da88', 'Icone eSIM') +
       '</div>' +
       '        <div><h3>eSIM Internacional</h3>' +
-      '        <p>Solicite seu eSIM com até <strong>' +
-      esimVolume +
-      '</strong> gratuitos para usar em suas viagens internacionais.</p></div>' +
+      '        <p>Solicite seu eSIM com até <strong>2GB</strong> gratuitos para usar em suas viagens internacionais.</p></div>' +
       '      </div>' +
       '      <a class="mdc-lp-card-btn mdc-lp-esim-btn" href="' +
       ESIM_LINK +
@@ -289,7 +287,7 @@
 
     var wrapper = document.createElement('div');
     wrapper.id = WRAPPER_ID;
-    wrapper.innerHTML = createPopupHTML(profile.esimVolume);
+    wrapper.innerHTML = createPopupHTML();
     document.body.appendChild(wrapper);
 
     var btn = document.getElementById(BUTTON_ID);

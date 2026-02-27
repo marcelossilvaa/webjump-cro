@@ -234,7 +234,7 @@
     return '' + '<div class="mdc-home-tier-strip">' + createTierIconsHTML() + '</div>';
   }
 
-  function createGeneralCardHTML(esimVolume) {
+  function createGeneralCardHTML() {
     return (
       '' +
       '<div class="mdc-home-main-card">' +
@@ -244,9 +244,7 @@
       createImgurIconHTML('MR6da88', 'Icone eSIM') +
       '</div>' +
       '    <div><h4 class="mdc-home-ft-title">eSIM Internacional</h4>' +
-      '    <p class="mdc-home-ft-desc">Agora você pode ter um eSIM com até <strong>' +
-      esimVolume +
-      '</strong> gratuitos para usar em suas viagens internacionais.</p></div>' +
+      '    <p class="mdc-home-ft-desc">Agora você pode ter um eSIM com até <strong>2GB</strong> gratuitos para usar em suas viagens internacionais.</p></div>' +
       '  </div>' +
       '  <div class="mdc-home-feature">' +
       '    <div class="mdc-home-ico">' +
@@ -279,7 +277,7 @@
   function createPopupHTML(profile) {
     var isUnique = profile.isUnique;
     var className = isUnique ? 'is-unique' : 'is-general';
-    var features = createGeneralCardHTML(profile.esimVolume);
+    var features = createGeneralCardHTML();
     var uniqueExtra = isUnique || profile.tier === 'diamante' ? createUniqueWhatsHTML() : '';
 
     return (
