@@ -187,14 +187,14 @@
       '.mdc-home-whats-ico{width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}' +
       '.mdc-home-whats-ico img{width:32px;height:32px;display:block;}' +
       '.mdc-home-whats-title{margin:0 0 10px 0;font-size:14px;line-height:20px;font-weight:700;}' +
-      '.mdc-home-whats-desc{margin:0;font-size:12px;line-height:12px;}' +
+      '.mdc-home-whats-desc{margin:0;font-size:12px;line-height:14px;}' +
       '.mdc-home-cta{margin-top:auto;height:45px;background:#008058;border-radius:8px;color:#fff;text-decoration:none;display:flex;align-items:center;justify-content:center;font-size:16px;transition:background .2s ease,transform .2s ease,box-shadow .2s ease;}' +
       '.mdc-home-cta:hover{background:#006E4B;transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,0,0,.18);}' +
       '@media (max-width:768px){' +
       '#' +
       BUTTON_ID +
-      '{right:16px;bottom:16px;width:82px;height:82px;}' +
-      '.mdc-home-popup{left:16px;right:16px;bottom:104px;width:auto;height:auto;max-height:78vh;overflow:auto;}' +
+      '{right:16px;bottom:16px;width:60px;height:60px;}' +
+      '.mdc-home-popup{left:16px;right:16px;bottom:88px;width:auto;height:auto;max-height:78vh;overflow:auto;}' +
       '.mdc-home-arrow{right:30px;bottom:-8px;width:24px;height:24px;}' +
       '}';
 
@@ -384,7 +384,13 @@
     });
   }
 
+  function isTargetHomePage() {
+    var url = window.location.href.split('?')[0].split('#')[0];
+    return url === 'https://www.voeazul.com.br/home/br/pt/home';
+  }
+
   function init() {
+    if (!isTargetHomePage()) return;
     injectPopup();
     if (!hasInteractedToday() && !wasShownThisSession()) {
       setTimeout(function () {
