@@ -243,17 +243,17 @@
       '    <div class="mdc-home-ico">' +
       createImgurIconHTML('MR6da88', 'Icone eSIM') +
       '</div>' +
-      '    <div><h4 class="mdc-home-ft-title">E-sim Internacional</h4>' +
-      '    <p class="mdc-home-ft-desc">Agora voce pode ganhar ate <strong>' +
+      '    <div><h4 class="mdc-home-ft-title">eSIM Internacional</h4>' +
+      '    <p class="mdc-home-ft-desc">Agora você pode ter um eSIM com até <strong>' +
       esimVolume +
-      '</strong> gratuitos de internet nos destinos internacionais da Azul no programa de fidelidade.</p></div>' +
+      '</strong> gratuitos para usar em suas viagens internacionais.</p></div>' +
       '  </div>' +
       '  <div class="mdc-home-feature">' +
       '    <div class="mdc-home-ico">' +
       createImgurIconHTML('qMWDHn9', 'Icone passagem cortesia') +
       '</div>' +
       '    <div><h4 class="mdc-home-ft-title">Passagem cortesia em Pontos e Pontos + Reais</h4>' +
-      '    <p class="mdc-home-ft-desc">As formas de pagamento mais aguardada estao de volta!</p></div>' +
+      '    <p class="mdc-home-ft-desc">As formas de pagamento mais aguardada estão de volta!</p></div>' +
       '  </div>' +
       '</div>'
     );
@@ -268,7 +268,7 @@
       createImgurIconHTML('o5Sf6GM', 'Icone WhatsApp') +
       '</div>' +
       '    <div>' +
-      '      <h4 class="mdc-home-whats-title">Novo canal de atendimento para o nivel Diamante Unique</h4>' +
+      '      <h4 class="mdc-home-whats-title">Novo canal de atendimento para o nível Diamante Unique</h4>' +
       '      <p class="mdc-home-whats-desc">Atendimento via WhatsApp, 24 horas por dia, 7 dias por semana, para receber um suporte completo.</p>' +
       '    </div>' +
       '  </div>' +

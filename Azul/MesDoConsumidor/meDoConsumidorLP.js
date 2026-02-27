@@ -12,7 +12,8 @@
 
   var ESIM_LINK = 'https://www.voeazul.com.br/home/br/pt/esim';
   var CORTESIA_LINK = 'https://www.voeazul.com.br/br/pt/programa-fidelidade/passagem-cortesia';
-  var BENEFICIOS_LINK = 'https://www.voeazul.com.br/br/pt/programa-fidelidade/conheca-os-beneficios';
+  var BENEFICIOS_LINK =
+    'https://www.voeazul.com.br/br/pt/programa-fidelidade/conheca-os-beneficios';
 
   function analyticsEvent(eventLabel, eventType) {
     if (!eventLabel) return;
@@ -240,14 +241,14 @@
       '        <div class="mdc-lp-ico">' +
       createImgurIconHTML('MR6da88', 'Icone eSIM') +
       '</div>' +
-      '        <div><h3>E-sim Internacional</h3>' +
-      '        <p>Chip internacional com dados (MBs/GBs) gratuitos. Seu nivel recebe <strong>' +
+      '        <div><h3>eSIM Internacional</h3>' +
+      '        <p>Solicite seu eSIM com até <strong>' +
       esimVolume +
-      '</strong> para usar nos destinos internacionais.</p></div>' +
+      '</strong> gratuitos para usar em suas viagens internacionais.</p></div>' +
       '      </div>' +
       '      <a class="mdc-lp-card-btn mdc-lp-esim-btn" href="' +
       ESIM_LINK +
-      '">Solicitar E-sim</a>' +
+      '">Solicitar eSIM</a>' +
       '    </div>' +
       '    <div class="mdc-lp-card">' +
       '      <div class="mdc-lp-card-head">' +
@@ -255,7 +256,7 @@
       createImgurIconHTML('qMWDHn9', 'Icone passagem cortesia') +
       '</div>' +
       '        <div><h3>Passagem cortesia em Pontos e Pontos + Reais</h3>' +
-      '        <p>As formas de pagamento mais aguardada estao de volta!</p></div>' +
+      '        <p>Até 4 trechos para clientes Diamante Unique, Diamante e clientes Cartão Azul Itaú Visa Infinite e Mastercard Skyline*</p></div>' +
       '      </div>' +
       '      <a class="mdc-lp-card-btn mdc-lp-beneficios-btn" href="' +
       CORTESIA_LINK +
