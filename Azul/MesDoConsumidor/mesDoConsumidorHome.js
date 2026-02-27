@@ -10,7 +10,7 @@
     SESSION_SHOWN: 'mdc_home_popup_session_shown',
   };
 
-  var CTA_LINK = 'https://www.voeazul.com.br/br/pt/programa-fidelidade/comunicado-novo-nivel';
+  var CTA_LINK = 'https://www.voeazul.com.br/br/pt/programa-fidelidade/conheca-os-beneficios';
 
   function analyticsEvent(eventLabel, eventType) {
     if (!eventLabel) return;

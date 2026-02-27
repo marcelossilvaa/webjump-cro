@@ -10,9 +10,9 @@
     SESSION_SHOWN: 'mdc_lp_popup_session_shown',
   };
 
-  var ESIM_LINK = 'https://www.voeazul.com.br/br/pt/programa-fidelidade/comunicado-novo-nivel';
-  var BENEFICIOS_LINK =
-    'https://www.voeazul.com.br/br/pt/programa-fidelidade/comunicado-novo-nivel';
+  var ESIM_LINK = 'https://www.voeazul.com.br/home/br/pt/esim';
+  var CORTESIA_LINK = 'https://www.voeazul.com.br/br/pt/programa-fidelidade/passagem-cortesia';
+  var BENEFICIOS_LINK = 'https://www.voeazul.com.br/br/pt/programa-fidelidade/conheca-os-beneficios';
 
   function analyticsEvent(eventLabel, eventType) {
     if (!eventLabel) return;
@@ -258,7 +258,7 @@
       '        <p>As formas de pagamento mais aguardada estao de volta!</p></div>' +
       '      </div>' +
       '      <a class="mdc-lp-card-btn mdc-lp-beneficios-btn" href="' +
-      BENEFICIOS_LINK +
+      CORTESIA_LINK +
       '">Saiba mais</a>' +
       '    </div>' +
       '  </div>' +
