@@ -161,7 +161,7 @@
       BUTTON_ID +
       ':hover{transform:translateY(-2px) scale(1.08) rotate(-3deg);filter:drop-shadow(0 8px 14px rgba(0,0,0,.3));animation:none;}' +
       '.mdc-home-popup{position:fixed;right:100px;bottom:24px;width:303px;background:#DFF2FE;border-radius:16px;color:#041E42;' +
-      'padding:24px;box-sizing:border-box;z-index:999999;opacity:0;visibility:hidden;pointer-events:none;' +
+      'padding:22px;box-sizing:border-box;z-index:999999;opacity:0;visibility:hidden;pointer-events:none;' +
       "transform:translateY(12px) scale(.96);transition:all .28s ease;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;display:flex;flex-direction:column;gap:16px;box-shadow:0 16px 40px rgba(4,30,66,.22);}" +
       '.mdc-home-popup.is-unique{height:725px;}' +
       '.mdc-home-popup.active{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0) scale(1);}' +
@@ -182,7 +182,7 @@
       '.mdc-home-ico img{width:32px;height:32px;display:block;}' +
       '.mdc-home-ft-title{margin:0 0 6px 0;font-size:16px;line-height:20px;font-weight:700;}' +
       '.mdc-home-ft-desc{margin:0;font-size:12px;line-height:14px;}' +
-      '.mdc-home-whats{background:#030734;border-radius:14px;padding:24px 16px;color:#fff;display:flex;flex-direction:column;gap:16px;}' +
+      '.mdc-home-whats{background:#030734;border-radius:14px;padding:16px;color:#fff;display:flex;flex-direction:column;gap:16px;}' +
       '.mdc-home-whats-row{display:flex;gap:16px;}' +
       '.mdc-home-whats-ico{width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}' +
       '.mdc-home-whats-ico img{width:32px;height:32px;display:block;}' +
@@ -280,7 +280,7 @@
     var isUnique = profile.isUnique;
     var className = isUnique ? 'is-unique' : 'is-general';
     var features = createGeneralCardHTML(profile.esimVolume);
-    var uniqueExtra = (isUnique || profile.tier === 'diamante') ? createUniqueWhatsHTML() : '';
+    var uniqueExtra = isUnique || profile.tier === 'diamante' ? createUniqueWhatsHTML() : '';
 
     return (
       '<button id="' +
