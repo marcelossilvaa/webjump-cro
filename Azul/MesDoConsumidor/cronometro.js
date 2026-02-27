@@ -57,26 +57,43 @@
       ".mdc-cronometro-btn{position:relative;overflow:hidden;}" +
       ".mdc-cronometro-overlay{position:absolute;inset:0;background:#0061A0;color:#fff;padding:0 24px;box-sizing:border-box;pointer-events:none;display:flex;align-items:center;}" +
       ".mdc-cronometro-content{width:100%;max-width:1300px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:24px;}" +
+      ".mdc-cronometro-left{display:flex;align-items:center;gap:22px;flex:1 1 auto;min-width:0;}" +
       ".mdc-cronometro-copy{max-width:520px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-style:normal;font-weight:700;font-size:48px;line-height:52px;color:#fff;}" +
+      ".mdc-cronometro-copy-highlight{color:#fff;}" +
+      ".mdc-cronometro-copy-rest{color:#fff;}" +
       ".mdc-cronometro-time{display:flex;align-items:flex-start;gap:18px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:700;font-size:105.429px;line-height:114px;color:#fff;white-space:nowrap;}" +
       ".mdc-cronometro-value{min-width:123px;text-align:right;}" +
       ".mdc-cronometro-sep{width:26px;text-align:center;}" +
       ".mdc-cronometro-badge{width:99.93px;height:103.64px;flex:0 0 99.93px;pointer-events:none;opacity:.95;}" +
       ".mdc-cronometro-badge img{width:100%;height:100%;display:block;object-fit:contain;}" +
+      "@media (max-width:1280px){" +
+      ".mdc-cronometro-overlay{padding:0 28px;}" +
+      ".mdc-cronometro-content{gap:12px;}" +
+      ".mdc-cronometro-left{gap:16px;}" +
+      ".mdc-cronometro-badge{width:72px;height:74px;flex-basis:72px;}" +
+      ".mdc-cronometro-copy{max-width:clamp(220px,31vw,420px);font-size:clamp(22px,2.7vw,34px);line-height:1.08;}" +
+      ".mdc-cronometro-time{font-size:clamp(56px,7.4vw,76px);line-height:1.05;gap:clamp(8px,1.1vw,14px);}" +
+      ".mdc-cronometro-value{min-width:clamp(72px,9.4vw,112px);}" +
+      ".mdc-cronometro-sep{width:clamp(12px,2vw,22px);}" +
+      "}" +
       "@media (max-width:1024px){" +
-      ".mdc-cronometro-overlay{padding:12px 18px;}" +
-      ".mdc-cronometro-content{justify-content:center;gap:12px;}" +
-      ".mdc-cronometro-copy{max-width:340px;font-size:24px;line-height:28px;text-align:left;}" +
+      ".mdc-cronometro-overlay{padding:18px 18px;}" +
+      ".mdc-cronometro-content{justify-content:space-between;gap:10px;}" +
+      ".mdc-cronometro-left{gap:14px;flex:1 1 52%;}" +
+      ".mdc-cronometro-copy{max-width:100%;font-size:24px;line-height:28px;text-align:left;}" +
       ".mdc-cronometro-time{font-size:64px;line-height:68px;gap:10px;}" +
       ".mdc-cronometro-value{min-width:74px;}" +
       ".mdc-cronometro-sep{width:18px;}" +
       ".mdc-cronometro-badge{width:72px;height:74px;flex-basis:72px;}" +
       "}" +
       "@media (max-width:640px){" +
-      ".mdc-cronometro-overlay{padding:10px 12px;}" +
-      ".mdc-cronometro-content{max-width:375px;display:grid;grid-template-columns:49.48px 1fr;grid-template-areas:'badge copy' 'time time';column-gap:12px;row-gap:10px;align-items:center;justify-items:center;}" +
-      ".mdc-cronometro-badge{grid-area:badge;width:49.48px;height:51.32px;flex-basis:49.48px;}" +
-      ".mdc-cronometro-copy{grid-area:copy;max-width:212px;font-size:19.177px;line-height:22px;color:#3DB1E2;text-align:left;justify-self:start;}" +
+      ".mdc-cronometro-overlay{padding:16px 12px;}" +
+      ".mdc-cronometro-content{max-width:375px;display:grid;grid-template-columns:1fr;grid-template-areas:'left' 'time';row-gap:10px;align-items:center;justify-items:center;}" +
+      ".mdc-cronometro-left{grid-area:left;gap:14px;justify-content:center;}" +
+      ".mdc-cronometro-badge{width:49.48px;height:51.32px;flex-basis:49.48px;}" +
+      ".mdc-cronometro-copy{max-width:212px;font-size:19.177px;line-height:22px;color:#fff;text-align:left;}" +
+      ".mdc-cronometro-copy-highlight{color:#3DB1E2;}" +
+      ".mdc-cronometro-copy-rest{color:#fff;}" +
       ".mdc-cronometro-time{grid-area:time;justify-content:center;font-size:60.3599px;line-height:65px;gap:8px;}" +
       ".mdc-cronometro-value{min-width:70.42px;}" +
       ".mdc-cronometro-sep{width:14.89px;}" +
@@ -93,8 +110,12 @@
     return (
       '<div class="mdc-cronometro-overlay" id="' + OVERLAY_ID + '">' +
       '  <div class="mdc-cronometro-content">' +
-      '    <div class="mdc-cronometro-badge">' + createBadgeIconHTML() + "</div>" +
-      '    <div class="mdc-cronometro-copy" id="' + MESSAGE_ID + '">Mas, atenção: a oferta é por tempo limitado!</div>' +
+      '    <div class="mdc-cronometro-left">' +
+      '      <div class="mdc-cronometro-badge">' + createBadgeIconHTML() + "</div>" +
+      '      <div class="mdc-cronometro-copy" id="' +
+      MESSAGE_ID +
+      '"><strong class="mdc-cronometro-copy-highlight">Mas, atenção:</strong> <span class="mdc-cronometro-copy-rest">a oferta é por tempo limitado!</span></div>' +
+      "    </div>" +
       '    <div class="mdc-cronometro-time">' +
       '      <span class="mdc-cronometro-value" id="' + HOURS_ID + '">00</span>' +
       '      <span class="mdc-cronometro-sep">:</span>' +
@@ -157,15 +178,13 @@
       hoursEl.textContent = "00";
       minutesEl.textContent = "00";
       secondsEl.textContent = "00";
-      messageEl.textContent = "Oferta encerrada";
+      messageEl.innerHTML =
+        '<strong class="mdc-cronometro-copy-highlight">Mas, atenção:</strong> <span class="mdc-cronometro-copy-rest">oferta encerrada.</span>';
       return;
     }
 
-    if (state.phase === "before") {
-      messageEl.textContent = "Mas, atenção: a oferta é por tempo limitado!";
-    } else {
-      messageEl.textContent = "Mas, atenção: a oferta é por tempo limitado!";
-    }
+    messageEl.innerHTML =
+      '<strong class="mdc-cronometro-copy-highlight">Mas, atenção:</strong> <span class="mdc-cronometro-copy-rest">a oferta é por tempo limitado!</span>';
 
     var diff = state.target.getTime() - now.getTime();
     if (diff < 0) diff = 0;
