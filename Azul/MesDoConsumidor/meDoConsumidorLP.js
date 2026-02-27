@@ -142,18 +142,16 @@
       "#" + BUTTON_ID + ":hover{transform:translateY(-2px) scale(1.08) rotate(-3deg);filter:drop-shadow(0 8px 14px rgba(0,0,0,.3));animation:none;}" +
       ".mdc-lp-popup{position:fixed;right:100px;bottom:24px;width:303px;height:736px;background:#DFF2FE;border-radius:16px;color:#041E42;" +
       "padding:24px 24px 40px;box-sizing:border-box;z-index:999999;opacity:0;visibility:hidden;pointer-events:none;" +
-      "transform:translateY(12px) scale(.96);transition:all .28s ease;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;display:flex;flex-direction:column;gap:16px;}" +
+      "transform:translateY(12px) scale(.96);transition:all .28s ease;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;display:flex;flex-direction:column;gap:16px;box-shadow:0 16px 40px rgba(4,30,66,.22);}" +
       ".mdc-lp-popup.active{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0) scale(1);}" +
       ".mdc-lp-arrow{position:absolute;right:-6px;bottom:40px;width:62px;height:62px;background:#DFF2FE;transform:rotate(45deg);z-index:-1;border-radius:4px;}" +
       ".mdc-lp-header{display:flex;justify-content:space-between;align-items:center;height:50px;}" +
       ".mdc-lp-badge{background:#CF527A;border-radius:999px;padding:6px 12px;font-weight:700;font-size:14px;line-height:16px;letter-spacing:.3px;color:#fff;}" +
       ".mdc-lp-close{border:none;background:transparent;color:#041E42;font-size:24px;line-height:1;cursor:pointer;}" +
       ".mdc-lp-title{margin:0;font-size:28px;line-height:28px;font-weight:700;text-transform:capitalize;text-align:center;}" +
-      ".mdc-lp-divider{height:1px;background:rgba(4,30,66,.32);}" +
       ".mdc-lp-tier-strip{display:flex;justify-content:center;gap:8px;align-items:center;width:100%;padding:8px 0;border-top:1px solid rgba(4,30,66,.32);border-bottom:1px solid rgba(4,30,66,.32);}" +
       ".mdc-lp-tier-item{width:32px;height:32px;display:flex;align-items:center;justify-content:center;}" +
       ".mdc-lp-tier-item svg{width:32px;height:32px;display:block;}" +
-      ".mdc-lp-copy{margin:0;text-align:center;font-size:14px;line-height:16px;font-weight:300;}" +
       ".mdc-lp-cards{display:flex;flex-direction:column;gap:12px;}" +
       ".mdc-lp-card{background:rgba(4,30,66,.05);border:.8px solid rgba(4,30,66,.1);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:14px;}" +
       ".mdc-lp-card-head{display:flex;gap:8px;}" +
@@ -161,7 +159,8 @@
       ".mdc-lp-ico img{width:32px;height:32px;display:block;}" +
       ".mdc-lp-card h3{margin:0;font-size:16px;line-height:20px;font-weight:700;}" +
       ".mdc-lp-card p{margin:8px 0 0 0;font-size:12px;line-height:12px;opacity:.8;}" +
-      ".mdc-lp-card-btn{height:41px;border-radius:10px;background:#008058;color:#fff;text-decoration:none;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;}" +
+      ".mdc-lp-card-btn{height:41px;border-radius:10px;background:#008058;color:#fff;text-decoration:none;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;transition:background .2s ease,transform .2s ease,box-shadow .2s ease;}" +
+      ".mdc-lp-card-btn:hover{background:#006E4B;transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,0,0,.18);}" +
       "@media (max-width:768px){" +
       "#" + BUTTON_ID + "{right:16px;bottom:16px;width:82px;height:82px;}" +
       ".mdc-lp-popup{left:16px;right:16px;bottom:104px;width:auto;height:auto;max-height:78vh;overflow:auto;}" +
@@ -200,11 +199,7 @@
       '    <button class="mdc-lp-close" aria-label="Fechar popup">&times;</button>' +
       "  </div>" +
       '  <h2 class="mdc-lp-title">novos beneficios</h2>' +
-      '  <div class="mdc-lp-divider"></div>' +
       createTierStripHTML() +
-      '  <div class="mdc-lp-divider"></div>' +
-      '  <p class="mdc-lp-copy">Confira os novos beneficios do seu nivel</p>' +
-      '  <div class="mdc-lp-divider"></div>' +
       '  <div class="mdc-lp-cards">' +
       '    <div class="mdc-lp-card">' +
       '      <div class="mdc-lp-card-head">' +
