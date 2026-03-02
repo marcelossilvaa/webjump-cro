@@ -1,8 +1,22 @@
 // CRONOMETRO MES DO CONSUMIDOR
 (function () {
   // Formato: YYYY-MM-DD HH:MM:SS (horario de Brasilia)
-  var START_AT = "2026-03-02 00:00:00";
-  var END_AT = "2026-03-06 23:59:00";
+  var DEFAULT_WINDOW = {
+    startAt: "2026-03-02 00:00:00",
+    endAt: "2026-03-06 23:59:00",
+  };
+  var COUNTDOWN_WINDOWS_BY_URL = [
+    {
+      match: "livelo",
+      startAt: "2026-03-02 00:00:00",
+      endAt: "2026-03-05 23:59:00",
+    },
+    {
+      match: "bancos",
+      startAt: "2026-03-02 00:00:00",
+      endAt: "2026-03-06 23:59:00",
+    },
+  ];
 
   var STYLE_ID = "mdc-cronometro-styles";
   var OVERLAY_ID = "mdc-cronometro-overlay";
@@ -24,6 +38,17 @@
 
   function getNow() {
     return new Date();
+  }
+
+  function getCountdownWindow() {
+    var href = (window.location && window.location.href ? window.location.href : "").toLowerCase();
+    for (var i = 0; i < COUNTDOWN_WINDOWS_BY_URL.length; i++) {
+      var config = COUNTDOWN_WINDOWS_BY_URL[i];
+      if (href.indexOf(config.match) !== -1) {
+        return config;
+      }
+    }
+    return DEFAULT_WINDOW;
   }
 
   function pad(value) {
@@ -149,8 +174,9 @@
 
   function computeCountdownState() {
     var now = getNow();
-    var start = createBrasiliaDate(START_AT);
-    var end = createBrasiliaDate(END_AT);
+    var countdownWindow = getCountdownWindow();
+    var start = createBrasiliaDate(countdownWindow.startAt);
+    var end = createBrasiliaDate(countdownWindow.endAt);
 
     if (now < start) {
       return { phase: "before", target: start };
