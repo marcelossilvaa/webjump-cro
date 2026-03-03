@@ -402,7 +402,7 @@
 
   function isTargetLPPage() {
     var url = window.location.href.split('?')[0].split('#')[0];
-    return url === 'https://www.voeazul.com.br/br/pt/sua-viagem';
+    return url === 'https://www.voeazul.com.br/br/pt/programa-fidelidade/conheca-os-beneficios';
   }
 
   function init() {
