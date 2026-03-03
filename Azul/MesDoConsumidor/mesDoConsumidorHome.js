@@ -241,14 +241,14 @@
       '  <h3 class="mdc-home-main-title">Pode comemorar!</h3>' +
       '  <div class="mdc-home-feature">' +
       '    <div class="mdc-home-ico">' +
-      createImgurIconHTML('MR6da88', 'Icone eSIM') +
+      createImgurIconHTML('qMWDHn9', 'Icone eSIM') +
       '</div>' +
       '    <div><h4 class="mdc-home-ft-title">eSIM Internacional</h4>' +
       '    <p class="mdc-home-ft-desc">Agora você pode ter um eSIM com até <strong>2GB</strong> gratuitos para usar em suas viagens internacionais.</p></div>' +
       '  </div>' +
       '  <div class="mdc-home-feature">' +
       '    <div class="mdc-home-ico">' +
-      createImgurIconHTML('qMWDHn9', 'Icone passagem cortesia') +
+      createImgurIconHTML('MR6da88', 'Icone passagem cortesia') +
       '</div>' +
       '    <div><h4 class="mdc-home-ft-title">Passagem cortesia em Pontos e Pontos + Reais</h4>' +
       '    <p class="mdc-home-ft-desc">As formas de pagamento mais aguardada estão de volta!</p></div>' +

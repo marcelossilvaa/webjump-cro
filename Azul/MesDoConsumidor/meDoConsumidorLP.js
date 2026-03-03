@@ -1,4 +1,4 @@
-// POPUP MES DO CONSUMIDOR - LP
+// POPUP MES DO CONSUMIDOR - LP  --
 (function () {
   var POPUP_ID = 'mdc-lp-popup';
   var BUTTON_ID = 'mdc-lp-floating-btn';
@@ -14,6 +14,7 @@
   var CORTESIA_LINK = 'https://www.voeazul.com.br/br/pt/programa-fidelidade/passagem-cortesia';
   var BENEFICIOS_LINK =
     'https://www.voeazul.com.br/br/pt/programa-fidelidade/conheca-os-beneficios';
+  var WHATSAPP_LINK = 'https://wa.me/551146221016';
 
   function analyticsEvent(eventLabel, eventType) {
     if (!eventLabel) return;
@@ -174,6 +175,22 @@
       '.mdc-lp-card p{margin:8px 0 0 0;font-size:12px;line-height:14px;opacity:.8;}' +
       '.mdc-lp-card-btn{height:41px;border-radius:10px;background:#008058;color:#fff;text-decoration:none;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;transition:background .2s ease,transform .2s ease,box-shadow .2s ease;}' +
       '.mdc-lp-card-btn:hover{background:#006E4B;transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,0,0,.18);}' +
+      '.mdc-lp-whatsapp{background:#030734;border-radius:14px;padding:24px 16px;display:flex;flex-direction:column;gap:16px;color:#fff;}' +
+      '.mdc-lp-whatsapp-row{display:flex;gap:16px;align-items:flex-start;}' +
+      '.mdc-lp-whatsapp-ico{width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}' +
+      '.mdc-lp-whatsapp-btn-main .mdc-lp-whatsapp-ico img{width:20px!important;height:20px!important;display:block;}' +
+      '.mdc-lp-whatsapp-btn .mdc-lp-whatsapp-ico{width:16px;height:16px;}' +
+      '.mdc-lp-whatsapp-btn .mdc-lp-whatsapp-ico img{width:16px;height:16px;}' +
+      '.mdc-lp-whatsapp-title{margin:0 0 10px 0;font-size:14px;line-height:17px;font-weight:700;letter-spacing:-0.02em;}' +
+      '.mdc-lp-whatsapp-desc{margin:0;font-size:12px;line-height:12px;letter-spacing:-0.02em;color:#fff;}' +
+      '.mdc-lp-whatsapp-btn{height:45px;background:#008058;border-radius:8px;color:#fff;text-decoration:none;padding:13px 17px;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:background .2s ease,transform .2s ease,box-shadow .2s ease;}' +
+      '.mdc-lp-whatsapp-btn:hover{background:#006E4B;transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,0,0,.18);}' +
+      '.mdc-lp-whatsapp-btn-main{display:flex;align-items:center;gap:15px;}' +
+      '.mdc-lp-whatsapp-btn-text{display:flex;flex-direction:column;gap:8px;}' +
+      '.mdc-lp-whatsapp-btn-small{font-size:10px;line-height:10px;letter-spacing:-0.02em;}' +
+      '.mdc-lp-whatsapp-btn-phone{font-size:14px;line-height:14px;font-weight:700;letter-spacing:-0.02em;}' +
+      '.mdc-lp-whatsapp-btn-ext{width:24px;height:24px;display:flex;align-items:center;justify-content:center;}' +
+      '.mdc-lp-whatsapp-btn-ext img{width:24px;height:24px;display:block;object-fit:contain;}' +
       '@media (max-width:768px){' +
       '#' +
       BUTTON_ID +
@@ -236,10 +253,10 @@
       '  <h2 class="mdc-lp-title">novos beneficios</h2>' +
       createTierStripHTML() +
       '  <div class="mdc-lp-cards">' +
-      '    <div class="mdc-lp-card">' +
+      '    <div class="mdc-lp-card mdc-lp-card--esim">' +
       '      <div class="mdc-lp-card-head">' +
       '        <div class="mdc-lp-ico">' +
-      createImgurIconHTML('MR6da88', 'Icone eSIM') +
+      createImgurIconHTML('qMWDHn9', 'Icone eSIM') +
       '</div>' +
       '        <div><h3>eSIM Internacional</h3>' +
       '        <p>Solicite seu eSIM com até <strong>2GB</strong> gratuitos para usar em suas viagens internacionais.</p></div>' +
@@ -248,10 +265,10 @@
       ESIM_LINK +
       '">Solicitar eSIM</a>' +
       '    </div>' +
-      '    <div class="mdc-lp-card">' +
+      '    <div class="mdc-lp-card mdc-lp-card--cortesia">' +
       '      <div class="mdc-lp-card-head">' +
       '        <div class="mdc-lp-ico">' +
-      createImgurIconHTML('qMWDHn9', 'Icone passagem cortesia') +
+      createImgurIconHTML('MR6da88', 'Icone passagem cortesia') +
       '</div>' +
       '        <div><h3>Passagem cortesia em Pontos e Pontos + Reais</h3>' +
       '        <p>Até 4 trechos para clientes Diamante Unique, Diamante e clientes Cartão Azul Itaú Visa Infinite e Mastercard Skyline*</p></div>' +
@@ -260,6 +277,33 @@
       CORTESIA_LINK +
       '">Saiba mais</a>' +
       '    </div>' +
+      '  </div>' +
+      '  <div class="mdc-lp-whatsapp">' +
+      '    <div class="mdc-lp-whatsapp-row">' +
+      '      <div class="mdc-lp-whatsapp-ico">' +
+      createImgurIconHTML('o5Sf6GM', 'Icone WhatsApp') +
+      '</div>' +
+      '      <div>' +
+      '        <h4 class="mdc-lp-whatsapp-title">Novo canal de atendimento para clientes do nível Diamante Unique</h4>' +
+      '        <p class="mdc-lp-whatsapp-desc">Atendimento via WhatsApp, 24 horas por dia, 7 dias por semana, para receber um suporte completo no telefone:</p>' +
+      '      </div>' +
+      '    </div>' +
+      '    <a class="mdc-lp-whatsapp-btn mdc-lp-whatsapp-link" href="' +
+      WHATSAPP_LINK +
+      '" target="_blank" rel="noopener noreferrer">' +
+      '      <span class="mdc-lp-whatsapp-btn-main">' +
+      '        <span class="mdc-lp-whatsapp-ico">' +
+      createImgurIconHTML('6FRi902', 'Icone WhatsApp Botao') +
+      '</span>' +
+      '        <span class="mdc-lp-whatsapp-btn-text">' +
+      '          <span class="mdc-lp-whatsapp-btn-small">Enviar mensagem</span>' +
+      '          <span class="mdc-lp-whatsapp-btn-phone">(11) 4622-1016</span>' +
+      '        </span>' +
+      '      </span>' +
+      '      <span class="mdc-lp-whatsapp-btn-ext">' +
+      createImgurIconHTML('e4qpJ0m', 'Abrir em nova aba') +
+      '</span>' +
+      '    </a>' +
       '  </div>' +
       '</div>'
     );
@@ -295,6 +339,7 @@
     var closeBtn = popup ? popup.querySelector('.mdc-lp-close') : null;
     var esimBtn = popup ? popup.querySelector('.mdc-lp-esim-btn') : null;
     var beneficiosBtn = popup ? popup.querySelector('.mdc-lp-beneficios-btn') : null;
+    var whatsappBtn = popup ? popup.querySelector('.mdc-lp-whatsapp-link') : null;
 
     if (btn) {
       btn.classList.add('visible');
@@ -334,6 +379,13 @@
       });
     }
 
+    if (whatsappBtn) {
+      whatsappBtn.addEventListener('click', function () {
+        analyticsEvent('WhatsApp', 'clique');
+        markInteraction();
+      });
+    }
+
     document.addEventListener('click', function (e) {
       if (!popup || !btn) return;
       if (
@@ -350,7 +402,7 @@
 
   function isTargetLPPage() {
     var url = window.location.href.split('?')[0].split('#')[0];
-    return url === 'https://www.voeazul.com.br/br/pt/programa-fidelidade/conheca-os-beneficios';
+    return url === 'https://www.voeazul.com.br/br/pt/sua-viagem';
   }
 
   function init() {
