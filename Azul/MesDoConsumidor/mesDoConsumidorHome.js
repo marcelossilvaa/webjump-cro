@@ -152,7 +152,7 @@
       '#' +
       BUTTON_ID +
       '{position:fixed;right:22px;bottom:39px;width:60px;height:60px;border-radius:50%;display:none;' +
-      'align-items:center;justify-content:center;border:none;cursor:pointer;background:#DFF2FE;z-index:999998;' +
+      'align-items:center;justify-content:center;border:none;cursor:pointer;background:#DFF2FE;z-index:5;' +
       'filter:drop-shadow(0 4px 4px rgba(0,0,0,.25));transition:transform .24s ease, filter .24s ease;animation:mdcFloatPulse 2.2s infinite;}' +
       '#' +
       BUTTON_ID +

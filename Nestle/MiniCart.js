@@ -527,6 +527,7 @@
         // Detectar acoes que modificam o carrinho
         if (
           urlString.indexOf('/checkout/cart/') !== -1 ||
+          urlString.indexOf('/checkout/sidebar/') !== -1 ||
           (urlString.indexOf('/rest/') !== -1 && urlString.indexOf('cart') !== -1)
         ) {
           // Verificar se a requisicao foi bem sucedida
@@ -584,6 +585,7 @@
         // Verificar se e uma resposta do carrinho
         if (
           urlString.indexOf('/checkout/cart/') !== -1 ||
+          urlString.indexOf('/checkout/sidebar/') !== -1 ||
           urlString.indexOf('sections=cart') !== -1
         ) {
           // Verificar se a requisicao foi bem sucedida
@@ -1064,6 +1066,93 @@
     FN_utils.saveRecurringItems(recurringMap);
   }
 
+  // Tenta atualizar quantidade usando os controles nativos do Magento
+  function FN_tryNativeQuantityUpdate(itemId, newQty, delta) {
+    var nativeInput =
+      document.querySelector('#cart-' + itemId + '-qty') ||
+      document.querySelector('input[name="cart[' + itemId + '][qty]"]') ||
+      document.querySelector(
+        '.qty-wrapper[data-role="' + itemId + '"] input[data-role="cart-item-qty"]',
+      );
+
+    if (!nativeInput) {
+      console.log('[FN MiniCart] Controle nativo de qty nao encontrado para item ' + itemId);
+      return false;
+    }
+
+    // Em +/- tentamos clicar no mesmo controle nativo do site
+    if (delta === 1 || delta === -1) {
+      var wrapper =
+        nativeInput.closest('.qty-wrapper') ||
+        document.querySelector('.qty-wrapper[data-role="' + itemId + '"]');
+      if (wrapper) {
+        var actionSelector = delta > 0 ? '.qty-action.plus' : '.qty-action.minus';
+        var actionButton = wrapper.querySelector(actionSelector);
+        if (actionButton) {
+          console.log('[FN MiniCart] Atualizando qty via clique nativo (' + actionSelector + ')');
+          actionButton.click();
+          return true;
+        }
+      }
+    }
+
+    // Fallback nativo: ajustar valor e disparar eventos esperados pelo Magento
+    nativeInput.value = String(newQty);
+    nativeInput.setAttribute('value', String(newQty));
+    nativeInput.setAttribute('data-item-qty', String(newQty));
+    nativeInput.dispatchEvent(new Event('input', { bubbles: true }));
+    nativeInput.dispatchEvent(new Event('change', { bubbles: true }));
+    nativeInput.dispatchEvent(new Event('blur', { bubbles: true }));
+    console.log('[FN MiniCart] Atualizando qty via eventos no input nativo');
+    return true;
+  }
+
+  // Sincroniza quantidade no backend usando fluxo de minicart do Magento
+  function FN_syncQuantityWithServer(itemId, newQty) {
+    var formKey = FN_getFormKey();
+    var sidebarData = new FormData();
+    sidebarData.append('item_id', itemId);
+    sidebarData.append('item_qty', newQty);
+    if (formKey) {
+      sidebarData.append('form_key', formKey);
+    }
+
+    // Priorizar endpoint do sidebar (mesmo dominio do minicart nativo)
+    fetch('/checkout/sidebar/updateItemQty/', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body: sidebarData,
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error('Sidebar qty falhou: ' + response.status);
+        }
+        console.log('[FN MiniCart] Quantidade atualizada via /checkout/sidebar/updateItemQty/');
+      })
+      .catch(function () {
+        console.log('[FN MiniCart] Sidebar falhou, tentando /checkout/cart/updateItemQty/');
+        // Fallback para endpoint legado já usado no experimento
+        var formData = new FormData();
+        formData.append('item_id', itemId);
+        formData.append('item_qty', newQty);
+
+        fetch('/checkout/cart/updateItemQty/', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: formData,
+        }).catch(function (error) {
+          console.log('[FN MiniCart] Erro ao atualizar quantidade: ' + error.message);
+          FN_updateQuantityAlternative(itemId, newQty);
+        });
+      });
+  }
+
   // Funcao para definir quantidade especifica de um item
   function FN_setQuantity(itemId, newQty) {
     if (!FN_state.cartData || !FN_state.cartData.items) return;
@@ -1120,36 +1209,13 @@
     // Re-renderizar com os dados atualizados localmente
     FN_render(FN_state.cartData);
 
-    // Chamar API do Magento para atualizar quantidade (em background)
-    var formData = new FormData();
-    formData.append('item_id', itemId);
-    formData.append('item_qty', newQty);
+    // Tentar primeiro o mecanismo nativo do Magento para manter fluxo oficial
+    if (FN_tryNativeQuantityUpdate(itemId, newQty, null)) {
+      return;
+    }
 
-    fetch('/checkout/cart/updateItemQty/', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-      },
-      body: formData,
-    })
-      .then(function (response) {
-        // Buscar dados atualizados da API para sincronizar
-        // Mas NÃO invalidar o cache local antes
-        setTimeout(function () {
-          FN_fetchCartData(function (data) {
-            // Só re-renderizar se o carrinho ainda estiver aberto
-            var root = document.getElementById(FN_CONFIG.ROOT_ID);
-            if (data && root && root.classList.contains('FN-open')) {
-              FN_render(data);
-            }
-          });
-        }, 500);
-      })
-      .catch(function (error) {
-        console.log('[FN MiniCart] Erro ao atualizar quantidade: ' + error.message);
-        FN_updateQuantityAlternative(itemId, newQty);
-      });
+    // Fallback: sincronizar diretamente via endpoints de update
+    FN_syncQuantityWithServer(itemId, newQty);
   }
 
   // Funcao para atualizar quantidade de um item
@@ -1238,36 +1304,13 @@
       }
     }
 
-    // Chamar API do Magento para atualizar quantidade (em background)
-    var formData = new FormData();
-    formData.append('item_id', itemId);
-    formData.append('item_qty', newQty);
+    // Tentar primeiro o mecanismo nativo do Magento para manter fluxo oficial
+    if (FN_tryNativeQuantityUpdate(itemId, newQty, delta)) {
+      return;
+    }
 
-    fetch('/checkout/cart/updateItemQty/', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-      },
-      body: formData,
-    })
-      .then(function (response) {
-        // Buscar dados atualizados da API para sincronizar após um delay
-        setTimeout(function () {
-          FN_fetchCartData(function (data) {
-            // Só re-renderizar se o carrinho ainda estiver aberto
-            var root = document.getElementById(FN_CONFIG.ROOT_ID);
-            if (data && root && root.classList.contains('FN-open')) {
-              FN_render(data);
-            }
-          });
-        }, 500);
-      })
-      .catch(function (error) {
-        console.log('[FN MiniCart] Erro ao atualizar quantidade: ' + error.message);
-        // Tentar metodo alternativo via URL
-        FN_updateQuantityAlternative(itemId, newQty);
-      });
+    // Fallback: sincronizar diretamente via endpoints de update
+    FN_syncQuantityWithServer(itemId, newQty);
   }
 
   // Metodo alternativo para atualizar quantidade (via form post)
