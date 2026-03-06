@@ -2,6 +2,7 @@
   // ===== JANELA DA CAMPANHA: 09/03/2026 00:00 até 11/03/2026 23:59 =====
   const campaignStartMs = new Date(2026, 2, 6, 0, 0, 0).getTime();
   const campaignEndMs = new Date(2026, 2, 11, 23, 59, 0).getTime();
+  const ctaUrl = 'https://www.itau.com.br/pontos-e-cashback#section-10';
 
   // ===== TIPO DO MODAL: 'inactivity' ou 'exit' =====
   let currentModalType = null;
@@ -10,6 +11,23 @@
   let stylesInjected = false;
   let triggersInitialized = false;
   let elems = { days: null, hours: null, minutes: null, seconds: null };
+
+  function analyticsEvent(eventLabel, eventType) {
+    if (!eventLabel) return;
+    var labelEvent = 'AT_MesDoConsumidorLP_ModalItau_' + eventType + ' ' + eventLabel;
+
+    (function () {
+      var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+      if (!s || typeof s.tl !== 'function') return;
+
+      s.linkTrackVars = 'events,eVar82,eVar84';
+      s.linkTrackEvents = 'event90';
+      s.events = 'event90';
+      s.eVar82 = labelEvent;
+      s.eVar84 = 'AT_MesDoConsumidorLP_ModalItau';
+      s.tl(true, 'o', 'target_activity_action');
+    })();
+  }
 
   const selectors = {
     days: '.modalInjected__countdown__data[type="days"] .modalInjected__countdown__data__number',
@@ -40,11 +58,11 @@
     if (nowMs >= campaignEndMs) return;
     if (triggersInitialized) return;
 
-    // Inatividade: 50 segundos sem interacao
+    // Inatividade: 50 segundos sem interação
     setupInactivityTrigger();
-    // Intencao de saida: mouse sai pelo topo da pagina
+    // Intenção de saída: mouse sai pelo topo da página
     setupExitIntentTrigger();
-    // Saida: clique no logo Azul
+    // Saída: clique no logo Azul
     setupExitTrigger();
     triggersInitialized = true;
   }
@@ -102,7 +120,7 @@
       '<path d="M9.99996 18.3333C14.6023 18.3333 18.3333 14.6024 18.3333 10C18.3333 5.39763 14.6023 1.66667 9.99996 1.66667C5.39759 1.66667 1.66663 5.39763 1.66663 10C1.66663 14.6024 5.39759 18.3333 9.99996 18.3333Z" stroke="white" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>' +
       '<path d="M10 5V10L13.3333 11.6667" stroke="white" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/>' +
       '</svg>' +
-      'Promocao encerra em:' +
+      'Promoção encerra em:' +
       '</h3>' +
       '<div class="modalInjected__countdown__time">' +
       '<div class="modalInjected__countdown__data" type="days">' +
@@ -149,7 +167,7 @@
       '<path d="M0 12C0 5.37258 5.37258 0 12 0C18.6274 0 24 5.37258 24 12C24 18.6274 18.6274 24 12 24C5.37258 24 0 18.6274 0 12Z" fill="#041E42"/>' +
       '<path d="M6.0459 8.95312C6.0459 8.05534 6.24186 7.38997 6.63379 6.95703C7.03027 6.52409 7.56576 6.30762 8.24023 6.30762C8.9375 6.30762 9.4821 6.52409 9.87402 6.95703C10.2705 7.38542 10.4688 8.05078 10.4688 8.95312C10.4688 9.85091 10.2705 10.5163 9.87402 10.9492C9.4821 11.3822 8.94889 11.5986 8.27441 11.5986C7.57715 11.5986 7.03027 11.3844 6.63379 10.9561C6.24186 10.5231 6.0459 9.85547 6.0459 8.95312ZM7.54297 8.93945C7.54297 9.59115 7.61816 10.0286 7.76855 10.252C7.88249 10.416 8.03971 10.498 8.24023 10.498C8.44531 10.498 8.60482 10.416 8.71875 10.252C8.86458 10.0286 8.9375 9.59115 8.9375 8.93945C8.9375 8.28776 8.86458 7.85254 8.71875 7.63379C8.60482 7.46517 8.44531 7.38086 8.24023 7.38086C8.03971 7.38086 7.88249 7.46289 7.76855 7.62695C7.61816 7.85026 7.54297 8.28776 7.54297 8.93945ZM9.70312 16.8828H8.28125L13.6201 6.30762H15.001L9.70312 16.8828ZM12.8066 14.251C12.8066 13.3532 13.0026 12.6878 13.3945 12.2549C13.791 11.8219 14.3311 11.6055 15.0146 11.6055C15.7028 11.6055 16.2428 11.8219 16.6348 12.2549C17.0312 12.6878 17.2295 13.3532 17.2295 14.251C17.2295 15.1533 17.0312 15.821 16.6348 16.2539C16.2428 16.6868 15.7096 16.9033 15.0352 16.9033C14.3379 16.9033 13.791 16.6868 13.3945 16.2539C13.0026 15.821 12.8066 15.1533 12.8066 14.251ZM14.3037 14.2441C14.3037 14.8958 14.3789 15.3311 14.5293 15.5498C14.6432 15.7184 14.8005 15.8027 15.001 15.8027C15.2061 15.8027 15.3633 15.7207 15.4727 15.5566C15.623 15.3333 15.6982 14.8958 15.6982 14.2441C15.6982 13.5924 15.6253 13.1549 15.4795 12.9316C15.3656 12.7676 15.2061 12.6855 15.001 12.6855C14.7959 12.6855 14.6387 12.7676 14.5293 12.9316C14.3789 13.1549 14.3037 13.5924 14.3037 14.2441Z" fill="white"/>' +
       '</svg>' +
-      '<span>Ate <b>133% de bonus</b> exclusivo para assinantes <b>Clube Azul</b> - <a href="https://www.voeazul.com.br/br/pt/programa-fidelidade/clube-azul" target="_blank"><u>Faça parte</u></a> e aproveite beneficios exclusivos.</span>' +
+      '<span>Até <b>130% de bônus</b> exclusivo para assinantes <b>Clube Azul</b> - <a href="https://www.voeazul.com.br/br/pt/programa-fidelidade/clube-azul" target="_blank"><u>Faça parte</u></a> e aproveite benefícios exclusivos.</span>' +
       '</li>' +
       '</ul>' +
       '<button class="modalInjected__cta">APROVEITAR OFERTAS AGORA</button>' +
@@ -157,7 +175,7 @@
       '</div>' +
       '</div>';
 
-    // Define titulo e texto do botao dismiss conforme o tipo do modal
+    // Define título e texto do botão dismiss conforme o tipo do modal
     const titleEl = container.querySelector('.modalInjected__title');
     const dismissEl = container.querySelector('.modalInjected__dismiss');
 
@@ -166,7 +184,7 @@
         'N\u00E3o saia ainda :(<br><span style="font-size:24px;font-weight:700;line-height:32px;">Seus pontos podem render mais</span>';
       dismissEl.textContent = 'Sair';
     } else {
-      titleEl.textContent = 'Ultima chance de multiplicar seus pontos';
+      titleEl.textContent = 'Última chance de multiplicar seus pontos';
       dismissEl.textContent = '';
     }
 
@@ -174,7 +192,7 @@
   }
 
   // ===== MOSTRAR MODAL =====
-  function showModal(type) {
+  function showModal(type, triggerSource) {
     if (Date.now() >= campaignEndMs) {
       return;
     }
@@ -224,6 +242,7 @@
 
     // Mostrar
     modalEl.classList.add('active');
+    analyticsEvent((triggerSource || 'unknown') + '_' + type, 'ModalOpen');
 
     // Handlers dos botoes
     buttonsHandler();
@@ -240,7 +259,7 @@
       clearTimeout(inactiveTimer);
       inactiveTimer = setTimeout(function () {
         triggered = true;
-        showModal('inactivity');
+        showModal('inactivity', 'inactivity');
         removeListeners();
       }, INACTIVE_TIME);
     }
@@ -264,7 +283,7 @@
   function setupExitIntentTrigger() {
     function onExitIntent(e) {
       if (e.clientY <= 0) {
-        showModal('exit');
+        showModal('exit', 'exit_intent');
         document.removeEventListener('mouseleave', onExitIntent);
       }
     }
@@ -287,7 +306,7 @@
         e.stopPropagation();
         e.stopImmediatePropagation();
         logoTriggered = true;
-        showModal('exit');
+        showModal('exit', 'logo_click');
       }
     }
     document.addEventListener('click', onLogoClick, true);
@@ -304,6 +323,7 @@
       if (elems.hours) elems.hours.textContent = '00';
       if (elems.minutes) elems.minutes.textContent = '00';
       if (elems.seconds) elems.seconds.textContent = '00';
+      analyticsEvent('campaign_end_' + (currentModalType || 'unknown'), 'ModalAutoClose');
       closeModal();
       stopTick();
       return false;
@@ -369,27 +389,25 @@
     const dismissButton = document.querySelector('.modalInjected__dismiss');
     if (dismissButton) {
       dismissButton.addEventListener('click', function () {
-        // Se for modal de exit, redirecionar para a home
-        if (currentModalType === 'exit') {
-          closeModal(function () {
-            window.location.href = 'https://www.voeazul.com.br/home/br/pt/home';
-          });
-          return;
-        }
+        analyticsEvent('dismiss_' + (currentModalType || 'unknown'), 'ModalClose');
         closeModal();
       });
     }
     const closeButton = document.querySelector('.modalInjected__close');
     if (closeButton) {
       closeButton.addEventListener('click', function () {
+        analyticsEvent('close_x_' + (currentModalType || 'unknown'), 'ModalClose');
         closeModal();
       });
     }
-    // CTA "Aproveitar ofertas agora" - fecha o modal e mantem na pagina
+    // CTA "Aproveitar ofertas agora" - fecha o modal e redireciona
     const ctaButton = document.querySelector('.modalInjected__cta');
     if (ctaButton) {
       ctaButton.addEventListener('click', function () {
-        closeModal();
+        analyticsEvent('cta_' + (currentModalType || 'unknown'), 'ModalCTA');
+        closeModal(function () {
+          window.location.href = ctaUrl;
+        });
       });
     }
   }
