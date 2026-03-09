@@ -2,13 +2,13 @@
 (function () {
   // Formato: YYYY-MM-DD HH:MM:SS (horario de Brasilia)
   var DEFAULT_WINDOW = {
-    startAt: '2026-03-06 00:00:00',
+    startAt: '2026-03-09 00:00:00',
     endAt: '2026-03-15 23:59:00',
   };
   var COUNTDOWN_WINDOWS_BY_URL = [
     {
       match: 'facilidades',
-      startAt: '2026-03-06 00:00:00',
+      startAt: '2026-03-09 00:00:00',
       endAt: '2026-03-15 23:59:00',
     },
     {

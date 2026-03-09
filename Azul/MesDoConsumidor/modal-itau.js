@@ -2,7 +2,7 @@
   // ===== JANELA DA CAMPANHA: 09/03/2026 00:00 até 11/03/2026 23:59 =====
   const campaignStartMs = new Date(2026, 2, 6, 0, 0, 0).getTime();
   const campaignEndMs = new Date(2026, 2, 11, 23, 59, 0).getTime();
-  const ctaUrl = 'https://www.itau.com.br/pontos-e-cashback#section-10';
+  const ctaUrl = 'https://compradepontos.voeazul.com.br/';
 
   // ===== TIPO DO MODAL: 'inactivity' ou 'exit' =====
   let currentModalType = null;
@@ -148,7 +148,7 @@
       '<path d="M14.6666 8.66666H18.6666V12.6667" stroke="white" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>' +
       '<path d="M18.6667 8.66666L13 14.3333L9.66671 11L5.33337 15.3333" stroke="white" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>' +
       '</svg>' +
-      '<span>Transfira <b>1.000 pontos</b> e receba ate <b>2.330 pontos</b> na sua conta Azul!</span>' +
+      '<span>Transfira <b>1.000 pontos</b> e receba ate <b>2.300 pontos</b> na sua conta Azul!</span>' +
       '</li>' +
       '<li>' +
       '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
