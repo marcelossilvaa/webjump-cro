@@ -81,7 +81,7 @@
     if (!botaoProsseguir) return false;
 
     const totalPagar = Array.from(document.querySelectorAll('p')).find(
-      (p) => p.textContent.trim() === 'Total a pagar'
+      (p) => p.textContent.trim() === 'Total a pagar',
     );
 
     if (!totalPagar) return false;
@@ -147,7 +147,7 @@ border-radius: 6px;
     }
 
     const totalPagar = Array.from(document.querySelectorAll('p')).find(
-      (p) => p.textContent.trim() === 'Total a pagar'
+      (p) => p.textContent.trim() === 'Total a pagar',
     );
 
     if (totalPagar) {
