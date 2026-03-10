@@ -148,7 +148,7 @@
       '<path d="M14.6666 8.66666H18.6666V12.6667" stroke="white" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>' +
       '<path d="M18.6667 8.66666L13 14.3333L9.66671 11L5.33337 15.3333" stroke="white" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>' +
       '</svg>' +
-      '<span>Transfira <b>1.000 pontos</b> e receba ate <b>2.300 pontos</b> na sua conta Azul!</span>' +
+      '<span>Transfira <b>1.000 pontos</b> e receba até <b>2.300 pontos</b> na sua conta Azul!</span>' +
       '</li>' +
       '<li>' +
       '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +

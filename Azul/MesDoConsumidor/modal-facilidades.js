@@ -86,7 +86,7 @@
       '<div class="modalFacInjected__header">' +
       '  <div class="modalFacInjected__headerContent">' +
       '    <img class="modalFacInjected__logo" src="https://i.imgur.com/GwExWFs.png" alt="Mes do Consumidor" loading="lazy" onerror="if(!this.dataset.fallback){this.dataset.fallback=1;this.src=\'https://i.imgur.com/GwExWFs.jpg\';}else if(this.dataset.fallback===\'1\'){this.src=\'https://i.imgur.com/GwExWFs.jpeg\';}" />' +
-      '    <h2 class="modalFacInjected__title">Ultima chance de multiplicar seus pontos</h2>' +
+      '    <h2 class="modalFacInjected__title">Última chance de multiplicar seus pontos</h2>' +
       '  </div>' +
       '  <button class="modalFacInjected__close" aria-label="Fechar modal">' +
       '    <span></span><span></span>' +
@@ -96,7 +96,7 @@
       '  <div class="modalFacInjected__countdown">' +
       '    <p class="modalFacInjected__countdown__title">' +
       '      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10A10.01 10.01 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8 8.01 8.01 0 0 1-8 8Zm.5-13h-2v6l5 3 .99-1.64-3.99-2.36Z"></path></svg>' +
-      '      Promocao encerra em:' +
+      '      Promoção encerra em:' +
       '    </p>' +
       '    <div class="modalFacInjected__countdown__time">' +
       '      <div class="modalFacInjected__countdown__data" type="days"><span class="modalFacInjected__countdown__data__number">00</span><span class="modalFacInjected__countdown__data__text">DIAS</span></div>' +
@@ -106,9 +106,9 @@
       '    </div>' +
       '  </div>' +
       '  <ul class="modalFacInjected__benefits">' +
-      '    <li><span class="modalFacInjected__benefitIcon"><img src="https://i.imgur.com/1W9YurJ.png" alt="Icone de beneficios" loading="lazy" onerror="if(!this.dataset.fallback){this.dataset.fallback=1;this.src=\'https://i.imgur.com/1W9YurJ.jpg\';}else if(this.dataset.fallback===\'1\'){this.src=\'https://i.imgur.com/1W9YurJ.jpeg\';}" /></span><span>Compre 1.000 pontos e receba ate 4.100 pontos na sua conta Azul!</span></li>' +
-      '    <li><span class="modalFacInjected__benefitIcon"><img src="https://i.imgur.com/2HR5XhL.png" alt="Icone de beneficios" loading="lazy" onerror="if(!this.dataset.fallback){this.dataset.fallback=1;this.src=\'https://i.imgur.com/2HR5XhL.jpg\';}else if(this.dataset.fallback===\'1\'){this.src=\'https://i.imgur.com/2HR5XhL.jpeg\';}else{this.src=\'https://i.imgur.com/1W9YurJ.png\';}" /></span><span>Aproveite trechos a partir de 4.000 pontos e voe cada vez mais!</span></li>' +
-      '    <li><i>%</i><span>Ate 310% de bonus exclusivo para assinantes Clube Azul. Adesao com ate 50% OFF.</span></li>' +
+      '    <li><span class="modalFacInjected__benefitIcon"><img src="https://i.imgur.com/1W9YurJ.png" alt="Ícone de benefícios" loading="lazy" onerror="if(!this.dataset.fallback){this.dataset.fallback=1;this.src=\'https://i.imgur.com/1W9YurJ.jpg\';}else if(this.dataset.fallback===\'1\'){this.src=\'https://i.imgur.com/1W9YurJ.jpeg\';}" /></span><span>Compre 1.000 pontos e receba até 4.100 pontos na sua conta Azul!</span></li>' +
+      '    <li><span class="modalFacInjected__benefitIcon"><img src="https://i.imgur.com/2HR5XhL.png" alt="Ícone de benefícios" loading="lazy" onerror="if(!this.dataset.fallback){this.dataset.fallback=1;this.src=\'https://i.imgur.com/2HR5XhL.jpg\';}else if(this.dataset.fallback===\'1\'){this.src=\'https://i.imgur.com/2HR5XhL.jpeg\';}else{this.src=\'https://i.imgur.com/1W9YurJ.png\';}" /></span><span>Aproveite trechos a partir de 4.000 pontos e voe cada vez mais!</span></li>' +
+      '    <li><i>%</i><span>Até 310% de bônus exclusivo para assinantes Clube Azul. Adesão com até 50% OFF.</span></li>' +
       '  </ul>' +
       '  <button class="modalFacInjected__cta">QUERO COMPRAR</button>' +
       '  <button class="modalFacInjected__dismiss">Continuar navegando</button>' +
