@@ -1,7 +1,9 @@
+//Experience C - PromoCode - Descer Div
+
 (function () {
   function onTargetPage() {
     const currentUrl = window.location.pathname;
-    const targetTestUrl = '/payment';
+    const targetTestUrl = '/wallet';
     return currentUrl.includes(targetTestUrl);
   }
 
@@ -58,7 +60,7 @@
               acordeaoOriginal,
               formularioParaMover,
               elementoReferencia,
-              isMobile
+              isMobile,
             );
           })
           .catch((error) => {
@@ -72,7 +74,7 @@
                   acordeaoOriginal,
                   formularioParaMover,
                   elementoReferenciaRetry,
-                  isMobile
+                  isMobile,
                 );
               } else {
                 console.error('Falha ao encontrar elemento de referência após retry');
@@ -90,7 +92,7 @@
     acordeaoOriginal,
     formularioParaMover,
     elementoReferencia,
-    isMobile
+    isMobile,
   ) {
     if (!elementoReferencia) {
       console.error('Elemento de referência sc-8bc246f-0 fbxbkv não encontrado.');
@@ -107,7 +109,7 @@
 
     // Ocultar o texto "Digite o seu código" antes de mover o formulário
     const textoParaOcultar = Array.from(formularioParaMover.querySelectorAll('p')).find((p) =>
-      p.textContent.includes('Digite o seu código')
+      p.textContent.includes('Digite o seu código'),
     );
     if (textoParaOcultar) {
       const divParaOcultar = textoParaOcultar.closest('.sc-5d84be43-11');
@@ -147,7 +149,7 @@
       conteudoDoFormulario.style.display = 'block';
 
       const applyBtn = conteudoDoFormulario.querySelector(
-        '[data-test-id="fop-promocode-apply-btn"]'
+        '[data-test-id="fop-promocode-apply-btn"]',
       );
       if (applyBtn && applyBtn.parentElement) {
         applyBtn.parentElement.style.margin = '0';

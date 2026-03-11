@@ -1,7 +1,7 @@
 (function () {
   function onTargetPage() {
     const currentUrl = window.location.pathname;
-    const targetTestUrl = '/payment';
+    const targetTestUrl = '/wallet';
     return currentUrl.includes(targetTestUrl);
   }
 
@@ -35,7 +35,7 @@
       .then((togglePromo) => {
         if (!togglePromo) {
           console.log(
-            'Acordeão de código promocional não encontrado (provavelmente já foi movido).'
+            'Acordeão de código promocional não encontrado (provavelmente já foi movido).',
           );
           return false;
         }
@@ -50,17 +50,17 @@
 
         // Aguardar elemento "Taxa e impostos" estar disponível
         const pTaxas = Array.from(document.querySelectorAll('p')).find(
-          (p) => p.textContent.trim() === 'Taxa e impostos'
+          (p) => p.textContent.trim() === 'Taxa e impostos',
         );
 
         if (!pTaxas) {
           console.error(
-            'Não foi possível encontrar a seção "Taxa e impostos" no resumo da compra para usar como âncora.'
+            'Não foi possível encontrar a seção "Taxa e impostos" no resumo da compra para usar como âncora.',
           );
           // Tentar novamente após um pequeno delay
           setTimeout(() => {
             const pTaxasRetry = Array.from(document.querySelectorAll('p')).find(
-              (p) => p.textContent.trim() === 'Taxa e impostos'
+              (p) => p.textContent.trim() === 'Taxa e impostos',
             );
             if (pTaxasRetry) {
               executePromoCode(togglePromo, pTaxasRetry, acordeaoOriginal, formularioParaMover);
@@ -92,7 +92,7 @@
 
     // Ocultar o texto "Digite o seu código" antes de mover o formulário
     const textoParaOcultar = Array.from(formularioParaMover.querySelectorAll('p')).find((p) =>
-      p.textContent.includes('Digite o seu código')
+      p.textContent.includes('Digite o seu código'),
     );
     if (textoParaOcultar) {
       const divParaOcultar = textoParaOcultar.closest('.sc-5d84be43-11');
@@ -132,7 +132,7 @@
       triggerCupom.style.display = 'none';
       conteudoDoFormulario.style.display = 'block';
       const applyBtn = conteudoDoFormulario.querySelector(
-        '[data-test-id="fop-promocode-apply-btn"]'
+        '[data-test-id="fop-promocode-apply-btn"]',
       );
       if (applyBtn && applyBtn.parentElement) {
         applyBtn.parentElement.style.margin = '0';
