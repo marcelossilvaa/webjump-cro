@@ -115,8 +115,21 @@
       '</div>' +
       '</div>';
 
-    if (type === 'inactivity') {
-      const dismissButton = container.querySelector('.modalFacInjected__dismiss');
+    const titleEl = container.querySelector('.modalFacInjected__title');
+    const dismissButton = container.querySelector('.modalFacInjected__dismiss');
+
+    if (type === 'exit') {
+      if (titleEl) {
+        titleEl.innerHTML =
+          'Não saia ainda :(<br><span style="font-size:24px;font-weight:700;line-height:32px;">Seus pontos podem render mais</span>';
+      }
+      if (dismissButton) {
+        dismissButton.textContent = 'Continuar navegando';
+      }
+    } else {
+      if (titleEl) {
+        titleEl.textContent = 'Última chance de multiplicar seus pontos';
+      }
       if (dismissButton) {
         dismissButton.textContent = 'Continuar navegando';
       }
