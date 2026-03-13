@@ -4,8 +4,8 @@
   const STYLE_ID = 'popupMesConsumidorStyles';
   const DAILY_KEY = 'popup-mes-consumidor-daily-count';
   const DAILY_MAX = 1;
-  const campaignStartMs = new Date(2026, 2, 6, 0, 0, 0).getTime();
-  const campaignEndMs = new Date(2026, 2, 15, 23, 59, 0).getTime();
+  const campaignStartMs = new Date(2026, 2, 13, 0, 0, 0).getTime();
+  const campaignEndMs = new Date(2026, 2, 15, 23, 59, 59).getTime();
   const CLOSE_ANIMATION_MS = 260;
   const TRACKING_CONTEXT = 'AT_popup_mes_consumidor';
   let escHandler = null;

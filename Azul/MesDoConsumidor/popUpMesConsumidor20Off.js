@@ -1,10 +1,10 @@
 (function () {
-  const REDIRECT_URL = 'https://passagens.voeazul.com.br/pt/mes-do-consumidor';
+  const REDIRECT_URL = 'https://passagens.voeazul.com.br/pt/melhores-ofertas';
   const MODAL_ID = 'popupMesConsumidor20Off';
   const STYLE_ID = 'popupMesConsumidor20OffStyles';
   const DAILY_KEY = 'popup-mes-consumidor-20off-daily-count';
   const DAILY_MAX = 1;
-  const campaignStartMs = new Date(2026, 2, 16, 0, 0, 0).getTime();
+  const campaignStartMs = new Date(2026, 2, 13, 0, 0, 0).getTime();
   const campaignEndMs = new Date(2026, 2, 19, 23, 59, 0).getTime();
   const CLOSE_ANIMATION_MS = 260;
   const TRACKING_CONTEXT = 'AT_popup_mes_consumidor_20off';
@@ -181,7 +181,7 @@
       'letter-spacing: -0.31px;' +
       'color: #ffffff;' +
       '}' +
-      '.popupMesConsumidor20Text.highlight {' +
+      '.popupMesConsumidor20Accent {' +
       'font-size: 20px;' +
       'line-height: 28px;' +
       'font-weight: 700;' +
@@ -224,7 +224,7 @@
       '.popupMesConsumidor20Offers { margin: 12px 16px 0; padding: 12px; }' +
       '.popupMesConsumidor20Footer { padding: 16px; }' +
       '.popupMesConsumidor20Text { font-size: 15px; line-height: 22px; }' +
-      '.popupMesConsumidor20Text.highlight { font-size: 18px; line-height: 26px; }' +
+      '.popupMesConsumidor20Accent { font-size: 18px; line-height: 26px; }' +
       '.popupMesConsumidor20Cta { font-size: 18px; }' +
       '}';
 
@@ -320,7 +320,7 @@
       '<div class="popupMesConsumidor20" role="dialog" aria-modal="true" aria-label="Popup Mês do Consumidor 20 OFF">' +
       '  <div class="popupMesConsumidor20Header">' +
       '    <span class="popupMesConsumidor20Tag">MÊS DO CONSUMIDOR</span>' +
-      '    <h2 class="popupMesConsumidor20Title">A festa continua!</h2>' +
+      '    <h2 class="popupMesConsumidor20Title">A <span style="color:#3DB2E2;">festa</span> continua!</h2>' +
       '    <p class="popupMesConsumidor20Description">O mês do Consumidor ainda tem ofertas imperdíveis para você voar pelo Brasil:</p>' +
       '    <button type="button" class="popupMesConsumidor20Close" aria-label="Fechar popup"></button>' +
       '  </div>' +
@@ -328,15 +328,15 @@
       '    <ul class="popupMesConsumidor20List">' +
       '      <li class="popupMesConsumidor20Item">' +
       '        <span class="popupMesConsumidor20Number">1</span>' +
-      '        <span class="popupMesConsumidor20Text">Até 20% OFF em voos nacionais</span>' +
+      '        <span class="popupMesConsumidor20Text">Até <span class="popupMesConsumidor20Accent">20% OFF</span> em voos nacionais</span>' +
       '      </li>' +
       '      <li class="popupMesConsumidor20Item">' +
       '        <span class="popupMesConsumidor20Number">2</span>' +
-      '        <span class="popupMesConsumidor20Text highlight">+10% OFF com Cartão Azul Itaú</span>' +
+      '        <span class="popupMesConsumidor20Text"><span class="popupMesConsumidor20Accent">+10% OFF</span> com Cartão Azul Itaú</span>' +
       '      </li>' +
       '      <li class="popupMesConsumidor20Item">' +
       '        <span class="popupMesConsumidor20Number">3</span>' +
-      '        <span class="popupMesConsumidor20Text highlight">+5% OFF pagando no PIX</span>' +
+      '        <span class="popupMesConsumidor20Text"><span class="popupMesConsumidor20Accent">+5% OFF</span> pagando no PIX</span>' +
       '      </li>' +
       '    </ul>' +
       '  </div>' +
