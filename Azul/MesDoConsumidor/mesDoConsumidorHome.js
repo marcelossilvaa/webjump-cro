@@ -320,6 +320,22 @@
     if (popup) popup.classList.remove('active');
   }
 
+  function isCookieBannerClick(target) {
+    if (!target || typeof target.closest !== 'function') return false;
+    return !!target.closest(
+      '#onetrust-consent-sdk, #onetrust-banner-sdk, #onetrust-pc-sdk, .ot-sdk-container, [id^="onetrust-"], [aria-label="Privacidade"]'
+    );
+  }
+
+  function isExternalDialogClick(target, popup) {
+    if (!target || typeof target.closest !== 'function') return false;
+    var externalDialog = target.closest(
+      '[aria-modal="true"], [role="dialog"], .sc-cyRcrZ'
+    );
+    if (!externalDialog) return false;
+    return !(popup && popup.contains(externalDialog));
+  }
+
   function injectPopup() {
     if (document.getElementById(WRAPPER_ID)) return;
 
@@ -370,6 +386,8 @@
 
     document.addEventListener('click', function (e) {
       if (!popup || !btn) return;
+      if (isCookieBannerClick(e.target)) return;
+      if (isExternalDialogClick(e.target, popup)) return;
       if (
         !popup.contains(e.target) &&
         !btn.contains(e.target) &&
