@@ -1,11 +1,17 @@
+//Experience B - PromoCode - Ao Lado
+
 (function () {
+  function isMobileViewport() {
+    return window.innerWidth < 768;
+  }
+
   function onTargetPage() {
     const currentUrl = window.location.pathname;
     const targetTestUrl = '/wallet';
     return currentUrl.includes(targetTestUrl);
   }
 
-  if (window.campaignPromoCode || !onTargetPage()) {
+  if (window.campaignPromoCode || !onTargetPage() || isMobileViewport()) {
     return;
   }
   window.campaignPromoCode = true;

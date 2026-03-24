@@ -1,19 +1,23 @@
 //Experience C - PromoCode - Descer Div
 
 (function () {
+  function isMobileViewport() {
+    return window.innerWidth < 768;
+  }
+
   function onTargetPage() {
     const currentUrl = window.location.pathname;
     const targetTestUrl = '/wallet';
     return currentUrl.includes(targetTestUrl);
   }
 
-  if (window.campaignPromoCode || !onTargetPage()) {
+  if (window.campaignPromoCode || !onTargetPage() || isMobileViewport()) {
     return;
   }
 
   window.campaignDescerDiv = true;
 
-  const isMobile = window.innerWidth < 768;
+  const isMobile = isMobileViewport();
 
   // Função para aguardar elemento estar disponível no DOM
   function waitForElement(selector, maxAttempts = 50, interval = 100) {
