@@ -1,4 +1,5 @@
 <!-- source: .cursor/rules/06-tracking.md -->
+
 ## 6. Tracking (Adobe Analytics)
 
 ### 6.1. Quando aplicar
@@ -46,3 +47,6 @@ function analyticsEvent(eventLabel, eventType) {
 
 Sempre use um `data-*` (ex: `data-analytics-added`) para evitar duplicação.
 
+### 6.5. Outros projetos
+
+Para projetos como **Gerdau**, **GerdauMais**, **Nestle**, **NestleDemo** e **FTD**, verifique o padrao ja usado nos scripts existentes da pasta antes de criar a funcao de tracking. Na duvida, siga o modelo Nespresso (GTM / dataLayer) como fallback, pois a maioria dos projetos utiliza GA4.
