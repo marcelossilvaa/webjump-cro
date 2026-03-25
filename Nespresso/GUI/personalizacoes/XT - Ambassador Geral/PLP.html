@@ -1,0 +1,121 @@
+<script>
+  (function () {
+    if (!window.personalizacaoAmbassador) {
+      window.personalizacaoAmbassador = "true";
+      gtmDataObject = window.gtmDataObject || [];
+      gtmDataObject.push({
+        event: "adobe_target",
+        event_raised_by: "adobe target",
+        experiment_id: "${campaign.id}",
+        experiment_type: "AB",
+        experiment_name: "${campaign.name}",
+        experiment_variant_id: "${campaign.recipe.id}",
+        experiment_variant: "${campaign.recipe.name}",
+      });
+
+      let elementoAppend = document.querySelector("#block-8831367140853");
+      let tentativas = 0;
+      let buscaElemento = setInterval(function () {
+        if (tentativas > 4) {
+          clearInterval(buscaElemento);
+        }
+        if (elementoAppend) {
+          clearInterval(buscaElemento);
+          let copy =
+            "CLIENTE AMBASSADOR, CLIQUE AQUI E FAÇA LOGIN PARA COMPRAR EM PRIMEIRA MÃO OS <span class='spanAmbassador'> LANÇAMENTOS</span>";
+
+          // Correção do HTML para incluir a div ambassador-content
+          let htmlAmbassador =
+            '<div class="ambassadorPersonalizacao">' +
+            '<a href="/br/pt/secure/login?destination-redirect=%2Fbr%2FPt%2Fvendas-exclusivas">' +
+            '<div class="ambassador-content">' +
+            "<p>" +
+            copy +
+            "</p>" +
+            "</div>" +
+            "</a>" +
+            "</div>";
+
+          document
+            .querySelector("#block-8831367140853")
+            .insertAdjacentHTML("afterend", htmlAmbassador);
+
+          let css = `<style>
+      nb-hero{
+        display:none !important;
+      }
+      .ambassadorPersonalizacao {
+        position: relative;
+        width: 100%;
+        max-width: 1054px;
+        margin: 0 auto;
+        background-color: transparent;
+      }
+  
+      .ambassador-content {
+        background-image: url("https://www.nespresso.com/ecom/medias/sys_master/public/44440567382046/decaff.jpg?attachment=true&cimgnr=EhvZe");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        height: 143px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+  
+      .ambassadorPersonalizacao p {
+        padding: 20px 15px;
+        letter-spacing: 1px;
+        color: #fff;
+        font-weight: 600;
+        text-align: center;
+        font-family: NespressoLucas, Arial, sans-serif;
+        margin: 0;
+        width: 100%;
+        max-width: 800px;
+      }
+  
+      .spanAmbassador {
+       background-color: #ffffff;
+    color: #7a4da8;
+    padding: 2px 6px;
+    border-radius: 12px;
+    display: inline-block;
+    margin: 0 2px;
+      }
+  
+      @media screen and (min-width: 768px) {
+        .ambassador-content {
+          height: 155px;
+          margin-top: 11px;
+        margin-bottom: 11px;
+        border-radius: 38px;
+        background-size: cover !important;
+        background-position-y: -105px !important;
+        align-items: center;
+    justify-content: end;
+        }
+        .ambassadorPersonalizacao p {
+          font-size: 16px;
+          width: 450px !important;
+        }
+      }
+      @media screen and (max-width: 767px) {
+        .ambassadorPersonalizacao p {
+          font-size: 12px;
+          padding: 15px 10px;
+        }
+        #loginFormBlock div[data-error-display] {
+          margin: -18px;
+        }
+      }
+    </style>`;
+
+          document.head.insertAdjacentHTML("beforeend", css);
+        }
+        buscaElemento = document.querySelector("#block-8831367140853");
+        tentativas++;
+      }, 1000);
+    }
+  })();
+</script>

@@ -1,0 +1,22 @@
+<script>
+  let carrinhoAberto = document.querySelector(
+    ".MiniBasketDropdown__dropdown--is-open:not(.adjustedAB)"
+  );
+  setInterval(function () {
+    carrinhoAberto = document.querySelector(
+      ".MiniBasketDropdown__dropdown--is-open:not(.adjustedAB)"
+    );
+    if (carrinhoAberto) {
+      inserirPrecoParcelado();
+    }
+  }, 1000);
+
+  function inserirPrecoParcelado() {
+    alert("teste");
+    carrinhoAberto.classList.add("adjustedAB");
+  }
+
+  function ajusteStringToNum(string) {
+    return string.replace(/[^0-9.,]+/g, "");
+  }
+</script>

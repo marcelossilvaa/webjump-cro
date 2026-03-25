@@ -1,0 +1,58 @@
+<script>
+  const ola = document.getElementById(
+    "page-builder-7cbf777e-dea8-ede5-4eff-7d751156b203"
+  );
+  if (ola) {
+    ola.style.display = "block";
+    let bubbles = document.querySelectorAll("[data-href]");
+    let buscaBubbles = setInterval(function () {
+      bubbles = document.querySelectorAll("[data-href]");
+      if (bubbles.length > 0) {
+        clearInterval(buscaBubbles);
+        bubbles.forEach(function (bubble) {
+          let currentBubbleURL = "";
+          let labelBubble = "";
+          switch (bubble.getAttribute("data-href")) {
+            case "slot1":
+              currentBubbleURL =
+                "https://www.nespresso.com/br/pt/order/capsules/original";
+              labelBubble = "bubble_capsulas";
+              break;
+            case "slot2":
+              currentBubbleURL =
+                "https://www.nespresso.com/br/pt/order/machines/original";
+              labelBubble = "bubble_maquinas";
+              break;
+            case "slot3":
+              currentBubbleURL =
+                "https://www.nespresso.com/br/pt/order/accessories/original";
+              labelBubble = "bubble_acessorios";
+              break;
+          }
+          if (currentBubbleURL && labelBubble) {
+            bubble.addEventListener("click", function () {
+              if (bubble.parentNode.tagName.toLowerCase() === "nb-bubble") {
+                labelBubble += "_centro";
+              } else {
+                labelBubble += "_fixo";
+              }
+              trackEvent(labelBubble);
+              document.location.href = currentBubbleURL;
+            });
+          }
+        });
+      }
+    }, 1000);
+
+    function trackEvent(label) {
+      window.gtmDataObject = window.gtmDataObject || [];
+      gtmDataObject.push({
+        event: "local_event",
+        event_raised_by: "br",
+        local_event_category: "user engagement",
+        local_event_action: "click",
+        local_event_label: label,
+      });
+    }
+  }
+</script>

@@ -1,0 +1,206 @@
+<script>
+  (function () {
+    var isInitialized = false;
+    var lastSent = {
+      value: null,
+      displayed: null,
+    };
+
+    window.gtmDataObject = window.gtmDataObject || [];
+    gtmDataObject.push({
+      event: "adobe_target",
+      event_raised_by: "adobe target",
+      experiment_id: "${campaign.id}",
+      experiment_type: "XT",
+      experiment_name: "${campaign.name}",
+      experiment_variant_id: "${campaign.recipe.id}",
+      experiment_variant: "${campaign.recipe.name}",
+    });
+
+    function maybeSendLocalEvent(value, isDisplayed) {
+      if (lastSent.value === value && lastSent.displayed === isDisplayed) {
+        return;
+      }
+      lastSent.value = value;
+      lastSent.displayed = isDisplayed;
+
+      var action = isDisplayed
+        ? "parcelamento_exibido"
+        : "parcelamento_nao_exibido";
+      var label =
+        "xt_adobe_target_parcelamento_" +
+        (isDisplayed ? "exibido" : "nao_exibido");
+      window.gtmDataObject = window.gtmDataObject || [];
+      gtmDataObject.push({
+        event: "local_event", // as is, não alterar
+        event_raised_by: "br",
+        local_event_category: "mini-cart engagement",
+        local_event_action: action,
+        local_event_label: label,
+      });
+    }
+
+    function updateParcelamento() {
+      try {
+        var cart = document.querySelector(
+          ".MiniBasketDropdown__dropdown--is-open",
+        );
+        if (!cart) {
+          return;
+        }
+
+        var totalElement = document.querySelector(
+          ".MiniBasketTotalTable__totalPrice-value",
+        );
+        if (!totalElement) {
+          maybeSendLocalEvent(null, false);
+          return;
+        }
+
+        var totalText = totalElement.innerText;
+        var totalValue = parseFloat(
+          totalText.replace("R$", "").replace(/\./g, "").replace(",", "."),
+        );
+
+        if (totalValue === 0 || isNaN(totalValue)) {
+          var existing = document.querySelector(
+            ".MiniBasketTotalTable__parcelado",
+          );
+          if (existing) existing.remove();
+          maybeSendLocalEvent(totalValue, false);
+          return;
+        }
+
+        var minParcela = 50;
+        var parcelas = Math.floor(totalValue / minParcela);
+        if (parcelas > 10) parcelas = 10;
+
+        if (parcelas > 1) {
+          var valorParcela = (totalValue / parcelas)
+            .toFixed(2)
+            .replace(".", ",");
+
+          var parcelRow = document.querySelector(
+            ".MiniBasketTotalTable__parcelado",
+          );
+          if (!parcelRow) {
+            parcelRow = document.createElement("tr");
+            parcelRow.classList.add("MiniBasketTotalTable__parcelado");
+            var totalRow = document.querySelector(
+              ".MiniBasketTotalTable__totalPrice",
+            );
+            if (totalRow && totalRow.parentNode) {
+              totalRow.parentNode.insertBefore(parcelRow, totalRow.nextSibling);
+            }
+          }
+          parcelRow.innerHTML =
+            '<th scope="row" class="MiniBasketTotalTable__totalPrice-label" style="font-size:14px;font-weight:700;font-family:\'Nespresso Lucas\',sans-serif;">Total parcelado</th>' +
+            '<td class="MiniBasketTotalTable__totalPrice-value" style="font-size:15px;font-weight:600;font-family:\'Nespresso Lucas\',sans-serif;">' +
+            parcelas +
+            "x de R$ " +
+            valorParcela +
+            " (sem juros)</td>";
+
+          maybeSendLocalEvent(totalValue, true);
+        } else {
+          var existing = document.querySelector(
+            ".MiniBasketTotalTable__parcelado",
+          );
+          if (existing) existing.remove();
+          maybeSendLocalEvent(totalValue, false);
+        }
+      } catch (error) {
+        console.error("Erro ao atualizar parcelamento:", error);
+        maybeSendLocalEvent(null, false);
+      }
+    }
+
+    function debounce(func, wait) {
+      var timeout;
+      return function () {
+        clearTimeout(timeout);
+        timeout = setTimeout(func, wait);
+      };
+    }
+    var debouncedUpdate = debounce(updateParcelamento, 100);
+
+    function setupObserver() {
+      var priceObserver = new MutationObserver(function () {
+        debouncedUpdate();
+      });
+
+      function startObserving() {
+        var table = document.querySelector(".MiniBasketTotalTable");
+        if (!table) return false;
+        priceObserver.observe(table, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+        });
+        updateParcelamento();
+        return true;
+      }
+
+      if (!startObserving()) {
+        var bodyObserver = new MutationObserver(function () {
+          if (startObserving()) bodyObserver.disconnect();
+        });
+        bodyObserver.observe(document.body, {
+          childList: true,
+          subtree: true,
+        });
+      }
+
+      var cartButton = document.querySelector(
+        ".HeaderNavigationBarButton--mini-basket, .MiniBasketButton",
+      );
+      if (cartButton) {
+        cartButton.addEventListener(
+          "click",
+          function () {
+            lastSent.value = null;
+            lastSent.displayed = null;
+            updateParcelamento();
+            setTimeout(function () {
+              startObserving();
+              updateParcelamento();
+            }, 500);
+          },
+          {
+            once: false,
+          },
+        );
+      }
+    }
+
+    function initialize() {
+      if (
+        isInitialized ||
+        document.body.getAttribute(
+          "data-nespresso-parcelamento-initialized",
+        ) === "true"
+      ) {
+        return;
+      }
+      isInitialized = true;
+      setupObserver();
+      document.body.setAttribute(
+        "data-nespresso-parcelamento-initialized",
+        "true",
+      );
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initialize);
+    } else {
+      initialize();
+    }
+  })();
+</script>
+
+<style>
+  .MiniBasketFooter,
+  .MiniBasketFooter * {
+    font-family: "NespressoLucas" !important;
+  }
+</style>

@@ -1,0 +1,50 @@
+<script>
+  (function () {
+    let url = window.location.href;
+    let regex = /.+\.com\/br\/pt(\/order\/capsules.*|\/order\/accessories.*)/;
+    if (regex.test(url)) {
+      if (window.etagTesteTarget) {
+        return;
+      }
+      window.etagTesteTarget = "true";
+      gtmDataObject = window.gtmDataObject || [];
+      gtmDataObject.push({
+        event: "adobe_target",
+        event_raised_by: "adobe target",
+        experiment_id: "${campaign.id}",
+        experiment_type: "AB",
+        experiment_name: "${campaign.name}",
+        experiment_variant_id: "${campaign.recipe.id}",
+        experiment_variant: "${campaign.recipe.name}",
+      });
+      const CONFIG = {
+        elementoAlvo: "#block-8830310864373",
+      };
+
+      function criarComunicacao() {
+        const targetElement = document.querySelector(CONFIG.elementoAlvo);
+        if (!targetElement) {
+          setTimeout(criarComunicacao, 2000);
+          return;
+        }
+
+        if (document.getElementById("etag-nespresso-b2c-tagwild-teste")) {
+          return;
+        }
+
+        const componenteHTML = `
+        <div id="etag-nespresso-b2c-tagwild-teste">
+        </div>
+      `;
+
+        targetElement.insertAdjacentHTML("afterend", componenteHTML);
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", criarComunicacao);
+      } else {
+        criarComunicacao();
+      }
+    }
+  })();
+</script>

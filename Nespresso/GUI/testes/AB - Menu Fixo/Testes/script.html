@@ -1,0 +1,14 @@
+<script>
+  var link = document.querySelector("a.btn--fill.btn--large.btn--accent.btn--default.btn--content_bucket-module-16-1");
+  var buscaCTA = setInterval(function () {
+    link = document.querySelector("a.btn--fill.btn--large.btn--accent.btn--default.btn--content_bucket-module-16-1");
+    if (link) {
+      clearInterval(buscaCTA);
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        document.location.href = "https://holmes.app/como-o-holmes-funciona";
+      });
+      link.innerText = "Como o Holmes funciona";
+    }
+  }, 500);
+</script>

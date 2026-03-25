@@ -1,0 +1,204 @@
+<script>
+  (function () {
+    // Evita múltiplas inicializações
+    if (window.nespressoParcelamentoInitialized) {
+      return;
+    }
+    window.nespressoParcelamentoInitialized = true;
+
+    var lastSent = {
+      value: null,
+      displayed: null,
+    };
+
+    function maybeSendLocalEvent(value, isDisplayed) {
+      if (lastSent.value === value && lastSent.displayed === isDisplayed) {
+        return;
+      }
+      lastSent.value = value;
+      lastSent.displayed = isDisplayed;
+
+      var action = isDisplayed
+        ? "parcelamento_exibido"
+        : "parcelamento_nao_exibido";
+      var label =
+        "xt_adobe_target_parcelamento_" +
+        (isDisplayed ? "exibido" : "nao_exibido");
+      window.gtmDataObject = window.gtmDataObject || [];
+      gtmDataObject.push({
+        event: "local_event",
+        event_raised_by: "br",
+        local_event_category: "mini-cart engagement",
+        local_event_action: action,
+        local_event_label: label,
+      });
+    }
+
+    function renderParcelamento(totalValue) {
+      // Só renderiza se o minicart estiver aberto
+      var cart = document.querySelector(
+        ".MiniBasketDropdown__dropdown--is-open",
+      );
+      if (!cart) {
+        return;
+      }
+
+      var existing = document.querySelector(".MiniBasketTotalTable__parcelado");
+
+      if (totalValue === 0 || isNaN(totalValue)) {
+        if (existing) existing.remove();
+        maybeSendLocalEvent(totalValue, false);
+        return;
+      }
+
+      var minParcela = 50;
+      var parcelas = Math.floor(totalValue / minParcela);
+      if (parcelas > 10) parcelas = 10;
+
+      if (parcelas > 1) {
+        var valorParcela = (totalValue / parcelas).toFixed(2).replace(".", ",");
+
+        var parcelRow = existing;
+        if (!parcelRow) {
+          parcelRow = document.createElement("tr");
+          parcelRow.classList.add("MiniBasketTotalTable__parcelado");
+          var totalRow = document.querySelector(
+            ".MiniBasketTotalTable__totalPrice",
+          );
+          if (totalRow && totalRow.parentNode) {
+            totalRow.parentNode.insertBefore(parcelRow, totalRow.nextSibling);
+          }
+        }
+        parcelRow.innerHTML =
+          '<th scope="row" class="MiniBasketTotalTable__totalPrice-label" style="font-size:14px;font-weight:700;font-family:\'Nespresso Lucas\',sans-serif;">Total parcelado</th>' +
+          '<td class="MiniBasketTotalTable__totalPrice-value" style="font-size:15px;font-weight:600;font-family:\'Nespresso Lucas\',sans-serif;">' +
+          parcelas +
+          "x de R$ " +
+          valorParcela +
+          " (sem juros)</td>";
+
+        maybeSendLocalEvent(totalValue, true);
+      } else {
+        if (existing) existing.remove();
+        maybeSendLocalEvent(totalValue, false);
+      }
+    }
+
+    // Atualiza o parcelamento lendo o valor do DOM
+    function handleCartUpdate() {
+      // Só processa se o minicart estiver aberto
+      var cart = document.querySelector(
+        ".MiniBasketDropdown__dropdown--is-open",
+      );
+      if (!cart) {
+        return;
+      }
+
+      var lastValue = null;
+      var attempts = 0;
+      var maxAttempts = 20; // 20 tentativas x 100ms = 2 segundos
+
+      var checkInterval = setInterval(function () {
+        attempts++;
+
+        var totalElement = document.querySelector(
+          ".MiniBasketTotalTable__totalPrice-value",
+        );
+
+        if (!totalElement) {
+          if (attempts >= maxAttempts) {
+            clearInterval(checkInterval);
+            renderParcelamento(0);
+          }
+          return;
+        }
+
+        var totalText = totalElement.innerText;
+        var totalValue = parseFloat(
+          totalText.replace("R$", "").replace(/\./g, "").replace(",", "."),
+        );
+
+        // Se o valor mudou, atualiza e para de verificar
+        if (totalValue !== lastValue && !isNaN(totalValue)) {
+          lastValue = totalValue;
+          renderParcelamento(totalValue);
+        }
+
+        // Para após max tentativas ou se valor estabilizou
+        if (attempts >= maxAttempts) {
+          clearInterval(checkInterval);
+        }
+      }, 100);
+    }
+
+    // Observer apenas para detectar quando o minicart abre
+    function watchForMinicartOpen() {
+      var observer = new MutationObserver(function (mutations) {
+        for (var i = 0; i < mutations.length; i++) {
+          var mutation = mutations[i];
+          if (mutation.type === "childList") {
+            var addedNodes = Array.from(mutation.addedNodes);
+
+            for (var j = 0; j < addedNodes.length; j++) {
+              var node = addedNodes[j];
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                var isMiniCart =
+                  node.classList &&
+                  node.classList.contains("MiniBasketDropdown__wrapper");
+                var containsMiniCart =
+                  node.querySelector &&
+                  node.querySelector(".MiniBasketDropdown__wrapper");
+
+                if (isMiniCart || containsMiniCart) {
+                  // Pequeno delay para garantir que o DOM do minicart está pronto
+                  setTimeout(handleCartUpdate, 100);
+                  break;
+                }
+              }
+            }
+          }
+        }
+      });
+
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+      });
+
+      return observer;
+    }
+
+    function initialize() {
+      // Inicia o observer para detectar abertura do minicart
+      watchForMinicartOpen();
+
+      // Escuta eventos de atualização do carrinho via API nativa
+      if (window.napi && window.napi.data) {
+        window.napi.data().on("cart.update", handleCartUpdate);
+      }
+    }
+
+    // Aguarda a API Nespresso estar disponível
+    var waitForNapi = setInterval(function () {
+      if (window.napi) {
+        clearInterval(waitForNapi);
+        initialize();
+      }
+    }, 500);
+
+    // Timeout de segurança - inicializa mesmo sem napi após 10s
+    setTimeout(function () {
+      clearInterval(waitForNapi);
+      if (!window.napi) {
+        console.warn("Nespresso API não disponível - parcelamento desativado");
+      }
+    }, 10000);
+  })();
+</script>
+
+<style>
+  .MiniBasketFooter,
+  .MiniBasketFooter * {
+    font-family: "NespressoLucas" !important;
+  }
+</style>

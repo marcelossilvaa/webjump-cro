@@ -1,0 +1,307 @@
+<script>
+  (function () {
+    if (window.personalizacaoSummer) {
+      return;
+    }
+
+    window.personalizacaoSummer = true;
+
+    const DESKTOP_BREAKPOINT = 825;
+    const MOBILE_BREAKPOINT = 540;
+
+    function isDesktop() {
+      return window.innerWidth >= DESKTOP_BREAKPOINT;
+    }
+
+    function createGTMEvent(cardClass) {
+      if (!window.gtmDataObject) {
+        window.gtmDataObject = [];
+      }
+
+      window.gtmDataObject.push({
+        event: "local_event",
+        event_raised_by: "br",
+        local_event_category: "user engagement",
+        local_event_action: "click",
+        local_event_label: cardClass,
+      });
+    }
+
+    function scrollToFilter() {
+      const filterElement = document.querySelector("plp-explicit-filter");
+      if (!filterElement) {
+        return;
+      }
+
+      const SCROLL_OFFSET = 50;
+      const elementPosition = filterElement.getBoundingClientRect().top;
+      const offsetPosition =
+        elementPosition + window.pageYOffset - SCROLL_OFFSET;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+    }
+    const styles = `<style>
+    #BR-Sticky-coffeeBoost_Summer2025_Login {
+      display: none !important;
+    }
+      #cardProducts .spanGanheSummer {
+        font-weight: 800;
+        font-size: 13px;
+      }
+    @media screen and (max-width: 540px) {
+      #cardProducts .cardProducts_item {
+        width: 95% !important;
+        height: auto !important;
+        padding: 6px !important;
+      }
+      #cardProducts .imageAndTextSummer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      
+      #cardProducts .produtoSummer {
+        font-size: 15px !important;
+      }
+      .containerOfertasSummer__title {
+        padding: 0 20px !important;
+      }
+    }
+    #containerOfertasSummer {
+      font-family: NespressoLucas;
+      background-color: #fff;
+      text-align: center;
+      padding: 20px 0;
+    }
+    .containerOfertasSummer__title {
+      font-size: 24px;
+      text-transform: uppercase;
+      font-weight: 600;
+      line-height: 1.3em;
+      padding: 0 45px;
+    }
+    #cardProducts {
+      display: flex;
+      width: 100%;
+      height: auto;
+      gap: 60px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    @media screen and (max-width: 767px) {
+      #cardProducts {
+        gap: 15px;
+      }
+    }
+
+    #cardProducts .cardProducts_item {
+      border: 1px solid #00000015;
+      box-shadow: 0px 1px 20px 0px #00000015;
+      width: auto;
+      height: 250px;
+      padding: 6px;
+      border-radius: 10px;
+      position: relative;
+    }
+
+    #cardProducts .cardProducts_item .cardProducts_item__image {
+      width: auto;
+      height: 130px;
+      margin: 10px;
+    }
+    #cardProducts .cardProducts_item .cardProducts_item__info {
+      width: 100%;
+      height: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      inline-size: fit-content;
+    }
+    #cardProducts .cardProducts_item .cardProducts_item__info_title {
+      font-size: 18px;
+      font-weight: 700;
+      width: 160px;
+    }
+    #cardProducts .cardProducts_item .cardProducts_item__info_offer {
+      text-transform: uppercase;
+      color: #257a57;
+      font-weight: 600;
+    }
+
+    #cardProducts .offer-tag {
+      font-size: 10px;
+      background-color: #eb7047;
+      width: 60px;
+      color: #fff;
+      font-weight: 600;
+      position: absolute;
+      padding: 2px;
+      top: 0px;
+      border-radius: 10px 0px;
+      left: 0;
+    }
+    #cardProducts .produtoSummer {
+      color: #eb7047;
+      font-size: 12px;
+      line-height: 1;
+    }
+    #cardProducts .maisCard {
+      font-size: 16px;
+      color: black;
+      font-weight:400;
+    }
+  </style>`;
+    document.head.insertAdjacentHTML("beforeend", styles);
+
+    function createSummerSection() {
+      const section = document.createElement("section");
+      section.id = "containerOfertasSummer";
+
+      const title = document.createElement("p");
+      title.className = "containerOfertasSummer__title";
+      title.textContent = "PRESENTES EXCLUSIVOS NA COMPRA DE CAFÉS SUMMER*";
+
+      const disclaimer = document.createElement("span");
+      disclaimer.style.fontSize = "12px";
+      disclaimer.style.fontWeight = "500";
+      disclaimer.style.color = "#eb7047";
+      disclaimer.textContent = "*ADICIONE AO MENOS 10 CAFÉS DA LINHA SUMMER";
+
+      function createProductCard(product) {
+        const cardDiv = document.createElement("div");
+        cardDiv.className = "cardProducts_item";
+
+        const link = document.createElement("a");
+        link.className = product.id;
+        link.style.color = "#000";
+
+        const offerTag = document.createElement("span");
+        offerTag.className = "offer-tag";
+        offerTag.textContent = "SUMMER";
+
+        const imageTextDiv = document.createElement("div");
+        imageTextDiv.className = "imageAndTextSummer";
+
+        const img = document.createElement("img");
+        img.src = product.image;
+        img.alt = product.alt;
+        img.className = "cardProducts_item__image";
+
+        const infoDiv = document.createElement("div");
+        infoDiv.className = "cardProducts_item__info";
+
+        const titleDiv = document.createElement("div");
+        titleDiv.className = "cardProducts_item__info_title";
+
+        const ganheSpan = document.createElement("span");
+        ganheSpan.className = "spanGanheSummer";
+        ganheSpan.textContent = product.oferta;
+
+        const products = product.title.split("+");
+
+        titleDiv.appendChild(ganheSpan);
+        titleDiv.appendChild(document.createElement("br"));
+
+        products.forEach((prod, index) => {
+          const productSpan = document.createElement("span");
+          productSpan.className = "produtoSummer";
+          productSpan.textContent = prod.trim();
+
+          if (index < products.length - 1) {
+            const plusSpan = document.createElement("span");
+            plusSpan.className = "maisCard";
+            plusSpan.textContent = " +";
+
+            titleDiv.appendChild(productSpan);
+            titleDiv.appendChild(plusSpan);
+            titleDiv.appendChild(document.createElement("br"));
+          } else {
+            titleDiv.appendChild(productSpan);
+          }
+        });
+
+        infoDiv.appendChild(titleDiv);
+        imageTextDiv.appendChild(img);
+        imageTextDiv.appendChild(infoDiv);
+        link.appendChild(offerTag);
+        link.appendChild(imageTextDiv);
+        cardDiv.appendChild(link);
+
+        return cardDiv;
+      }
+
+      const cardProducts = document.createElement("div");
+      cardProducts.id = "cardProducts";
+
+      const productsData = [
+        {
+          id: "card_n2",
+          image:
+            "https://www.nespresso.com/ecom/medias/sys_master/public/34973298098206/coconut-ice-lolly-mold.png?",
+          alt: "Na compra de 100 cafés gelados ganhe uma forma de picolé e um coconut flavour over ice",
+          title: "1 FORMA DE PICOLÉ + 1 COCONUT FLAVOUR OVER ICE",
+          oferta: "Compre 100 cafés* e ganhe",
+        },
+        {
+          id: "card_n3",
+          image:
+            "https://www.nespresso.com/ecom/medias/sys_master/public/34973298393118/ice-club-tray-nomad-tumbler.png?",
+          alt: "Na compra de 150 cafés gelados ganhe uma forma de gelo e um copo para drinks",
+          title: "1 FORMA DE GELO + 1 COPO PARA DRINKS",
+          oferta: "Compre 150 cafés* e ganhe",
+        },
+        {
+          id: "card_n4",
+          image:
+            "https://www.nespresso.com/ecom/medias/sys_master/public/34973297967134/bowl-coasters.png?",
+          alt: "Na compra de 200 cafés gelados ganhe um par de bowls para Affogato e um par de porta-copos",
+          title: "1 PAR DE BOWLS PARA AFFOGATO + 1 PAR DE PORTA-COPOS",
+          oferta: "Compre 200 cafés* e ganhe",
+        },
+      ];
+
+      productsData.forEach((product) => {
+        const card = createProductCard(product);
+        cardProducts.appendChild(card);
+      });
+
+      section.appendChild(title);
+      section.appendChild(disclaimer);
+      section.appendChild(cardProducts);
+      return section;
+    }
+
+    function init() {
+      const targetElement = document.querySelector("nb-informative-stripe");
+      if (!targetElement) {
+        return;
+      }
+
+      const summerSection = createSummerSection();
+      targetElement.insertAdjacentElement("afterend", summerSection);
+
+      const cards = document.querySelectorAll("#containerOfertasSummer a");
+      cards.forEach((card) => {
+        card.addEventListener("click", (e) => {
+          e.preventDefault();
+          createGTMEvent(card.className);
+          scrollToFilter();
+        });
+      });
+    }
+
+    if (!isDesktop()) {
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    }
+  })();
+</script>

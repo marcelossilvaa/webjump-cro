@@ -1,0 +1,11 @@
+@media only screen and (max-width: 768px){
+    nb-app-banner[style="display: block;"]{
+        display: none !important;
+    }
+    body:has(nb-app-banner[style="display: block;"]) #header.clearfix{
+        min-height: 0px !important;
+    }
+    html:has(nb-app-banner[style="display: block;"]){
+        margin-top:50px !important;
+    }
+}

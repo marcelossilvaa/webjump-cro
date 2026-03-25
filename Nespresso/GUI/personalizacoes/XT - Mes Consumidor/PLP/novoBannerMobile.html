@@ -1,0 +1,93 @@
+<script>
+  (function () {
+    if (
+      window.location.pathname === "/br/pt/order/capsules/original" ||
+      window.location.pathname === "/br/pt/order/capsules/vertuo"
+    ) {
+      var isMobile = window.innerWidth <= 540;
+
+      if (!isMobile) {
+        return;
+      }
+
+      function insertBanner() {
+        var targetElement = document.querySelector("nb-informative-stripe");
+
+        if (!targetElement) {
+          return false;
+        }
+
+        targetElement.insertAdjacentHTML(
+          "afterend",
+          '<div class="bannerMesConsumidorMobile"></div>'
+        );
+
+        var style = document.createElement("style");
+        style.textContent = `.bannerMesConsumidorMobile {
+    width: 100%;
+    height: 166px;
+    background-image: url("https://www.nespresso.com/ecom/medias/sys_master/public/44081565761566/mobile2.jpg?attachment=true&cimgnr=1OXRs");
+    background-repeat: no-repeat;
+    background-size: cover;
+    overflow: hidden;
+    background-position: center -30px;
+  }
+  @media screen and (max-width: 450px) {
+    .bannerMesConsumidorMobile {
+      background-position: center -46px;
+    }
+  }
+  @media screen and (max-width: 420px) {
+    .bannerMesConsumidorMobile {
+      background-position: center -38px;
+    }
+  }
+  @media screen and (max-width: 390px) {
+    .bannerMesConsumidorMobile {
+      background-position: center -30px;
+    }
+  }
+  @media screen and (max-width: 375px) {
+    .bannerMesConsumidorMobile {
+      background-position: center -25px;
+    }
+  }
+  @media screen and (min-width: 541px) {
+    .bannerMesConsumidorMobile {
+      display: none;
+    }
+  }`;
+
+        document.head.appendChild(style);
+        return true;
+      }
+      function setupIntervalCheck() {
+        var intervalTime = 200;
+        var maxAttempts = 25;
+        var attempts = 0;
+        var checkInterval;
+
+        function checkAndInsert() {
+          attempts++;
+          var inserted = insertBanner();
+
+          if (inserted || attempts >= maxAttempts) {
+            clearInterval(checkInterval);
+          }
+        }
+
+        if (insertBanner()) {
+          return;
+        }
+
+        checkInterval = setInterval(checkAndInsert, intervalTime);
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", setupIntervalCheck);
+      } else {
+        setupIntervalCheck();
+      }
+    }
+  })();
+</script>

@@ -1,0 +1,198 @@
+<script>
+  (function () {
+    if (window.personalizacaoSummer) {
+      return;
+    }
+    window.personalizacaoSummer = "true";
+    let compolau = `<section id="containerOfertasSummer">
+  <p class="containerOfertasSummer__title">
+    Presentes exclusivos na compra de cafés gelados<br><span style="
+    font-size: 12px;
+    font-weight: 500;
+">*Adicione ao menos 10 cafés da linha Summer</span>
+  </p>
+  <div id="cardProducts">
+    <div class="cardProducts_item">
+      <a
+        class="card_n2"
+        href="https://www.nespresso.com/br/pt/order/capsules/original"
+        style="color: #000"
+      >
+        <span class="offer-tag">SUMMER</span>
+
+        <img
+          src="https://www.nespresso.com/ecom/medias/sys_master/public/34781938352158/Poppin-100-cafes-.png"
+          alt="Na compra de 100 cafés gelados ganhe um ice lolly mold e um Coconut flavour ice"
+          class="cardProducts_item__image"
+        />
+        <div class="cardProducts_item__info">
+          <div class="cardProducts_item__info_title">
+            Ganhe<br />
+            <span class="produtoSummer"
+              >1 ICE LOLLY MOLD <span class="maisCard">+</span><br /> </span
+            ><span class="produtoSummer">1 COCONUT FLAVOUR ICE </span>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="cardProducts_item">
+      <a
+        class="card_n3"
+        href="https://www.nespresso.com/br/pt/order/capsules/original"
+        style="color: #000"
+      >
+        <span class="offer-tag">SUMMER</span>
+
+        <img
+          src="https://www.nespresso.com/ecom/medias/sys_master/public/34781938417694/Poppin-150-cafes.png"
+          alt="Na compra de 150 cafés gelados ganhe um Ice Cube Tray e um Nomad Tumbler"
+          class="cardProducts_item__image"
+        />
+        <div class="cardProducts_item__info">
+          <div class="cardProducts_item__info_title">
+            Ganhe<br />
+            <span class="produtoSummer"
+              >1 ICE CUBE TRAY <span class="maisCard">+</span></span
+            ><br /><span class="produtoSummer">1 NOMAD TUMBLER </span>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="cardProducts_item">
+      <a
+        class="card_n4"
+        href="https://www.nespresso.com/br/pt/order/capsules/original"
+        style="color: #000"
+      >
+        <span class="offer-tag">SUMMER</span>
+
+        <img
+          src="https://www.nespresso.com/ecom/medias/sys_master/public/34781938548766/Poppin-200-cafes-.png"
+          alt="Na compra de 200 cafés gelados ganhe dois Affogato Bowl e dois Coasters"
+          class="cardProducts_item__image"
+        />
+        <div class="cardProducts_item__info">
+          <div class="cardProducts_item__info_title">
+            Ganhe<br />
+            <span class="produtoSummer">
+              2 AFFOGATO BOWL <span class="maisCard">+</span></span
+            ><br /><span class="produtoSummer"> 2 COASTERS </span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+         `;
+
+    let css = `<style>
+    #containerOfertasSummer {
+      font-family: NespressoLucas;
+      background-color: #fff;
+      text-align: center;
+      padding: 20px 0;
+    }
+    .containerOfertasSummer__title {
+      font-size: 24px;
+      text-transform: uppercase;
+      font-weight: 600;
+      line-height: 1.3em;
+      padding: 0 45px;
+    }
+    #cardProducts {
+      display: flex;
+      width: 100%;
+      height: auto;
+      gap: 60px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+  
+    @media screen and (max-width: 767px) {
+      #cardProducts {
+        gap: 15px;
+      }
+    }
+  
+    #cardProducts .cardProducts_item {
+      border: 1px solid #00000015;
+      box-shadow: 0px 1px 20px 0px #00000015;
+      width: 170px;
+      height: 250px;
+      padding: 20px 10px 20px 10px;
+      border-radius: 10px;
+      position: relative;
+    }
+    #cardProducts .cardProducts_item .cardProducts_item__image {
+      width: auto;
+      height: 130px;
+      margin: 10px;
+    }
+    #cardProducts .cardProducts_item .cardProducts_item__info {
+      width: 100%;
+      height: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    #cardProducts .cardProducts_item .cardProducts_item__info_title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    #cardProducts .cardProducts_item .cardProducts_item__info_offer {
+      text-transform: uppercase;
+      color: #257a57;
+      font-weight: 600;
+    }
+  
+    #cardProducts .offer-tag {
+      font-size: 10px;
+      background-color: #eb7047;
+      width: 60px;
+      color: #fff;
+      font-weight: 600;
+      position: absolute;
+      padding: 2px;
+      top: 10px;
+      left: 0;
+    }
+    #cardProducts .produtoSummer {
+      color: #eb7047;
+      font-size: 12px;
+      line-height: 1;
+    }
+    #cardProducts .maisCard {
+      font-size: 18px;
+      color: black;
+    }
+  </style>
+  `;
+    document.head.insertAdjacentHTML("beforeend", css);
+    let divAppend = document.querySelector("#block-8824503883253");
+    let buscaDivAppend = setInterval(function () {
+      if (divAppend) {
+        clearInterval(buscaDivAppend);
+        divAppend.insertAdjacentHTML("afterend", compolau);
+
+        let cardNiveis = document.querySelectorAll("#containerOfertasSummer a");
+        if (cardNiveis) {
+          cardNiveis.forEach(function (card) {
+            card.addEventListener("click", function () {
+              window.gtmDataObject = window.gtmDataObject || [];
+              gtmDataObject.push({
+                event: "local_event", //as is, do not change!!
+                event_raised_by: "br", //please put the country code ex: us, ch, it
+                local_event_category: "user engagement", //free to fill field, please use lower case
+                local_event_action: "click", //free to fill field, please use lower case
+                local_event_label: card.getAttribute("class"), //free to fill field, please use lower case
+              });
+            });
+          });
+        }
+      }
+      divAppend = document.querySelector("#block-8824503883253");
+    });
+  })();
+</script>

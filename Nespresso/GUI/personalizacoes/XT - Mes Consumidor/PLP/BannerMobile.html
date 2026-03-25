@@ -1,0 +1,97 @@
+<style>
+  .bannerMesConsumidorMobile {
+    width: 100%;
+    height: 166px;
+    background-image: url("https://www.nespresso.com/ecom/medias/sys_master/public/44081565761566/mobile2.jpg?attachment=true&cimgnr=1OXRs");
+    background-repeat: no-repeat;
+    background-size: cover;
+    overflow: hidden;
+    background-position: center -30px;
+  }
+  @media screen and (max-width: 450px) {
+    .bannerMesConsumidorMobile {
+      background-position: center -46px;
+    }
+  }
+  @media screen and (max-width: 420px) {
+    .bannerMesConsumidorMobile {
+      background-position: center -38px;
+    }
+  }
+  @media screen and (max-width: 390px) {
+    .bannerMesConsumidorMobile {
+      background-position: center -30px;
+    }
+  }
+  @media screen and (max-width: 375px) {
+    .bannerMesConsumidorMobile {
+      background-position: center -25px;
+    }
+  }
+  @media screen and (min-width: 541px) {
+    .bannerMesConsumidorMobile {
+      display: none;
+    }
+  }
+</style>
+<script>
+  (function () {
+    let isMobile = window.innerWidth <= 540;
+
+    function init() {
+      document
+        .querySelector("nb-informative-stripe")
+        .insertAdjacentHTML(
+          "afterend",
+          "<div class='bannerMesConsumidorMobile'></div>"
+        );
+
+      let style = `<style>
+  .bannerMesConsumidorMobile {
+    width: 100%;
+    height: 166px;
+    background-image: url("https://www.nespresso.com/ecom/medias/sys_master/public/44081565761566/mobile2.jpg?attachment=true&cimgnr=1OXRs");
+    background-repeat: no-repeat;
+    background-size: cover;
+    overflow: hidden;
+    background-position: center -30px;
+  }
+  @media screen and (max-width: 450px) {
+    .bannerMesConsumidorMobile {
+      background-position: center -46px;
+    }
+  }
+  @media screen and (max-width: 420px) {
+    .bannerMesConsumidorMobile {
+      background-position: center -38px;
+    }
+  }
+  @media screen and (max-width: 390px) {
+    .bannerMesConsumidorMobile {
+      background-position: center -30px;
+    }
+  }
+  @media screen and (max-width: 375px) {
+    .bannerMesConsumidorMobile {
+      background-position: center -25px;
+    }
+  }
+  @media screen and (min-width: 541px) {
+    .bannerMesConsumidorMobile {
+      display: none;
+    }
+  }
+</style>`;
+
+      document.head.insertAdjacentHTML("beforeend", style);
+    }
+
+    if (isMobile) {
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    }
+  })();
+</script>

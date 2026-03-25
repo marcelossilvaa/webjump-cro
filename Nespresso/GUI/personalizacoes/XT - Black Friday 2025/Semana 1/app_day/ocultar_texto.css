@@ -1,0 +1,5 @@
+@media (min-width: 769px) {
+nb-hero-banner .nb-hero-banner__content__top{
+    opacity: 0;
+}
+}
