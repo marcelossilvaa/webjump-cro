@@ -929,6 +929,8 @@
       '.pre-select-floating-cta .floating-continue-btn:disabled, .pre-select-floating-cta .floating-continue-btn.disabled { background: #FFF !important; color: #999999 !important; cursor: not-allowed !important; opacity: 0.7; }' +
       'body .fare-selected-disabled { background: #163B70 !important; color: #FFF !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 0.8 !important; }' +
       'body .fare-selected-disabled .button__text, body .fare-selected-disabled .button__text--mobile { color: #FFF !important; }' +
+      'button[aria-label="Tarifa esgotada"], button[aria-label="Tarifa esgotada"]:hover, button[aria-label="Tarifa esgotada"]:active, button[aria-label="Tarifa esgotada"]:focus { background: #F5F7F9 !important; border: 1px solid #D0D7DE !important; color: #94A5B1 !important; cursor: not-allowed !important; opacity: 1 !important; pointer-events: none !important; }' +
+      'button[aria-label="Tarifa esgotada"] .button__text, button[aria-label="Tarifa esgotada"] .button__text--mobile { color: #94A5B1 !important; }' +
       '.fare-item-highlighted { position: relative; border: 1px solid #026CB6 !important; background-color: #EBF4FA !important; }' +
       'footer.pre-select-footer-adjusted { position: unset !important; }' +
       '.css-guj3i2 { background-color: #FFF !important; color: #026CB6 !important; border: 1px solid #026CB6 !important; }' +
