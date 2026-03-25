@@ -1,0 +1,306 @@
+(function () {
+  var OVERLAY_ID = 'fhb-holiday-bar';
+  var STYLE_ID   = 'fhb-holiday-bar-styles';
+  var TARGET_SEL = '#__next > header > div.sc-cf7e4eb9-2.jA-DgYf > div > div.sc-ba6e398e-5.fUVJjR > div > div';
+
+  var holidays = [
+    {
+      label: 'Páscoa',
+      href: '#',
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="12" cy="13.5" rx="6.5" ry="8.5" stroke="#FFFFFF" stroke-width="2"/><path d="M9 10c1-2 3-2 4 0" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/></svg>'
+    },
+    {
+      label: 'Tiradentes',
+      href: '#',
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="4" y1="3" x2="4" y2="21" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/><path d="M4 3L18 7L4 11" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round"/></svg>'
+    },
+    {
+      label: 'Trabalho',
+      href: '#',
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="7" width="20" height="14" rx="2" stroke="#FFFFFF" stroke-width="1.5"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/></svg>'
+    },
+    {
+      label: 'Corpus Christi',
+      href: '#',
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 22V10L12 3L21 10V22H3Z" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round"/><line x1="12" y1="6" x2="12" y2="14" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/><line x1="9" y1="10" x2="15" y2="10" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/></svg>'
+    },
+    {
+      label: 'Independência',
+      href: '#',
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="4" y1="3" x2="4" y2="21" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/><path d="M4 3L20 8L4 13" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round"/></svg>'
+    },
+    {
+      label: 'N. Sra. Aparecida',
+      href: '#',
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L9.5 8.5H3L8 12.5L6 19L12 15.5L18 19L16 12.5L21 8.5H14.5L12 2Z" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round"/></svg>'
+    },
+    {
+      label: 'Finados',
+      href: '#',
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C9.5 2 8 4 8 6.5C8 9 9.5 10.5 12 11V2Z" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round"/><line x1="12" y1="11" x2="12" y2="19" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="12" cy="20" rx="4" ry="1.5" stroke="#FFFFFF" stroke-width="1.5"/><line x1="9" y1="15" x2="15" y2="15" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/></svg>'
+    },
+    {
+      label: 'República',
+      href: '#',
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="4" y1="3" x2="4" y2="21" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/><path d="M4 3L18 7L4 11" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round"/></svg>'
+    },
+    {
+      label: 'Natal',
+      href: '#',
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3L4 13H9L5 20H19L15 13H20L12 3Z" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round"/><line x1="10" y1="20" x2="14" y2="20" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/></svg>'
+    },
+    {
+      label: 'Ano Novo',
+      href: '#',
+      icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="17" rx="2" stroke="#FFFFFF" stroke-width="1.5"/><line x1="3" y1="9" x2="21" y2="9" stroke="#FFFFFF" stroke-width="1.5"/><line x1="8" y1="2" x2="8" y2="6" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/><line x1="16" y1="2" x2="16" y2="6" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/></svg>'
+    }
+  ];
+
+  /* ──────────────────────────────────────────────
+     Styles
+  ────────────────────────────────────────────── */
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = [
+      '#' + OVERLAY_ID + ' {',
+      '  display: flex;',
+      '  flex-direction: column;',
+      '  justify-content: center;',
+      '  align-items: center;',
+      '  padding: 0;',
+      '  width: 100%;',
+      '  height: 109px;',
+      '  margin-top: 16px;',
+      '  background: linear-gradient(89.69deg, rgba(255,255,255,0.04) 0.04%, rgba(255,255,255,0.1) 99.96%);',
+      '  flex: none;',
+      '  align-self: stretch;',
+      '  flex-grow: 0;',
+      '  box-sizing: border-box;',
+      '}',
+
+      '#' + OVERLAY_ID + ' .fhb-list {',
+      '  display: flex;',
+      '  flex-direction: row;',
+      '  align-items: center;',
+      '  padding: 0 16px;',
+      '  gap: 16px;',
+      '  height: 76px;',
+      '  max-width: 100%;',
+      '  overflow-x: auto;',
+      '  scrollbar-width: none;',
+      '  -ms-overflow-style: none;',
+      '  flex: none;',
+      '  flex-grow: 0;',
+      '  cursor: grab;',
+      '  user-select: none;',
+      '}',
+
+      '#' + OVERLAY_ID + ' .fhb-list.fhb-dragging {',
+      '  cursor: grabbing;',
+      '}',
+
+      '#' + OVERLAY_ID + ' .fhb-list::-webkit-scrollbar {',
+      '  display: none;',
+      '}',
+
+      '#' + OVERLAY_ID + ' .fhb-item {',
+      '  display: flex;',
+      '  flex-direction: column;',
+      '  align-items: center;',
+      '  justify-content: center;',
+      '  padding: 16px;',
+      '  gap: 4px;',
+      '  height: 76px;',
+      '  border-radius: 8px;',
+      '  text-decoration: none;',
+      '  cursor: pointer;',
+      '  transition: background 0.2s ease;',
+      '  white-space: nowrap;',
+      '  flex: none;',
+      '  flex-grow: 0;',
+      '  box-sizing: border-box;',
+      '}',
+
+      '#' + OVERLAY_ID + ' .fhb-item:hover {',
+      '  background: rgba(255,255,255,0.1);',
+      '}',
+
+      '#' + OVERLAY_ID + ' .fhb-item svg {',
+      '  width: 24px;',
+      '  height: 24px;',
+      '  flex: none;',
+      '  flex-grow: 0;',
+      '}',
+
+      '#' + OVERLAY_ID + ' .fhb-item span {',
+      "  font-family: 'Inter', 'Helvetica Neue', sans-serif;",
+      '  font-style: normal;',
+      '  font-weight: 400;',
+      '  font-size: 14px;',
+      '  line-height: 16px;',
+      '  color: #FFFFFF;',
+      '  flex: none;',
+      '  flex-grow: 0;',
+      '}'
+    ].join('\n');
+    document.head.appendChild(style);
+  }
+
+  /* ──────────────────────────────────────────────
+     Bar HTML
+  ────────────────────────────────────────────── */
+  function injectBar(target) {
+    var bar = document.createElement('div');
+    bar.id = OVERLAY_ID;
+
+    var list = document.createElement('div');
+    list.className = 'fhb-list';
+
+    for (var i = 0; i < holidays.length; i++) {
+      var h = holidays[i];
+      var item = document.createElement('a');
+      item.className = 'fhb-item';
+      item.href = 'https://passagens.voeazul.com.br/pt/feriados';
+      item.target = '_blank';
+      item.rel = 'noopener noreferrer';
+      item.innerHTML = h.icon + '<span>' + h.label + '</span>';
+      list.appendChild(item);
+    }
+
+    bar.appendChild(list);
+    target.insertAdjacentElement('afterend', bar);
+    startCarousel(list);
+  }
+
+  /* ──────────────────────────────────────────────
+     Carousel auto-scroll + drag manual
+  ────────────────────────────────────────────── */
+  function startCarousel(list) {
+    var DELAY        = 3000;   // ms entre cada passo automático
+    var STEP_PX      = 150;    // pixels por passo automático
+    var SMOOTH_MS    = 400;    // duração da animação suave
+    var RESUME_DELAY = 3000;   // ms para retomar o auto-scroll após interação manual
+    var paused       = false;
+    var resumeTimer  = null;
+
+    /* ── auto-scroll suave ── */
+    function smoothScrollBy(el, delta) {
+      var start     = el.scrollLeft;
+      var end       = start + delta;
+      var maxScroll = el.scrollWidth - el.clientWidth;
+      if (end >= maxScroll - 1) end = 0;
+
+      var startTime = null;
+      function step(ts) {
+        if (!startTime) startTime = ts;
+        var p = Math.min((ts - startTime) / SMOOTH_MS, 1);
+        var ease = p < 0.5 ? 2 * p * p : -1 + (4 - 2 * p) * p;
+        el.scrollLeft = start + (end - start) * ease;
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    function scheduleNext() {
+      setTimeout(function () {
+        if (!paused) smoothScrollBy(list, STEP_PX);
+        scheduleNext();
+      }, DELAY);
+    }
+
+    /* ── pausa/retomada por hover ── */
+    list.addEventListener('mouseenter', function () { paused = true; });
+    list.addEventListener('mouseleave', function () {
+      if (!isDragging) paused = false;
+    });
+
+    /* ── drag com mouse (desktop) ── */
+    var isDragging  = false;
+    var dragStartX  = 0;
+    var scrollStart = 0;
+    var moved       = false;
+
+    list.addEventListener('mousedown', function (e) {
+      isDragging  = true;
+      moved       = false;
+      dragStartX  = e.clientX;
+      scrollStart = list.scrollLeft;
+      paused      = true;
+      list.classList.add('fhb-dragging');
+      clearTimeout(resumeTimer);
+    });
+
+    document.addEventListener('mousemove', function (e) {
+      if (!isDragging) return;
+      var dx = e.clientX - dragStartX;
+      if (Math.abs(dx) > 3) moved = true;
+      list.scrollLeft = scrollStart - dx;
+    });
+
+    document.addEventListener('mouseup', function () {
+      if (!isDragging) return;
+      isDragging = false;
+      list.classList.remove('fhb-dragging');
+      // retoma auto-scroll após RESUME_DELAY
+      clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(function () { paused = false; }, RESUME_DELAY);
+    });
+
+    // Cancela o clique nos links se o usuário arrastou (evita navegação acidental)
+    list.addEventListener('click', function (e) {
+      if (moved) {
+        e.preventDefault();
+        e.stopPropagation();
+        moved = false;
+      }
+    }, true);
+
+    /* ── touch: retoma após interação ── */
+    list.addEventListener('touchstart', function () {
+      paused = true;
+      clearTimeout(resumeTimer);
+    }, { passive: true });
+
+    list.addEventListener('touchend', function () {
+      clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(function () { paused = false; }, RESUME_DELAY);
+    }, { passive: true });
+
+    scheduleNext();
+  }
+
+  /* ──────────────────────────────────────────────
+     Bootstrap
+  ────────────────────────────────────────────── */
+  function init() {
+    if (document.getElementById(OVERLAY_ID)) return;
+    var target = document.querySelector(TARGET_SEL);
+    if (!target) return;
+    injectStyles();
+    injectBar(target);
+  }
+
+  function waitForTarget() {
+    var el = document.querySelector(TARGET_SEL);
+    if (el) {
+      init();
+      return;
+    }
+    var observer = new MutationObserver(function () {
+      var found = document.querySelector(TARGET_SEL);
+      if (found) {
+        observer.disconnect();
+        init();
+      }
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', waitForTarget);
+  } else {
+    waitForTarget();
+  }
+})();
