@@ -1,0 +1,391 @@
+<script>
+  let regexPDPs = /.*\/br\/pt\/order\/capsules\/.*\/(capsula|cafe|capsulas).*/;
+  let regexPLPs = /\/br\/pt\/order\/capsules\/(original|vertuo)$/;
+  let pagePathAtual = window.location.pathname;
+  let svgPrime = `<svg class="svgLogoPrime" width="84" height="18" viewBox="0 0 84 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M11.7918 0.108861C11.6222 0.186592 11.4255 0.406831 11.0998 0.879696C10.4145 1.86429 10.0889 2.04566 8.81334 2.1234C7.93132 2.17522 7.78206 2.22704 7.49032 2.60274C7.38176 2.73877 7.34784 2.92014 7.31391 3.5679C7.23928 4.77921 7.06288 5.08366 6.02481 5.72494C5.30563 6.1719 5.15637 6.33384 5.10209 6.74193C5.06817 6.98808 5.10887 7.11115 5.4549 7.76539C5.82806 8.47792 5.84163 8.52974 5.84163 8.99613C5.84163 9.45604 5.82127 9.5273 5.4549 10.2204C5.24457 10.6285 5.07495 11.0236 5.07495 11.1078C5.07495 11.192 5.12244 11.3799 5.18351 11.5224C5.27849 11.7491 5.41419 11.8657 6.00446 12.2414C7.05609 12.9151 7.31391 13.3491 7.31391 14.4308C7.31391 15.0851 7.44961 15.4413 7.78884 15.6681C7.97882 15.7976 8.12808 15.8235 8.84048 15.8624C10.1092 15.9401 10.4349 16.115 11.1201 17.132C11.5612 17.7862 11.8461 18 12.26 18C12.3685 18 12.8163 17.8316 13.2506 17.6308C13.9765 17.2939 14.0851 17.2616 14.4989 17.2616C14.9128 17.2616 15.0282 17.2939 15.7813 17.6373C16.4937 17.9611 16.6565 18.013 16.8872 17.9806C17.2943 17.9287 17.4571 17.7927 17.932 17.0931C18.5834 16.1345 18.9429 15.9401 20.1913 15.8624C20.863 15.8235 21.0666 15.7911 21.209 15.6875C21.589 15.4154 21.65 15.2665 21.7111 14.4568C21.8061 13.1936 21.9825 12.8892 22.9799 12.2738C23.7397 11.8009 23.8754 11.6455 23.9161 11.2115C23.9433 10.9394 23.9026 10.8228 23.5701 10.2074C23.2038 9.53377 23.1902 9.48843 23.1902 9.00261C23.1902 8.52327 23.2105 8.46497 23.5701 7.75891C23.8958 7.1241 23.9433 6.9816 23.9161 6.7484C23.8687 6.34679 23.7262 6.17837 23.0816 5.78324C22.7153 5.55005 22.5253 5.39459 22.5592 5.34924C22.5863 5.3039 22.7695 5.06423 22.9663 4.8116C23.4073 4.25453 23.543 3.90474 23.5498 3.36062C23.5633 2.79059 23.3869 2.33716 23.007 1.93555C22.566 1.46268 22.1385 1.27483 21.4601 1.23596C20.7748 1.20358 20.2931 1.35904 19.7978 1.78656C19.4789 2.05862 19.445 2.07157 19.2415 2.0068C18.6919 1.82543 18.4477 1.61167 17.9659 0.931517C17.4435 0.186592 17.2943 0.063518 16.8804 0.0116971C16.6361 -0.0206909 16.4937 0.0246523 15.7948 0.342055C15.0485 0.691845 14.9671 0.717756 14.4989 0.717756C14.0308 0.717756 13.9562 0.691845 13.2506 0.35501C12.4296 -0.0401237 12.1786 -0.0789893 11.7918 0.108861ZM15.5709 2.07157C15.8627 2.11044 16.419 2.23999 16.8058 2.36307C17.4774 2.57683 18.4544 3.03026 18.5494 3.17277C18.5698 3.20516 18.5087 3.33471 18.4137 3.45778L18.2373 3.67802L17.8235 3.4513C17.335 3.17277 16.5004 2.8748 15.8355 2.73229C15.0485 2.57035 13.7391 2.60274 12.9113 2.80354C10.937 3.28936 9.34933 4.52659 8.49446 6.24315C7.97882 7.27309 7.89061 7.69413 7.8974 8.99613C7.8974 10.3435 7.99917 10.7904 8.53516 11.8139C9.1865 13.077 10.2517 14.0875 11.5544 14.6964C12.6874 15.2276 13.1081 15.3118 14.5397 15.3053C15.6659 15.3053 15.8084 15.2924 16.358 15.1304C18.8344 14.4049 20.6052 12.5394 21.0937 10.1427C21.2023 9.6115 21.1887 8.2253 21.0666 7.71357L20.9716 7.30548L21.1751 7.05285C21.2837 6.91034 21.3922 6.79375 21.4262 6.79375C21.4533 6.79375 21.5279 6.96216 21.5822 7.16297C22.1928 9.25524 21.6908 11.5807 20.266 13.3102C18.1356 15.8883 14.4107 16.711 11.344 15.2794C7.68707 13.5758 6.16729 9.469 7.91097 5.997C9.30184 3.21811 12.3618 1.65053 15.5709 2.07157ZM22.0571 2.25295C22.6067 2.58978 22.8442 3.32823 22.5728 3.85292C22.5117 3.96303 20.8834 6.02291 18.9497 8.43906C16.6226 11.341 15.3538 12.8697 15.1978 12.9604C15.0621 13.0382 14.8043 13.1159 14.6007 13.1288C13.9155 13.1807 13.8273 13.1029 11.9886 10.9524C11.0862 9.89652 10.2924 8.89897 10.2178 8.74351C9.85819 7.98563 10.4417 7.07228 11.3373 7.00103C12.0089 6.94921 12.1718 7.06581 13.3591 8.45849C13.9358 9.13216 14.4243 9.70219 14.4514 9.71515C14.4718 9.7281 15.7677 8.15404 17.3214 6.21076C18.8819 4.26748 20.2456 2.58331 20.3677 2.46023C20.6459 2.17522 20.9037 2.07157 21.3651 2.0651C21.6636 2.0651 21.7993 2.10396 22.0571 2.25295Z" fill="black"/>
+    <path d="M61.4493 8.63987L60.2552 14.3726H61.6936H63.1251L63.5254 12.2155C63.7425 11.0366 63.9393 9.99369 63.9664 9.90301C64.0207 9.71516 63.8986 9.53378 65.8458 12.5394C66.6125 13.7183 67.162 14.5021 67.2231 14.4956C67.2842 14.4956 67.9491 13.5175 68.8447 12.1248C69.8217 10.6026 70.378 9.79289 70.4119 9.84471C70.4391 9.89653 70.6562 10.9329 70.8936 12.1507L71.3279 14.3726H72.7255H74.1232L72.9291 8.65931C72.0199 4.34522 71.701 2.93958 71.6332 2.92663C71.5653 2.91367 70.8122 4.04078 69.4621 6.15895C68.3222 7.94677 67.3452 9.46253 67.2842 9.53378C67.1824 9.65686 67.0671 9.48844 65.0045 6.30146C63.8104 4.44886 62.7927 2.93311 62.7384 2.92015C62.6638 2.90719 62.3856 4.15737 61.4493 8.63987Z" fill="black"/>
+    <path d="M33.9779 8.73701V14.3725H35.4027H36.8275V12.6041V10.8293L37.8995 10.7904C39.2564 10.7386 40.0638 10.5767 40.8305 10.2204C42.106 9.61797 42.737 8.64633 42.8388 7.11761C42.9134 6.06176 42.5334 4.88284 41.95 4.30633C41.5836 3.95007 40.9662 3.58732 40.4573 3.42538C39.5957 3.15332 38.9783 3.1015 36.4068 3.1015H33.9779V8.73701ZM38.7136 5.35571C39.2632 5.52412 39.4939 5.69254 39.7042 6.09415C39.9281 6.52167 39.9485 7.26012 39.7517 7.66821C39.6092 7.97913 39.2157 8.32245 38.829 8.48439C38.5372 8.60746 37.0242 8.77588 36.8953 8.70463C36.8139 8.65928 36.8004 5.29093 36.8818 5.20672C36.9632 5.12251 38.2794 5.23263 38.7136 5.35571Z" fill="black"/>
+    <path d="M44.0872 8.73054V14.3725H45.5459H47.0046V12.494V10.6155H47.3642H47.7306L48.9315 12.494L50.1391 14.3725H51.8625H53.5926L53.3958 14.094C53.2873 13.945 52.6359 13.0317 51.9439 12.073C51.2586 11.1078 50.6751 10.2916 50.648 10.2463C50.6141 10.201 50.7362 10.0973 51.0008 9.96776C51.8082 9.55319 52.4527 8.74997 52.6698 7.88845C52.7988 7.35728 52.7988 6.23666 52.6698 5.70549C52.3645 4.4618 51.4689 3.65857 49.9831 3.28287C49.4539 3.15332 49.2232 3.14036 46.7536 3.12093L44.0872 3.09502V8.73054ZM48.8161 5.36866C49.671 5.6472 50.0306 6.3986 49.7728 7.36376C49.671 7.75242 49.2503 8.16051 48.7958 8.30949C48.6058 8.37427 48.158 8.43904 47.7373 8.45848L47.0046 8.49734V6.82612V5.1549L47.717 5.19376C48.1444 5.21967 48.5854 5.29093 48.8161 5.36866Z" fill="black"/>
+    <path d="M55.3499 8.73701V14.3725H56.7746H58.1994V8.73701V3.1015H56.7746H55.3499V8.73701Z" fill="black"/>
+    <path d="M75.8397 8.73701V14.3725H79.6731H83.5064V13.2389V12.1054H81.0979H78.6893V10.907V9.70865H80.2498H81.8103V8.60746V7.50627H80.2498H78.6893V6.40508V5.30388H80.9622H83.235V4.20269V3.1015H79.5374H75.8397V8.73701Z" fill="black"/>
+    <path d="M0.0542778 3.98893C0.0542778 4.00836 0.685258 5.14842 1.45193 6.50872L2.84959 8.99612L1.42479 11.5224L0 14.0486H3.32452H6.65582L6.61511 13.8219C6.54726 13.4138 6.31658 13.1612 5.6449 12.7466C4.7086 12.1637 4.46435 11.8333 4.46435 11.1337C4.46435 10.8163 4.51863 10.6609 4.83751 10.039C5.33958 9.06737 5.33958 8.92486 4.83751 7.95322C4.51185 7.32489 4.46435 7.17591 4.46435 6.84555C4.46435 6.14597 4.70182 5.82857 5.67882 5.21967C6.22838 4.87636 6.37086 4.74681 6.49299 4.51361C6.56762 4.35815 6.63547 4.16382 6.63547 4.08609V3.94359H3.34487C1.53335 3.94359 0.0542778 3.96302 0.0542778 3.98893Z" fill="black"/>
+    <path d="M24.0451 4.24805C23.984 4.42295 23.8212 4.71444 23.6855 4.90877L23.4345 5.25856L23.5973 5.3622C24.0315 5.6213 24.3979 6.04883 24.5132 6.42453C24.6625 6.91683 24.5946 7.22127 24.1469 8.04393C23.6719 8.90545 23.6787 9.06091 24.1876 10.0131C24.52 10.6479 24.5675 10.7904 24.5675 11.1143C24.5675 11.8268 24.2825 12.209 23.2784 12.8114C22.8103 13.0965 22.6949 13.2001 22.5524 13.4851C22.2268 14.1005 21.9215 14.0487 25.7073 14.0487C27.5324 14.0487 29.0183 14.0292 29.0047 13.9968C28.9844 13.9709 28.3398 12.8374 27.5731 11.4706L26.1755 8.98966L27.3696 6.87148C28.0277 5.70551 28.6723 4.57193 28.8012 4.34522L29.0386 3.94361H26.5961H24.1536L24.0451 4.24805Z" fill="black"/>
+    </svg>
+    `;
+  let divLogoPrime = document.createElement("div");
+  divLogoPrime.classList.add("containerLogoPrime");
+  divLogoPrime.innerHTML = svgPrime;
+
+  if (!pagePathAtual.includes("checkout")) {
+    setHeaderPrime();
+    if (regexPLPs.test(pagePathAtual)) {
+      let produtosPLPAindaNaoAjustados = document.querySelectorAll(
+        "plp-cards-grid article[data-product-short-sku]:not(article[aria-label*='Kit'],:has(footer.primeAB))"
+      );
+      setInterval(function () {
+        produtosPLPAindaNaoAjustados = document.querySelectorAll(
+          "plp-cards-grid article[data-product-short-sku]:not(article[aria-label*='Kit'],:has(footer.primeAB))"
+        );
+        if (produtosPLPAindaNaoAjustados.length > 0) {
+          produtosPLPAindaNaoAjustados = Array.from(
+            produtosPLPAindaNaoAjustados
+          );
+          produtosPLPAindaNaoAjustados = produtosPLPAindaNaoAjustados.filter(
+            function (produto) {
+              let tagsCard = produto.querySelectorAll(
+                "header[class*='tags'] span"
+              );
+              let isAbleToAdjust = true;
+              if (tagsCard) {
+                tagsCard.forEach(function (tagText) {
+                  if (tagText.innerText.toLowerCase() == "edição limitada") {
+                    isAbleToAdjust = false;
+                    produto.querySelector("footer").classList.add("primeAB");
+                  }
+                });
+              }
+              return isAbleToAdjust;
+            }
+          );
+
+          precoPrimePLP(produtosPLPAindaNaoAjustados);
+        }
+      }, 2000);
+      function precoPrimePLP(produtos) {
+        produtos.forEach(function (produto) {
+          let divPrecoTotalCapsula = produto.querySelector(
+            "span[class*='formattedPrice']"
+          );
+          let divPrecoCapsula = produto.querySelector(
+            "footer div[class*='purchaseSection'] div[class*='capsuleAndSleeveLabelWrapper']"
+          );
+          if (divPrecoCapsula && divPrecoTotalCapsula) {
+            produto.querySelector("footer").classList.add("primeAB");
+            let precoSleeve = parseFloat(
+              ajusteStringToNum(divPrecoTotalCapsula.innerText).replace(
+                ",",
+                "."
+              )
+            );
+            let precoComDesconto = (precoSleeve - precoSleeve * 0.1).toFixed(2);
+            precoComDesconto = precoComDesconto.toString().replace(".", ",");
+
+            let divPrime = document.createElement("div");
+            divPrime.classList.add("_capsuleSleeveLabel_10cre_45");
+            divPrime.classList.add("primeContainer");
+            divPrime.innerHTML =
+              "R$" + precoComDesconto + "/caixa com" + divLogoPrime.innerHTML;
+            divPrime.addEventListener("click", function (e) {
+              e.stopPropagation();
+              window.location.href =
+                "https://www.nespresso.com/br/pt/nespresso-prime";
+            });
+            divPrecoCapsula.append(divPrime);
+          }
+        });
+      }
+    } else if (regexPDPs.test(pagePathAtual)) {
+      let conteudoCardCapsulas = document.querySelector(
+        "nb-sku-coffee .cb-content"
+      );
+      let divFrete = document.querySelector("#pdp-freight-component");
+      let precoCaixaPDP = document.querySelector(
+        "nb-sku-coffee .cb-price-current"
+      );
+      let buscaCardPDP = setInterval(function () {
+        conteudoCardCapsulas = document.querySelector(
+          "nb-sku-coffee .cb-content"
+        );
+        divFrete = document.querySelector("#pdp-freight-component");
+        precoCaixaPDP = document.querySelector(
+          "nb-sku-coffee .cb-price-current"
+        );
+
+        if (conteudoCardCapsulas && divFrete && precoCaixaPDP) {
+          clearInterval(buscaCardPDP);
+          let tagsCard = conteudoCardCapsulas.parentNode.querySelectorAll(
+            "nb-card-labels span[aria-hidden='true']"
+          );
+          let isAbleToAdjustPDP = true;
+          tagsCard.forEach(function (tag) {
+            if (tag.innerText.toLowerCase() == "edição limitada") {
+              isAbleToAdjustPDP = false;
+            }
+          });
+          if (isAbleToAdjustPDP) {
+            let divPrimePDP = document.createElement("div");
+            let sectionPrimePDP = document.createElement("section");
+            let divDescontoPrime = document.createElement("div");
+
+            let paragrafoApartirCapsulas = document.createElement("p");
+            paragrafoApartirCapsulas.innerText = "* A partir de 30 cápsulas";
+
+            precoCaixaPDP = parseFloat(
+              ajusteStringToNum(precoCaixaPDP.innerText)
+            );
+            let precoComDesconto = (precoCaixaPDP - precoCaixaPDP * 0.1)
+              .toFixed(2)
+              .toString();
+            precoComDesconto = precoComDesconto.replace(".", ",");
+
+            divPrimePDP.classList.add("primePDP");
+            divDescontoPrime.classList.add("primeDescontoProdutoContainer");
+            sectionPrimePDP.classList.add("beneficiosPrime");
+            paragrafoApartirCapsulas.classList.add("observacaoPrime");
+
+            divDescontoPrime.innerHTML =
+              '<h3>Não é cliente Prime?<a href="https://www.nespresso.com/br/pt/nespresso-prime" target="_blank">Conheça os benefícios</a></h3><a href="/br/pt/myaccount/standing-orders#/orders/list" title="Economize com o Prime: 10% de desconto e frete grátis para pedidos de 30+ cápsulas."><div class="descontoPDP"><p>Assine e pague:</p><h5><span class="precoCaixaPrime">R$ ' +
+              precoComDesconto +
+              '</span><br><span class="spanLogoPrime">por caixa com' +
+              divLogoPrime.innerHTML +
+              '</span></h5><span class="flagDescontoPDP">-10%</span></div></a>';
+            divPrimePDP.append(divDescontoPrime);
+            divPrimePDP.append(sectionPrimePDP);
+            sectionPrimePDP.append(
+              beneficioPrime(
+                '<nb-icon icon="24/symbol/promotions"></nb-icon>',
+                "10% OFF*",
+                ""
+              )
+            );
+            sectionPrimePDP.append(
+              beneficioPrime(
+                '<nb-icon icon="32/delivery/free-delivery"></nb-icon>',
+                "Frete Grátis*",
+                ""
+              )
+            );
+            sectionPrimePDP.append(
+              beneficioPrime(
+                '<nb-icon icon="24/service/effortless-experience"></nb-icon>',
+                "Zero mensalidade",
+                ""
+              )
+            );
+
+            conteudoCardCapsulas.append(divPrimePDP);
+            conteudoCardCapsulas.insertBefore(divPrimePDP, divFrete);
+            let botaoAssinaturaPrime = document.createElement("a");
+            botaoAssinaturaPrime.setAttribute(
+              "href",
+              "/br/pt/myaccount/standing-orders#/orders/list"
+            );
+            botaoAssinaturaPrime.setAttribute(
+              "title",
+              "Economize com o Prime: 10% de desconto e frete grátis para pedidos de 30+ cápsulas."
+            );
+            botaoAssinaturaPrime.classList.add("signUpPrime");
+            botaoAssinaturaPrime.innerHTML = "SEJA" + divLogoPrime.innerHTML;
+            divPrimePDP.append(paragrafoApartirCapsulas);
+            divPrimePDP.append(botaoAssinaturaPrime);
+          }
+        }
+      }, 1000);
+
+      function beneficioPrime(iconHTML, title, description) {
+        let beneficioPrime = document.createElement("div");
+        beneficioPrime.classList.add("containerBeneficioPrime");
+        beneficioPrime.innerHTML =
+          iconHTML + "<p>" + title + "</p><span>" + description + "</span>";
+        return beneficioPrime;
+      }
+    }
+  }
+
+  function setHeaderPrime() {
+    let isDesktop = window.innerWidth > 995;
+    if (isDesktop) {
+      let tentativasHeader = 0;
+      let buscaHeader = setInterval(function () {
+        if (tentativasHeader > 2) {
+          clearInterval(buscaHeader);
+        } else {
+          ++tentativasHeader;
+          let headerAssinatura = document.querySelector(
+            ".HeaderNavigationBarItem a[href='/br/pt/pedido-automatico']"
+          );
+          if (headerAssinatura) {
+            headerAssinatura.setAttribute("href", "/br/pt/nespresso-prime");
+            headerAssinatura.querySelector(
+              "div.HeaderNavigationBarItem__title"
+            ).innerText = "Nespresso Prime";
+          }
+        }
+      }, 1000);
+    } else {
+      let openButtonMenuMob = document.querySelector(
+        "button.HeaderNavigationBar__switch"
+      );
+      function setPrimeMobile() {
+        setTimeout(function () {
+          let headerAssinatura = document.querySelector(
+            ".HeaderNavigationBarItem a[href='/br/pt/pedido-automatico']"
+          );
+          if (headerAssinatura) {
+            headerAssinatura.setAttribute("href", "/br/pt/nespresso-prime");
+            headerAssinatura.querySelector(
+              "div.HeaderNavigationBarItem__title"
+            ).innerText = "Nespresso Prime";
+          }
+        }, 500);
+      }
+      openButtonMenuMob.addEventListener("click", setPrimeMobile);
+    }
+  }
+
+  function ajusteStringToNum(string) {
+    return string.replace(/[^0-9.,]+/g, "");
+  }
+</script>
+
+<style>
+  @media screen and (max-width: 768px) {
+    .primeContainer {
+      font-size: 10px !important;
+    }
+    .spanLogoPrime .svgLogoPrime {
+      height: auto !important;
+      width: 50px !important;
+    }
+    .descontoPDP {
+      padding: 18px 4px !important;
+      font-size: 14px !important;
+    }
+  }
+  div.AddToBagButtonSmall__quantity {
+    position: absolute !important;
+  }
+  .primeContainer {
+    font-weight: bold;
+    font-size: 12px;
+    background-color: rgb(153, 34, 26);
+    color: #fff;
+    padding: 4px;
+    margin-top: 8px;
+    margin-bottom: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  div.primePDP,
+  div.primePDP * {
+    font-family: "NespressoLucas", Helvetica, Arial, sans-serif;
+  }
+
+  div.primePDP {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 16px;
+  }
+  .primeDescontoProdutoContainer {
+    width: 100%;
+  }
+  .primeDescontoProdutoContainer > h3 {
+    font-size: 18px;
+    display: none;
+  }
+  .descontoPDP {
+    padding: 18px;
+    display: flex;
+    justify-content: space-evenly;
+    font-size: 18px;
+    background-color: #86724e;
+    color: #fff;
+    border-radius: 16px 16px 0px 0px;
+    align-items: center;
+    width: 100%;
+  }
+  span.flagDescontoPDP {
+    background: #fff;
+    color: #000;
+    font-weight: 800;
+    padding: 2px 4px;
+    border-radius: 20px;
+  }
+  .descontoPDP > h5 {
+    font-weight: 700;
+  }
+  .descontoPDP .precoCaixaPrime {
+    font-size: 26px;
+  }
+  .descontoPDP span:not(.precoCaixaPrime) {
+    font-size: 12px;
+  }
+
+  section.beneficiosPrime {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    padding: 12px !important;
+    border-radius: 0px 0px 16px 16px;
+    background-color: #fff;
+    box-shadow: 0 0 8px #17171a0d, 0 2px 8px #17171a14;
+  }
+  div.containerBeneficioPrime {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    width: 70px;
+  }
+  div.containerBeneficioPrime p {
+    font-weight: 700;
+  }
+
+  div.containerBeneficioPrime nb-icon svg {
+    min-width: 32px;
+    min-height: 32px;
+  }
+  .observacaoPrime {
+    margin-top: 10px;
+  }
+  .signUpPrime {
+    background-color: #000;
+    border: 1px solid #000;
+    color: #fff;
+    font-weight: 400;
+    font-size: 20px;
+    padding: 14px 16px;
+    margin-top: 8px;
+    border-radius: 60px;
+    transition: all 0.2s ease-in;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .signUpPrime:hover {
+    background-color: #fff;
+    color: #000;
+    scale: 1.01;
+  }
+
+  .spanLogoPrime {
+    display: flex;
+    align-items: center;
+    margin-top: 6px;
+    gap: 4px;
+  }
+  .spanLogoPrime .svgLogoPrime * {
+    fill: #fff;
+  }
+
+  .signUpPrime .svgLogoPrime * {
+    fill: #fff;
+  }
+  .signUpPrime:hover .svgLogoPrime * {
+    fill: #000;
+  }
+
+  /*PLP Logo*/
+  .primeContainer .svgLogoPrime {
+    width: 46px;
+    height: auto;
+  }
+  .primeContainer .svgLogoPrime * {
+    fill: #fff;
+  }
+</style>

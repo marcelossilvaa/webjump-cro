@@ -1,0 +1,69 @@
+<script>
+  let carrinhoAberto = document.querySelector(
+    ".MiniBasketDropdown__dropdown--is-open"
+  );
+  setInterval(function () {
+    carrinhoAberto = document.querySelector(
+      ".MiniBasketDropdown__dropdown--is-open:not(.adjustedAB)"
+    );
+    if (carrinhoAberto) {
+      setTimeout(inserirPrecoParcelado, 5000);
+    }
+  }, 1000);
+
+  function inserirPrecoParcelado() {
+    let totalElement = document.querySelector(
+      ".MiniBasketTotalTable__totalPrice-value"
+    );
+    let totalText = ajusteStringToNum(totalElement.innerText);
+    let totalValue = parseFloat(totalText.replace(",", "."));
+
+    if (totalValue === 0) {
+      let parceladoRow = document.querySelector(
+        ".MiniBasketTotalTable__parcelado"
+      );
+      if (parceladoRow) {
+        parceladoRow.remove();
+      }
+      return;
+    }
+    let minParcela = 50;
+    let parcelas = Math.floor(totalValue / minParcela);
+
+    if (parcelas > 10) {
+      parcelas = 10;
+    }
+    if (parcelas > 1) {
+      let valorParcela = (totalValue / parcelas).toFixed(2).replace(".", ",");
+
+      let parceladoRow = document.querySelector(
+        ".MiniBasketTotalTable__parcelado"
+      );
+
+      if (!parceladoRow) {
+        parceladoRow = document.createElement("tr");
+        parceladoRow.classList.add("MiniBasketTotalTable__parcelado");
+        let totalRow = document.querySelector(
+          ".MiniBasketTotalTable__totalPrice"
+        );
+        totalRow.parentNode.insertBefore(parceladoRow, totalRow.nextSibling);
+      }
+      parceladoRow.innerHTML = `
+                    <th scope="row" class="MiniBasketTotalTable__totalPrice-label" style="font-size: 14px; font-weight: 700; font-family: 'Nespresso Lucas', sans-serif;">Total parcelado</th>
+                    <td class="MiniBasketTotalTable__totalPrice-value" style="font-size: 15px; font-weight: 600; font-family: 'Nespresso Lucas', sans-serif;">${parcelas}x de R$ ${valorParcela} (sem juros)</td>
+                `;
+    } else {
+      let parceladoRow = document.querySelector(
+        ".MiniBasketTotalTable__parcelado"
+      );
+      if (parceladoRow) {
+        parceladoRow.remove();
+      }
+    }
+    carrinhoAberto.classList.add("adjustedAB");
+  }
+
+  function ajusteStringToNum(string) {
+    return string.replace(/[^0-9.,]+/g, "");
+  }
+</script>

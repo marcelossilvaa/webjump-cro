@@ -1,0 +1,9 @@
+/*N1*/
+#page-builder-244d8c93-06bb-4a74-c4a2-ec3c5ec92e6f nb-hero-banner div.cb-bg-img{
+  background-image: url("/ecom/medias/sys_master/public/33549169197086/nivel-1Main-Banner-3840x720-1.png?") !important;
+}
+@media screen and (max-width: 768px){
+#page-builder-244d8c93-06bb-4a74-c4a2-ec3c5ec92e6f nb-hero-banner div.cb-bg-img{
+  background-image: url("/ecom/medias/sys_master/public/33544530133022/Nivel-1-Main-Banner-750x848-1.png?") !important;
+}
+}

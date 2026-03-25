@@ -1,0 +1,22 @@
+<script>
+  setTimeout(function () {
+    let imageTopBanner = document.querySelectorAll(
+      "img[src*='hero-recomendacoes']"
+    );
+    let sectionToScroll = document.querySelector("h3");
+    let offset = 0;
+    if (window.innerWidth < 768) {
+      offset = 70;
+    }
+    imageTopBanner.forEach(function (image) {
+      image.addEventListener("click", function (e) {
+        let sectionPosition =
+          sectionToScroll.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({
+          top: sectionPosition,
+          behavior: "smooth",
+        });
+      });
+    });
+  }, 3000);
+</script>

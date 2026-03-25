@@ -1,0 +1,1998 @@
+<!-- 2024_03_EngageProductRecos_SharedPLP_FeaturedProducts_CrossSell -->
+<style>
+  #anz-shared-capsules-plp-products-cross-sell {
+    background: #ffffff;
+  }
+  #anz-shared-capsules-plp-products-cross-sell:empty {
+    height: 575px;
+  }
+  @media (min-width: 768px) {
+    #anz-shared-capsules-plp-products-cross-sell:empty {
+      height: 650px;
+    }
+  }
+</style>
+<div id="anz-shared-capsules-plp-products-cross-sell"></div>
+<script>
+  //# sourceURL=component/product-recommendation-carousel.js
+  /* eslint-disable */
+  (async function () {
+    /*###################
+      ### Start Imports ###
+      ###################*/
+
+    const [
+      module1,
+      module2,
+      module3,
+      module4,
+      module5,
+      module6,
+      module7,
+      module8,
+      module9,
+      module10,
+      module11,
+      module12,
+      module13,
+      module14,
+      module15,
+      // module16,
+      module17,
+      module18,
+      module19,
+      module20,
+      module21,
+      module22,
+      module23,
+      module24,
+      module25,
+      module26,
+      module27,
+      module28,
+      module29,
+      module30,
+      module31,
+      module32,
+      module33,
+      module34,
+      module35,
+      module36,
+      module37,
+      module38,
+      module39,
+      module40,
+      module41,
+      module42,
+      module43,
+      module44,
+      module45,
+      module46,
+      module47,
+      // module48,
+    ] = await Promise.all([
+      /************
+       *** Hooks ***
+       ************/
+
+      // 1. Preact Hooks
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/26736308584478/preact-hooks-10.13.1.modern.js"
+      ),
+
+      // 2. Preact Compat
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/27997723066398/preact-compat-10.11.2.modern.js"
+      ),
+
+      // 3. Use In View
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28506516979742/react-cool-inview-3.0.1.modern.js"
+      ),
+
+      // 4. Use Media Query
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28506503807006/use-media-query-1.0.2.modern.js"
+      ),
+
+      /**********************
+       *** Component Setup ***
+       **********************/
+
+      // 5. Preact
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/26736306782238/preact-10.13.1.modern.js"
+      ),
+
+      // 6. Goober
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/26735176155166/goober-2.0.33.modern.js"
+      ),
+
+      // 7. HTM
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/26736312320030/htm-3.1.1.modern.js"
+      ),
+
+      /*************
+       *** Loader ***
+       *************/
+
+      // 8. Insert Component
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28035738370078/insert-component-1.1.3.modern.js"
+      ),
+
+      /**************
+       *** Styling ***
+       **************/
+
+      // 9. Goober Global
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/26735176712222/goober-global-2.0.41.modern.js"
+      ),
+
+      /***********
+       *** Libs ***
+       ***********/
+
+      // 10. UUID
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28727426514974/uuid.js"
+      ),
+
+      // 11. Escape Goat
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28727435100190/escape-goat-4.0.0.modern.js"
+      ),
+
+      /*********************
+       *** Component Libs ***
+       *********************/
+
+      // 12. React Player
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28652297846814/react-player-2.12.0.modern-preact-.js"
+      ),
+
+      // 13. Swiper React Core
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28045643317278/swiper-react-10.0.4.modern.js"
+      ),
+
+      // 14. Swiper Pagination
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28046129397790/pagination-1.0.0.modern.js"
+      ),
+
+      // 15. Swiper Navigation
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28046141358110/navigation-1.0.0.modern.js"
+      ),
+
+      /*****************
+       *** Components ***
+       *****************/
+
+      // 16. Multi-Modal
+      // import("https://www.nespresso.com/ecom/medias/sys_master/public/30922140844062/multi-modal-1.0.5.modern.js"),
+
+      // 17. Image with Fallback
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28006535528478/image-with-fallback-1.0.0.modern.js"
+      ),
+
+      // 18. Conditional Wrap
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28730523058206/conditional-wrap-1.0.0.modern.js"
+      ),
+
+      // 19. Capsule Detail
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/30181560778782/capsule-detail-1.0.0.modern.js"
+      ),
+
+      // 20. Intensity
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28142666579998/intensity-1.0.1.modern.js"
+      ),
+
+      /*********************
+       *** PDP Components ***
+       *********************/
+
+      // 21. Machine Sellable Callout
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/30181554421790/machine-sellable-callout-1.0.0.modern.js"
+      ),
+
+      // 22. Badge List
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/30181051334686/badge-list-1.0.0.modern.js"
+      ),
+
+      // 23. Discount Pricing
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/30181050581022/discount-pricing-1.0.0.modern.js"
+      ),
+
+      /**************************
+       *** Campaign Components ***
+       **************************/
+
+      // 24. Promo Impression
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28507904442398/promo-impression-1.0.0.modern.js"
+      ),
+
+      // 25. Casper Club Member Only
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28678221234206/casper-club-member-only-1.0.0.modern.js"
+      ),
+
+      // 26. Casper Prospect Only
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28678221004830/casper-prospect-only-1.0.0.modern.js"
+      ),
+
+      /********************
+       *** General Utils ***
+       ********************/
+
+      // 27. Defer
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/26734553628702/defer-1.0.4.modern.js"
+      ),
+
+      // 28. Is Customer Staff
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/27389799137310/is-customer-staff-1.0.0.modern.js"
+      ),
+
+      // 29. Parse JSON Script
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/26803310428190/parse-json-script-1.0.0.modern.js"
+      ),
+
+      // 30. Insert Style Link
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28730522337310/insert-style-link-1.0.0.modern.js"
+      ),
+
+      // 31. Wait for
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/29689856131102/wait-for-1.0.1.modern.js"
+      ),
+
+      /*********************
+       *** Tracking Utils ***
+       *********************/
+
+      // 32. Track GA Event
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/29596139356190/track-ga-event-1.1.0.modern.js"
+      ),
+
+      // 33. Track GA Internal Promotion Impression
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28820405420062/track-ga-intern-promotion-impression-1.0.0.modern.js"
+      ),
+
+      // 34. Track GA Internal Promotion Click
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/28820407877662/track-ga-internal-promotion-click-1.0.0.modern.js"
+      ),
+
+      /****************
+       *** PDP Utils ***
+       ****************/
+
+      // 35. Get Product Data from SKU
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/26735336783902/get-product-data-from-sku-1.0.2.modern.js"
+      ),
+
+      // 36. Get Product SKU from DOM
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/26735171141662/get-product-sku-from-dom-1.0.0.modern.js"
+      ),
+
+      // 37. Update Subscription Radio Label
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/30181052710942/update-subscription-radio-label-1.0.0.modern.js"
+      ),
+
+      // 38. Update Subscription Radio Callout
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/30181054545950/update-subscription-radio-callout-1.0.0.modern.js"
+      ),
+
+      // 39. Attach Product Type Switcher Event Hooks
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/30181044584478/attach-product-type-switcher-event-hooks-1.0.0.modern.js"
+      ),
+
+      /******************
+       *** Price Utils ***
+       ******************/
+
+      // 40. Calculate Adjusted Price
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/26846147051550/calc-adjusted-price-1.0.0.modern.js"
+      ),
+
+      // 41. Float to Currency String
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/26734553825310/float-to-currency-str-1.0.1.modern.js"
+      ),
+
+      /*****************
+       *** Misc Utils ***
+       *****************/
+
+      // 42. Get Customer
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/26735544795166/get-customer-1.0.0.modern.js"
+      ),
+
+      // 43. Get Market
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/29689858129950/get-market-1.1.1.modern.js"
+      ),
+
+      // 44. Get Store ID
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/26735161114654/get-store-id-1.0.0.modern.js"
+      ),
+
+      /**********
+       *** New ***
+       **********/
+
+      // 45. Insert Machine Sellable Callout
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/30922136485918/insert-machine-sellable-callout-1.0.3.modern.js"
+      ),
+
+      // 46. Insert PDP Badges
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/30922135765022/insert-badges-1.0.1.modern.js"
+      ),
+
+      // 47. Insert PDP Price Adjust
+      import(
+        "https://www.nespresso.com/ecom/medias/sys_master/public/30922141892638/insert-price-adjust-1.0.1.modern.js"
+      ),
+
+      // 48. Modal
+      // import("https://www.nespresso.com/ecom/medias/sys_master/public/30923159339038/modal-1.0.0.modern.js"),
+    ]);
+
+    // hooks
+
+    const { useEffect, useRef, useState, useCallback, useImperativeHandle } =
+      module1;
+    const { forwardRef } = module2;
+    const { useInView } = module3;
+    const { default: useMediaQuery } = module4;
+
+    // component setup
+    const { h, Fragment } = module5;
+    const { setup, styled, keyframes } = module6;
+    const { default: htm } = module7;
+
+    // loader
+    const { default: insertComponent } = module8;
+
+    // styling
+    const { glob } = module9;
+
+    // libs
+    const { default: uuid } = module10;
+    const {
+      // htmlEscape,
+      htmlUnescape,
+    } = module11;
+
+    // component libs
+
+    // react player
+    const { default: ReactPlayer } = module12;
+
+    // swiper
+    const { Swiper, SwiperSlide } = module13;
+    const { default: Pagination } = module14;
+    const { default: Navigation } = module15;
+
+    // components
+    // const { default: MultiModal } = module16;
+    const { default: ImageWithFallback } = module17;
+    const { default: ConditionalWrap } = module18;
+    const { default: CapsuleDetail } = module19;
+    const { default: Intensity } = module20;
+
+    // pdp components
+    const { default: MachineSellableCallout } = module21;
+    const { default: BadgeList } = module22;
+    const { default: DiscountPricing } = module23;
+
+    // campaign components
+    const { default: PromoImpression } = module24;
+    const { default: CasperClubMemberOnly } = module25;
+    const { default: CasperProspectOnly } = module26;
+
+    // general utils
+    const { default: defer } = module27;
+    const { default: isCustomerStaff } = module28;
+    const { default: parseJSONScript } = module29;
+    const { default: insertStyleLink } = module30;
+    const { default: waitFor } = module31;
+
+    // tracking utils
+    const { default: trackGAEvent } = module32;
+    const { default: trackGAInternalPromotionImpression } = module33;
+    const { default: trackGAInternalPromotionClick } = module34;
+
+    // pdp utils
+    const { default: getProductDataFromSku } = module35;
+    const { default: getProductSkuFromDOM } = module36;
+    const { default: updateSubscriptionRadioLabel } = module37;
+    const { default: updateSubscriptionRadioCallout } = module38;
+    const { default: attachProductTypeSwitcherEventHooks } = module39;
+
+    // price utils
+    const { default: calcAdjustedPrice } = module40;
+    const { default: floatToCurrencyStr } = module41;
+
+    // misc utils
+    const { default: getCustomer } = module42;
+    const { default: getMarket } = module43;
+    const { default: getStoreId } = module44;
+
+    // new
+    const { default: insertMachineSellableCallout } = module45;
+    const { default: insertBadges } = module46;
+    const { default: insertPriceAdjust } = module47;
+    // const { default: Modal } = module48;
+
+    /*##################
+      ### Ends Imports ###
+      ##################*/
+
+    // setup
+    setup(h);
+    const html = htm.bind(h);
+
+    // load swiper styles
+    await insertStyleLink(
+      "https://www.nespresso.com/ecom/medias/sys_master/public/28045645545502/swiper-10.0.4.min.css",
+      "swiper-min-css"
+    );
+    // load swiper pagination styles
+    await insertStyleLink(
+      "https://www.nespresso.com/ecom/medias/sys_master/public/28046130577438/pagination-1.0.0.min.css",
+      "swiper-pagination-min-css"
+    );
+    // load swiper navigation styles
+    await insertStyleLink(
+      "https://www.nespresso.com/ecom/medias/sys_master/public/28046142013470/navigation-1.0.0.min.css",
+      "swiper-navigation-min-css"
+    );
+
+    // utils
+
+    /**
+     * Get cart
+     * @returns {Promise<object[]>}
+     */
+    function getCart() {
+      return window.napi.cart().read();
+    }
+
+    /**
+     * Update cart
+     * @returns {Promise<undefined>}
+     */
+    function updateCart(productSku, quantity) {
+      return window.CartManager.updateItem(productSku, quantity);
+    }
+
+    /**
+     * Get product count in cart
+     * @requires getCart
+     * @requires getStoreId
+     * @returns {Promise<number>}
+     */
+    function getProductCountInCart(productSku) {
+      const storeId = getStoreId();
+      return new Promise((resolve, reject) => {
+        getCart()
+          .then((cartItems) => {
+            const targetItem = cartItems.find(({ productId }) => {
+              return productId.replace(storeId, "") === productSku;
+            });
+            resolve((targetItem && targetItem.quantity) || 0);
+          })
+          .catch(reject);
+      });
+    }
+
+    /**
+     * Quantity Tooltip (Preact Component)
+     * @requires getProductCountInCart
+     * @requires updateCart
+     */
+    const QuantityTooltip = ({
+      open,
+      setOpen,
+      productData,
+      productPositionIndex,
+      tooltipPosition,
+      eventHooks,
+    }) => {
+      const wrapperRef = useRef();
+
+      const handlePredefinedItemClick = useCallback((quantity) => {
+        const productSku = productData?.legacyId;
+        getProductCountInCart(productSku).then((currentCount) => {
+          updateCart(productSku, currentCount + quantity)
+            .then(() => {
+              eventHooks?.on_quantity_updated?.(
+                productData,
+                productPositionIndex
+              );
+              if (quantity >= 1) {
+                eventHooks?.on_basket_add?.(
+                  productData?.name,
+                  productPositionIndex
+                );
+              }
+            })
+            .finally(() => setOpen(false));
+        });
+      });
+
+      const handleDocumentClick = useCallback(
+        (e) => {
+          if (!productData) return;
+          if (!open || wrapperRef.current.base.contains(e.target)) return;
+          setOpen(false);
+        },
+        [open, productData]
+      );
+
+      useEffect(() => {
+        document.addEventListener("click", handleDocumentClick);
+        return () => {
+          document.removeEventListener("click", handleDocumentClick);
+        };
+      }, [open]);
+
+      const Wrapper = useRef(
+        styled("div")(
+          ({ open, tooltipPosition }) => `
+            display: block;
+            position: absolute;
+            width: 13.25rem;
+            background-color: #f9f9f9;
+            padding: 0.625rem;
+            border: 1px solid #d5d5d5;
+            border-radius: 2px;
+            font-size: .75rem;
+            color: #1b1b1b;
+            box-shadow: 0 0px 10px rgb(0 0 0 / 5%);
+            opacity: ${open ? "1" : "0"};
+            pointer-events: ${open ? "auto" : "none"};
+            z-index: 1;
+            box-shadow: rgb(0 0 0 / 15%) 0px 0px 20px;
+            transition: all .1s;
+  
+            transform:
+              translate(calc(40px / 2 - 50%),
+              calc(-100% - ${open ? "15px" : "10px"}));
+            &::before, &::after {
+              content: "";
+              position: absolute;
+              width: 0;
+              height: 0;
+              border: 10px solid;
+            }
+  
+            ${(() => {
+              if (tooltipPosition === "left") {
+                return /* css */ `
+                  transform:
+                    translate(calc(-100% - ${open ? "15px" : "10px"}),
+                    calc(40px / 2 - 50%));
+                  &::before, &::after {
+                    border-right-width: 0;
+                  }
+                  &::before {
+                    border-color: #d5d5d5;
+                    border-top-color: transparent;
+                    border-bottom-color: transparent;
+                    top: calc(50% - 10px);
+                    right: -11px;
+                  }
+                  &::after {
+                    border-color: #f9f9f9;
+                    border-top-color: transparent;
+                    border-bottom-color: transparent;
+                    top: calc(50% - 10px);
+                    right: -10px;
+                  }
+                `;
+              } else {
+                return /* css */ `
+                  &::before, &::after {
+                    border-bottom-width: 0;
+                  }
+                  &::before {
+                    border-color: #d5d5d5;
+                    border-right-color: transparent;
+                    border-left-color: transparent;
+                    left: calc(50% - 10px);
+                    bottom: -11px;
+                  }
+                  &::after {
+                    border-color: #f9f9f9;
+                    border-right-color: transparent;
+                    border-left-color: transparent;
+                    left: calc(50% - 10px);
+                    bottom: -10px;
+                  }
+                `;
+              }
+            })()}
+        `
+        )
+      );
+
+      const PredefinedList = useRef(
+        styled("ul")`
+          display: flex;
+          flex-flow: row wrap;
+        `
+      );
+
+      const PredefinedItem = useRef(
+        styled("li")`
+          position: relative;
+          width: 20%;
+          height: 2.1875rem;
+          text-align: center;
+          letter-spacing: 0.1em;
+          border-left: 0.0625rem solid #d5d5d5;
+          padding: 4px;
+          &:nth-of-type(5n + 1) {
+            border-left: none;
+          }
+          button {
+            cursor: pointer;
+            height: 100%;
+            width: 100%;
+            outline: none;
+            border-radius: 3px;
+            color: #2e2e2e;
+            background: none;
+            border: 0;
+            font-family: inherit;
+            font-size: inherit;
+            padding: 0;
+            &:hover {
+              color: #000;
+              border: 1px solid #000;
+            }
+            &:active {
+              color: #fff;
+              background-color: #000;
+            }
+          }
+          span {
+            font-family: NespressoLucas;
+          }
+        `
+      );
+
+      return productData
+        ? html`
+          <${Wrapper.current}
+            ref=${wrapperRef}
+            open=${open}
+            tooltipPosition=${tooltipPosition}
+          >
+            <${PredefinedList.current}>
+              ${Array.from({ length: 15 }, (_, i) => i).map((value) => {
+                const { salesMultiple } = productData;
+                const quantity =
+                  typeof salesMultiple === "number"
+                    ? salesMultiple === 10
+                      ? value === 0
+                        ? 0
+                        : value <= 10
+                        ? value * salesMultiple
+                        : 100 + (value - 10) * 50
+                      : value
+                    : 0;
+                return html`
+                  <${PredefinedItem.current}>
+                    <button
+                      onClick=${() => handlePredefinedItemClick(quantity)}
+                    >
+                      <span>${quantity}</span>
+                    </button>
+                  </PredefinedItem>
+                `;
+              })}
+            </PredefinedList>
+          </Wrapper>
+        `
+        : html``;
+    };
+
+    /**
+     * Basket Add (Preact Component)
+     */
+    const BasketAdd = ({ inStock, displayQuantity, onClick }) => {
+      const Wrapper = useRef(
+        styled("button")`
+          display: block;
+          position: relative;
+          width: 100%;
+          height: 100%;
+          margin: 0;
+          padding: 0;
+          background-color: #3d8705;
+          border: #3d8705;
+          /* border-radius: 3px; */
+          border-radius: 50%;
+          box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+          cursor: pointer;
+          transition: all 0.3s;
+          &:hover {
+            box-shadow: 0 3px 3px rgba(0, 0, 0, 0.3);
+          }
+          &:active {
+            border: #326e04;
+            background-color: #326e04;
+          }
+          &:disabled {
+            border: dimgray;
+            background-color: dimgray;
+            cursor: not-allowed;
+            &:hover {
+              box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+            }
+            &:active {
+              border: dimgray;
+              background-color: dimgray;
+            }
+          }
+        `
+      );
+
+      return html`
+          <${Wrapper.current}
+            disabled=${typeof displayQuantity !== "number" || !inStock}
+            onClick=${onClick}
+          >
+            <i
+              style="color:#ffffff;"
+              aria-hidden="true"
+              class="Glyph Glyph--plus AddToBagButtonSmall__icon-sign"
+            />
+          </Wrapper>
+        `;
+    };
+
+    /**
+     * Quantity Selector (Preact Component)
+     * @requires QuantityTooltip
+     * @requires BasketAdd
+     * @requires getProductDataFromSku
+     * @requires getProductCountInCart
+     */
+    const QuantitySelector = ({
+      productSku,
+      productPositionIndex,
+      align,
+      tooltipPosition,
+      eventHooks,
+    }) => {
+      const [tooltipOpen, setTooltipOpen] = useState(false);
+      const [inStock, setInStock] = useState(null);
+      const [productData, setProductData] = useState(null);
+      const [productCountInCart, setProductCountInCart] = useState(null);
+
+      const handleBasketAddClick = () => setTooltipOpen((o) => !o);
+
+      useEffect(() => {
+        getProductDataFromSku(productSku)
+          .then((productData) => {
+            const { inStock } = productData;
+            setProductData(productData);
+            setInStock(inStock);
+          })
+          .catch((err) => console.error(err));
+        getProductCountInCart(productSku)
+          .then((productCount) => setProductCountInCart(productCount))
+          .catch((err) => console.error(err));
+      }, []);
+
+      const Wrapper = useRef(
+        styled("div")(
+          ({ align }) => `
+            display: flex;
+            justify-content: ${align};
+            background: #fff;
+            * {
+              box-sizing: border-box;
+            }
+        `
+        )
+      );
+
+      const BasketAddContainer = useRef(
+        styled("div")`
+          position: relative;
+          height: 40px;
+          width: 40px;
+        `
+      );
+
+      return html`
+          <${Wrapper.current}
+            data-product-sku=${productSku}
+            data-product-name=${productData?.name}
+            align=${align}
+          >
+            <${BasketAddContainer.current}>
+              <${QuantityTooltip}
+                eventHooks=${eventHooks}
+                open=${tooltipOpen}
+                setOpen=${setTooltipOpen}
+                productData=${productData}
+                productPositionIndex=${productPositionIndex}
+                tooltipPosition=${tooltipPosition}
+              />
+              <${BasketAdd}
+                inStock=${inStock}
+                displayQuantity=${productCountInCart}
+                onClick=${handleBasketAddClick}
+              />
+            </BasketAddContainer>
+          </Wrapper>
+        `;
+    };
+
+    /**
+     * Product Cross Sell Card (Preact Component)
+     */
+    const ProductCrossSellCard = ({
+      product_sku: productSku,
+      ribbon,
+      is_visible: isVisible,
+      is_mobile: isMobile,
+      position_index: positionIndex,
+      price_adjust: priceAdjust,
+      className,
+      event_hooks: eventHooks,
+    }) => {
+      const [isHovered, setIsHovered] = useState(false);
+      const [productData, setProductData] = useState(null);
+      const [impressionTriggered, setImpressionTriggered] = useState(false);
+
+      useEffect(() => {
+        if (!impressionTriggered || !productData) return;
+        eventHooks?.on_product_impression?.(productData?.name, positionIndex);
+      }, [impressionTriggered, productData]);
+
+      useEffect(() => {
+        if (!isVisible) return;
+        setImpressionTriggered(true);
+      }, [isVisible]);
+
+      const Name = useRef(
+        styled("h3")`
+          font-size: 1.25rem;
+          font-weight: 700;
+          letter-spacing: 0.1875rem;
+          line-height: 1.2;
+          color: #17171a;
+          text-transform: uppercase;
+          margin-top: 0.5rem;
+          padding: 0 2rem;
+          ${({ hovered }) =>
+            hovered &&
+            `
+              text-decoration: underline;
+            `}
+        `
+      );
+
+      const Wrapper = useRef(
+        styled("div")`
+          display: flex;
+          flex-direction: column;
+          background: #ffffff;
+          box-shadow: 0 0 8px #17171a0d, 0 2px 8px #17171a14;
+          transition: box-shadow 0.15s;
+          ${({ hovered }) =>
+            hovered &&
+            `
+              box-shadow: 0 0 16px #17171a0d, 0 2px 16px #17171a14;
+            `}
+        `
+      );
+
+      const Ribbon = useRef(
+        styled("div")`
+          position: absolute;
+          top: 10px;
+          padding: 2px 10px 2px 6px;
+          ${({ background }) =>
+            background
+              ? `
+              background: ${background};
+            `
+              : `
+              background: linear-gradient(to right, #d58371, #d98f7f, #d58371, #d58371);
+            `}
+          ${({ textColour }) =>
+            textColour
+              ? `
+              color: ${textColour};
+            `
+              : `
+              color: #ffffff;
+            `}
+            box-shadow: -1px 2px 3px rgba(0, 0, 0, .3);
+          font-size: 12px;
+          font-weight: 500;
+          letter-spacing: 0.5px;
+          line-height: 1.15;
+          z-index: 1;
+          /* ribbon's edge */
+          & > span {
+            position: absolute;
+            top: 0;
+            height: 0;
+            width: 0;
+            right: -8px;
+            border-top: 9px solid transparent;
+            border-bottom: 9px solid transparent;
+            ${({ secondaryBackground }) =>
+              secondaryBackground
+                ? `
+                border-left: 8px solid ${secondaryBackground};
+              `
+                : `
+                border-left: 8px solid #d58371;
+              `}
+          }
+          &:before {
+            content: "";
+            position: absolute;
+            width: 7px;
+            height: 100%;
+            top: 0;
+            left: -6.5px;
+            padding: 0 0 7px;
+            ${({ secondaryBackground }) =>
+              secondaryBackground
+                ? `
+                background: ${secondaryBackground};
+              `
+                : `
+                background: #d58371;
+              `}
+            border-radius: 5px 0 0 5px;
+          }
+          &:after {
+            content: "";
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            bottom: -5px;
+            left: -4.5px;
+            background: #717171;
+            border-radius: 5px 0 0 5px;
+          }
+          pointer-events: none;
+        `
+      );
+
+      const ImageContainer = useRef(
+        styled("div")`
+          position: relative;
+          box-sizing: content-box;
+          text-align: center;
+          padding-top: 0.5rem;
+          height: 10rem;
+        `
+      );
+
+      const StyledImageWithFallback = useRef(
+        styled(ImageWithFallback)`
+          img {
+            height: 100%;
+            object-fit: contain;
+          }
+        `
+      );
+
+      const Content = useRef(
+        styled("div")`
+          display: flex;
+          flex: 1 1 auto;
+          flex-direction: column;
+          text-align: center;
+        `
+      );
+
+      const Top = useRef(styled("a")``);
+
+      const Middle = useRef(
+        styled("div")`
+          margin-top: 1rem;
+          padding: 0 2rem;
+        `
+      );
+
+      const Bottom = useRef(
+        styled("div")`
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          position: relative;
+          margin-top: auto;
+          padding: 1.5rem 2rem 2rem 2rem;
+        `
+      );
+
+      const Text = useRef(
+        styled("p")`
+          font-size: 1rem;
+          font-weight: 400;
+          letter-spacing: 0.0625rem;
+          line-height: 1.5;
+          color: #6f6f70;
+        `
+      );
+
+      const Price = useRef(
+        styled("p")`
+          font-family: NespressoLucas;
+          color: rgb(61, 135, 5);
+          font-size: 1.25rem;
+          font-weight: 700;
+          letter-spacing: 0.0625rem;
+          text-transform: uppercase;
+          position: relative;
+          margin: 0;
+          text-align: center;
+          @media (min-width: 768px) {
+            font-size: 1.25rem;
+          }
+        `
+      );
+
+      const OriginalPrice = useRef(
+        styled("p")`
+          display: block;
+          font-size: 18px;
+          letter-spacing: 0px;
+          text-align: left;
+        `
+      );
+
+      const DiscountedPrice = useRef(
+        styled(Price.current)`
+          display: block;
+          font-size: 16px;
+          letter-spacing: 0px;
+          margin-top: 6px;
+          text-align: left;
+        `
+      );
+
+      useEffect(() => {
+        getProductDataFromSku(productSku).then(setProductData);
+      }, [productSku]);
+
+      const handlePdpLinkClick = useCallback(() => {
+        eventHooks?.on_pdp_link_click?.(productData?.name, positionIndex);
+      }, [productData]);
+
+      const handleOnMouseEnter = useCallback(() => {
+        if (isMobile) return;
+        setIsHovered(true);
+      }, [isMobile]);
+
+      const handleOnMouseLeave = useCallback(() => {
+        if (isMobile) return;
+        setIsHovered(false);
+      }, [isMobile]);
+
+      return html`
+          <${Wrapper.current}
+            className=${`${className} ${"c-product-cross-sell-card"}`}
+            product_sku=${productSku}
+            product_name=${productData?.name}
+            hovered=${isHovered}
+          >
+            ${
+              !!ribbon &&
+              html`
+              <${Ribbon.current}
+                className=${"c-product-cross-sell-card__ribbon"}
+                background=${ribbon.background}
+                secondaryBackground=${ribbon.secondary_background}
+                textColour=${ribbon.text_colour}
+              >
+                <div dangerouslySetInnerHTML=${{ __html: ribbon.label }} />
+                <span />
+              </Ribbon>
+            `
+            }
+            <${Content.current}
+              className=${"c-product-cross-sell-card__content"}
+            >
+              <${Top.current}
+                className=${"c-product-cross-sell-card__content__top"}
+                href=${productData?.pdpURLs?.desktop}
+                onClick=${handlePdpLinkClick}
+                onMouseEnter=${handleOnMouseEnter}
+                onMouseLeave=${handleOnMouseLeave}
+              >
+                <${
+                  ImageContainer.current
+                } className=${"c-product-cross-sell-card__content__image-container"}>
+                  ${
+                    productData?.images?.icon &&
+                    html`
+                      <${StyledImageWithFallback.current}
+                        className=${"c-product-cross-sell-card__content__image"}
+                        ...${{
+                          src: productData?.images?.icon,
+                          alt: "",
+                        }}
+                      />
+                    `
+                  }
+                </ImageContainer>
+                <${Name.current}
+                  className=${"c-product-cross-sell-card__content__name"}
+                  hovered=${isHovered}
+                  dangerouslySetInnerHTML=${{ __html: productData?.name }}
+                />
+              </Top>
+              <${
+                Middle.current
+              } className=${"c-product-cross-sell-card__content__middle"}>
+                <${Text.current}
+                  className=${"c-product-cross-sell-card__content__headline"}
+                  dangerouslySetInnerHTML=${{ __html: productData?.headline }}
+                />
+              </Middle>
+              <${
+                Bottom.current
+              } className=${"c-product-cross-sell-card__content__bottom"}>
+                ${
+                  !!productData &&
+                  productData.price &&
+                  html`
+                    ${!!priceAdjust && priceAdjust.length > 0
+                      ? (function () {
+                          const adjustedPrice = calcAdjustedPrice(
+                            productData.price,
+                            priceAdjust
+                          );
+                          return html`
+                      <div>
+                        <${OriginalPrice.current}>
+                          WAS: <span style="text-decoration:line-through;">${floatToCurrencyStr(
+                            productData.price || 0
+                          )}</span>
+                        </OriginalPrice>
+                        <${DiscountedPrice.current}>
+                          NOW: ${floatToCurrencyStr(adjustedPrice || 0)}
+                        </DiscountedPrice>
+                      </div>
+                    `;
+                        })()
+                      : html`
+                          <${Price.current}
+                            dangerouslySetInnerHTML=${{
+                              __html: floatToCurrencyStr(productData.price),
+                            }}
+                          />
+                        `}
+                  `
+                }
+                <${QuantitySelector}
+                  productSku=${productSku}
+                  productPositionIndex=${positionIndex}
+                  align="right"
+                  tooltipPosition="left"
+                  eventHooks=${eventHooks}
+                />
+              </Bottom>
+            </Content>
+          </Wrapper>
+        `;
+    };
+
+    /**
+     * Hero CTA (Preact Component)
+     */
+    const HeroCTA = forwardRef(
+      (
+        {
+          label,
+          link_title: linkTitle,
+          href,
+          className,
+          event_hooks: eventHooks,
+        },
+        ref
+      ) => {
+        const Wrapper = useRef(
+          styled("div")`
+            display: inline-block;
+            & > a {
+              display: inline-block;
+              min-width: 175px;
+              background: #3d8705;
+              color: #fff;
+              text-align: center;
+              border-radius: 3rem;
+              padding: 0.9rem 1rem 0.75rem 1rem;
+              transition: 0.3s background ease-in-out;
+              &:hover {
+                background: #326e04;
+              }
+              & > span {
+                font-size: 16px;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+                line-height: 1;
+                text-transform: uppercase;
+                transition: 0.3s color ease-in-out;
+              }
+            }
+          `
+        );
+
+        const handleLinkClick = useCallback((e) => {
+          eventHooks?.on_click?.(e);
+        }, []);
+
+        return html`
+          <${Wrapper.current}
+            ref=${ref}
+            className=${className}
+          >
+            <a
+              href=${href}
+              title=${linkTitle}
+              onclick=${handleLinkClick}
+            >
+              <span dangerouslySetInnerHTML=${{ __html: label }} />
+            </a>
+          </Wrapper>
+        `;
+      }
+    );
+
+    /**
+     * Product Cross Sell (Preact Component)
+     */
+    const ProductCrossSell = ({
+      content: { align, heading, description, primary_cta: primaryCta },
+      product_list: productList,
+      event_hooks: eventHooks,
+    }) => {
+      const [swiper, setSwiper] = useState(null);
+      const [slideVisibilities, setSlideVisibilities] = useState(
+        Array(productList.length).map((_, i) => i === 0)
+      );
+
+      const isMobile = useMediaQuery("(max-width: 767px)");
+
+      const { observe } = useInView({
+        threshold: 0,
+        onEnter: ({ unobserve }) => {
+          eventHooks?.on_impression?.();
+          unobserve();
+        },
+      });
+
+      const updateSlideVisibilities = useCallback((swiperInstance) => {
+        const slideEls = swiperInstance.slides;
+        // visible slides
+        waitFor(() =>
+          Array.from(slideEls).some((slideEl) =>
+            slideEl.classList.contains("swiper-slide-visible")
+          )
+        )
+          .then(() => {
+            Array.from(slideEls).forEach((slideEl, i) => {
+              if (slideEl.classList.contains("swiper-slide-visible")) {
+                setSlideVisibilities((oldVisibilities) => {
+                  const newVisibilities = [...oldVisibilities];
+                  newVisibilities[i] = true;
+                  return newVisibilities;
+                });
+              }
+            });
+          })
+          .catch(() => {
+            console.error("No slides are visible");
+          });
+        // active slides
+        waitFor(() =>
+          Array.from(slideEls).some((slideEl) =>
+            slideEl.classList.contains("swiper-slide-active")
+          )
+        )
+          .then(() => {
+            Array.from(slideEls).forEach((slideEl, i) => {
+              if (slideEl.classList.contains("swiper-slide-active")) {
+                setSlideVisibilities((oldVisibilities) => {
+                  const newVisibilities = [...oldVisibilities];
+                  newVisibilities[i] = true;
+                  return newVisibilities;
+                });
+              }
+            });
+          })
+          .catch(() => {
+            console.error("No slides are active");
+          });
+      }, []);
+
+      const handleOnSwiper = useCallback(
+        (swiper) => {
+          setSwiper(swiper);
+          eventHooks?.on_swiper?.(swiper);
+        },
+        [swiper, eventHooks]
+      );
+
+      const handleOnAfterInit = useCallback(
+        (swiper) => {
+          waitFor(() => swiper.slides !== undefined && swiper.slides.length > 0)
+            .then(() => {
+              updateSlideVisibilities(swiper);
+            })
+            .catch(() => {
+              console.error("Swiper has no slides");
+            });
+          eventHooks?.on_after_init?.();
+        },
+        [eventHooks]
+      );
+
+      const handlePrev = useCallback(
+        (e) => {
+          if (!swiper) return;
+          swiper.slidePrev();
+          eventHooks?.on_navigation_prev_click?.(e);
+        },
+        [swiper]
+      );
+
+      const handleNext = useCallback(
+        (e) => {
+          if (!swiper) return;
+          swiper.slideNext();
+          eventHooks?.on_navigation_next_click?.(e);
+        },
+        [swiper]
+      );
+
+      const handleSlideChangeTransitionEnd = useCallback(
+        (swiper) => {
+          updateSlideVisibilities(swiper);
+          eventHooks?.on_slide_change_transition_end?.();
+        },
+        [eventHooks]
+      );
+
+      const handleOnBreakpoint = useCallback((swiper) => {
+        updateSlideVisibilities(swiper);
+        eventHooks?.on_breakpoint?.();
+      }, []);
+
+      const handleSliderFirstMove = useCallback(() => {
+        eventHooks?.on_slider_first_move?.();
+      }, [eventHooks]);
+
+      const handleOnPaginationRender = useCallback((_, paginationEl) => {
+        const paginationBulletEls = paginationEl.querySelectorAll(
+          ".swiper-pagination-bullet"
+        );
+        Array.from(paginationBulletEls).forEach((paginationBulletEl) => {
+          if (!paginationBulletEl.classList.contains("click-event-attached")) {
+            paginationBulletEl.addEventListener("click", (e) => {
+              eventHooks?.on_pagination_dot_click?.(e);
+            });
+            paginationBulletEl.classList.add("click-event-attached");
+          }
+        });
+      }, []);
+
+      const Wrapper = useRef(
+        styled("div")`
+          position: relative;
+          padding: 1rem 2rem;
+          overflow: hidden;
+          .swiper {
+            padding-bottom: 80px;
+            overflow: visible;
+          }
+          .swiper-slide {
+            height: auto;
+            opacity: 0.25;
+            transition: 0.3s opacity;
+            /* styling for card content */
+            .c-product-cross-sell-card__content {
+              pointer-events: none;
+            }
+            &.swiper-slide-visible,
+            &.swiper-slide-active {
+              opacity: 1;
+              transition: 0.3s opacity;
+              /* styling for card content */
+              .c-product-cross-sell-card__content {
+                pointer-events: auto;
+              }
+            }
+          }
+          .swiper-pagination {
+            top: unset !important;
+            bottom: 40px !important;
+            transform: translateY(50%);
+
+            font-size: 16px;
+            font-weight: 500;
+          }
+          .swiper-pagination-current,
+          .swiper-pagination-total {
+            display: inline-block;
+          }
+          .swiper-pagination-current {
+            margin-right: 2px;
+          }
+          ${({ productCount }) => {
+            if (productCount <= 4) {
+              return `
+                  @media (min-width: 1200px) {
+                    .swiper {
+                      padding-bottom: 40px;
+                    }
+                    .swiper-wrapper {
+                      justify-content: center;
+                    }
+                    .swiper-button-prev, .swiper-button-next {
+                      display: none;
+                    }
+                  }
+                `;
+            }
+            return ``;
+          }}
+          ${({ productCount }) => {
+            if (productCount <= 3) {
+              return `
+                  @media (min-width: 1024px) and (max-width: 1199px) {
+                    .swiper {
+                      padding-bottom: 40px;
+                    }
+                    .swiper-button-prev, .swiper-button-next {
+                      display: none;
+                    }
+                  }
+                `;
+            }
+            return ``;
+          }}
+            ${({ productCount }) => {
+            if (productCount <= 2) {
+              return `
+                  @media (min-width: 768px) and (max-width: 1023px) {
+                    .swiper {
+                      padding-bottom: 40px;
+                    }
+                    .swiper-button-prev, .swiper-button-next {
+                      display: none;
+                    }
+                  }
+                `;
+            }
+            return ``;
+          }}
+            .swiper-pagination-total {
+            margin-left: 2px;
+          }
+          .swiper-pagination-bullet {
+            position: relative;
+            width: 6px;
+            height: 6px;
+            background: none;
+            border-radius: 0;
+            padding: 12px 10px !important;
+            margin: 0 !important;
+            opacity: 1;
+          }
+          @media (min-width: 1024px) {
+            .swiper-pagination-bullet {
+              padding: 12px 10px !important;
+              transition: 0.3s padding;
+            }
+            .swiper-pagination-bullet:has(
+                + .swiper-pagination-bullet.swiper-pagination-bullet-active
+              ),
+            .swiper-pagination-bullet.swiper-pagination-bullet-active
+              + .swiper-pagination-bullet {
+              padding: 12px 12px !important;
+            }
+            .swiper-pagination-bullet.swiper-pagination-bullet-active {
+              padding: 12px 12px !important;
+              transition: 0.3s padding;
+            }
+          }
+          .swiper-pagination-bullet::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.5);
+            width: 12px;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 50%;
+            transition: 0.3s background, 0.3s transform;
+          }
+          .swiper-pagination-bullet:has(
+              + .swiper-pagination-bullet.swiper-pagination-bullet-active
+            )::after,
+          .swiper-pagination-bullet.swiper-pagination-bullet-active
+            + .swiper-pagination-bullet::after {
+            transform: translate(-50%, -50%) scale(0.75);
+            background: rgba(0, 0, 0, 0.4);
+          }
+          .swiper-pagination-bullet.swiper-pagination-bullet-active::after {
+            background: rgba(0, 0, 0, 1);
+            transition: 0.3s background, 0.3s transform;
+            transform: translate(-50%, -50%) scale(1);
+          }
+        `
+      );
+
+      const Inner = useRef(
+        styled("div")`
+          position: relative;
+          margin: 0 auto;
+          @media (min-width: 768px) {
+            max-width: 45.5rem;
+          }
+          @media (min-width: 1024px) {
+            max-width: 72.5rem;
+          }
+        `
+      );
+
+      const Content = useRef(
+        styled("div")`
+          margin-bottom: 2rem;
+          ${({ noDescription }) =>
+            noDescription &&
+            `
+              margin-bottom: 2.5rem;
+            `}
+          ${({ align }) =>
+            align &&
+            `
+              text-align: ${align};
+            `}
+        `
+      );
+
+      const Heading = useRef(
+        styled("h2")`
+          font-size: 32px;
+          font-weight: 600;
+          letter-spacing: 1px;
+          line-height: 1.2;
+        `
+      );
+
+      const Description = useRef(
+        styled("p")`
+          font-size: 1.25rem;
+          font-weight: 400;
+          letter-spacing: 0.0625rem;
+          line-height: 1.2;
+          margin-top: 1rem;
+        `
+      );
+
+      const NavigationButton = useRef(
+        styled("button")`
+          && {
+            margin-top: unset;
+            top: unset;
+            position: absolute;
+            background: #000000;
+            color: #ffffff;
+            border: 1px solid #000000;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            z-index: 1;
+            bottom: 40px;
+            transform: translateY(50%);
+            &.swiper-button-prev,
+            &.swiper-button-next {
+              &::after {
+                font-size: 22px;
+              }
+            }
+            &.swiper-button-prev::after {
+              transform: translateX(-2px);
+            }
+            &.swiper-button-next::after {
+              transform: translateX(2px);
+            }
+            @media (min-width: 1024px) {
+              background: #000000;
+              color: #ffffff;
+              bottom: unset;
+              top: 50%;
+              transition: 0.3s background, 0.3s color;
+              &:hover {
+                background: #ffffff;
+                color: #000000;
+              }
+            }
+          }
+        `
+      );
+
+      const NavigationPrev = useRef(
+        styled(NavigationButton.current)`
+          && {
+            left: 0;
+            @media (min-width: 1024px) {
+              transform: translate(-25px, -50%);
+            }
+          }
+        `
+      );
+
+      const NavigationNext = useRef(
+        styled(NavigationButton.current)`
+          && {
+            right: 0;
+            @media (min-width: 1024px) {
+              transform: translate(25px, -50%);
+            }
+          }
+        `
+      );
+
+      const StyledSwiper = useRef(styled(Swiper)``);
+
+      const StyledProductCrossSellCard = useRef(
+        styled(ProductCrossSellCard)`
+          height: 100%;
+        `
+      );
+
+      const StyledHeroCTA = useRef(
+        styled(HeroCTA)`
+          && a {
+            background: #000000;
+            color: #ffffff;
+            border: 1px solid #000000;
+            & > span {
+              font-weight: 500;
+            }
+            &:hover {
+              background: #ffffff;
+              color: #000000;
+              border: 1px solid #000000;
+            }
+          }
+        `
+      );
+
+      const ButtonContainer = useRef(
+        styled("div")`
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          padding-bottom: 20px;
+        `
+      );
+
+      const PrimaryCTA = useRef(styled(StyledHeroCTA.current)``);
+
+      return html`
+          <${Wrapper.current} productCount=${productList.length || 0}>
+            <div ref=${observe}>
+              <${Inner.current}>
+                <div>
+                  ${
+                    heading &&
+                    html`
+                    <${Content.current}
+                      align=${align}
+                      noDescription=${!description}
+                    >
+                      <${Heading.current} dangerouslySetInnerHTML=${{
+                      __html: heading,
+                    }} />
+                      ${
+                        description &&
+                        html`
+                          <${Description.current}
+                            dangerouslySetInnerHTML=${{ __html: description }}
+                          />
+                        `
+                      }
+                    </Content>
+                  `
+                  }
+                  <${StyledSwiper.current}
+                    modules=${[Pagination, Navigation]}
+                    speed=${300}
+                    spaceBetween=${40}
+                    slidesPerView=${1}
+                    pagination=${{
+                      type: "fraction",
+                    }}
+                    navigation=${{
+                      prevEl: ".swiper-button-prev",
+                      nextEl: ".swiper-button-next",
+                    }}
+                    watchSlidesProgress=${true}
+                    watchSlidesVisibility=${true}
+                    watchOverflow=${true}
+                    breakpoints=${{
+                      768: {
+                        slidesPerView: 2,
+                        pagination: {
+                          type: "bullets",
+                          clickable: true,
+                        },
+                      },
+                      1024: {
+                        slidesPerView: 3,
+                        pagination: {
+                          type: "bullets",
+                          clickable: true,
+                        },
+                      },
+                      1200: {
+                        slidesPerView: 4,
+                        pagination: {
+                          type: "bullets",
+                          clickable: true,
+                        },
+                      },
+                    }}
+                    onSwiper=${handleOnSwiper}
+                    onAfterInit=${handleOnAfterInit}
+                    onSliderFirstMove=${handleSliderFirstMove}
+                    onSlideChangeTransitionEnd=${handleSlideChangeTransitionEnd}
+                    onBreakpoint=${handleOnBreakpoint}
+                    onPaginationRender=${handleOnPaginationRender}
+                  >
+                    ${productList.map(
+                      (productItem, i) => html`
+                      <${SwiperSlide}>
+                        <${StyledProductCrossSellCard.current}
+                          ...${productItem}
+                          position_index=${i + 1}
+                          is_visible=${slideVisibilities[i]}
+                          is_mobile=${isMobile}
+                        />
+                      </SwiperSlide>
+                    `
+                    )}
+                  </StyledSwiper>
+                  <${
+                    NavigationPrev.current
+                  } className=${"swiper-button-prev"} onClick=${handlePrev} />
+                  <${
+                    NavigationNext.current
+                  } className=${"swiper-button-next"} onClick=${handleNext} />
+                </div>
+                <div>
+                <!-- CTAs -->
+                ${
+                  !!primaryCta &&
+                  html`
+                  <${ButtonContainer.current}>
+                    <!-- Primary CTA -->
+                    <${PrimaryCTA.current}
+                      label=${primaryCta.label}
+                      link_title=${primaryCta.link_title}
+                      href=${primaryCta.href}
+                      event_hooks=${{
+                        on_click: eventHooks?.on_primary_cta_click,
+                      }}
+                    />
+                    <!-- Primary CTA -->
+                  </ButtonContainer>
+                `
+                }
+                <!-- CTAs -->
+                </div>
+              </Inner>
+            </div>
+          </Wrapper>
+        `;
+    };
+
+    // main
+
+    const marketCode = await getMarket();
+    const marketCodeUpperCase = marketCode.toUpperCase();
+    const isOriginal = location.href.indexOf("original") > -1;
+
+    // tracking - edit these
+    const CAMPAIGN_NAME = "EngageProductReco";
+    const CAMPAIGN_DATE = "2024_03";
+    const PAGE_NAME = "Capsules";
+    const TECH_NAME = isOriginal ? "Original" : "Vertuo";
+
+    // tracking - do not edit these
+    const CAMPAIGN_ID = `${marketCodeUpperCase}_${CAMPAIGN_DATE}_${CAMPAIGN_NAME}_${PAGE_NAME}_${TECH_NAME}PLP_ProductCrossSell`;
+    const INTERNAL_PROMOTION_PRODUCTS_CROSS_SELL = {
+      id: CAMPAIGN_ID,
+      name: CAMPAIGN_NAME,
+      creative: "before_hero_banner",
+      position: "top",
+    };
+    const EVENT_LABEL_PREFIX = `${CAMPAIGN_NAME} Product Rec - ${PAGE_NAME} - ${TECH_NAME} PLP`;
+
+    const productSkuList =
+      marketCode === "au"
+        ? isOriginal
+          ? // Original AU
+            [
+              "5048-2", // Descaling Kit
+              "101852/POST", // AusPost Recycling
+              "122779", // Monin Syrups
+              "132077", // Nomad Terracotta Travel Mug
+              "128557", // Recycling Bin
+            ]
+          : // Vertuo AU
+            [
+              "5048-2", // Descaling Kit
+              "101852/POST", // AusPost Recycling
+              "122779", // Monin Syrups
+              "132077", // Nomad Terracotta Travel Mug
+              "128557", // Recycling Bin
+            ]
+        : isOriginal
+        ? // Original NZ
+          [
+            "5000-2", // Descaling Kit
+            "90643", // Recyclig Post Bag
+            "101852", // Recycling drop off bag
+            "122779", // Monin Syrups
+            "132077", // Nomad Terracotta Travel Mug
+          ]
+        : // Vertuo NZ
+          [
+            "5000-2", // Descaling Kit
+            "SEALNZP1", // Doorstep Collection Recycling Bag
+            "101852", // Recycling drop off bag
+            "122779", // Monin Syrups
+            "132077", // Nomad Terracotta Travel Mug
+          ];
+
+    const productList = productSkuList.map((productSku) => ({
+      product_sku: productSku,
+      ribbon: null,
+      price_adjust: null,
+      event_hooks: {
+        on_pdp_link_click: (productName, positionIndex) => {
+          if (!productName) return;
+          trackGAInternalPromotionClick(INTERNAL_PROMOTION_PRODUCTS_CROSS_SELL);
+          trackGAEvent({
+            eventLabel: `${EVENT_LABEL_PREFIX} - PDP Link - ${positionIndex} - ${productName}`,
+          });
+          const newProductName = productName.replace(/[^0-9a-z]/gi, "");
+          trackGAInternalPromotionClick({
+            id: `${CAMPAIGN_ID}_${positionIndex}_${newProductName}`,
+            name: CAMPAIGN_NAME,
+            creative: "before_hero_banner",
+            position: "top",
+          });
+        },
+        on_basket_add: (productName, positionIndex) => {
+          if (!productName) return;
+          trackGAEvent({
+            eventCategory: "Ecommerce",
+            eventAction: "Add to Cart",
+            eventLabel: `${EVENT_LABEL_PREFIX} - Cart Add - ${positionIndex} - ${productName}`,
+          });
+        },
+        on_product_impression: (productName, positionIndex) => {
+          if (!productName) return;
+          const newProductName = productName.replace(/[^0-9a-z]/gi, "");
+          trackGAInternalPromotionImpression({
+            id: `${CAMPAIGN_ID}_${positionIndex}_${newProductName}`,
+            name: CAMPAIGN_NAME,
+            creative: "before_hero_banner",
+            position: "top",
+          });
+          trackGAEvent({
+            eventLabel: `${EVENT_LABEL_PREFIX} - Product Impression - ${positionIndex} - ${productName}`,
+          });
+        },
+      },
+    }));
+
+    console.log("Product list:");
+    console.log(productList);
+
+    insertComponent({
+      component: ProductCrossSell,
+      config: {
+        content: {
+          align: "center",
+          heading: "Our Accessory Picks",
+          description: null,
+        },
+        product_list: productList,
+        event_hooks: {
+          on_impression: () => {
+            trackGAInternalPromotionImpression(
+              INTERNAL_PROMOTION_PRODUCTS_CROSS_SELL
+            );
+            trackGAEvent({
+              eventAction: "Display",
+              eventLabel: `${EVENT_LABEL_PREFIX} - Impression`,
+            });
+          },
+          on_navigation_next_click: () => {
+            trackGAEvent({
+              eventLabel: `${EVENT_LABEL_PREFIX} - Right Arrow`,
+            });
+          },
+          on_navigation_prev_click: () => {
+            trackGAEvent({
+              eventLabel: `${EVENT_LABEL_PREFIX} - Left Arrow`,
+            });
+          },
+          on_slider_first_move: () => {
+            trackGAEvent({
+              eventAction: "Swipe",
+              eventLabel: `${EVENT_LABEL_PREFIX} - Carousel Swipe`,
+            });
+          },
+          on_pagination_dot_click: () => {
+            trackGAEvent({
+              eventLabel: `${EVENT_LABEL_PREFIX} - Carousel Pagination Dot`,
+            });
+          },
+          on_primary_cta_click: () => {
+            trackGAEvent({
+              eventLabel: `${EVENT_LABEL_PREFIX} - Primary CTA`,
+            });
+          },
+        },
+      },
+      position: "afterbegin",
+      element: "#anz-shared-capsules-plp-products-cross-sell",
+    });
+  })();
+</script>

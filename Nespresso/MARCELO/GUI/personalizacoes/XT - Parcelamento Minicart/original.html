@@ -1,0 +1,86 @@
+<script>
+  setInterval(function () {
+    // Verifica se o carrinho está aberto
+    const cart = document.querySelector(
+      ".MiniBasketDropdown__dropdown--is-open"
+    );
+    if (cart) {
+      // Seleciona o elemento que contém o total
+      const totalElement = document.querySelector(
+        ".MiniBasketTotalTable__totalPrice-value"
+      );
+      const totalText = totalElement.innerText;
+      const totalValue = parseFloat(
+        totalText.replace("R$", "").replace(".", "").replace(",", ".")
+      );
+
+      // Se o total for 0, remove a linha "Total parcelado", caso exista, e não faz mais nada
+      if (totalValue === 0) {
+        const parceladoRow = document.querySelector(
+          ".MiniBasketTotalTable__parcelado"
+        );
+        if (parceladoRow) {
+          parceladoRow.remove();
+        }
+        return;
+      }
+
+      // Calcula o número de parcelas
+      const minParcela = 50;
+      let parcelas = Math.floor(totalValue / minParcela);
+
+      // Limita o número máximo de parcelas a 10
+      if (parcelas > 10) {
+        parcelas = 10;
+      }
+
+      // Se houver mais de uma parcela
+      if (parcelas > 1) {
+        const valorParcela = (totalValue / parcelas)
+          .toFixed(2)
+          .replace(".", ",");
+
+        // Verifica se a linha "Total parcelado" já existe
+        let parceladoRow = document.querySelector(
+          ".MiniBasketTotalTable__parcelado"
+        );
+
+        if (!parceladoRow) {
+          // Cria a linha "Total parcelado" se não existir
+          parceladoRow = document.createElement("tr");
+          parceladoRow.classList.add("MiniBasketTotalTable__parcelado");
+          const totalRow = document.querySelector(
+            ".MiniBasketTotalTable__totalPrice"
+          );
+          totalRow.parentNode.insertBefore(parceladoRow, totalRow.nextSibling);
+        }
+
+        // Atualiza o conteúdo da linha "Total parcelado"
+        parceladoRow.innerHTML =
+          `
+                      <th scope="row" class="MiniBasketTotalTable__totalPrice-label" style="font-size: 14px; font-weight: 700; font-family: 'Nespresso Lucas', sans-serif;">Total parcelado</th>
+                      <td class="MiniBasketTotalTable__totalPrice-value" style="font-size: 15px; font-weight: 600; font-family: 'Nespresso Lucas', sans-serif;">` +
+          parcelas +
+          `x de R$ ` +
+          valorParcela +
+          `(sem juros)</td>
+                  `;
+      } else {
+        // Se não houver mais de uma parcela, remove a linha "Total parcelado" caso exista
+        const parceladoRow = document.querySelector(
+          ".MiniBasketTotalTable__parcelado"
+        );
+        if (parceladoRow) {
+          parceladoRow.remove();
+        }
+      }
+    }
+  }, 1000); // Executa a cada 1 segundo
+</script>
+
+<style>
+  .MiniBasketFooter,
+  .MiniBasketFooter * {
+    font-family: "NespressoLucas" !important;
+  }
+</style>

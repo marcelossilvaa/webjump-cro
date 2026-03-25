@@ -1,0 +1,69 @@
+<script>
+  if (window.location.pathname.includes("/br/pt/checkout")) {
+    let ctaTopoHTML = `<div class="responsive-shopping-bag__controls clearfix" id="action_insert_17030821689701012"><button type="submit" id="trigger-checkout-bottom" class="btn-container btn button-primary button-right-icon responsive-shopping-bag__proceed--bottom ctaTopo"><span class="button__content">Continuar</span><i class="responsive-icon Glyph Glyph--arrow-right" aria-hidden="true"></i></button></div>`;
+    $(document).ready(function () {
+      let etapaCarrinho = document.querySelector("#shoppingbag-form"),
+        etapaEntrega = document.querySelector("#shippingInfoDTO"),
+        etapaPagamento = document.querySelector("#paymentInfoDTO");
+
+      if (etapaCarrinho) {
+        addTopCTA(
+          "#main .responsive-shopping-bag__items",
+          "#trigger-checkout-bottom.ctaTopo",
+          "#ta-checkout-bottom",
+          "carrinho"
+        );
+        captarCliquesCTAOriginal("#ta-checkout-bottom", "carrinho");
+      } else if (etapaEntrega) {
+        addTopCTA(
+          "h3.checkout__sub-heading",
+          "#trigger-checkout-bottom.ctaTopo",
+          "#ta-continue-bottom",
+          "entrega"
+        );
+        captarCliquesCTAOriginal("#ta-continue-bottom", "entrega");
+      } else if (etapaPagamento) {
+        addTopCTA(
+          "h3.checkout__sub-heading",
+          "#trigger-checkout-bottom.ctaTopo",
+          "#ta-continue-bottom",
+          "pagamento"
+        );
+        captarCliquesCTAOriginal("#ta-continue-bottom", "pagamento");
+      }
+    });
+
+    function addTopCTA(containerAppend, ctaTopo, ctaOriginal, etapaAtual) {
+      document
+        .querySelector(containerAppend)
+        .insertAdjacentHTML("beforebegin", ctaTopoHTML);
+      document.querySelector(ctaTopo).addEventListener("click", function () {
+        window.gtmDataObject = window.gtmDataObject || [];
+        gtmDataObject.push({
+          event: "local_event", //as is, do not change!!
+          event_raised_by: "br", //please put the country code ex: us, ch, it
+          local_event_category: "user engagement", //free to fill field, please use lower case
+          local_event_action: "click", //free to fill field, please use lower case
+          local_event_label: "cta topo - " + etapaAtual, //free to fill field, please use lower case
+        });
+        document.querySelector(ctaOriginal).click();
+      });
+    }
+    function captarCliquesCTAOriginal(ctaOriginal, etapaAtual) {
+      document
+        .querySelector(ctaOriginal)
+        .addEventListener("click", function (event) {
+          if (event.isTrusted) {
+            window.gtmDataObject = window.gtmDataObject || [];
+            gtmDataObject.push({
+              event: "local_event", //as is, do not change!!
+              event_raised_by: "br", //please put the country code ex: us, ch, it
+              local_event_category: "user engagement", //free to fill field, please use lower case
+              local_event_action: "click", //free to fill field, please use lower case
+              local_event_label: "cta original - " + etapaAtual, //free to fill field, please use lower case
+            });
+          }
+        });
+    }
+  }
+</script>

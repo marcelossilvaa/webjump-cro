@@ -1,0 +1,84 @@
+<script>
+  let regexPDPs = /.*\/br\/pt\/order\/capsules\/.*\/(capsula|cafe|capsulas).*/;
+  let pagePathAtual = window.location.pathname;
+  if (!pagePathAtual.includes("checkout")) {
+    if (regexPDPs.test(pagePathAtual)) {
+      if (regexPDPs.test(pagePathAtual)) {
+        let conteudoCardCapsulas = document.querySelector(
+          "nb-sku-coffee .cb-content"
+        );
+        let divFrete = document.querySelector("#pdp-freight-component");
+        let buscaDivFrete = setInterval(function () {
+          if (buscaDivFrete) {
+            clearInterval(buscaDivFrete);
+            addCountdownContainer(divFrete);
+          }
+          divFrete = document.querySelector("#pdp-freight-component");
+        }, 1000);
+      }
+    }
+  }
+
+  function addCountdownContainer(containerAppend) {
+    let divCountdown = `
+      <div class="container" id="countdown">
+        <div>
+          <p>
+            <span class="spanEntregaGratis">Entrega Grátis:</span>
+            <span class="dataEntregaGratis">quarta-feira, 9 de Outubro no seu primeiro pedido</span>
+          </p>
+          <p>
+            Ou entrega mais rápida:
+            <span class="dataEntregaRapida">Segunda-feira, 7 de Outubro</span>se pedir dentro de 
+            <span class="cronometroEntregaRapida">23hrs 10mins</span>
+          </p>
+        </div>
+      </div>
+    `;
+    containerAppend.insertAdjacentHTML("beforebegin", divCountdown);
+
+    let css = `
+      <style>
+        #countdown, #countdown *{
+          font-family: "NespressoLucas";
+        }
+        #countdown {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background-color: #f8f8f8;
+          padding: 10px;
+          margin: 10px 0;
+        }
+        #countdown div {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+        }
+        #countdown p {
+          margin: 0;
+          font-size: 14px;
+          color: #333;
+        }
+        .spanEntregaGratis {
+          font-weight: bold;
+        }
+        .dataEntregaGratis {
+          color: #00a650;
+          font-weight: bold;
+        }
+        .dataEntregaRapida {
+          color: #00a650;
+          font-weight: bold;
+        }
+        .cronometroEntregaRapida {
+          color: #00a650;
+          font-weight: bold;
+        }
+      </style>
+    `;
+    document.head.insertAdjacentHTML("beforeend", css);
+  }
+</script>
+<style></style>

@@ -1,0 +1,46 @@
+import(
+  `${window.location.origin}/shared_res/agility/next-components/vendors/event-queue.es.min.js`
+).then(({ emit }) =>
+  emit("hq-products-recommendation", {
+    VER_LIMITED_EDITION_1:
+      "${aep._nestlenespressosa.coffee_recommendation.VER_LIMITED_EDITION_1}",
+    VER_LIMITED_EDITION_2:
+      "${aep._nestlenespressosa.coffee_recommendation.VER_LIMITED_EDITION_2}",
+    VER_LIMITED_EDITION_3:
+      "${aep._nestlenespressosa.coffee_recommendation.VER_LIMITED_EDITION_3}",
+    VER_LIMITED_EDITION_4:
+      "${aep._nestlenespressosa.coffee_recommendation.VER_LIMITED_EDITION_4}",
+    VER_LIMITED_EDITION_5:
+      "${aep._nestlenespressosa.coffee_recommendation.VER_LIMITED_EDITION_5}",
+    CLA_LIMITED_EDITION_1:
+      "${aep._nestlenespressosa.coffee_recommendation.CLA_LIMITED_EDITION_1}",
+    CLA_LIMITED_EDITION_2:
+      "${aep._nestlenespressosa.coffee_recommendation.CLA_LIMITED_EDITION_2}",
+    CLA_LIMITED_EDITION_3:
+      "${aep._nestlenespressosa.coffee_recommendation.CLA_LIMITED_EDITION_3}",
+    CLA_LIMITED_EDITION_4:
+      "${aep._nestlenespressosa.coffee_recommendation.CLA_LIMITED_EDITION_4}",
+    CLA_LIMITED_EDITION_5:
+      "${aep._nestlenespressosa.coffee_recommendation.CLA_LIMITED_EDITION_5}",
+    CLA_PERMANENT_1:
+      "${aep._nestlenespressosa.coffee_recommendation.CLA_PERMANENT_1}",
+    CLA_PERMANENT_2:
+      "${aep._nestlenespressosa.coffee_recommendation.CLA_PERMANENT_2}",
+    CLA_PERMANENT_3:
+      "${aep._nestlenespressosa.coffee_recommendation.CLA_PERMANENT_3}",
+    CLA_PERMANENT_4:
+      "${aep._nestlenespressosa.coffee_recommendation.CLA_PERMANENT_4}",
+    CLA_PERMANENT_5:
+      "${aep._nestlenespressosa.coffee_recommendation.CLA_PERMANENT_5}",
+    VER_PERMANENT_1:
+      "${aep._nestlenespressosa.coffee_recommendation.VER_PERMANENT_1}",
+    VER_PERMANENT_2:
+      "${aep._nestlenespressosa.coffee_recommendation.VER_PERMANENT_2}",
+    VER_PERMANENT_3:
+      "${aep._nestlenespressosa.coffee_recommendation.VER_PERMANENT_3}",
+    VER_PERMANENT_4:
+      "${aep._nestlenespressosa.coffee_recommendation.VER_PERMANENT_4}",
+    VER_PERMANENT_5:
+      "${aep._nestlenespressosa.coffee_recommendation.VER_PERMANENT_5}",
+  })
+);
