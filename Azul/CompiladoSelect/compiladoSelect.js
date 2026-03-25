@@ -385,7 +385,9 @@
 
       document.body.classList.add(TR_BODY_CLASS);
 
-      const hasRelevant = mutations.some((m) => m.addedNodes.length > 0 || m.removedNodes.length > 0);
+      const hasRelevant = mutations.some(
+        (m) => m.addedNodes.length > 0 || m.removedNodes.length > 0,
+      );
       if (!hasRelevant) {
         return;
       }
@@ -404,7 +406,10 @@
       const availableTariffs = trGetOnlyNotSoldOutTariffs(flightCards);
 
       if (flightType === 'Nacional') {
-        const filtered = trFilterTariffsByName(availableTariffs, TR_TARIFF_RECOMMENDATION_FOR_NATIONAL);
+        const filtered = trFilterTariffsByName(
+          availableTariffs,
+          TR_TARIFF_RECOMMENDATION_FOR_NATIONAL,
+        );
         trAddRecommendationTags(filtered, true, false);
       } else if (flightType === 'Internacional') {
         const tariffToPromote = trGetTariffToPromoteForInternational();
@@ -456,7 +461,9 @@
       return;
     }
 
-    benefitMarcacaoAntecipadaAssentos.innerHTML = hasMarcacaoAntecipadaAssentos ? TI_HAVE_ICON : TI_DONT_HAVE_ICON;
+    benefitMarcacaoAntecipadaAssentos.innerHTML = hasMarcacaoAntecipadaAssentos
+      ? TI_HAVE_ICON
+      : TI_DONT_HAVE_ICON;
 
     const benefitCheckedBags = benefits[1];
     const checkedBagsConfig = tariffBenefits.checkedBags;
@@ -491,7 +498,9 @@
       return;
     }
 
-    benefitMarcacaoAntecipadaAssentos.innerHTML = hasMarcacaoAntecipadaAssentos ? TI_HAVE_ICON : TI_DONT_HAVE_ICON;
+    benefitMarcacaoAntecipadaAssentos.innerHTML = hasMarcacaoAntecipadaAssentos
+      ? TI_HAVE_ICON
+      : TI_DONT_HAVE_ICON;
 
     const benefitAntecipacaoVoo = benefits[5];
     const hasAntecipacaoVoo = tariffBenefits.antecipacaoVoo;
@@ -536,7 +545,9 @@
       return;
     }
 
-    const benefitKey = Object.keys(TI_TARIFF_BENEFITS).find((key) => TI_TARIFF_BENEFITS[key].tariff === tariffType);
+    const benefitKey = Object.keys(TI_TARIFF_BENEFITS).find(
+      (key) => TI_TARIFF_BENEFITS[key].tariff === tariffType,
+    );
     const tariffBenefits = benefitKey ? TI_TARIFF_BENEFITS[benefitKey] : null;
     if (!tariffBenefits) {
       return;
@@ -578,7 +589,9 @@
 
       document.body.classList.add(TI_BODY_CLASS);
 
-      const hasRelevant = mutations.some((m) => m.addedNodes.length > 0 || m.removedNodes.length > 0);
+      const hasRelevant = mutations.some(
+        (m) => m.addedNodes.length > 0 || m.removedNodes.length > 0,
+      );
       if (!hasRelevant) {
         return;
       }
@@ -980,7 +993,8 @@
     allFareItems.forEach((fareItem) => {
       const rect = fareItem.getBoundingClientRect();
       const style = window.getComputedStyle(fareItem);
-      const isVisible = rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+      const isVisible =
+        rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
 
       if (!isVisible) {
         return;
@@ -991,7 +1005,9 @@
     });
 
     if (enableLog) {
-      console.log('[PreSelectFare] Fare-items: IDA=' + result.ida.length + ' VOLTA=' + result.volta.length);
+      console.log(
+        '[PreSelectFare] Fare-items: IDA=' + result.ida.length + ' VOLTA=' + result.volta.length,
+      );
     }
 
     return result;
@@ -1030,7 +1046,10 @@
       }
 
       const rawText = priceElement.textContent || '';
-      const priceText = rawText.replace(/[^\d.,]/g, '').replace(/\.(?=\d{3})/g, '').replace(',', '.');
+      const priceText = rawText
+        .replace(/[^\d.,]/g, '')
+        .replace(/\.(?=\d{3})/g, '')
+        .replace(',', '.');
       const price = parseFloat(priceText);
 
       if (!isNaN(price) && price > maxPrice) {
@@ -1297,7 +1316,12 @@
       return;
     }
 
-    if (selectedCount > 0 && selectedCount < totalTrips && totalTrips > 1 && hasPreSelectedVisible) {
+    if (
+      selectedCount > 0 &&
+      selectedCount < totalTrips &&
+      totalTrips > 1 &&
+      hasPreSelectedVisible
+    ) {
       newBtn.disabled = false;
       newBtn.classList.remove('disabled');
       newBtn.textContent = 'Continuar';
@@ -1379,7 +1403,8 @@
     floatingDiv.className = 'pre-select-floating-cta';
 
     const wrapperDiv = document.createElement('div');
-    wrapperDiv.style.cssText = 'max-width: 920px; width: 100%; display: flex; justify-content: end;';
+    wrapperDiv.style.cssText =
+      'max-width: 920px; width: 100%; display: flex; justify-content: end;';
 
     const continueButton = document.createElement('button');
     continueButton.className = 'floating-continue-btn';
@@ -1438,7 +1463,9 @@
     const appliedSelections = [];
 
     if (!idaSelected && fareItems.ida.length > 0) {
-      const existing = fareItems.ida.find((item) => item.classList.contains('fare-item-highlighted'));
+      const existing = fareItems.ida.find((item) =>
+        item.classList.contains('fare-item-highlighted'),
+      );
       if (existing) {
         const btn = existing.querySelector('[data-pre-select-modified]');
         if (btn) {
@@ -1456,7 +1483,9 @@
     }
 
     if (!voltaSelected && fareItems.volta.length > 0) {
-      const existing = fareItems.volta.find((item) => item.classList.contains('fare-item-highlighted'));
+      const existing = fareItems.volta.find((item) =>
+        item.classList.contains('fare-item-highlighted'),
+      );
       if (existing) {
         const btn = existing.querySelector('[data-pre-select-modified]');
         if (btn) {
@@ -1496,7 +1525,9 @@
       btn.removeAttribute('data-original-text');
     });
 
-    document.querySelectorAll('.fare-item-highlighted').forEach((item) => item.classList.remove('fare-item-highlighted'));
+    document
+      .querySelectorAll('.fare-item-highlighted')
+      .forEach((item) => item.classList.remove('fare-item-highlighted'));
 
     const floatingCTA = document.querySelector('.pre-select-floating-cta');
     if (floatingCTA) {
@@ -1526,7 +1557,8 @@
     }
 
     const fareItems = psfGetVisibleFareItemsByTrip(false);
-    const totalVisible = fareItems.ida.length + fareItems.volta.length + fareItems.desconhecido.length;
+    const totalVisible =
+      fareItems.ida.length + fareItems.volta.length + fareItems.desconhecido.length;
 
     if (totalVisible === 0) {
       if (psfLastVisibilityState !== false) {
@@ -1544,7 +1576,9 @@
     }
 
     const modifiedButton = document.querySelector('[data-pre-select-modified]');
-    const isModifiedVisible = modifiedButton ? modifiedButton.getBoundingClientRect().height > 0 : false;
+    const isModifiedVisible = modifiedButton
+      ? modifiedButton.getBoundingClientRect().height > 0
+      : false;
 
     let floatingCTA = document.querySelector('.pre-select-floating-cta');
     if (!floatingCTA) {
@@ -1583,7 +1617,12 @@
       psfConsecutiveFailedAttempts = 0;
     }
 
-    if (psfCurrentFareContext && psfCurrentFareContext !== newContext && modifiedButton && isModifiedVisible) {
+    if (
+      psfCurrentFareContext &&
+      psfCurrentFareContext !== newContext &&
+      modifiedButton &&
+      isModifiedVisible
+    ) {
       psfIsProcessingChange = true;
       psfResetCurrentSelection();
       psfCurrentFareContext = newContext;
@@ -1689,14 +1728,16 @@
           const hasFloatingCTA = addedNodes.some((node) => {
             return (
               node.nodeType === 1 &&
-              (node.classList?.contains('pre-select-floating-cta') || node.querySelector?.('.pre-select-floating-cta'))
+              (node.classList?.contains('pre-select-floating-cta') ||
+                node.querySelector?.('.pre-select-floating-cta'))
             );
           });
 
           const removedFloatingCTA = removedNodes.some((node) => {
             return (
               node.nodeType === 1 &&
-              (node.classList?.contains('pre-select-floating-cta') || node.querySelector?.('.pre-select-floating-cta'))
+              (node.classList?.contains('pre-select-floating-cta') ||
+                node.querySelector?.('.pre-select-floating-cta'))
             );
           });
 
@@ -1791,7 +1832,8 @@
       }
 
       const fareItems = psfGetVisibleFareItemsByTrip(false);
-      const totalVisible = fareItems.ida.length + fareItems.volta.length + fareItems.desconhecido.length;
+      const totalVisible =
+        fareItems.ida.length + fareItems.volta.length + fareItems.desconhecido.length;
 
       if (totalVisible === 0) {
         return;
