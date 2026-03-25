@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Modal Diamante Unique V2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #041E42 0%, #0a3a7a 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .test-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            color: #ffffff;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .test-btn {
+            background: linear-gradient(135deg, #CF527A 0%, #a63d5f 100%);
+            color: #ffffff;
+            border: none;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(207, 82, 122, 0.4);
+        }
+        
+        .test-btn.secondary {
+            background: transparent;
+            border: 2px solid #ffffff;
+        }
+        
+        .test-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
+        }
+        
+        .info-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .info-box h3 {
+            color: #ffffff;
+            margin-bottom: 12px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .info-box p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        
+        .info-box code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #CF527A;
+        }
+        
+        .buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .logo svg {
+            width: 50px;
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 46 46" fill="none">
+                <path d="M23.0034 45.5032C35.4298 45.5032 45.5034 35.4296 45.5034 23.0032C45.5034 10.5768 35.4298 0.503174 23.0034 0.503174C10.577 0.503174 0.503418 10.5768 0.503418 23.0032C0.503418 35.4296 10.577 45.5032 23.0034 45.5032Z" stroke="white" stroke-width="1.00645"/>
+                <path d="M29.4346 5.00305C29.4346 9.97568 25.4043 14.006 20.4316 14.006C25.4043 14.006 29.4346 18.0363 29.4346 23.009C29.4346 18.0363 33.4649 14.006 38.4376 14.006C33.4649 14.006 29.4346 9.97568 29.4346 5.00305Z" fill="white"/>
+                <path d="M19.147 14.0032H16.2694L10.147 21.2889L23.0041 35.8603L35.8613 21.2889L34.5755 19.8317" stroke="white" stroke-width="2.0129" stroke-miterlimit="10"/>
+            </svg>
+        </div>
+        
+        <h1>Modal Diamante Unique V2</h1>
+        <p class="subtitle">Ambiente de teste para visualização do modal</p>
+        
+        <div class="buttons-container">
+            <button class="test-btn" onclick="openModal()">
+                🎯 Abrir Modal
+            </button>
+            <button class="test-btn secondary" onclick="simulateCookie()">
+                🍪 Simular Cookie
+            </button>
+        </div>
+        
+        <div class="info-box">
+            <h3>📋 Informações do Teste</h3>
+            <p><strong>Arquivo:</strong> <code>modal-diamantev2.js</code></p>
+            <p><strong>Funções disponíveis:</strong></p>
+            <p>• <code>TudoAzulCookie.showModal()</code> - Exibe o modal</p>
+            <p>• <code>TudoAzulCookie.closeModal()</code> - Fecha o modal</p>
+            <p>• <code>TudoAzulCookie.getTudoAzulData()</code> - Obtém dados do cookie</p>
+            <p>• <code>TudoAzulCookie.sync()</code> - Sincroniza com o cookie</p>
+        </div>
+    </div>
+
+    <!-- Carrega o script do modal -->
+    <script src="modal-diamantev2.js"></script>
+    
+    <script>
+        // Função para abrir o modal diretamente
+        function openModal() {
+            if (window.TudoAzulCookie && typeof window.TudoAzulCookie.showModal === 'function') {
+                window.TudoAzulCookie.showModal();
+            } else {
+                alert('Modal não carregado corretamente. Verifique o console.');
+            }
+        }
+        
+        // Função para simular um cookie TudoAzul com dados de teste
+        function simulateCookie() {
+            var testData = {
+                Id: 'TEST123456',
+                customerNumber: 'TEST123456',
+                program: {
+                    flights: 24,
+                    qualifyingPoints: 24500
+                }
+            };
+            
+            // Cria o cookie simulado
+            var encodedData = encodeURIComponent(JSON.stringify(testData));
+            document.cookie = 'TudoAzul=' + encodedData + ';path=/';
+            
+            // Sincroniza os dados
+            if (window.TudoAzulCookie) {
+                window.TudoAzulCookie.sync();
+                alert('Cookie TudoAzul simulado com sucesso!\n\nDados:\n- Trechos: 24\n- Pontos Qualificáveis: 24.500\n\nO modal agora pode ser acionado pelos triggers automáticos ou pelo botão "Abrir Modal".');
+            }
+        }
+        
+        // Log de inicialização
+        console.log('========================================');
+        console.log('[Test Page] Modal Diamante Unique V2');
+        console.log('========================================');
+        console.log('Use as funções globais:');
+        console.log('- TudoAzulCookie.showModal()');
+        console.log('- TudoAzulCookie.closeModal()');
+        console.log('- TudoAzulCookie.getTudoAzulData()');
+        console.log('- TudoAzulCookie.sync()');
+    </script>
+</body>
+</html>

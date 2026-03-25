@@ -1,0 +1,111 @@
+<script>
+  (function () {
+    if (!window.personalizacaoAmbassador) {
+      window.personalizacaoAmbassador = "true";
+      gtmDataObject = window.gtmDataObject || [];
+      gtmDataObject.push({
+        event: "adobe_target",
+        event_raised_by: "adobe target",
+        experiment_id: "${campaign.id}",
+        experiment_type: "AB",
+        experiment_name: "${campaign.name}",
+        experiment_variant_id: "${campaign.recipe.id}",
+        experiment_variant: "${campaign.recipe.name}",
+      });
+
+      let elementoAppend = document.querySelector("#block-8826536187381");
+      let tentativas = 0;
+      let buscaElemento = setInterval(function () {
+        if (tentativas > 4) {
+          clearInterval(buscaElemento);
+        }
+        if (elementoAppend) {
+          clearInterval(buscaElemento);
+          let copy =
+            "CLIENTE AMBASSADOR, FAÇA LOGIN PARA COMPRAR SEU ACESSÓRIO EXCLUSIVO <span class='spanAmbassador'>VERTUO MUG</span>";
+
+          // Correção do HTML para incluir a div ambassador-content
+          let htmlAmbassador =
+            '<div class="ambassadorPersonalizacao">' +
+            '<div class="ambassador-content">' +
+            "<p>" +
+            copy +
+            "</p>" +
+            "</div>" +
+            "</div>";
+
+          document
+            .querySelector("#block-8826536187381")
+            .insertAdjacentHTML("afterend", htmlAmbassador);
+
+          let css = `<style>
+    .ambassadorPersonalizacao {
+      position: relative;
+      width: 100%;
+      max-width: 1054px;
+      margin: 0 auto;
+      background-color: transparent;
+    }
+
+    .ambassador-content {
+      background-image: url("https://www.nespresso.com/ecom/medias/sys_master/public/35039205163038/Zoom-2025-ECOMM-Caneca-Vertuo-Pantone-1054x350px.png?attachment=true&cimgnr=WEp2n");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
+      height: 143px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .ambassadorPersonalizacao p {
+      padding: 20px 15px;
+      letter-spacing: 1px;
+      color: #000;
+      font-weight: 600;
+      text-align: center;
+      font-family: NespressoLucas, Arial, sans-serif;
+      margin: 0;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .spanAmbassador {
+      background-color: #eb7047;
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      margin: 0 2px;
+    }
+
+    @media screen and (min-width: 768px) {
+      .ambassador-content {
+        height: 140px;
+        background-size: cover !important;
+        background-position-y: -133px !important;
+      }
+      .ambassadorPersonalizacao p {
+        font-size: 16px;
+        width: 450px !important;
+      }
+    }
+    @media screen and (max-width: 767px) {
+      .ambassadorPersonalizacao p {
+        font-size: 12px;
+        padding: 15px 10px;
+      }
+      #loginFormBlock div[data-error-display] {
+        margin: -18px;
+      }
+    }
+  </style>`;
+
+          document.head.insertAdjacentHTML("beforeend", css);
+        }
+        buscaElemento = document.querySelector("#block-8826536187381");
+        tentativas++;
+      }, 1000);
+    }
+  })();
+</script>

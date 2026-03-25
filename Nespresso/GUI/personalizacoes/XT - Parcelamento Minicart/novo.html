@@ -1,0 +1,191 @@
+<script>
+  (function () {
+    var isInitialized = false;
+
+    gtmDataObject = window.gtmDataObject || [];
+    gtmDataObject.push({
+      event: "adobe_target",
+      event_raised_by: "adobe target",
+      experiment_id: "${campaign.id}",
+      experiment_type: "XT",
+      experiment_name: "${campaign.name}",
+      experiment_variant_id: "${campaign.recipe.id}",
+      experiment_variant: "${campaign.recipe.name}",
+    });
+
+    function updateParcelamento() {
+      try {
+        var cart = document.querySelector(
+          ".MiniBasketDropdown__dropdown--is-open"
+        );
+        if (!cart) {
+          return;
+        }
+
+        var totalElement = document.querySelector(
+          ".MiniBasketTotalTable__totalPrice-value"
+        );
+        if (!totalElement) {
+          return;
+        }
+
+        var totalText = totalElement.innerText;
+        var totalValue = parseFloat(
+          totalText.replace("R$", "").replace(".", "").replace(",", ".")
+        );
+
+        if (totalValue === 0 || isNaN(totalValue)) {
+          var parceladoRow = document.querySelector(
+            ".MiniBasketTotalTable__parcelado"
+          );
+          if (parceladoRow) {
+            parceladoRow.remove();
+          }
+          return;
+        }
+
+        var minParcela = 50;
+        var parcelas = Math.floor(totalValue / minParcela);
+
+        if (parcelas > 10) {
+          parcelas = 10;
+        }
+
+        if (parcelas > 1) {
+          var valorParcela = (totalValue / parcelas)
+            .toFixed(2)
+            .replace(".", ",");
+
+          var parceladoRow = document.querySelector(
+            ".MiniBasketTotalTable__parcelado"
+          );
+          if (!parceladoRow) {
+            parceladoRow = document.createElement("tr");
+            parceladoRow.classList.add("MiniBasketTotalTable__parcelado");
+            var totalRow = document.querySelector(
+              ".MiniBasketTotalTable__totalPrice"
+            );
+            if (totalRow && totalRow.parentNode) {
+              totalRow.parentNode.insertBefore(
+                parceladoRow,
+                totalRow.nextSibling
+              );
+            }
+          }
+
+          if (parceladoRow) {
+            parceladoRow.innerHTML =
+              '<th scope="row" class="MiniBasketTotalTable__totalPrice-label" style="font-size: 14px; font-weight: 700; font-family: \'Nespresso Lucas\', sans-serif;">Total parcelado</th>' +
+              '<td class="MiniBasketTotalTable__totalPrice-value" style="font-size: 15px; font-weight: 600; font-family: \'Nespresso Lucas\', sans-serif;">' +
+              parcelas +
+              "x de R$ " +
+              valorParcela +
+              " (sem juros)</td>";
+          }
+        } else {
+          var parceladoRow = document.querySelector(
+            ".MiniBasketTotalTable__parcelado"
+          );
+          if (parceladoRow) {
+            parceladoRow.remove();
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao atualizar parcelamento:", error);
+      }
+    }
+
+    function debounce(func, wait) {
+      var timeout;
+      return function () {
+        var context = this;
+        var args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(function () {
+          func.apply(context, args);
+        }, wait);
+      };
+    }
+
+    var debouncedUpdate = debounce(updateParcelamento, 100);
+
+    function setupObserver() {
+      var priceObserver = new MutationObserver(function (mutations) {
+        debouncedUpdate();
+      });
+
+      function startObserving() {
+        var totalTable = document.querySelector(".MiniBasketTotalTable");
+        if (totalTable) {
+          priceObserver.observe(totalTable, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+            attributes: false,
+          });
+
+          updateParcelamento();
+          return true;
+        }
+        return false;
+      }
+
+      if (!startObserving()) {
+        var miniBasketObserver = new MutationObserver(function (mutations) {
+          if (startObserving()) {
+            miniBasketObserver.disconnect();
+          }
+        });
+
+        miniBasketObserver.observe(document.body, {
+          childList: true,
+          subtree: true,
+        });
+      }
+      var cartButton = document.querySelector(
+        ".HeaderNavigationBarButton--mini-basket, .MiniBasketButton"
+      );
+      if (cartButton) {
+        cartButton.addEventListener(
+          "click",
+          function () {
+            setTimeout(startObserving, 500);
+          },
+          { once: false }
+        );
+      }
+    }
+
+    function initialize() {
+      if (
+        isInitialized ||
+        document.body.getAttribute(
+          "data-nespresso-parcelamento-initialized"
+        ) === "true"
+      ) {
+        return;
+      }
+
+      isInitialized = true;
+
+      setupObserver();
+
+      document.body.setAttribute(
+        "data-nespresso-parcelamento-initialized",
+        "true"
+      );
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initialize);
+    } else {
+      initialize();
+    }
+  })();
+</script>
+<style>
+  .MiniBasketFooter,
+  .MiniBasketFooter * {
+    font-family: "NespressoLucas" !important;
+  }
+</style>

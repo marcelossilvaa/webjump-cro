@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PicPay Exit Intent Modal V3 - Duas Colunas | Demo</title>
+  
+  <!-- Google Fonts - Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --picpay-green: #11C76F;
+      --picpay-green-dark: #0EAD5F;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #fff;
+    }
+    
+    /* Header */
+    .header {
+      padding: 20px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .header img {
+      height: 32px;
+    }
+    
+    .version-badge {
+      background: linear-gradient(135deg, var(--picpay-green), var(--picpay-green-dark));
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Main Content */
+    .main-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 30px;
+    }
+    
+    .hero-section {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    
+    .hero-section h1 {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 0%, var(--picpay-green) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .hero-section p {
+      font-size: 18px;
+      color: rgba(255,255,255,0.7);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    /* Test Controls */
+    .test-controls {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 40px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .test-controls h2 {
+      font-size: 18px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .test-controls h2::before {
+      content: '🎮';
+    }
+    
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    
+    .test-btn {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .test-btn.primary {
+      background: var(--picpay-green);
+      color: white;
+    }
+    
+    .test-btn.primary:hover {
+      background: var(--picpay-green-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(17, 199, 111, 0.4);
+    }
+    
+    .test-btn.secondary {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .test-btn.secondary:hover {
+      background: rgba(255,255,255,0.15);
+    }
+    
+    /* Geo Simulation */
+    .geo-simulation {
+      background: rgba(17, 199, 111, 0.1);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 40px;
+      border: 1px solid rgba(17, 199, 111, 0.3);
+    }
+    
+    .geo-simulation h2 {
+      font-size: 18px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .geo-simulation h2::before {
+      content: '📍';
+    }
+    
+    .city-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    
+    .city-btn {
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .city-btn:hover {
+      background: rgba(17, 199, 111, 0.3);
+      border-color: var(--picpay-green);
+    }
+    
+    .city-btn.active {
+      background: var(--picpay-green);
+      border-color: var(--picpay-green);
+    }
+    
+    /* Changelog */
+    .changelog {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 30px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .changelog h2 {
+      font-size: 18px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .changelog h2::before {
+      content: '📋';
+    }
+    
+    .changelog-item {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .changelog-item:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+    
+    .changelog-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    
+    .changelog-icon.layout { background: linear-gradient(135deg, #E6F9EF, #D1F5E0); }
+    .changelog-icon.copy { background: linear-gradient(135deg, #EEF2FF, #E0E7FF); }
+    .changelog-icon.ux { background: linear-gradient(135deg, #FEF3C7, #FDE68A); }
+    .changelog-icon.mobile { background: linear-gradient(135deg, #FCE7F3, #FBCFE8); }
+    
+    .changelog-text {
+      flex: 1;
+    }
+    
+    .changelog-text h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #fff;
+    }
+    
+    .changelog-text p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.5;
+    }
+    
+    /* Exit Zone Indicator */
+    .exit-indicator {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--picpay-green), #4AE68A);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 1000;
+    }
+    
+    body:hover .exit-indicator {
+      opacity: 0.3;
+    }
+    
+    .exit-hint {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(17, 199, 111, 0.9);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 999;
+    }
+    
+    body:hover .exit-hint {
+      opacity: 1;
+    }
+    
+    /* Modal Preview Grid */
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+    
+    @media (max-width: 900px) {
+      .preview-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .preview-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .preview-card h3 {
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: rgba(255,255,255,0.7);
+    }
+    
+    .preview-card img {
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+    
+    .preview-placeholder {
+      aspect-ratio: 16/10;
+      background: linear-gradient(135deg, rgba(17, 199, 111, 0.2), rgba(17, 199, 111, 0.05));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+    }
+    
+    .preview-placeholder .icon {
+      font-size: 48px;
+      opacity: 0.5;
+    }
+    
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px;
+      color: rgba(255,255,255,0.4);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Exit Zone Indicators -->
+  <div class="exit-indicator"></div>
+  <div class="exit-hint">↑ Mova o mouse para cima para ativar o Exit Intent</div>
+  
+  <!-- Header -->
+  <header class="header">
+    <img src="https://cdn.worldvectorlogo.com/logos/picpay-1.svg" alt="PicPay">
+    <span class="version-badge">V3 - DUAS COLUNAS</span>
+  </header>
+  
+  <!-- Main Content -->
+  <main class="main-content">
+    
+    <!-- Hero -->
+    <section class="hero-section">
+      <h1>Exit Intent Modal V3</h1>
+      <p>Layout Premium com duas colunas, copy persuasivo e diferenciais exclusivos do PicPay</p>
+    </section>
+    
+    <!-- Test Controls -->
+    <section class="test-controls">
+      <h2>Controles de Teste</h2>
+      <div class="button-grid">
+        <button class="test-btn primary" onclick="window.PicPayExitModal?.showModal('manual_test')">
+          🚀 Abrir Modal V3
+        </button>
+        <button class="test-btn secondary" onclick="resetModal()">
+          🔄 Resetar Estado
+        </button>
+        <button class="test-btn secondary" onclick="toggleMobile()">
+          📱 Simular Mobile
+        </button>
+        <button class="test-btn secondary" onclick="showDebug()">
+          🐛 Debug Info
+        </button>
+      </div>
+    </section>
+    
+    <!-- Geo Simulation -->
+    <section class="geo-simulation">
+      <h2>Simular Localização</h2>
+      <div class="city-grid">
+        <button class="city-btn" onclick="setGeo('São Paulo', 'SP')">São Paulo, SP</button>
+        <button class="city-btn" onclick="setGeo('Rio de Janeiro', 'RJ')">Rio de Janeiro, RJ</button>
+        <button class="city-btn" onclick="setGeo('Balneário Camboriú', 'SC')">Balneário Camboriú, SC</button>
+        <button class="city-btn" onclick="setGeo('Curitiba', 'PR')">Curitiba, PR</button>
+        <button class="city-btn" onclick="setGeo('Belo Horizonte', 'MG')">Belo Horizonte, MG</button>
+        <button class="city-btn" onclick="setGeo('Salvador', 'BA')">Salvador, BA</button>
+        <button class="city-btn" onclick="setGeo('Recife', 'PE')">Recife, PE</button>
+        <button class="city-btn" onclick="setGeo(null, null)">Sem Localização</button>
+      </div>
+    </section>
+    
+    <!-- Preview Grid -->
+    <section class="preview-grid">
+      <div class="preview-card">
+        <h3>Desktop Preview</h3>
+        <div class="preview-placeholder">
+          <span class="icon">🖥️</span>
+          <span>Layout duas colunas (50% / 50%)</span>
+        </div>
+      </div>
+      <div class="preview-card">
+        <h3>Mobile Preview</h3>
+        <div class="preview-placeholder">
+          <span class="icon">📱</span>
+          <span>Imagem no topo + conteúdo bottom sheet</span>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Changelog -->
+    <section class="changelog">
+      <h2>O que mudou na V3</h2>
+      
+      <div class="changelog-item">
+        <div class="changelog-icon layout">📐</div>
+        <div class="changelog-text">
+          <h4>Layout Duas Colunas (CSS Grid)</h4>
+          <p>Modal com 850px de largura. Coluna esquerda: imagem de capa (bgHero.webp). Coluna direita: conteúdo com padding 40px.</p>
+        </div>
+      </div>
+      
+      <div class="changelog-item">
+        <div class="changelog-icon copy">✍️</div>
+        <div class="changelog-text">
+          <h4>Copy Persuasivo com Diferenciais</h4>
+          <p>3 benefícios exclusivos: Rendimento 102% CDI, Pix/Boleto em 12x no cartão, Conta gratuita e segura. Números em <strong>bold</strong>.</p>
+        </div>
+      </div>
+      
+      <div class="changelog-item">
+        <div class="changelog-icon ux">🎨</div>
+        <div class="changelog-text">
+          <h4>Ícones Específicos por Categoria</h4>
+          <p>Gráfico (verde) para rendimento, Cartão (roxo) para pagamentos, Escudo (amarelo) para segurança.</p>
+        </div>
+      </div>
+      
+      <div class="changelog-item">
+        <div class="changelog-icon layout">🃏</div>
+        <div class="changelog-text">
+          <h4>Header com Ícone + Título</h4>
+          <p>Ícone de cartão verde à esquerda do título "Espera aí! ✋" na mesma linha (flex-row).</p>
+        </div>
+      </div>
+      
+      <div class="changelog-item">
+        <div class="changelog-icon mobile">📱</div>
+        <div class="changelog-text">
+          <h4>Mobile Responsivo (Bottom Sheet)</h4>
+          <p>No mobile, imagem aparece no topo com altura reduzida (140px) e modal desliza de baixo para cima.</p>
+        </div>
+      </div>
+      
+      <div class="changelog-item">
+        <div class="changelog-icon ux">✨</div>
+        <div class="changelog-text">
+          <h4>Badge PicPay na Imagem</h4>
+          <p>Logo PicPay com fundo branco posicionado sobre a imagem de capa para reforço de marca.</p>
+        </div>
+      </div>
+      
+    </section>
+    
+  </main>
+  
+  <!-- Footer -->
+  <footer>
+    <p>Exit Intent Modal V3 | PicPay A/B Test | Adobe Target Ready</p>
+  </footer>
+  
+  <!-- Scripts -->
+  <script src="exit-intent-modal-v3-pf.js"></script>
+  
+  <script>
+    // Funções de teste
+    
+    function resetModal() {
+      sessionStorage.removeItem('picpay_exit_shown_v3');
+      document.cookie = 'picpay_exit_shown_v3=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      
+      if (window.PicPayExitModal) {
+        window.PicPayExitModal.isShown = false;
+        window.PicPayExitModal.isEnabled = true;
+      }
+      
+      alert('✅ Estado resetado! O modal pode ser exibido novamente.');
+    }
+    
+    function setGeo(city, state) {
+      if (window.PicPayExitModal) {
+        window.PicPayExitModal.geoData = city ? {
+          city: city,
+          state: state,
+          source: 'manual_test'
+        } : null;
+        
+        // Atualiza botões ativos
+        document.querySelectorAll('.city-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        alert(`📍 Localização definida: ${city ? city + ', ' + state : 'Sem localização'}`);
+      }
+    }
+    
+    function toggleMobile() {
+      const modal = document.getElementById('picpay-exit-modal');
+      if (modal) {
+        const container = modal.querySelector('.pem-container');
+        if (container.style.maxWidth === '380px') {
+          container.style.maxWidth = '';
+          alert('🖥️ Visualização Desktop');
+        } else {
+          container.style.maxWidth = '380px';
+          alert('📱 Visualização Mobile simulada (380px)');
+        }
+      } else {
+        alert('Abra o modal primeiro para simular');
+      }
+    }
+    
+    function showDebug() {
+      const modal = window.PicPayExitModal;
+      if (modal) {
+        const info = {
+          isEnabled: modal.isEnabled,
+          isShown: modal.isShown,
+          geoData: modal.geoData,
+          cookieSet: document.cookie.includes('picpay_exit_shown_v3'),
+          sessionSet: sessionStorage.getItem('picpay_exit_shown_v3') === 'true'
+        };
+        
+        console.log('🐛 Debug Info:', info);
+        alert('🐛 Debug Info:\n\n' + JSON.stringify(info, null, 2));
+      } else {
+        alert('Modal não inicializado');
+      }
+    }
+    
+    // Log de inicialização
+    console.log('%c PicPay Exit Intent Modal V3 ', 'background: #11C76F; color: white; font-weight: bold; padding: 8px 16px; border-radius: 8px;');
+    console.log('%c Layout Duas Colunas + Copy Persuasivo ', 'background: #1D1D1D; color: #11C76F; padding: 4px 8px; border-radius: 4px;');
+  </script>
+  
+</body>
+</html>

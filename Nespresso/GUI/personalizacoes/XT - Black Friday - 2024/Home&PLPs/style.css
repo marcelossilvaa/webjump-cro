@@ -1,0 +1,14 @@
+#page-builder-64c314d1-4ec2-d5b7-0d22-1f0134966a41 .cb-bg-img{
+ background-image: url("https://www.nespresso.com/ecom/medias/sys_master/public/33876437041182/Main-Banner-3840x720-GENERICO-R-400.jpg") !important;
+}
+
+#block-8821194479093 .cb-bg-img{
+ background-image: url("https://www.nespresso.com/ecom/medias/sys_master/public/33876436549662/Main-Banner-3840x720-8.jpg") !important;
+
+}
+@media screen and (max-width:767px){
+    #page-builder-64c314d1-4ec2-d5b7-0d22-1f0134966a41 .cb-bg-img{
+        background-image: url("https://www.nespresso.com/ecom/medias/sys_master/public/33876434878494/Main-Banner-750x848-GENERICO-R-400.jpg") !important;
+     }
+}
+

@@ -1,0 +1,9 @@
+<script>
+  let clientData = undefined;
+  window.napi
+    .customer()
+    .read()
+    .then(function (customerData) {
+      clientData = customerData;
+    });
+</script>

@@ -1,0 +1,94 @@
+<script>
+  let regexExcecoes = /(.*\/br\/pt\/order\/.*)|(\/br\/pt\/checkout.*)/;
+  let paginaAtual = window.location.pathname;
+  if (!paginaAtual.match(regexExcecoes)) {
+    let menuFixo = `<div class="bottom-nav" role="navigation"><a href="https://www.nespresso.com/br/pt/order/capsules/original" class="nav-item" id="bottom_nav_capsulas" aria-label="Navegar para Cápsulas"><img src="/ecom/medias/sys_master/public/33330923208734/PictoCapsula.png" alt="Ícone Cápsulas"/><span>Cápsulas</span></a><a href="https://www.nespresso.com/br/pt/order/machines/original" class="nav-item" id="bottom_nav_maquinas" aria-label="Navegar para Máquinas"><img src="/ecom/medias/sys_master/public/33330923274270/PictoMaquinas.png" alt="Ícone Máquinas"/><span>Máquinas</span></a><a href="https://www.nespresso.com/br/pt/order/accessories/original" class="nav-item" id="bottom_nav_acessorios" aria-label="Navegar para Acessórios"><nb-icon icon="32/accessory/accessories"></nb-icon><span>Acessórios</span></a><a href="https://www.nespresso.com/br/pt/ofertas" class="nav-item" id="bottom_nav_ofertas" aria-label="Navegar para Ofertas"><img src="/ecom/medias/sys_master/public/33330923634718/PictoOfertas.png" alt="Ícone Ofertas"/><span>Ofertas</span></a><a href="https://www.nespresso.com/recipes/br/pt/nespresso-receitas.html" class="nav-item" id="bottom_nav_receitas" aria-label="Navegar para Receitas"><nb-icon icon="24/recipe/recipe"></nb-icon><span>Receitas</span></a></div>`;
+    document.querySelector("body").insertAdjacentHTML("beforeend", menuFixo);
+    document.querySelectorAll(".bottom-nav a").forEach(function (elemento) {
+      elemento.addEventListener("click", function () {
+        let currentElement = elemento.getAttribute("id");
+        if (currentElement) {
+          trackEvent(currentElement);
+        }
+      });
+    });
+    let navLoginButton = document.querySelector("#bottom_nav_login");
+    if (navLoginButton) {
+      navLoginButton.addEventListener("click", function () {
+        let headerLoginButton = document.querySelector(".LoginDropdown button");
+        if (headerLoginButton) {
+          setTimeout(function () {
+            headerLoginButton.click();
+          }, 250);
+        }
+      });
+    }
+    function trackEvent(label) {
+      window.gtmDataObject = window.gtmDataObject || [];
+      gtmDataObject.push({
+        event: "local_event",
+        event_raised_by: "br",
+        local_event_category: "user engagement",
+        local_event_action: "click",
+        local_event_label: label,
+      });
+    }
+  }
+</script>
+<style>
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    z-index: 900;
+    box-shadow: 0px -4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(100%);
+    opacity: 0;
+    animation: slideUpNavMob 0.5s ease-out forwards;
+  }
+  .bottom-nav,
+  .bottom-nav * {
+    font-family: "NespressoLucas";
+  }
+  @media only screen and (min-width: 769px) {
+    .bottom-nav {
+      display: none;
+    }
+  }
+  .nav-item {
+    text-align: center;
+    flex: 1;
+    color: black;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  .nav-item img,
+  .nav-item nb-icon svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+    margin: 0 auto;
+    fill: #414144;
+  }
+  .nav-item span {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #414144;
+  }
+  @keyframes slideUpNavMob {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0%);
+      opacity: 1;
+    }
+  }
+</style>

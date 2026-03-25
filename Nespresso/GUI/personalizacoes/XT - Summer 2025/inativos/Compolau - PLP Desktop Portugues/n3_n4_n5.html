@@ -1,0 +1,216 @@
+<script>
+  (function () {
+    if (window.personalizacaoSummer) {
+      return;
+    }
+    window.personalizacaoSummer = "true";
+    let linkCapsulasSummerOriginal =
+      "https://www.nespresso.com/br/pt/order/capsules/original?filters=%5B%7B%22key%22%3A%22ranges%22%2C%22value%22%3A%22nesclub2.br.b2c%2Fcat%2Fcapsule-range-barista-creations-over-ice%22%2C%22color%22%3Anull%7D%5D&sort=%7B%22key%22%3A%22recommended%22%2C%22order%22%3A%22asc%22%7D";
+    let linkCapsulasSummerVertuo =
+      "https://www.nespresso.com/br/pt/order/capsules/vertuo?filters=%5B%7B%22key%22%3A%22ranges%22%2C%22value%22%3A%22nesclub2.br.b2c%2Fcat%2Fcapsule-cold-vertuo%22%2C%22color%22%3Anull%7D%5D&sort=%7B%22key%22%3A%22recommended%22%2C%22order%22%3A%22asc%22%7D";
+
+    let compolauLink = window.location.href.includes("original")
+      ? linkCapsulasSummerOriginal
+      : linkCapsulasSummerVertuo;
+    let isDesktop = window.innerWidth >= 996 ? true : false;
+    if (isDesktop) {
+      let compolau =
+        `<section id="containerOfertasSummer">
+  <p class="containerOfertasSummer__title">
+    Presentes exclusivos na compra de cafés gelados <br /><span
+      style="font-size: 12px; font-weight: 500"
+      >*Adicione ao menos 10 cafés da linha Summer</span
+    >
+  </p>
+  <div id="cardProducts">
+    <div class="cardProducts_item">
+      <a
+        class="card_n3"
+        href="` +
+        compolauLink +
+        `"
+        style="color: #000"
+      >
+        <span class="offer-tag">SUMMER</span>
+
+        <img
+          src="https://www.nespresso.com/ecom/medias/sys_master/public/34781938417694/Poppin-150-cafes.png"
+          alt="Na compra de 150 cafés gelados ganhe uma forma de gelo e um copo para drinks"
+          class="cardProducts_item__image"
+        />
+        <div class="cardProducts_item__info">
+          <div class="cardProducts_item__info_title">
+            Ganhe<br />
+            <span class="produtoSummer"
+              >1 FORMA DE GELO <span class="maisCard">+</span></span
+            ><br /><span class="produtoSummer">1 COPO PARA DRINKS</span>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="cardProducts_item">
+      <a
+        class="card_n4"
+        href="` +
+        compolauLink +
+        `"
+        style="color: #000"
+      >
+        <span class="offer-tag">SUMMER</span>
+
+        <img
+          src="https://www.nespresso.com/ecom/medias/sys_master/public/34781938548766/Poppin-200-cafes-.png"
+          alt="Na compra de 200 cafés gelados ganhe um par de bowls para Affogato e um par de porta-copos"
+          class="cardProducts_item__image"
+        />
+        <div class="cardProducts_item__info">
+          <div class="cardProducts_item__info_title">
+            Ganhe<br />
+            <span class="produtoSummer">
+              1 PAR DE BOWLS PARA AFFOGATO <span class="maisCard">+</span></span
+            ><br /><span class="produtoSummer"> 1 PAR DE PORTA-COPOS</span>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="cardProducts_item">
+      <a
+        class="card_n5"
+        href="` +
+        compolauLink +
+        `"
+        style="color: #000"
+      >
+        <span class="offer-tag">SUMMER</span>
+
+        <img
+          src="https://www.nespresso.com/ecom/medias/sys_master/public/34781938614302/Poppin-250-cafes-.png"
+          alt="Na compra de 250 cafés gelados ganhe uma caneca térmica laranja"
+          class="cardProducts_item__image"
+        />
+        <div class="cardProducts_item__info">
+          <div class="cardProducts_item__info_title">
+            Ganhe<br />
+            <span class="produtoSummer"> 1 CANECA TÉRMICA LARANJA</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+           `;
+
+      let css = `<style>
+      #containerOfertasSummer {
+        font-family: NespressoLucas;
+        background-color: #fff;
+        text-align: center;
+        padding: 20px 0;
+      }
+      .containerOfertasSummer__title {
+        font-size: 24px;
+        text-transform: uppercase;
+        font-weight: 600;
+        line-height: 1.3em;
+        padding: 0 45px;
+      }
+      #cardProducts {
+        display: flex;
+        width: 100%;
+        height: auto;
+        gap: 60px;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 20px;
+      }
+
+      @media screen and (max-width: 767px) {
+        #cardProducts {
+          gap: 15px;
+        }
+      }
+
+      #cardProducts .cardProducts_item {
+        border: 1px solid #00000015;
+        box-shadow: 0px 1px 20px 0px #00000015;
+        width: 170px;
+        height: 270px;
+        padding: 20px 10px 20px 10px;
+        border-radius: 10px;
+        position: relative;
+      }
+      #cardProducts .cardProducts_item .cardProducts_item__image {
+        width: auto;
+        height: 130px;
+        margin: 10px;
+      }
+      #cardProducts .cardProducts_item .cardProducts_item__info {
+        width: 100%;
+        height: 50%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      #cardProducts .cardProducts_item .cardProducts_item__info_title {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      #cardProducts .cardProducts_item .cardProducts_item__info_offer {
+        text-transform: uppercase;
+        color: #257a57;
+        font-weight: 600;
+      }
+
+      #cardProducts .offer-tag {
+        font-size: 10px;
+        background-color: #eb7047;
+        width: 60px;
+        color: #fff;
+        font-weight: 600;
+        position: absolute;
+        padding: 2px;
+        top: 10px;
+        left: 0;
+      }
+      #cardProducts .produtoSummer {
+        color: #eb7047;
+        font-size: 12px;
+        line-height: 1;
+      }
+      #cardProducts .maisCard {
+        font-size: 18px;
+        color: black;
+      }
+    </style>
+    `;
+      document.head.insertAdjacentHTML("beforeend", css);
+      let divAppend = document.querySelector("nb-informative-stripe");
+      let buscaDivAppend = setInterval(function () {
+        if (divAppend) {
+          clearInterval(buscaDivAppend);
+          divAppend.insertAdjacentHTML("afterend", compolau);
+
+          let cardNiveis = document.querySelectorAll(
+            "#containerOfertasSummer a"
+          );
+          if (cardNiveis) {
+            cardNiveis.forEach(function (card) {
+              card.addEventListener("click", function () {
+                window.gtmDataObject = window.gtmDataObject || [];
+                gtmDataObject.push({
+                  event: "local_event", //as is, do not change!!
+                  event_raised_by: "br", //please put the country code ex: us, ch, it
+                  local_event_category: "user engagement", //free to fill field, please use lower case
+                  local_event_action: "click", //free to fill field, please use lower case
+                  local_event_label: card.getAttribute("class"), //free to fill field, please use lower case
+                });
+              });
+            });
+          }
+        }
+        divAppend = document.querySelector("nb-informative-stripe");
+      });
+    }
+  })();
+</script>

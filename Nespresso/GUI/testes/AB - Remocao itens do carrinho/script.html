@@ -1,0 +1,1366 @@
+<script>
+  //CODIGO REMOVER MINICART
+  (function () {
+    if (window.RemoverMiniCartProduct === true) {
+      return;
+    }
+    window.RemoverMiniCartProduct = true;
+    function sendGAEvent(label) {
+      window.gtmDataObject = window.gtmDataObject || [];
+      gtmDataObject.push({
+        event: "local_event", //as is, do not change!!
+        event_raised_by: "br", //please put the country code ex: us, ch, it
+        local_event_category: "minicart-remove-items", //free to fill field, please use lower case
+        local_event_action: "click", //free to fill field, please use lower case
+        local_event_label: label, //free to fill field, please use lower case
+      });
+    }
+    gtmDataObject = window.gtmDataObject || [];
+    gtmDataObject.push({
+      event: "adobe_target",
+      event_raised_by: "adobe target",
+      experiment_id: "${campaign.id}",
+      experiment_type: "AB",
+      experiment_name: "${campaign.name}",
+      experiment_variant_id: "${campaign.recipe.id}",
+      experiment_variant: "${campaign.recipe.name}",
+    });
+
+    (() => {
+      var t = {
+          7757: (t, e, r) => {
+            t.exports = r(5666);
+          },
+          414: (t, e, r) => {
+            "use strict";
+            r.d(e, { Z: () => i });
+            var n = r(3645),
+              o = r.n(n)()(function (t) {
+                return t[1];
+              });
+            o.push([
+              t.id,
+              ".remove-all-products-btn,.remove-product-btn{font-weight:300;font-size:10px;line-height:120%;text-decoration-line:underline;color:#17171a;cursor:pointer !important}.remove-btn-wrapper{display:flex;flex-direction:row-reverse}.remove-btn-wrapper .remove-all-products-btn{margin:15px 8px;display:flex;align-items:center}",
+              "",
+            ]);
+            const i = o;
+          },
+          3645: (t) => {
+            "use strict";
+            t.exports = function (t) {
+              var e = [];
+              return (
+                (e.toString = function () {
+                  return this.map(function (e) {
+                    var r = t(e);
+                    return e[2]
+                      ? "@media ".concat(e[2], " {").concat(r, "}")
+                      : r;
+                  }).join("");
+                }),
+                (e.i = function (t, r, n) {
+                  "string" == typeof t && (t = [[null, t, ""]]);
+                  var o = {};
+                  if (n)
+                    for (var i = 0; i < this.length; i++) {
+                      var a = this[i][0];
+                      null != a && (o[a] = !0);
+                    }
+                  for (var c = 0; c < t.length; c++) {
+                    var u = [].concat(t[c]);
+                    (n && o[u[0]]) ||
+                      (r &&
+                        (u[2]
+                          ? (u[2] = "".concat(r, " and ").concat(u[2]))
+                          : (u[2] = r)),
+                      e.push(u));
+                  }
+                }),
+                e
+              );
+            };
+          },
+          5666: (t) => {
+            var e = (function (t) {
+              "use strict";
+              var e,
+                r = Object.prototype,
+                n = r.hasOwnProperty,
+                o = "function" == typeof Symbol ? Symbol : {},
+                i = o.iterator || "@@iterator",
+                a = o.asyncIterator || "@@asyncIterator",
+                c = o.toStringTag || "@@toStringTag";
+              function u(t, e, r) {
+                return (
+                  Object.defineProperty(t, e, {
+                    value: r,
+                    enumerable: !0,
+                    configurable: !0,
+                    writable: !0,
+                  }),
+                  t[e]
+                );
+              }
+              try {
+                u({}, "");
+              } catch (t) {
+                u = function (t, e, r) {
+                  return (t[e] = r);
+                };
+              }
+              function s(t, e, r, n) {
+                var o = e && e.prototype instanceof m ? e : m,
+                  i = Object.create(o.prototype),
+                  a = new S(n || []);
+                return (
+                  (i._invoke = (function (t, e, r) {
+                    var n = f;
+                    return function (o, i) {
+                      if (n === d)
+                        throw new Error("Generator is already running");
+                      if (n === h) {
+                        if ("throw" === o) throw i;
+                        return A();
+                      }
+                      for (r.method = o, r.arg = i; ; ) {
+                        var a = r.delegate;
+                        if (a) {
+                          var c = L(a, r);
+                          if (c) {
+                            if (c === v) continue;
+                            return c;
+                          }
+                        }
+                        if ("next" === r.method) r.sent = r._sent = r.arg;
+                        else if ("throw" === r.method) {
+                          if (n === f) throw ((n = h), r.arg);
+                          r.dispatchException(r.arg);
+                        } else
+                          "return" === r.method && r.abrupt("return", r.arg);
+                        n = d;
+                        var u = l(t, e, r);
+                        if ("normal" === u.type) {
+                          if (((n = r.done ? h : p), u.arg === v)) continue;
+                          return { value: u.arg, done: r.done };
+                        }
+                        "throw" === u.type &&
+                          ((n = h), (r.method = "throw"), (r.arg = u.arg));
+                      }
+                    };
+                  })(t, r, a)),
+                  i
+                );
+              }
+              function l(t, e, r) {
+                try {
+                  return { type: "normal", arg: t.call(e, r) };
+                } catch (t) {
+                  return { type: "throw", arg: t };
+                }
+              }
+              t.wrap = s;
+              var f = "suspendedStart",
+                p = "suspendedYield",
+                d = "executing",
+                h = "completed",
+                v = {};
+              function m() {}
+              function y() {}
+              function w() {}
+              var b = {};
+              u(b, i, function () {
+                return this;
+              });
+              var g = Object.getPrototypeOf,
+                x = g && g(g(T([])));
+              x && x !== r && n.call(x, i) && (b = x);
+              var O = (w.prototype = m.prototype = Object.create(b));
+              function E(t) {
+                ["next", "throw", "return"].forEach(function (e) {
+                  u(t, e, function (t) {
+                    return this._invoke(e, t);
+                  });
+                });
+              }
+              function j(t, e) {
+                function r(o, i, a, c) {
+                  var u = l(t[o], t, i);
+                  if ("throw" !== u.type) {
+                    var s = u.arg,
+                      f = s.value;
+                    return f && "object" == typeof f && n.call(f, "__await")
+                      ? e.resolve(f.__await).then(
+                          function (t) {
+                            r("next", t, a, c);
+                          },
+                          function (t) {
+                            r("throw", t, a, c);
+                          }
+                        )
+                      : e.resolve(f).then(
+                          function (t) {
+                            (s.value = t), a(s);
+                          },
+                          function (t) {
+                            return r("throw", t, a, c);
+                          }
+                        );
+                  }
+                  c(u.arg);
+                }
+                var o;
+                this._invoke = function (t, n) {
+                  function i() {
+                    return new e(function (e, o) {
+                      r(t, n, e, o);
+                    });
+                  }
+                  return (o = o ? o.then(i, i) : i());
+                };
+              }
+              function L(t, r) {
+                var n = t.iterator[r.method];
+                if (n === e) {
+                  if (((r.delegate = null), "throw" === r.method)) {
+                    if (
+                      t.iterator.return &&
+                      ((r.method = "return"),
+                      (r.arg = e),
+                      L(t, r),
+                      "throw" === r.method)
+                    )
+                      return v;
+                    (r.method = "throw"),
+                      (r.arg = new TypeError(
+                        "The iterator does not provide a 'throw' method"
+                      ));
+                  }
+                  return v;
+                }
+                var o = l(n, t.iterator, r.arg);
+                if ("throw" === o.type)
+                  return (
+                    (r.method = "throw"),
+                    (r.arg = o.arg),
+                    (r.delegate = null),
+                    v
+                  );
+                var i = o.arg;
+                return i
+                  ? i.done
+                    ? ((r[t.resultName] = i.value),
+                      (r.next = t.nextLoc),
+                      "return" !== r.method &&
+                        ((r.method = "next"), (r.arg = e)),
+                      (r.delegate = null),
+                      v)
+                    : i
+                  : ((r.method = "throw"),
+                    (r.arg = new TypeError("iterator result is not an object")),
+                    (r.delegate = null),
+                    v);
+              }
+              function k(t) {
+                var e = { tryLoc: t[0] };
+                1 in t && (e.catchLoc = t[1]),
+                  2 in t && ((e.finallyLoc = t[2]), (e.afterLoc = t[3])),
+                  this.tryEntries.push(e);
+              }
+              function P(t) {
+                var e = t.completion || {};
+                (e.type = "normal"), delete e.arg, (t.completion = e);
+              }
+              function S(t) {
+                (this.tryEntries = [{ tryLoc: "root" }]),
+                  t.forEach(k, this),
+                  this.reset(!0);
+              }
+              function T(t) {
+                if (t) {
+                  var r = t[i];
+                  if (r) return r.call(t);
+                  if ("function" == typeof t.next) return t;
+                  if (!isNaN(t.length)) {
+                    var o = -1,
+                      a = function r() {
+                        for (; ++o < t.length; )
+                          if (n.call(t, o))
+                            return (r.value = t[o]), (r.done = !1), r;
+                        return (r.value = e), (r.done = !0), r;
+                      };
+                    return (a.next = a);
+                  }
+                }
+                return { next: A };
+              }
+              function A() {
+                return { value: e, done: !0 };
+              }
+              return (
+                (y.prototype = w),
+                u(O, "constructor", w),
+                u(w, "constructor", y),
+                (y.displayName = u(w, c, "GeneratorFunction")),
+                (t.isGeneratorFunction = function (t) {
+                  var e = "function" == typeof t && t.constructor;
+                  return (
+                    !!e &&
+                    (e === y ||
+                      "GeneratorFunction" === (e.displayName || e.name))
+                  );
+                }),
+                (t.mark = function (t) {
+                  return (
+                    Object.setPrototypeOf
+                      ? Object.setPrototypeOf(t, w)
+                      : ((t.__proto__ = w), u(t, c, "GeneratorFunction")),
+                    (t.prototype = Object.create(O)),
+                    t
+                  );
+                }),
+                (t.awrap = function (t) {
+                  return { __await: t };
+                }),
+                E(j.prototype),
+                u(j.prototype, a, function () {
+                  return this;
+                }),
+                (t.AsyncIterator = j),
+                (t.async = function (e, r, n, o, i) {
+                  void 0 === i && (i = Promise);
+                  var a = new j(s(e, r, n, o), i);
+                  return t.isGeneratorFunction(r)
+                    ? a
+                    : a.next().then(function (t) {
+                        return t.done ? t.value : a.next();
+                      });
+                }),
+                E(O),
+                u(O, c, "Generator"),
+                u(O, i, function () {
+                  return this;
+                }),
+                u(O, "toString", function () {
+                  return "[object Generator]";
+                }),
+                (t.keys = function (t) {
+                  var e = [];
+                  for (var r in t) e.push(r);
+                  return (
+                    e.reverse(),
+                    function r() {
+                      for (; e.length; ) {
+                        var n = e.pop();
+                        if (n in t) return (r.value = n), (r.done = !1), r;
+                      }
+                      return (r.done = !0), r;
+                    }
+                  );
+                }),
+                (t.values = T),
+                (S.prototype = {
+                  constructor: S,
+                  reset: function (t) {
+                    if (
+                      ((this.prev = 0),
+                      (this.next = 0),
+                      (this.sent = this._sent = e),
+                      (this.done = !1),
+                      (this.delegate = null),
+                      (this.method = "next"),
+                      (this.arg = e),
+                      this.tryEntries.forEach(P),
+                      !t)
+                    )
+                      for (var r in this)
+                        "t" === r.charAt(0) &&
+                          n.call(this, r) &&
+                          !isNaN(+r.slice(1)) &&
+                          (this[r] = e);
+                  },
+                  stop: function () {
+                    this.done = !0;
+                    var t = this.tryEntries[0].completion;
+                    if ("throw" === t.type) throw t.arg;
+                    return this.rval;
+                  },
+                  dispatchException: function (t) {
+                    if (this.done) throw t;
+                    var r = this;
+                    function o(n, o) {
+                      return (
+                        (c.type = "throw"),
+                        (c.arg = t),
+                        (r.next = n),
+                        o && ((r.method = "next"), (r.arg = e)),
+                        !!o
+                      );
+                    }
+                    for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+                      var a = this.tryEntries[i],
+                        c = a.completion;
+                      if ("root" === a.tryLoc) return o("end");
+                      if (a.tryLoc <= this.prev) {
+                        var u = n.call(a, "catchLoc"),
+                          s = n.call(a, "finallyLoc");
+                        if (u && s) {
+                          if (this.prev < a.catchLoc) return o(a.catchLoc, !0);
+                          if (this.prev < a.finallyLoc) return o(a.finallyLoc);
+                        } else if (u) {
+                          if (this.prev < a.catchLoc) return o(a.catchLoc, !0);
+                        } else {
+                          if (!s)
+                            throw new Error(
+                              "try statement without catch or finally"
+                            );
+                          if (this.prev < a.finallyLoc) return o(a.finallyLoc);
+                        }
+                      }
+                    }
+                  },
+                  abrupt: function (t, e) {
+                    for (var r = this.tryEntries.length - 1; r >= 0; --r) {
+                      var o = this.tryEntries[r];
+                      if (
+                        o.tryLoc <= this.prev &&
+                        n.call(o, "finallyLoc") &&
+                        this.prev < o.finallyLoc
+                      ) {
+                        var i = o;
+                        break;
+                      }
+                    }
+                    i &&
+                      ("break" === t || "continue" === t) &&
+                      i.tryLoc <= e &&
+                      e <= i.finallyLoc &&
+                      (i = null);
+                    var a = i ? i.completion : {};
+                    return (
+                      (a.type = t),
+                      (a.arg = e),
+                      i
+                        ? ((this.method = "next"),
+                          (this.next = i.finallyLoc),
+                          v)
+                        : this.complete(a)
+                    );
+                  },
+                  complete: function (t, e) {
+                    if ("throw" === t.type) throw t.arg;
+                    return (
+                      "break" === t.type || "continue" === t.type
+                        ? (this.next = t.arg)
+                        : "return" === t.type
+                        ? ((this.rval = this.arg = t.arg),
+                          (this.method = "return"),
+                          (this.next = "end"))
+                        : "normal" === t.type && e && (this.next = e),
+                      v
+                    );
+                  },
+                  finish: function (t) {
+                    for (var e = this.tryEntries.length - 1; e >= 0; --e) {
+                      var r = this.tryEntries[e];
+                      if (r.finallyLoc === t)
+                        return this.complete(r.completion, r.afterLoc), P(r), v;
+                    }
+                  },
+                  catch: function (t) {
+                    for (var e = this.tryEntries.length - 1; e >= 0; --e) {
+                      var r = this.tryEntries[e];
+                      if (r.tryLoc === t) {
+                        var n = r.completion;
+                        if ("throw" === n.type) {
+                          var o = n.arg;
+                          P(r);
+                        }
+                        return o;
+                      }
+                    }
+                    throw new Error("illegal catch attempt");
+                  },
+                  delegateYield: function (t, r, n) {
+                    return (
+                      (this.delegate = {
+                        iterator: T(t),
+                        resultName: r,
+                        nextLoc: n,
+                      }),
+                      "next" === this.method && (this.arg = e),
+                      v
+                    );
+                  },
+                }),
+                t
+              );
+            })(t.exports);
+            try {
+              regeneratorRuntime = e;
+            } catch (t) {
+              "object" == typeof globalThis
+                ? (globalThis.regeneratorRuntime = e)
+                : Function("r", "regeneratorRuntime = r")(e);
+            }
+          },
+          3379: (t) => {
+            "use strict";
+            var e = [];
+            function r(t) {
+              for (var r = -1, n = 0; n < e.length; n++)
+                if (e[n].identifier === t) {
+                  r = n;
+                  break;
+                }
+              return r;
+            }
+            function n(t, n) {
+              for (var i = {}, a = [], c = 0; c < t.length; c++) {
+                var u = t[c],
+                  s = n.base ? u[0] + n.base : u[0],
+                  l = i[s] || 0,
+                  f = "".concat(s, " ").concat(l);
+                i[s] = l + 1;
+                var p = r(f),
+                  d = { css: u[1], media: u[2], sourceMap: u[3] };
+                -1 !== p
+                  ? (e[p].references++, e[p].updater(d))
+                  : e.push({ identifier: f, updater: o(d, n), references: 1 }),
+                  a.push(f);
+              }
+              return a;
+            }
+            function o(t, e) {
+              var r = e.domAPI(e);
+              return (
+                r.update(t),
+                function (e) {
+                  if (e) {
+                    if (
+                      e.css === t.css &&
+                      e.media === t.media &&
+                      e.sourceMap === t.sourceMap
+                    )
+                      return;
+                    r.update((t = e));
+                  } else r.remove();
+                }
+              );
+            }
+            t.exports = function (t, o) {
+              var i = n((t = t || []), (o = o || {}));
+              return function (t) {
+                t = t || [];
+                for (var a = 0; a < i.length; a++) {
+                  var c = r(i[a]);
+                  e[c].references--;
+                }
+                for (var u = n(t, o), s = 0; s < i.length; s++) {
+                  var l = r(i[s]);
+                  0 === e[l].references && (e[l].updater(), e.splice(l, 1));
+                }
+                i = u;
+              };
+            };
+          },
+          569: (t) => {
+            "use strict";
+            var e = {};
+            t.exports = function (t, r) {
+              var n = (function (t) {
+                if (void 0 === e[t]) {
+                  var r = document.querySelector(t);
+                  if (
+                    window.HTMLIFrameElement &&
+                    r instanceof window.HTMLIFrameElement
+                  )
+                    try {
+                      r = r.contentDocument.head;
+                    } catch (t) {
+                      r = null;
+                    }
+                  e[t] = r;
+                }
+                return e[t];
+              })(t);
+              if (!n)
+                throw new Error(
+                  "Couldn't find a style target. This probably means that the value for the 'insert' parameter is invalid."
+                );
+              n.appendChild(r);
+            };
+          },
+          9216: (t) => {
+            "use strict";
+            t.exports = function (t) {
+              var e = document.createElement("style");
+              return t.setAttributes(e, t.attributes), t.insert(e), e;
+            };
+          },
+          3565: (t, e, r) => {
+            "use strict";
+            t.exports = function (t) {
+              var e = r.nc;
+              e && t.setAttribute("nonce", e);
+            };
+          },
+          7795: (t) => {
+            "use strict";
+            t.exports = function (t) {
+              var e = t.insertStyleElement(t);
+              return {
+                update: function (r) {
+                  !(function (t, e, r) {
+                    var n = r.css,
+                      o = r.media,
+                      i = r.sourceMap;
+                    o ? t.setAttribute("media", o) : t.removeAttribute("media"),
+                      i &&
+                        "undefined" != typeof btoa &&
+                        (n +=
+                          "\n/*# sourceMappingURL=data:application/json;base64,".concat(
+                            btoa(
+                              unescape(encodeURIComponent(JSON.stringify(i)))
+                            ),
+                            " */"
+                          )),
+                      e.styleTagTransform(n, t);
+                  })(e, t, r);
+                },
+                remove: function () {
+                  !(function (t) {
+                    if (null === t.parentNode) return !1;
+                    t.parentNode.removeChild(t);
+                  })(e);
+                },
+              };
+            };
+          },
+          4589: (t) => {
+            "use strict";
+            t.exports = function (t, e) {
+              if (e.styleSheet) e.styleSheet.cssText = t;
+              else {
+                for (; e.firstChild; ) e.removeChild(e.firstChild);
+                e.appendChild(document.createTextNode(t));
+              }
+            };
+          },
+          4942: (t, e, r) => {
+            "use strict";
+            function n(t, e, r) {
+              return (
+                e in t
+                  ? Object.defineProperty(t, e, {
+                      value: r,
+                      enumerable: !0,
+                      configurable: !0,
+                      writable: !0,
+                    })
+                  : (t[e] = r),
+                t
+              );
+            }
+            r.d(e, { Z: () => n });
+          },
+        },
+        e = {};
+      function r(n) {
+        var o = e[n];
+        if (void 0 !== o) return o.exports;
+        var i = (e[n] = { id: n, exports: {} });
+        return t[n](i, i.exports, r), i.exports;
+      }
+      (r.n = (t) => {
+        var e = t && t.__esModule ? () => t.default : () => t;
+        return r.d(e, { a: e }), e;
+      }),
+        (r.d = (t, e) => {
+          for (var n in e)
+            r.o(e, n) &&
+              !r.o(t, n) &&
+              Object.defineProperty(t, n, { enumerable: !0, get: e[n] });
+        }),
+        (r.o = (t, e) => Object.prototype.hasOwnProperty.call(t, e)),
+        (() => {
+          "use strict";
+          var t = r(4942);
+          function e(t, e) {
+            var r = Object.keys(t);
+            if (Object.getOwnPropertySymbols) {
+              var n = Object.getOwnPropertySymbols(t);
+              e &&
+                (n = n.filter(function (e) {
+                  return Object.getOwnPropertyDescriptor(t, e).enumerable;
+                })),
+                r.push.apply(r, n);
+            }
+            return r;
+          }
+          function n(r) {
+            for (var n = 1; n < arguments.length; n++) {
+              var o = null != arguments[n] ? arguments[n] : {};
+              n % 2
+                ? e(Object(o), !0).forEach(function (e) {
+                    (0, t.Z)(r, e, o[e]);
+                  })
+                : Object.getOwnPropertyDescriptors
+                ? Object.defineProperties(
+                    r,
+                    Object.getOwnPropertyDescriptors(o)
+                  )
+                : e(Object(o)).forEach(function (t) {
+                    Object.defineProperty(
+                      r,
+                      t,
+                      Object.getOwnPropertyDescriptor(o, t)
+                    );
+                  });
+            }
+            return r;
+          }
+          window.removeMiniCartProduct = n(
+            n(
+              {},
+              {
+                translations: {
+                  removeTitle: "Remover",
+                  removeAllTitle: "Remover todos os itens",
+                },
+              }
+            ),
+            "br" === window.padl.page.pageInfo.language && {
+              translations: {
+                removeTitle: "Remover",
+                removeAllTitle: "Remover todos os itens",
+              },
+            }
+          );
+        })(),
+        (() => {
+          "use strict";
+          function t(t, e, r, n, o, i, a) {
+            try {
+              var c = t[i](a),
+                u = c.value;
+            } catch (t) {
+              return void r(t);
+            }
+            c.done ? e(u) : Promise.resolve(u).then(n, o);
+          }
+          function e(e) {
+            return function () {
+              var r = this,
+                n = arguments;
+              return new Promise(function (o, i) {
+                var a = e.apply(r, n);
+                function c(e) {
+                  t(a, o, i, c, u, "next", e);
+                }
+                function u(e) {
+                  t(a, o, i, c, u, "throw", e);
+                }
+                c(void 0);
+              });
+            };
+          }
+          var n = r(4942),
+            o = r(7757),
+            i = r.n(o),
+            a = r(3379),
+            c = r.n(a),
+            u = r(7795),
+            s = r.n(u),
+            l = r(569),
+            f = r.n(l),
+            p = r(3565),
+            d = r.n(p),
+            h = r(9216),
+            v = r.n(h),
+            m = r(4589),
+            y = r.n(m),
+            w = r(414),
+            b = {};
+          function g(t, e) {
+            var r =
+              ("undefined" != typeof Symbol && t[Symbol.iterator]) ||
+              t["@@iterator"];
+            if (!r) {
+              if (
+                Array.isArray(t) ||
+                (r = (function (t, e) {
+                  if (t) {
+                    if ("string" == typeof t) return x(t, e);
+                    var r = Object.prototype.toString.call(t).slice(8, -1);
+                    return (
+                      "Object" === r &&
+                        t.constructor &&
+                        (r = t.constructor.name),
+                      "Map" === r || "Set" === r
+                        ? Array.from(t)
+                        : "Arguments" === r ||
+                          /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(r)
+                        ? x(t, e)
+                        : void 0
+                    );
+                  }
+                })(t)) ||
+                (e && t && "number" == typeof t.length)
+              ) {
+                r && (t = r);
+                var n = 0,
+                  o = function () {};
+                return {
+                  s: o,
+                  n: function () {
+                    return n >= t.length
+                      ? { done: !0 }
+                      : { done: !1, value: t[n++] };
+                  },
+                  e: function (t) {
+                    throw t;
+                  },
+                  f: o,
+                };
+              }
+              throw new TypeError(
+                "Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."
+              );
+            }
+            var i,
+              a = !0,
+              c = !1;
+            return {
+              s: function () {
+                r = r.call(t);
+              },
+              n: function () {
+                var t = r.next();
+                return (a = t.done), t;
+              },
+              e: function (t) {
+                (c = !0), (i = t);
+              },
+              f: function () {
+                try {
+                  a || null == r.return || r.return();
+                } finally {
+                  if (c) throw i;
+                }
+              },
+            };
+          }
+          function x(t, e) {
+            (null == e || e > t.length) && (e = t.length);
+            for (var r = 0, n = new Array(e); r < e; r++) n[r] = t[r];
+            return n;
+          }
+          function O(t, e) {
+            var r = Object.keys(t);
+            if (Object.getOwnPropertySymbols) {
+              var n = Object.getOwnPropertySymbols(t);
+              e &&
+                (n = n.filter(function (e) {
+                  return Object.getOwnPropertyDescriptor(t, e).enumerable;
+                })),
+                r.push.apply(r, n);
+            }
+            return r;
+          }
+          function E(t) {
+            for (var e = 1; e < arguments.length; e++) {
+              var r = null != arguments[e] ? arguments[e] : {};
+              e % 2
+                ? O(Object(r), !0).forEach(function (e) {
+                    (0, n.Z)(t, e, r[e]);
+                  })
+                : Object.getOwnPropertyDescriptors
+                ? Object.defineProperties(
+                    t,
+                    Object.getOwnPropertyDescriptors(r)
+                  )
+                : O(Object(r)).forEach(function (e) {
+                    Object.defineProperty(
+                      t,
+                      e,
+                      Object.getOwnPropertyDescriptor(r, e)
+                    );
+                  });
+            }
+            return t;
+          }
+          (b.styleTagTransform = y()),
+            (b.setAttributes = d()),
+            (b.insert = f().bind(null, "head")),
+            (b.domAPI = s()),
+            (b.insertStyleElement = v()),
+            c()(w.Z, b),
+            w.Z && w.Z.locals && w.Z.locals;
+          var j = window.removeMiniCartProduct;
+          window.removeMiniCartProduct &&
+            (j = E(E({}, j), window.removeMiniCartProduct));
+          var L = j.translations;
+          function k(t) {
+            function r() {
+              return n.apply(this, arguments);
+            }
+            function n() {
+              return (n = e(
+                i().mark(function e() {
+                  var r, n, a;
+                  return i().wrap(
+                    function (e) {
+                      for (;;)
+                        switch ((e.prev = e.next)) {
+                          case 0:
+                            (r = g(t)), (e.prev = 1), r.s();
+                          case 3:
+                            if ((n = r.n()).done) {
+                              e.next = 9;
+                              break;
+                            }
+                            return (a = n.value), (e.next = 7), o(a);
+                          case 7:
+                            e.next = 3;
+                            break;
+                          case 9:
+                            e.next = 14;
+                            break;
+                          case 11:
+                            (e.prev = 11), (e.t0 = e.catch(1)), r.e(e.t0);
+                          case 14:
+                            return (e.prev = 14), r.f(), e.finish(14);
+                          case 17:
+                          case "end":
+                            return e.stop();
+                        }
+                    },
+                    e,
+                    null,
+                    [[1, 11, 14, 17]]
+                  );
+                })
+              )).apply(this, arguments);
+            }
+            function o(t) {
+              return a.apply(this, arguments);
+            }
+            function a() {
+              return (a = e(
+                i().mark(function t(e) {
+                  var n, o;
+                  return i().wrap(function (t) {
+                    for (;;)
+                      switch ((t.prev = t.next)) {
+                        case 0:
+                          if (0 === e.unitPrice || e.nonRemovable) {
+                            t.next = 10;
+                            break;
+                          }
+                          return (t.next = 3), G(e.productId);
+                        case 3:
+                          (n = t.sent),
+                            (o =
+                              document.createElement("button")).classList.add(
+                              "remove-product-btn"
+                            ),
+                            (o.textContent = L.removeTitle),
+                            o.setAttribute("data-cart-product-id", e.productId),
+                            document
+                              .querySelectorAll(".MiniBasketItem__title span")
+                              .forEach(function (t) {
+                                var i = I(n.name.trim());
+                                null !== t.innerHTML.trim() &&
+                                  t.innerHTML.trim() === i &&
+                                  (t.parentElement.childNodes[1].insertAdjacentElement(
+                                    "afterend",
+                                    o
+                                  ),
+                                  o.addEventListener("click", function (t) {
+                                    var n = t.target.getAttribute(
+                                      "data-cart-product-id"
+                                    );
+                                    sendGAEvent("remove-single-item"),
+                                      H(),
+                                      R(n, r, !!e.subscriptionId);
+                                  }));
+                              });
+                        case 10:
+                          P();
+                        case 11:
+                        case "end":
+                          return t.stop();
+                      }
+                  }, t);
+                })
+              )).apply(this, arguments);
+            }
+            r();
+          }
+          function P() {
+            var t = document.querySelector(
+                ".MiniBasketDropdown__content-filled"
+              ),
+              e = document.querySelector(".remove-btn-wrapper");
+            e && e.remove();
+            var r = document.createElement("div");
+            r.classList.add("remove-btn-wrapper");
+            var n = document.createElement("button");
+            n.addEventListener("click", S),
+              n.classList.add("remove-all-products-btn"),
+              (n.innerHTML =
+                '<img src="https://www.nespresso.com/shared_res/mos/free_html/abtest/delete_icon.svg" alt="'
+                  .concat(L.removeAllTitle, '"/> ')
+                  .concat(L.removeAllTitle)),
+              r.appendChild(n),
+              t.insertAdjacentElement("afterend", r);
+          }
+          function S() {
+            sendGAEvent("remove-all-items"),
+              (function () {
+                T.apply(this, arguments);
+              })(),
+              setTimeout(function () {
+                document.querySelector(".remove-btn-wrapper").style.display =
+                  "none";
+              }, 500);
+          }
+          function T() {
+            return (T = e(
+              i().mark(function t() {
+                var e, r, n;
+                return i().wrap(
+                  function (t) {
+                    for (;;)
+                      switch ((t.prev = t.next)) {
+                        case 0:
+                          return (t.next = 2), A();
+                        case 2:
+                          (e = t.sent), (r = g(e)), (t.prev = 4), r.s();
+                        case 6:
+                          if ((n = r.n()).done) {
+                            t.next = 13;
+                            break;
+                          }
+                          if (!n.value.subscriptionId) {
+                            t.next = 11;
+                            break;
+                          }
+                          return (
+                            (t.next = 11),
+                            window.CartManager.removeSubscription()
+                          );
+                        case 11:
+                          t.next = 6;
+                          break;
+                        case 13:
+                          t.next = 18;
+                          break;
+                        case 15:
+                          (t.prev = 15), (t.t0 = t.catch(4)), r.e(t.t0);
+                        case 18:
+                          return (t.prev = 18), r.f(), t.finish(18);
+                        case 21:
+                          window.napi
+                            .cart()
+                            .addOrUpdateProducts(e)
+                            .then(function (t) {
+                              window.triggerCremaUIStateChange.refreshMiniBasket();
+                            });
+                        case 22:
+                        case "end":
+                          return t.stop();
+                      }
+                  },
+                  t,
+                  null,
+                  [[4, 15, 18, 21]]
+                );
+              })
+            )).apply(this, arguments);
+          }
+          function A() {
+            return C.apply(this, arguments);
+          }
+          function C() {
+            return (C = e(
+              i().mark(function t() {
+                var e;
+                return i().wrap(function (t) {
+                  for (;;)
+                    switch ((t.prev = t.next)) {
+                      case 0:
+                        return (t.next = 2), M();
+                      case 2:
+                        return (
+                          (e = t.sent),
+                          t.abrupt(
+                            "return",
+                            e
+                              .filter(function (t) {
+                                return !t.nonRemovable;
+                              })
+                              .map(function (t) {
+                                return {
+                                  productId: t.productId,
+                                  quantity: 0,
+                                  subscriptionId: t.subscriptionId,
+                                };
+                              })
+                          )
+                        );
+                      case 4:
+                      case "end":
+                        return t.stop();
+                    }
+                }, t);
+              })
+            )).apply(this, arguments);
+          }
+          function M() {
+            return _.apply(this, arguments);
+          }
+          function _() {
+            return (_ = e(
+              i().mark(function t() {
+                var e;
+                return i().wrap(
+                  function (t) {
+                    for (;;)
+                      switch ((t.prev = t.next)) {
+                        case 0:
+                          return (
+                            (t.prev = 0),
+                            (t.next = 3),
+                            window.napi.cart().read()
+                          );
+                        case 3:
+                          return (e = t.sent), t.abrupt("return", e);
+                        case 7:
+                          throw (
+                            ((t.prev = 7),
+                            (t.t0 = t.catch(0)),
+                            console.error(
+                              "Error fetching mini cart products:",
+                              t.t0
+                            ),
+                            t.t0)
+                          );
+                        case 11:
+                        case "end":
+                          return t.stop();
+                      }
+                  },
+                  t,
+                  null,
+                  [[0, 7]]
+                );
+              })
+            )).apply(this, arguments);
+          }
+          function I(t) {
+            var e = document.createElement("div");
+            return (e.textContent = t), e.innerHTML;
+          }
+          function R(t, e, r) {
+            return D.apply(this, arguments);
+          }
+          function D() {
+            return (D = e(
+              i().mark(function t(e, r, n) {
+                return i().wrap(
+                  function (t) {
+                    for (;;)
+                      switch ((t.prev = t.next)) {
+                        case 0:
+                          if (((t.prev = 0), !n)) {
+                            t.next = 6;
+                            break;
+                          }
+                          return (
+                            (t.next = 4),
+                            window.CartManager.removeSubscription()
+                          );
+                        case 4:
+                          t.next = 8;
+                          break;
+                        case 6:
+                          return (
+                            (t.next = 8), window.CartManager.updateItem(e, 0)
+                          );
+                        case 8:
+                          setTimeout(function () {
+                            N(), r();
+                          }, 500),
+                            (t.next = 14);
+                          break;
+                        case 11:
+                          (t.prev = 11),
+                            (t.t0 = t.catch(0)),
+                            console.error(
+                              "Error updating item in the cart:",
+                              t.t0
+                            );
+                        case 14:
+                        case "end":
+                          return t.stop();
+                      }
+                  },
+                  t,
+                  null,
+                  [[0, 11]]
+                );
+              })
+            )).apply(this, arguments);
+          }
+          function N() {
+            document
+              .querySelectorAll(".remove-product-btn")
+              .forEach(function (t) {
+                return t.remove();
+              });
+          }
+          function F() {
+            return q.apply(this, arguments);
+          }
+          function q() {
+            return (q = e(
+              i().mark(function t() {
+                var e;
+                return i().wrap(
+                  function (t) {
+                    for (;;)
+                      switch ((t.prev = t.next)) {
+                        case 0:
+                          return (
+                            (t.prev = 0),
+                            (t.next = 3),
+                            window.napi.cart().read()
+                          );
+                        case 3:
+                          return (e = t.sent), t.abrupt("return", e);
+                        case 7:
+                          throw (
+                            ((t.prev = 7),
+                            (t.t0 = t.catch(0)),
+                            console.error(
+                              "Error fetching products from the cart:",
+                              t.t0
+                            ),
+                            t.t0)
+                          );
+                        case 11:
+                        case "end":
+                          return t.stop();
+                      }
+                  },
+                  t,
+                  null,
+                  [[0, 7]]
+                );
+              })
+            )).apply(this, arguments);
+          }
+          function G(t) {
+            return Z.apply(this, arguments);
+          }
+          function Z() {
+            return (Z = e(
+              i().mark(function t(e) {
+                var r;
+                return i().wrap(
+                  function (t) {
+                    for (;;)
+                      switch ((t.prev = t.next)) {
+                        case 0:
+                          return (
+                            (t.prev = 0),
+                            (t.next = 3),
+                            window.napi.catalog().getProduct(e)
+                          );
+                        case 3:
+                          return (r = t.sent), t.abrupt("return", r);
+                        case 7:
+                          throw (
+                            ((t.prev = 7),
+                            (t.t0 = t.catch(0)),
+                            console.error(
+                              "Error fetching product data for SKU ".concat(
+                                e,
+                                ":"
+                              ),
+                              t.t0
+                            ),
+                            t.t0)
+                          );
+                        case 11:
+                        case "end":
+                          return t.stop();
+                      }
+                  },
+                  t,
+                  null,
+                  [[0, 7]]
+                );
+              })
+            )).apply(this, arguments);
+          }
+          function H() {
+            window.gtmDataObject.push({
+              event: "customEvent",
+              eventCategory: "Mini-Cart",
+              eventAction: "Product Remove",
+              eventLabel: "Remove Single",
+            });
+          }
+          new MutationObserver(function (t) {
+            t.forEach(function (t) {
+              "childList" === t.type &&
+                setTimeout(
+                  e(
+                    i().mark(function e() {
+                      var r;
+                      return i().wrap(function (e) {
+                        for (;;)
+                          switch ((e.prev = e.next)) {
+                            case 0:
+                              if (
+                                !t.target.getElementsByClassName(
+                                  "MiniBasketDropdown__dropdown--is-open"
+                                )[0]
+                              ) {
+                                e.next = 7;
+                                break;
+                              }
+                              return N(), (e.next = 5), F();
+                            case 5:
+                              (r = e.sent).length && k(r);
+                            case 7:
+                            case "end":
+                              return e.stop();
+                          }
+                      }, e);
+                    })
+                  ),
+                  500
+                );
+            });
+          }).observe(document.body, {
+            attributes: !0,
+            childList: !0,
+            subtree: !0,
+          }),
+            document.addEventListener("click", function (t) {
+              var e = "ta-quantity-selector__predefined-0";
+              (t.target.id !== e && t.target.parentElement.id !== e) ||
+                window.gtmDataObject.push({
+                  event: "customEvent",
+                  eventCategory: "Mini-Cart",
+                  eventAction: "Product Remove",
+                  eventLabel: "Remove From Quantity Selector",
+                });
+            });
+        })();
+    })();
+  })();
+</script>

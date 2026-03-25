@@ -1,0 +1,37 @@
+<script>
+    let firstBanner = document.querySelector("section.nb-hero-banner .cb-bg-img");
+    if(firstBanner && window.innerWidth > 768) {
+        firstBanner.style.backgroundImage = "url(/ecom/medias/sys_master/public/33544529674270/Nivel-1-Main-Banner-3840x720-ofertas-2.png?)";
+        let divBRDelete = document.querySelector("section.nb-hero-banner .nb-hero-banner__text");
+        divBRDelete.remove();
+    }
+    let slick = document.querySelector(".slick-list.draggable:has(section.nb-hero-banner)");
+    setInterval(function(){
+        if(slick) {
+            slick.style.height = "340px";
+        }
+    }, 500);
+</script>
+
+<style>
+/*N1*/
+/*Home*/
+#page-builder-244d8c93-06bb-4a74-c4a2-ec3c5ec92e6f nb-hero-banner div.cb-bg-img{
+  background-image: url("/ecom/medias/sys_master/public/33549169197086/nivel-1Main-Banner-3840x720-1.png?") !important;
+}
+@media screen and (max-width: 768px){
+#page-builder-244d8c93-06bb-4a74-c4a2-ec3c5ec92e6f nb-hero-banner div.cb-bg-img{
+  background-image: url("/ecom/medias/sys_master/public/33544530133022/Nivel-1-Main-Banner-750x848-1.png?") !important;
+}
+}
+
+/*PLP*/
+nb-hero .cb-bg-img{
+  background-image: url("/ecom/medias/sys_master/public/33549169197086/nivel-1Main-Banner-3840x720-1.png?") !important;
+}
+@media screen and (max-width: 768px){
+nb-hero .cb-bg-img{
+  background-image: url("/ecom/medias/sys_master/public/33544530133022/Nivel-1-Main-Banner-750x848-1.png?") !important;
+}
+}
+</style>

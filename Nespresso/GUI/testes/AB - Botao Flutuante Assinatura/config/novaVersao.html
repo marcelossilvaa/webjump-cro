@@ -1,0 +1,263 @@
+<script>
+  (() => {
+    // Injetar CSS inline para o componente flutuante
+    const css = `
+      .botao-flutuante-bold{
+            font-weight:700 !important;
+          }
+        .floating-footer {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          background-color: #ffffff;
+          box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+          display: flex;
+          align-items: center;
+          justify-content: space-around;
+          padding: 1rem;
+          z-index: 999;
+          font-family: Arial, sans-serif;
+        }
+        .floating-footer__section {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        .floating-footer__total {
+          font-size: 20px;
+          font-weight: bold;
+          color: #333;
+          margin-bottom: 0.25rem;
+          font-family: 'NespressoLucas';
+        }
+        /* O valor exibido terá a cor verde */
+        #totalPrice {
+          color: #257a57;
+        }
+        .floating-footer__discount-btn,
+        .floating-footer__continue-btn {
+          border: none;
+          border-radius: 62.4375rem;
+          cursor: pointer;
+          font-size: 1rem;
+          font-family: 'NespressoLucas';
+          padding: .625rem 1.5rem .625rem 0rem;
+        }
+        /* Botão de cupom: underline e alinhado à esquerda */
+        .floating-footer__discount-btn {
+          color: #986f38;
+          background-color: transparent;
+          text-decoration: underline;
+          text-align: left;
+        }
+        /* Botão Continuar com fundo verde e texto branco */
+        .floating-footer__continue-btn {
+          background-color: #257a57;
+          color: #fff;
+          font-weight: 400;
+          letter-spacing: .015625rem;
+          line-height: 1.2;
+          min-block-size: 3rem;
+          padding: .625rem 1.5rem;
+          
+        }
+        .floating-footer__discount-btn:hover,
+        .floating-footer__continue-btn:hover {
+          opacity: 0.9;
+        }
+        /* Mensagem de frete grátis (cor padrão se não atingir frete grátis) */
+        .floating-footer__frete-message {
+          font-size: 1rem;
+          text-align: right;
+          font-family: 'NespressoLucas';
+          color: #d10000;
+        }
+        /* Container para agrupar o aviso do frete e o botão Continuar (área direita) */
+        .floating-footer__continue-area {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          /* No desktop, a ordem será: aviso e depois o botão */
+        }
+        /* Adaptação para dispositivos móveis */
+        @media (max-width: 600px) {
+          .floating-footer {
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+          }
+          .floating-footer__discount-btn,
+          .floating-footer__continue-btn {
+            margin: 0.5rem 0;
+            width: 100%;
+          }
+          .floating-footer__continue-area {
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+          }
+          /* Inverte a ordem em mobile: botão "Continuar" primeiro, depois o aviso */
+          .floating-footer__frete-message {
+            order: 2;
+            margin-top: 0.5rem;
+            text-align: center;
+          }
+          .floating-footer__continue-btn {
+            order: 1;
+          }
+          
+        }
+      `;
+    const style = document.createElement("style");
+    style.textContent = css;
+    document.head.appendChild(style);
+
+    // 2) Criar HTML do footer flutuante
+    const footerComponent = document.createElement("div");
+    footerComponent.className = "floating-footer";
+    footerComponent.innerHTML = `
+        <div class="floating-footer__section">
+          <div class="floating-footer__total">
+            Total Estimado: <span id="totalPrice">R$ 34,00</span>
+          </div>
+          <button id="discountBtn" class="floating-footer__discount-btn">
+            Adicionar cupom de desconto
+          </button>
+        </div>
+        <div class="floating-footer__continue-area">
+          <div id="freteMessage" class="floating-footer__frete-message"></div>
+          <button id="continueBtn" class="floating-footer__continue-btn">
+            Continuar
+          </button>
+        </div>
+      `;
+    document.body.appendChild(footerComponent);
+
+    // 3) Caches
+    const messageElement = document.getElementById("freteMessage");
+    const totalPriceDisplay = document.getElementById("totalPrice");
+
+    // 4) Verificação de visibilidade do StepFooter
+    const checkStepFooterVisibility = () => {
+      const stepFooter = document.querySelector("._StepFooter_uiajv_96");
+      if (!stepFooter) return false;
+      const rect = stepFooter.getBoundingClientRect();
+      return rect.top < window.innerHeight && rect.bottom >= 0;
+    };
+
+    // 5) Atualiza mensagem de frete e dispara evento se necessário
+    let freightEventSent = false;
+    const updateFreteMessage = () => {
+      let totalCafes = 0;
+      document
+        .querySelectorAll(
+          ".QuotationBlock_11216 .QuotationBlock__lineLabel_11216 span"
+        )
+        .forEach((span) => {
+          const text = span.textContent.trim();
+          if (text.includes("Cafés")) {
+            const match = text.match(/^(\d+)/);
+            if (match) totalCafes += parseInt(match[1], 10);
+          }
+        });
+
+      if (totalCafes >= 30) {
+        messageElement.innerHTML =
+          "<span class='botao-flutuante-bold'>Frete Grátis incluído!</span>";
+        messageElement.style.color = "#257a57";
+        if (!freightEventSent) {
+          window.gtmDataObject.push({
+            event: "local_event",
+            event_raised_by: "br",
+            local_event_category: "comp-flutuante-assinatura",
+            local_event_action: "frete-gratis-incluido",
+            local_event_label: "frete-gratis",
+          });
+          freightEventSent = true;
+        }
+      } else {
+        messageElement.innerHTML = `Adicione mais ${
+          30 - totalCafes
+        } cafés<span class="frete-break"><br></span> para <span class="botao-flutuante-bold">frete grátis</span>`;
+        messageElement.style.color = "#99221A";
+        freightEventSent = false;
+      }
+
+      footerComponent.style.display =
+        totalCafes > 0 && !checkStepFooterVisibility() ? "flex" : "none";
+    };
+
+    // 6) Atualiza total estimado
+    const updateTotalPrice = () => {
+      const sourceTotal = document.querySelector(
+        ".QuotationBlock__line--finalPrice_11216 .Price_11216.Price--green_11216"
+      );
+      if (sourceTotal) {
+        totalPriceDisplay.textContent = sourceTotal.textContent.trim();
+      }
+    };
+
+    // 7) updateAll
+    const updateAll = () => {
+      updateFreteMessage();
+      updateTotalPrice();
+    };
+
+    // chamada inicial
+    updateAll();
+
+    // 8) Observer + polling
+    const quotationList = document.querySelector(".QuotationBlock__list_11216");
+    if (quotationList) {
+      new MutationObserver(() => setTimeout(updateAll, 150)).observe(
+        quotationList,
+        {
+          childList: true,
+          subtree: true,
+          characterData: true,
+          attributes: true,
+        }
+      );
+    }
+    setInterval(updateAll, 500);
+
+    // 9) scrollToPromotion + evento cupom
+    const scrollToPromotion = () => {
+      // evento clique-cupom-desconto
+      window.gtmDataObject.push({
+        event: "local_event",
+        event_raised_by: "br",
+        local_event_category: "comp-flutuante-assinatura",
+        local_event_action: "clique-cupom-desconto",
+        local_event_label: "cupom-de-desconto-assinatura",
+      });
+      const promo = document.querySelector(".PromotionsSection_11216");
+      if (promo) promo.scrollIntoView({ behavior: "smooth", block: "center" });
+    };
+
+    // 10) simulateContinueButton + evento continuar
+    const simulateContinueButton = () => {
+      window.gtmDataObject.push({
+        event: "local_event",
+        event_raised_by: "br",
+        local_event_category: "comp-flutuante-assinatura",
+        local_event_action: "clique-continuar",
+        local_event_label: "continuar-assinatura",
+      });
+      const nativeButton = document.querySelector(
+        'button[data-testid="continue"]._button_1qujt_87._large_1qujt_195._primary_1qujt_120'
+      );
+      if (nativeButton) nativeButton.click();
+    };
+
+    // 11) Event listeners
+    document
+      .getElementById("discountBtn")
+      .addEventListener("click", scrollToPromotion);
+
+    document
+      .getElementById("continueBtn")
+      .addEventListener("click", simulateContinueButton);
+  })();
+</script>
