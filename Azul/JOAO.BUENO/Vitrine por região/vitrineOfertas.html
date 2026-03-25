@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Travel Cards</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background-color: #ffffff;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 24px;
+      padding: 24px;
+    }
+
+    .card {
+      width: 224px;
+      height: 470px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card img {
+      width: 100%;
+      height: 167px;
+      object-fit: cover;
+    }
+
+    .card-content {
+      padding: 16px 16px 0;
+      flex: 1;
+    }
+
+    .card h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #041e42;
+      margin: 0;
+      line-height: 36px;
+    }
+
+    .airport {
+      font-size: 18px;
+      font-weight: 400;
+      color: #041e42;
+      margin: 0;
+      line-height: 24px;
+    }
+
+    .resort {
+      font-size: 13px;
+      color: #828282;
+      margin: 0 !important;
+    }
+
+    .price-block {
+      margin: 24px 0 28px;
+    }
+
+    .card.with-info .price-block {
+      margin: 16px 0;
+    }
+
+    .price-label {
+      font-size: 16px;
+      color: #606060;
+      margin: 0;
+      line-height: 24px;
+      font-style: normal;
+      font-weight: 400;
+    }
+
+    .price {
+      font-size: 24px;
+      font-weight: 700;
+      color: #007ad8;
+      margin: 0;
+      line-height: 36px;
+    }
+
+    .btn {
+      display: block;
+      text-align: center;
+      background-color: #007be5;
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 0;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 24px;
+      border-radius: 4px;
+      margin: 0 16px 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #0066c1;
+    }
+
+    .additional-info {
+      padding: 0 16px 16px 16px;
+      font-size: 13px;
+      color: #4f4f4f;
+      line-height: 1.4;
+    }
+
+    .additional-info p {
+      margin: 0;
+    }
+
+   
+  </style>
+</head>
+
+<body>
+  <script>
+    function addCard({ title, airport, resort, priceLabel, price, imgSrc, additionalInfo }) {
+      const card = document.createElement("div");
+      card.classList.add("card");
+      if (additionalInfo) card.classList.add("with-info");
+
+      card.innerHTML = `
+        <img src="${imgSrc}" alt="${title} city view" />
+        <div class="card-content">
+          <h2>${title}</h2>
+          <p class="airport">Departing from ${airport}</p>
+          ${resort ? `<p class="resort">${resort}</p>` : ""}
+          <div class="price-block">
+            <p class="price-label">${priceLabel}</p>
+            <p class="price">${price}</p>
+          </div>
+        </div>
+        <a href="#" class="btn">Buy now</a>
+        ${additionalInfo ? `
+          <div class="additional-info">
+            <p>${additionalInfo}</p>
+          </div>` : ""}
+      `;
+
+      document.body.appendChild(card);
+    }
+
+    // Exemplo de uso:
+    addCard({
+      title: "Ilhéus",
+      airport: "São Paulo – Viracopos (VCP)",
+      resort: "Tororomba Resort",
+      priceLabel: "Starting from 10x of:",
+      price: "R$264.43",
+      imgSrc: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=800&q=80"
+    });
+
+    addCard({
+      title: "Ilhéus",
+      airport: "São Paulo – Viracopos (VCP)",
+      
+      priceLabel: "Starting from 10x of:",
+      price: "R$264.43",
+      imgSrc: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=800&q=80",
+      additionalInfo: "*Extra fees may apply to reward fares."
+    });
+  </script>
+</body>
+
+</html>

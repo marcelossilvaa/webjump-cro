@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Azul Loading Banner - Exemplo de Uso</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #0066CC;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .demo-section {
+      margin: 30px 0;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 6px;
+      border-left: 4px solid #0066CC;
+    }
+
+    .demo-button {
+      background: #0066CC;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px;
+      transition: background 0.3s ease;
+    }
+
+    .demo-button:hover {
+      background: #0052A3;
+    }
+
+    .demo-button.secondary {
+      background: #666;
+    }
+
+    .demo-button.secondary:hover {
+      background: #555;
+    }
+
+    .status {
+      margin: 15px 0;
+      padding: 10px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .status.info {
+      background: #E3F2FD;
+      color: #1976D2;
+      border: 1px solid #BBDEFB;
+    }
+
+    .status.success {
+      background: #E8F5E8;
+      color: #2E7D32;
+      border: 1px solid #C8E6C9;
+    }
+
+    .url-display {
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+    }
+
+    .instructions {
+      background: #FFF3E0;
+      border: 1px solid #FFCC02;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+
+    .instructions h3 {
+      margin-top: 0;
+      color: #F57C00;
+    }
+
+    .code-block {
+      background: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+      font-family: monospace;
+      overflow-x: auto;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>🛫 Azul Loading Banner - Demo</h1>
+
+    <div class="instructions">
+      <h3>📋 Instruções</h3>
+      <p>Este é um exemplo de como testar o modal de banner da Azul. O banner aparece automaticamente após carregar a página.</p>
+      <p><strong>Para testar:</strong> Use os botões abaixo para simular diferentes cenários. Observe as mensagens progressivas que mudam conforme o loading.</p>
+    </div>
+
+    <div class="demo-section">
+      <h3>🔧 Controle de Teste</h3>
+      <p>Status atual da página:</p>
+      <div class="url-display" id="current-url">
+        URL: <span id="url-text">window.location.href</span>
+      </div>
+
+      <div class="status info" id="banner-status">
+        Banner deve aparecer automaticamente após carregar a página.
+      </div>
+
+      <button class="demo-button" onclick="simulateSelecaoVoo()">
+        🔄 Recriar Banner
+      </button>
+
+      <button class="demo-button secondary" onclick="simulateOtherPage()">
+        🚫 Desabilitar Banner (Demo)
+      </button>
+
+      <button class="demo-button secondary" onclick="forceShowBanner()">
+        ⚡ Forçar Exibição do Banner
+      </button>
+
+      <button class="demo-button secondary" onclick="reloadPage()">
+        🔄 Recarregar Página
+      </button>
+    </div>
+
+    <div class="demo-section">
+      <h3>📱 Teste Responsivo</h3>
+      <p>Use as ferramentas de desenvolvedor (F12) para testar diferentes tamanhos de tela:</p>
+      <ul>
+        <li><strong>Desktop:</strong> > 768px - Layout lado a lado</li>
+        <li><strong>Tablet:</strong> 768px - Layout vertical</li>
+        <li><strong>Mobile:</strong>
+          < 480px - Layout compacto</li>
+      </ul>
+    </div>
+
+    <div class="demo-section">
+      <h3>⚙️ Configurações Atuais</h3>
+      <div class="code-block">
+        Delay para exibir: Imediato<br>
+        Tempo de exibição: 8 segundos<br>
+        URL alvo: Qualquer página (temporariamente)<br>
+        Imagem Desktop: https://i.imgur.com/MyN94BQ.png<br>
+        Imagem Mobile: https://i.imgur.com/GAoQdi9.png<br>
+        Mensagens Progressivas:<br>
+        • 0%: "Estamos iniciando sua reserva..."<br>
+        • 50%: "Quase lá... Estamos assegurando sua passagem."<br>
+        • 75%: "Pronto para decolar! Estamos finalizando a etapa com segurança."<br>
+        Título: "A um passo da viagem dos sonhos."<br>
+        Compatibilidade: Adobe Target (sem template literals)
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h3>🎯 Eventos de Tracking</h3>
+      <p>Abra o Console (F12) para ver os eventos de analytics sendo gerados:</p>
+      <div class="code-block">
+        azul_banner_show - Quando o banner aparece<br>
+        azul_banner_hide - Quando o banner desaparece
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h3>🔍 Logs de Debug</h3>
+      <div id="debug-logs" style="background: #000; color: #0f0; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto;">
+        Aguardando logs...<br>
+      </div>
+    </div>
+  </div>
+
+  <!-- Incluir o script do banner -->
+  <script src="banner.loading.js"></script>
+
+  <script>
+    // Funções de controle para o demo
+    function simulateSelecaoVoo() {
+      // Força a recriação do banner (seletor de URL temporariamente removido)
+      updateBannerStatus('🔄 Recriando banner...');
+
+      // Recarrega o banner
+      setTimeout(() => {
+        if (window.AzulLoadingBanner) {
+          new window.AzulLoadingBanner();
+        }
+      }, 100);
+    }
+
+    function simulateOtherPage() {
+      // Remove o banner atual para demonstração
+      const existing = document.getElementById('azul-loading-banner');
+      if (existing) existing.remove();
+
+      updateBannerStatus('🚫 Banner removido para demonstração.');
+    }
+
+    function forceShowBanner() {
+      // Força a exibição do banner independente da URL
+      updateBannerStatus('⚡ Forçando exibição do banner...');
+
+      // Cria o banner manualmente
+      const bannerHTML = `
+                <div id="azul-loading-banner" class="azul-banner-overlay show">
+                    <div class="azul-banner-modal">
+                        <button class="azul-banner-close" onclick="this.closest('.azul-banner-overlay').remove()">&times;</button>
+                        
+                        <div class="azul-banner-desktop">
+                            <div class="azul-banner-image">
+                                <img src="https://i.imgur.com/MyN94BQ.png" alt="Resort tropical" />
+                                <div class="azul-banner-overlay-gradient"></div>
+                            </div>
+                            <div class="azul-banner-content">
+                                <h2 class="azul-banner-title">A um passo da viagem dos sonhos.</h2>
+                                <p class="azul-banner-description">Sua experiência Azul fica ainda melhor. Ao comprar sua passagem, você ganha <strong>15% OFF</strong> em <strong>hotéis</strong> para escolher sua hospedagem com calma, quando quiser.</p>
+                                
+                                <div class="azul-banner-loading">
+                                    <div class="azul-progress-bar">
+                                        <div class="azul-progress-fill" style="width: 100%;"></div>
+                                    </div>
+                                    <p class="azul-loading-text">Estamos iniciando sua reserva...</p>
+                                </div>
+                                
+                                <div class="azul-decorative-icons">
+                                    <span class="azul-icon-plane">✈</span>
+                                    <span class="azul-icon-luggage">🧳</span>
+                                    <span class="azul-icon-hotel">🏨</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+      // Remove banner existente
+      const existing = document.getElementById('azul-loading-banner');
+      if (existing) existing.remove();
+
+      // Adiciona o novo banner
+      document.body.insertAdjacentHTML('beforeend', bannerHTML);
+    }
+
+    function reloadPage() {
+      window.location.reload();
+    }
+
+    function updateUrlDisplay() {
+      const urlText = document.getElementById('url-text');
+      if (urlText) {
+        urlText.textContent = window.location.href;
+      }
+    }
+
+    function updateBannerStatus(message) {
+      const status = document.getElementById('banner-status');
+      if (status) {
+        status.textContent = message;
+      }
+
+      // Adiciona log
+      addDebugLog(message);
+    }
+
+    function addDebugLog(message) {
+      const logs = document.getElementById('debug-logs');
+      if (logs) {
+        const timestamp = new Date().toLocaleTimeString();
+        logs.innerHTML += `[${timestamp}] ${message}<br>`;
+        logs.scrollTop = logs.scrollHeight;
+      }
+    }
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', function () {
+      updateUrlDisplay();
+      addDebugLog('Página carregada. Pronto para testes!');
+
+      // Intercepta logs do console para mostrar no debug
+      const originalLog = console.log;
+      console.log = function (...args) {
+        originalLog.apply(console, args);
+        if (args[0] && args[0].includes && args[0].includes('Azul Banner')) {
+          addDebugLog(args.join(' '));
+        }
+      };
+    });
+
+    // Detecta mudanças no banner
+    const observer = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach(function (node) {
+            if (node.id === 'azul-loading-banner') {
+              addDebugLog('🎯 Banner adicionado ao DOM');
+            }
+          });
+
+          mutation.removedNodes.forEach(function (node) {
+            if (node.id === 'azul-loading-banner') {
+              addDebugLog('❌ Banner removido do DOM');
+            }
+          });
+        }
+      });
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  </script>
+</body>
+
+</html>
