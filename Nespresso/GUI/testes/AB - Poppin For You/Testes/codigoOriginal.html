@@ -1,0 +1,114 @@
+<div id="BR-Sticky-consumersDay"></div>
+<script>
+  var cssId = "myCss_PLPAcessorios-BlackFriday2022"; // you could encode the css path itself to generate id..
+  if (!document.getElementById(cssId)) {
+    var head = document.getElementsByTagName("head")[0];
+    var link = document.createElement("link");
+    link.id = cssId;
+    link.rel = "stylesheet";
+    link.type = "text/css";
+    link.href =
+      "https://www.nespresso.com/ecom/medias/sys_master/public/16656088367134/StickyBanner-OfertaAcessorios-PLPAcessorios.css?";
+    link.media = "all";
+    head.appendChild(link);
+  }
+
+  var htmlOutput = `<style>
+    #stickyBannerClose {
+      background-color: #87444f;
+    }
+    #stickyBanner #stockMessage h2 {
+      color: #fff !important;
+      font-size: 19px !important;
+    }
+    a {
+      color: #fff;
+    }
+    #stickyBannerCopy img {
+      margin-top: -41px;
+      width: 13%;
+      display: block;
+      margin-right: 16px;
+      background-color: #87444f;
+      border-radius: 50%;
+    }
+
+    small {
+      font-size: 8px;
+    }
+
+    #stickyBanner {
+      background-color: #87444f;
+      color: #fff;
+      padding: 12px 0px 6px 0px;
+
+    }
+
+    #stickyBannerBack {
+      background-color: #87444f;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      display: none;
+    }
+
+    @media only screen and (max-width: 540px) {
+      #stickyBannerBack {
+        display: block;
+      }
+      #stickyBannerCopy img {
+        width: 26%;
+        margin-top: -41px;
+        display: none;
+        margin-left: 0px;
+      }
+      #stickyBannerCopy #stockMessage {
+        padding-left: 6px;
+        text-align: center;
+      }
+      #stickyBanner #stockMessage h2 {
+        color: #fff !important;
+        font-size: 14px !important;
+      }
+
+      #stickyBanner #stockMessage p {
+      color: #fff !important;
+      font-size: 13px !important;
+    }
+      #stickyBanner #see-conditions {
+        display: none;
+      }
+    }
+  </style>
+        <div class="row" id="stickyBannerBack">
+      <div id="stickyBanner" class="standardWidth">
+          <div id="stickyBannerClose">
+              X
+          </div>
+          <div id="stickyBannerCopy">
+          <img id="vertuo" alt="Cupom 15 off"
+                  src="/ecom/medias/sys_master/public/29965294370846/Sticky-400x400-Nivel-1-photopea.png" />
+                  <div id="stockMessage">
+                      <h2>Mês do Consumidor: Oferta Exclusiva</h2><p>Ganhe <span style="font-weight: 700">R$50 OFF</span> na compra de 30 cápsulas.</p>
+              </div>
+            <span id="see-conditions"></span>
+        </div>
+  </div>
+  `;
+
+  document.getElementById("BR-Sticky-consumersDay").innerHTML = htmlOutput;
+
+  $("#stickyBannerClose").click(function () {
+    $("#stickyBannerBack")
+      .addClass("slide-out-bottom")
+      .removeClass("slide-in-bottom");
+  });
+
+  $("body").on("click", "#see-conditions", function () {
+    $("#popup-terms").fadeIn();
+  });
+
+  $("body").on("click", "#popup-mask, .popup-close", function () {
+    $("#popup-terms").fadeOut();
+  });
+</script>

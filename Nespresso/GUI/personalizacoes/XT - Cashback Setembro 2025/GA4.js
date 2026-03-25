@@ -1,0 +1,18 @@
+(function () {
+  "use strict";
+  if (window.GA4LoginTest) {
+    return;
+  }
+  window.GA4LoginTest = true;
+
+  gtmDataObject = window.gtmDataObject || [];
+  gtmDataObject.push({
+    event: "adobe_target",
+    event_raised_by: "adobe target",
+    experiment_id: "${campaign.id}",
+    experiment_type: "AB",
+    experiment_name: "${campaign.name}",
+    experiment_variant_id: "${campaign.recipe.id}",
+    experiment_variant: "${campaign.recipe.name}",
+  });
+})();

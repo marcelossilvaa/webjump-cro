@@ -1,0 +1,200 @@
+<script>
+  (function () {
+    function sendGAEvent(label) {
+      window.gtmDataObject = window.gtmDataObject || [];
+      gtmDataObject.push({
+        event: "local_event", //as is, do not change!!
+        event_raised_by: "br", //please put the country code ex: us, ch, it
+        local_event_category: "user engagement", //free to fill field, please use lower case
+        local_event_action: "click", //free to fill field, please use lower case
+        local_event_label: label, //free to fill field, please use lower case
+      });
+    }
+    const style = document.createElement("style");
+    style.textContent = `
+.widthheader #x3top-container {
+    margin: -100px auto 0;
+}
+@media screen and (max-width: 996px) {
+    #x3top-container {
+        flex-direction: row;
+        align-items: center;
+        gap: 16px !important;
+        justify-content: space-around;
+        width: 97% !important;
+    }
+    .home_x3_top {
+        margin-bottom: 0px;
+        max-width: unset;
+        width: calc(100% - 32px) !important;
+        max-width: 400px !important;
+        border-radius: 22px;
+    }
+    .home_x3_top:last-of-type {
+        margin-bottom: 0;
+    }
+    .home-bloc h3, .home-bloc h2 {
+        font-size: 20px !important;
+        line-height: 22px !important;
+        letter-spacing: 2px !important;
+        font-weight: 600 !important;
+    }
+    .a.chb.black .cta span {
+        font-size: 0.9rem !important; 
+        padding: .75rem 0.9rem !important;
+    }
+}
+
+#x3top-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    gap: 24px;
+    max-width: 1160px;
+    position: relative;
+    margin: 0 auto;
+    top: -20px;
+}
+.home_x3_top {
+    background: #E1E5E8;
+}
+.home_x3_top {
+    display: flex;
+    max-width: calc((100% - 64px) / 2);
+    width: 365px;
+    height: 140px;
+    background: #E1E5E8;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #c5c5c5;
+    box-sizing: border-box;
+    border-radius: 36px;
+    justify-content: center;
+    padding: 8px;
+}
+
+.chb.black {
+    color: black;
+}
+.chb {
+    display: block;
+    font-family: NespressoLucas;
+}
+.home-bloc .overlay {
+    position: relative;
+    height: 100%;
+}
+.a.chb.black .cta span {
+    color: #fff;
+    background: #257a57;
+    font-weight: 400;
+    font-size: 1.25rem;
+    letter-spacing: .015625rem;
+    line-height: 1.2;
+    padding: .75rem 1.5rem;
+}
+.a.chb .cta span {
+    border-radius: 2em;
+    white-space: nowrap;
+    height: 40px;
+    line-height: 20px!important;
+    padding: 10px 16px;
+    box-sizing: border-box;
+}
+.chb.black .cta span {
+    color: black;
+}
+
+.home-bloc .overlay {
+    position: relative;
+    height: 100%;
+}
+
+.chb .overlay > * {
+    padding: 0 16px;
+}
+
+.home-bloc h3, .home-bloc h2 {
+    padding-top: 16px!important;
+}
+
+.home-bloc h3, .home-bloc h2, .home-bloc p, .home-bloc .cta {
+    padding-bottom: 16px!important;
+    text-align: center;
+    font-size: 16px; 
+}
+
+.home-bloc h3, .home-bloc h2 {
+    font-size: 30px;
+    line-height: 36px;
+    letter-spacing: 1px;
+    font-weight: 500;
+}
+
+.home-bloc .cta {
+    position: absolute;
+    bottom: 16px;
+    width: 100%;
+    padding-bottom: 0!important;
+}
+
+.home-bloc .cta {
+    font-size: 16px;
+    line-height: 19px;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+`;
+
+    document.head.appendChild(style);
+
+    // Array de conteúdo com IDs únicos
+    const contentData = [
+      {
+        href: "/br/pt/order/capsules/vertuo",
+        id: "chb-vertuo",
+        title: "CAFÉS VERTUO",
+        desc: "Compre cafés e ganhe <strong>presentes exclusivos</strong>",
+      },
+      {
+        href: "/br/pt/order/capsules/original",
+        id: "chb-original",
+        title: "CAFÉS ORIGINAL",
+        desc: "Compre cafés e ganhe <strong>presentes exclusivos</strong>",
+      },
+    ];
+
+    const html = `
+<div id="x3top-container" class="home-bloc">
+    ${contentData
+      .map((content, index) => {
+        const position = index + 1;
+        return `
+        <div id="home_x3top_${position}" class="home_x3_top">
+            <a href="${content.href}" class="a black chb" id="${
+          content.id
+        }" data-campaign="Default_X2_X3"
+                data-banner="home_x3top_${position}#${
+          position * 2 - 1
+        }" data-threshold="VL_Default" data-location="home"
+                data-placement="x3 top ${["left", "middle", "right"][index]}">
+                <div class="overlay">
+                    <h2>${content.title}</h2>
+                    <div class="cta"><span>COMPRE AGORA</span></div>
+                </div>
+            </a>
+        </div>`;
+      })
+      .join("")}
+</div>
+`;
+
+    // Inserir após o elemento com ID "btn-termos-condicoes"
+    const target = document.getElementById("btn-termos-condicoes");
+    if (target) {
+      const container = document.createElement("div");
+      container.innerHTML = html;
+      target.parentNode.insertBefore(container, target);
+    }
+  })();
+</script>

@@ -1,0 +1,305 @@
+<style>
+  #container-ofertasCompreGanhe {
+    font-family: NespressoLucas;
+    background-color: #fff;
+    text-align: center;
+    padding: 20px 0;
+  }
+  .container-ofertasCompreGanhe__title {
+    font-size: 24px;
+    text-transform: uppercase;
+    font-weight: 600;
+    line-height: 1.3em;
+    padding: 0 45px;
+  }
+  #cardProducts {
+    display: flex;
+    width: 100%;
+    height: auto;
+    gap: 60px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+
+  @media screen and (max-width: 767px) {
+    #cardProducts {
+      gap: 15px;
+    }
+  }
+
+  #cardProducts .cardProducts_item {
+    border: 1px solid #00000015;
+    box-shadow: 0px 1px 20px 0px #00000015;
+    width: 170px;
+    height: 300px;
+    padding: 20px 10px 20px 10px;
+    border-radius: 10px;
+    position: relative;
+  }
+  #cardProducts .cardProducts_item .cardProducts_item__image {
+    width: auto;
+    height: 110px;
+    margin: 10px;
+  }
+  #cardProducts .cardProducts_item .cardProducts_item__info {
+    width: 100%;
+    height: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  #cardProducts .cardProducts_item .cardProducts_item__info_title {
+    font-size: 20px;
+    font-weight: 700;
+  }
+  #cardProducts .cardProducts_item .cardProducts_item__info_offer {
+    text-transform: uppercase;
+    color: #257a57;
+    font-weight: 600;
+  }
+
+  #cardProducts .offer-tag {
+    font-size: 10px;
+    background-color: rgba(144, 79, 149, 0.674);
+    width: 100px;
+    font-weight: 500;
+    position: absolute;
+    padding: 2px;
+    top: 10px;
+    left: 0;
+  }
+</style>
+
+<section id="container-ofertasCompreGanhe">
+  <p class="container-ofertasCompreGanhe__title">
+    Ganhe créditos para utilizar na sua próxima compra de cafés
+  </p>
+  <div id="cardProducts">
+    <div class="cardProducts_item">
+      <a
+        class="card-link-3"
+        href="https://www.nespresso.com/br/pt/order/capsules/original"
+        style="color: #000"
+      >
+        <span class="offer-tag">COMPRE E GANHE</span>
+
+        <img
+          src="https://www.nespresso.com/ecom/medias/sys_master/public/33542868369438/Sticky-Banner-400x400-nivel3.png?"
+          alt="Imagem de tag de desconto de R$80 colorida"
+          class="cardProducts_item__image"
+        />
+        <div class="cardProducts_item__info">
+          <div class="cardProducts_item__info_title">
+            R$ 80 <br />de crédito
+          </div>
+          <div class="cardProducts_item__info_offer">
+            na compra de 150 cápsulas
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="cardProducts_item">
+      <a
+        class="card-link-4"
+        href="https://www.nespresso.com/br/pt/order/capsules/original"
+        style="color: #000"
+      >
+        <span class="offer-tag">COMPRE E GANHE</span>
+
+        <img
+          src="https://www.nespresso.com/ecom/medias/sys_master/public/33542868893726/Sticky-Banner-400x400-nivel4.png"
+          alt="Imagem de tag de desconto de R$110 colorida"
+          class="cardProducts_item__image"
+        />
+        <div class="cardProducts_item__info">
+          <div class="cardProducts_item__info_title">
+            R$ 110 <br />de crédito
+          </div>
+          <div class="cardProducts_item__info_offer">
+            na compra de 200 cápsulas
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="cardProducts_item">
+      <a
+        class="card-link-5"
+        href="https://www.nespresso.com/br/pt/order/capsules/original"
+        style="color: #000"
+      >
+        <span class="offer-tag">COMPRE E GANHE</span>
+        <img
+          src="https://www.nespresso.com/ecom/medias/sys_master/public/33542869647390/Sticky-Banner-400x400-nivel5.png?"
+          alt="Imagem de tag de desconto de R$150 colorida"
+          class="cardProducts_item__image"
+        />
+        <div class="cardProducts_item__info">
+          <div class="cardProducts_item__info_title">
+            R$ 150 <br />de crédito
+          </div>
+          <div class="cardProducts_item__info_offer">
+            na compra de 250 cápsulas
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<script>
+  new casperEventHub.Experience("br_nivel1_cashback_segmentedOffer")
+    .visitorIs({
+      selectionIDs: casperEventHub.oneOf("29701", "29667"),
+    })
+    .executeOnMatch(function (data) {
+      const parentElement = document.getElementById("cardProducts");
+      //Nivel 1
+      let componenteAdicional = `<div class="cardProducts_item">
+        <a
+          class="card-link-1"
+          href="https://www.nespresso.com/br/pt/order/capsules/original"
+          style="color: #000"
+        >
+          <span class="offer-tag">COMPRE E GANHE</span>
+          <img
+            src="https://www.nespresso.com/ecom/medias/sys_master/public/33542869942302/Sticky-Banner-400x400-nivel1.png?"
+            alt="Imagem de tag de desconto de R$30 colorida"     class="cardProducts_item__image"
+          />
+          <div class="cardProducts_item__info">
+            <div class="cardProducts_item__info_title">R$ 30 <br>de crédito</div>
+            <div class="cardProducts_item__info_offer">
+              na compra de 70 cápsulas
+            </div>
+          </div>
+        </a>
+      </div>`;
+      parentElement.insertAdjacentHTML("afterbegin", componenteAdicional);
+      data.unsubscribe();
+    })
+    .evaluate();
+
+  new casperEventHub.Experience("br_nivel2_cashback_segmentedOffer")
+    .visitorIs({
+      selectionIDs: casperEventHub.oneOf("29668"),
+    })
+    .executeOnMatch(function (data) {
+      const parentElement = document.getElementById("cardProducts");
+
+      let componenteAdicional = `<div class="cardProducts_item">
+          <a
+          class="card-link-2"
+          href="https://www.nespresso.com/br/pt/order/capsules/original"
+          style="color: #000"
+          >
+          <span class="offer-tag">COMPRE E GANHE</span>
+          <img
+          src="https://www.nespresso.com/ecom/medias/sys_master/public/33542870073374/Sticky-Banner-400x400-nivel2.png?"
+          alt="Imagem de tag de desconto de R$50 colorida"    class="cardProducts_item__image"
+          />
+          <div class="cardProducts_item__info">
+            <div class="cardProducts_item__info_title">R$ 50<br> de crédito</div>
+            <div class="cardProducts_item__info_offer">
+              na compra de 100 cápsulas
+              </div>
+              </div>
+        </a>
+      </div>`;
+      parentElement.insertAdjacentHTML("afterbegin", componenteAdicional);
+      data.unsubscribe();
+    })
+    .evaluate();
+
+  new casperEventHub.Experience("br_nivel6_cashback_segmentedOffer")
+    .visitorIs({
+      selectionIDs: casperEventHub.oneOf("29669"),
+    })
+    .executeOnMatch(function (data) {
+      const parentElement = document.getElementById("cardProducts");
+
+      let componenteAdicional = `<div class="cardProducts_item">
+           <a
+             class="card-link-6"
+             href="https://www.nespresso.com/br/pt/order/capsules/original"
+             style="color: #000"
+           >
+             <span class="offer-tag">COMPRE E GANHE</span>
+             <img
+               src="https://www.nespresso.com/ecom/medias/sys_master/public/33542872006686/Sticky-Banner-400x400-nivel6.png?"
+               alt="Imagem de tag de desconto de R$200 colorida"       class="cardProducts_item__image"
+             />
+             <div class="cardProducts_item__info">
+               <div class="cardProducts_item__info_title">R$ 200 <br>de crédito</div>
+               <div class="cardProducts_item__info_offer">
+                 na compra de 300 cápsulas
+               </div>
+             </div>
+           </a>
+         </div>`;
+      parentElement.insertAdjacentHTML("afterbegin", componenteAdicional);
+      data.unsubscribe();
+    })
+    .evaluate();
+
+  $(".card-link-1").on("click", function () {
+    window.gtmDataObject = window.gtmDataObject || [];
+    gtmDataObject.push({
+      event: "local_event", //as is, do not change!!
+      event_raised_by: "br", //please put the country code ex: us, ch, it
+      local_event_category: "user engagement", //free to fill field, please use lower case
+      local_event_action: "click", //free to fill field, please use lower case
+      local_event_label: "card click - cashback campaign - card nivel 1", //free to fill field, please use lower case
+    });
+  });
+  $(".card-link-2").on("click", function () {
+    window.gtmDataObject = window.gtmDataObject || [];
+    gtmDataObject.push({
+      event: "local_event", //as is, do not change!!
+      event_raised_by: "br", //please put the country code ex: us, ch, it
+      local_event_category: "user engagement", //free to fill field, please use lower case
+      local_event_action: "click", //free to fill field, please use lower case
+      local_event_label: "card click - cashback campaign - card nivel 2", //free to fill field, please use lower case
+    });
+  });
+  $(".card-link-3").on("click", function () {
+    window.gtmDataObject = window.gtmDataObject || [];
+    gtmDataObject.push({
+      event: "local_event", //as is, do not change!!
+      event_raised_by: "br", //please put the country code ex: us, ch, it
+      local_event_category: "user engagement", //free to fill field, please use lower case
+      local_event_action: "click", //free to fill field, please use lower case
+      local_event_label: "card click - cashback campaign - card nivel 3", //free to fill field, please use lower case
+    });
+  });
+  $(".card-link-4").on("click", function () {
+    window.gtmDataObject = window.gtmDataObject || [];
+    gtmDataObject.push({
+      event: "local_event", //as is, do not change!!
+      event_raised_by: "br", //please put the country code ex: us, ch, it
+      local_event_category: "user engagement", //free to fill field, please use lower case
+      local_event_action: "click", //free to fill field, please use lower case
+      local_event_label: "card click - cashback campaign - card nivel 4", //free to fill field, please use lower case
+    });
+  });
+  $(".card-link-5").on("click", function () {
+    window.gtmDataObject = window.gtmDataObject || [];
+    gtmDataObject.push({
+      event: "local_event", //as is, do not change!!
+      event_raised_by: "br", //please put the country code ex: us, ch, it
+      local_event_category: "user engagement", //free to fill field, please use lower case
+      local_event_action: "click", //free to fill field, please use lower case
+      local_event_label: "card click - cashback campaign - card nivel 5", //free to fill field, please use lower case
+    });
+  });
+  $(".card-link-6").on("click", function () {
+    window.gtmDataObject = window.gtmDataObject || [];
+    gtmDataObject.push({
+      event: "local_event", //as is, do not change!!
+      event_raised_by: "br", //please put the country code ex: us, ch, it
+      local_event_category: "user engagement", //free to fill field, please use lower case
+      local_event_action: "click", //free to fill field, please use lower case
+      local_event_label: "card click - cashback campaign - card nivel 6", //free to fill field, please use lower case
+    });
+  });
+</script>

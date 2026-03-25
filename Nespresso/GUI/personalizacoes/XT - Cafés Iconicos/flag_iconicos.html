@@ -1,0 +1,274 @@
+<script>
+  (function () {
+    if (window.flagCafeIconico) {
+      return;
+    }
+    window.flagCafeIconico = "true";
+    gtmDataObject = window.gtmDataObject || [];
+    gtmDataObject.push({
+      event: "adobe_target",
+      event_raised_by: "adobe target",
+      experiment_id: "${campaign.id}",
+      experiment_type: "AB",
+      experiment_name: "${campaign.name}",
+      experiment_variant_id: "${campaign.recipe.id}",
+      experiment_variant: "${campaign.recipe.name}",
+    });
+    var bestsellersSKUs = [
+      {
+        technology: "Original",
+        category: "Espresso",
+        nome: "Volluto",
+        SKU: "7865.90",
+      },
+      {
+        technology: "Original",
+        category: "Inspirazione Italiana",
+        nome: "Ristretto Italiano",
+        SKU: "7885.90",
+      },
+      {
+        technology: "Original",
+        category: "Barista Creations",
+        nome: "Vienna",
+        SKU: "7754.10",
+      },
+      {
+        technology: "Original",
+        category: "",
+        nome: "Arpeggio",
+        SKU: "7888.90",
+      },
+      {
+        technology: "Original",
+        category: "",
+        nome: "Volluto Decaff",
+        SKU: "7864.90",
+      },
+      {
+        technology: "Original",
+        category: "",
+        nome: "Ristretto Decaff",
+        SKU: "7857.90",
+      },
+      {
+        technology: "Original",
+        category: "",
+        nome: "Arpeggio Decaff",
+        SKU: "7862.90",
+      },
+      {
+        technology: "Vertuo",
+        category: "",
+        nome: "Altissio",
+        SKU: "7048.80",
+      },
+      {
+        technology: "Vertuo",
+        category: "",
+        nome: "Altissio Decaff",
+        SKU: "7000.80",
+      },
+      {
+        technology: "Vertuo",
+        category: "Double Espresso",
+        nome: "Double Espresso Chiaro",
+        SKU: "7050.80",
+      },
+      {
+        technology: "Vertuo",
+        category: "Double Espresso",
+        nome: "Double Espresso Chiaro Decaff",
+        SKU: "7279.80",
+      },
+      {
+        technology: "Vertuo",
+        category: "",
+        nome: "Sweet Vanilla Decaf",
+        SKU: "7057.80",
+      },
+      {
+        technology: "Vertuo",
+        category: "",
+        nome: "Fortado",
+        SKU: "7059.80",
+      },
+      {
+        technology: "Vertuo",
+        category: "",
+        nome: "Fortado Decaff",
+        SKU: "7015.80",
+      },
+      {
+        technology: "Vertuo",
+        category: "",
+        nome: "Melozio",
+        SKU: "7039.80",
+      },
+      {
+        technology: "Vertuo",
+        category: "",
+        nome: "Melozio Decaff",
+        SKU: "7023.80",
+      },
+    ];
+    var BESTSELLER_CLASS = "product-bestseller";
+    var PRODUCTS_CONTAINER_SELECTOR = "plp-cards-grid";
+    // Estilos CSS para a flag diagonal no canto direito
+    var styles = document.createElement("style");
+    styles.innerHTML = `
+            .product-bestseller {
+                position: relative;
+                overflow: visible;
+            }
+            .product-bestseller .text{
+                color:#fff;
+            }
+            .product-bestseller::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 0;
+                height: 0;
+                border-style: solid;
+                border-width:0 70px 70px 0;
+                border-color: transparent rgb(135, 108, 67) transparent transparent;
+                z-index: 5;
+                border-radius:0px 12px 0px;
+            }
+            
+            .product-bestseller::after {
+                content: "";
+                position: absolute;
+                top: 40px;
+                right: 0;
+                width: 115px;
+                color: white;
+                font-size: 10px;
+                font-weight: bold;
+                text-align: center;
+                transform: rotate(45deg) translateX(20%);
+                transform-origin: top right;
+                z-index: 6;
+                text-transform: uppercase;
+                font-family: inherit;
+                letter-spacing: 0.5px;
+                white-space: nowrap;
+            }
+            
+            .bestseller-content {
+                position: absolute;
+                top: 26px;
+                right: -2px;
+                width: 70px;
+                color: #000;
+                font-size: 10px;
+                font-weight: bold;
+                text-align: center;
+                transform: rotate(45deg) translateX(20%);
+                transform-origin: top right;
+                z-index: 7;
+                text-transform: uppercase;
+                font-family: inherit;
+                letter-spacing: 0.5px;
+                white-space: nowrap;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                line-height: 14px;
+                justify-content: center;
+            }
+    
+            .bestseller-content .star {
+                margin-bottom: 2px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        `;
+    function needsFlag(header) {
+      return header && !header.classList.contains(BESTSELLER_CLASS);
+    }
+    function applyBestsellerFlags() {
+      bestsellersSKUs.forEach(function (product) {
+        var productElement = document.querySelector(
+          "article[data-product-short-sku='" + product.SKU + "']"
+        );
+        if (productElement) {
+          var header = productElement.querySelector("header");
+          if (needsFlag(header)) {
+            header.classList.add(BESTSELLER_CLASS);
+            var bestsellerContent = document.createElement("div");
+            bestsellerContent.className = "bestseller-content";
+            var textDiv = document.createElement("div");
+            textDiv.className = "text";
+            textDiv.innerHTML = "CAFÉ<br>ICÔNICO";
+            bestsellerContent.appendChild(textDiv);
+            header.appendChild(bestsellerContent);
+          }
+        }
+      });
+    }
+    function init() {
+      if (!document.getElementById("bestseller-styles")) {
+        styles.id = "bestseller-styles";
+        document.head.appendChild(styles);
+      }
+      applyBestsellerFlags();
+      var productsContainer = document.querySelector(
+        PRODUCTS_CONTAINER_SELECTOR
+      );
+      if (productsContainer) {
+        var observer = new MutationObserver(function (mutations) {
+          var hasRelevantChanges = mutations.some(function (mutation) {
+            var hasNewProducts = Array.from(mutation.addedNodes).some(function (
+              node
+            ) {
+              return (
+                node.nodeType === 1 &&
+                (node.matches("article[data-product-short-sku]") ||
+                  node.querySelector("article[data-product-short-sku]"))
+              );
+            });
+            if (
+              mutation.type === "attributes" &&
+              mutation.target.matches("article[data-product-short-sku]")
+            ) {
+              return true;
+            }
+            return hasNewProducts;
+          });
+          if (hasRelevantChanges) {
+            requestAnimationFrame(applyBestsellerFlags);
+          }
+        });
+        observer.observe(productsContainer, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ["data-product-short-sku"],
+        });
+      } else {
+        var bodyObserver = new MutationObserver(function (mutations) {
+          var productsContainer = document.querySelector(
+            PRODUCTS_CONTAINER_SELECTOR
+          );
+          if (productsContainer) {
+            init();
+            bodyObserver.disconnect();
+          }
+        });
+        bodyObserver.observe(document.body, {
+          childList: true,
+          subtree: true,
+        });
+      }
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
+    }
+  })();
+</script>

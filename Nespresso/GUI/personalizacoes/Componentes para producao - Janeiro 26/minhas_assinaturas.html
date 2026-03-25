@@ -1,0 +1,234 @@
+<script>
+  (function () {
+    if (window.BotaoMinhasAssinaturasWJ) {
+      return;
+    }
+    window.BotaoMinhasAssinaturasWJ = true;
+    gtmDataObject = window.gtmDataObject || [];
+    gtmDataObject.push({
+      event: "adobe_target",
+      event_raised_by: "adobe target",
+      experiment_id: "${campaign.id}",
+      experiment_type: "AB",
+      experiment_name: "${campaign.name}",
+      experiment_variant_id: "${campaign.recipe.id}",
+      experiment_variant: "${campaign.recipe.name}",
+    });
+    // ===== Config =====
+    var BTN_ID = "wj-my-subscriptions-btn";
+    var STYLE_ID = "wj-my-subscriptions-style";
+    var WRAPPER_CLASS = "wj-my-subs-wrapper";
+    var ANCHOR_SEL = "#search-bar-button"; // Botão "Buscar"
+    var HEADER_SEL = ".Header__top .Header__customer"; // Container do header
+    var DEST_URL = "https://www.nespresso.com/br/pt/myaccount/standing-orders";
+    var BTN_LABEL = "MINHAS ASSINATURAS";
+
+    if (window.__WJ_MY_SUBS_V3__) return;
+    window.__WJ_MY_SUBS_V3__ = true;
+
+    function qs(s, r) {
+      return (r || document).querySelector(s);
+    }
+
+    function injectCSS() {
+      if (document.getElementById(STYLE_ID)) return;
+
+      var css =
+        "." +
+        WRAPPER_CLASS +
+        "{display:flex;align-items:center; margin-right:18px; text-align:center;}" +
+        "#" +
+        BTN_ID +
+        "{position:relative;display:inline-flex;align-items:center;gap:4px;" +
+        "min-width:215px;height:40px;padding:8px 10px;border:1px solid #000;border-radius:50px;" +
+        "background:#fff;color:#000;font-family:NespressoLucas,Trebuchet MS,Lucida Grande,Lucida Sans Unicode,Lucida Sans,Tahoma,sans-serif;" +
+        "font-size:.875rem;line-height:1.2em;letter-spacing:1px;text-transform:uppercase;" +
+        "text-decoration:none;transition:all .2s ease;outline:0;box-sizing:border-box;cursor:pointer;}" +
+        "#" +
+        BTN_ID +
+        " .wj-icon{width:30px;height:30px;border-radius:50%;" +
+        "display:inline-flex;align-items:center;justify-content:center;}" +
+        "#" +
+        BTN_ID +
+        " .wj-icon svg{width:30px;height:30px;display:block;}" +
+        "#" +
+        BTN_ID +
+        " .wj-label{display:inline-block;}" +
+        "#" +
+        BTN_ID +
+        ":hover{background:#000;color:#fff;border-color:#000;}" +
+        "#" +
+        BTN_ID +
+        ":hover .wj-icon{color:#fff;border-color:#fff;}" +
+        "#" +
+        BTN_ID +
+        ":active{background:#000;color:#fff;border-color:#000;}" +
+        "#" +
+        BTN_ID +
+        ":active .wj-icon{color:#fff;border-color:#fff;}" +
+        "#" +
+        BTN_ID +
+        ":focus-visible{box-shadow:0 0 0 4px #e8e8f4;}" +
+        ".Header__customer .cv-search-host{min-width:200px!important;}" +
+        /* Badge opcional (remova se não quiser) */
+        /* ——— Mobile (≤767px): só SVG, sem borda, sem hover ——— */
+        "@media (max-width:1000px){" +
+        "." +
+        WRAPPER_CLASS +
+        "{margin-top:6px; margin-right:0;}" +
+        "#" +
+        BTN_ID +
+        "{min-width:50px;width:50px;height:50px;padding:0;border:none;background:transparent;color:#17171A;}" +
+        "#" +
+        BTN_ID +
+        " .wj-label{display:none;}" +
+        "#" +
+        BTN_ID +
+        " .wj-icon{width:50px;border:none;border-radius:0;color:#17171A;background:transparent;}" +
+        "#" +
+        BTN_ID +
+        " .wj-icon svg{width:29px;height:40px;}" +
+        /* neutraliza estilos de hover/active no mobile */
+        "#" +
+        BTN_ID +
+        ":hover," +
+        "#" +
+        BTN_ID +
+        ":active{background:transparent;color:#17171A;border-color:transparent;}" +
+        "#" +
+        BTN_ID +
+        ":hover .wj-icon," +
+        "#" +
+        BTN_ID +
+        ":active .wj-icon{color:#17171A;border-color:transparent;background:transparent;}" +
+        "}";
+
+      var style = document.createElement("style");
+      style.id = STYLE_ID;
+      style.appendChild(document.createTextNode(css));
+      document.head.appendChild(style);
+    }
+
+    function buildIconSVG() {
+      // SVG usando currentColor para herdar a cor do container (.wj-icon)
+      var ns = "http://www.w3.org/2000/svg";
+      var svg = document.createElementNS(ns, "svg");
+      svg.setAttribute("width", "16");
+      svg.setAttribute("height", "16");
+      svg.setAttribute("viewBox", "0 0 32 32");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("aria-hidden", "true");
+
+      var p1 = document.createElementNS(ns, "path");
+      p1.setAttribute(
+        "d",
+        "M19 4.80279V5.81878C24.1809 6.81127 27 10.5242 27 16.54C27 23.6337 23.0938 27.54 16 27.54C8.90674 27.54 5 23.6337 5 16.54C5 10.7494 7.60565 7.08507 12.4209 5.9334L11.0625 8.37908L12.4592 7.92327L13.9985 5.15179L10.9526 3.46002L9.65558 3.8833L11.7981 5.0733C6.79437 6.44561 4 10.4525 4 16.54C4 24.166 8.37402 28.54 16 28.54C23.626 28.54 28 24.166 28 16.54C28 9.98113 24.7572 5.83678 19 4.80279Z",
+      );
+      p1.setAttribute("fill", "currentColor");
+      svg.appendChild(p1);
+
+      var p2 = document.createElementNS(ns, "path");
+      p2.setAttribute(
+        "d",
+        "M19.1465 16.6865L17 18.8329L15.8535 17.6865L15.1465 18.3935L17 20.247L19.8535 17.3935L19.1465 16.6865Z",
+      );
+      p2.setAttribute("fill", "currentColor");
+      svg.appendChild(p2);
+
+      var p3 = document.createElementNS(ns, "path");
+      p3.setAttribute(
+        "d",
+        "M13 10.54V11.54H10V22.54H21.9932L22 11.54H19V10.54H18V11.54H14V10.54H13ZM20.9932 21.54H11V15.54H20.9977L20.9932 21.54ZM18 12.54V13.54H19V12.54H21L20.9985 14.54H11V12.54H13V13.54H14V12.54H18Z",
+      );
+      p3.setAttribute("fill", "currentColor");
+      svg.appendChild(p3);
+
+      return svg;
+    }
+
+    function pushAnalytics() {
+      try {
+        var gtm = (window.gtmDataObject = window.gtmDataObject || []);
+        gtm.push({
+          event: "local_event", //as is, do not change!!
+          event_raised_by: "br", //please put the country code ex: us, ch, it
+          local_event_category: "Header", //free to fill field, please use lower case
+          local_event_action: "click", //free to fill field, please use lower case
+          local_event_label: "xt_adobe_target_minhas_assinaturas", //free to fill field, please use lower case
+        });
+      } catch (e) {}
+    }
+
+    function findHeaderChildUnder(header, node) {
+      var cur = node;
+      while (cur && cur.parentNode && cur.parentNode !== header)
+        cur = cur.parentNode;
+      return cur && cur.parentNode === header ? cur : null;
+    }
+
+    function addButton() {
+      var searchBtn = qs(ANCHOR_SEL);
+      var header = qs(HEADER_SEL);
+      if (!searchBtn || !header) return false;
+      if (document.getElementById(BTN_ID)) return true;
+
+      var after = findHeaderChildUnder(header, searchBtn) || searchBtn;
+
+      var wrap = document.createElement("div");
+      wrap.className = WRAPPER_CLASS;
+
+      var a = document.createElement("a");
+      a.id = BTN_ID;
+      a.href = DEST_URL;
+      a.setAttribute("aria-label", BTN_LABEL);
+
+      var icon = document.createElement("span");
+      icon.className = "wj-icon";
+      icon.appendChild(buildIconSVG());
+
+      var label = document.createElement("span");
+      label.className = "wj-label";
+      label.appendChild(document.createTextNode(BTN_LABEL));
+
+      a.appendChild(icon);
+      a.appendChild(label);
+      a.addEventListener(
+        "click",
+        function () {
+          pushAnalytics(); // evento já existente
+          pushLocalEvent(); // novo evento GA4 no padrão solicitado
+        },
+        false,
+      );
+
+      wrap.appendChild(a);
+      if (after.nextSibling)
+        after.parentNode.insertBefore(wrap, after.nextSibling);
+      else after.parentNode.appendChild(wrap);
+
+      return true;
+    }
+
+    function init() {
+      injectCSS();
+      return addButton();
+    }
+
+    var i = 0,
+      t = setInterval(function () {
+        i++;
+        if (init() || i > 40) clearInterval(t);
+      }, 200);
+
+    try {
+      var root = qs(HEADER_SEL) || document.body;
+      var mo = new MutationObserver(function () {
+        init();
+      });
+      mo.observe(root, {
+        childList: true,
+        subtree: true,
+      });
+    } catch (e) {}
+  })();
+</script>

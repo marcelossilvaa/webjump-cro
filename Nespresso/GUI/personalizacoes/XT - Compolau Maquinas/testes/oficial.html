@@ -1,0 +1,146 @@
+<script>
+  (function () {
+    if (window.personalizacaoMaquinas) {
+      return;
+    }
+
+    window.personalizacaoMaquinas = true;
+
+    const styles =
+      "<style>" +
+      ".maquinas-cards {" +
+      "display: flex;" +
+      "flex-direction: column;" +
+      "gap: 13px;" +
+      "max-width: 350px;" +
+      "margin: 0 auto;" +
+      'font-family: "NespressoLucas", Arial, sans-serif;' +
+      "margin-bottom:8px;" +
+      "}" +
+      ".maquina-card {" +
+      "border: 1px solid #e4e4e4;" +
+      "border-radius: 2px;" +
+      "padding: 15px;" +
+      "text-decoration: none;" +
+      "position: relative;" +
+      "display: block;" +
+      "background: #fff;" +
+      "}" +
+      ".maquina-card__tag {" +
+      "position: absolute;" +
+      "top: -10px;" +
+      "left: 0;" +
+      "background: #000;" +
+      "color: #fff;" +
+      "padding: 1px 8px;" +
+      "font-size: 11px;" +
+      "font-weight: 600;" +
+      "text-transform: uppercase;" +
+      "border-radius:4px;" +
+      "}" +
+      ".maquina-card__title {" +
+      "font-size: 14px;" +
+      "color: #000;" +
+      "margin: 0 0 4px;" +
+      "font-weight: 600;" +
+      "}" +
+      ".maquina-card__description {" +
+      "margin: 0;" +
+      "font-size: 13px;" +
+      "color: #666;" +
+      "line-height: 1.4;" +
+      "}" +
+      ".maquina-card__price {" +
+      "color: #000;" +
+      "font-weight: 700;" +
+      "}" +
+      "@media screen and (max-width: 540px) {" +
+      ".maquinas-cards {" +
+      "padding: 0 15px;" +
+      "}" +
+      "}" +
+      "</style>";
+
+    function createMaquinasCards() {
+      const container = document.createElement("div");
+      container.className = "maquinas-cards";
+
+      const cards = [
+        {
+          tag: "OFERTA",
+          title: "Ainda não tem sua Nespresso?",
+          description: "Até ",
+          price: "40% OFF",
+          subtext: " na compra da primeira máquina",
+        },
+        {
+          tag: "OFERTA",
+          title: "Já é cliente Nespresso?",
+          description: "Compre uma máquina e ganhe ",
+          price: "R$150",
+          subtext: " para compra de cafés",
+        },
+      ];
+
+      cards.forEach(function (cardData) {
+        container.appendChild(createCard(cardData));
+      });
+
+      return container;
+    }
+
+    function createCard(data) {
+      const card = document.createElement("a");
+      card.className = "maquina-card";
+      card.href = "#";
+
+      const tag = document.createElement("span");
+      tag.className = "maquina-card__tag";
+      tag.textContent = data.tag;
+      card.appendChild(tag);
+
+      const title = document.createElement("h3");
+      title.className = "maquina-card__title";
+      title.textContent = data.title;
+
+      const description = document.createElement("p");
+      description.className = "maquina-card__description";
+
+      if (data.price) {
+        description.appendChild(document.createTextNode(data.description));
+        const priceSpan = document.createElement("span");
+        priceSpan.className = "maquina-card__price";
+        priceSpan.textContent = data.price;
+        description.appendChild(priceSpan);
+        description.appendChild(document.createTextNode(data.subtext));
+      } else {
+        description.textContent = data.description;
+      }
+
+      card.appendChild(title);
+      card.appendChild(description);
+
+      return card;
+    }
+
+    function init() {
+      document.head.insertAdjacentHTML("beforeend", styles);
+
+      const targetElement = document.querySelector(
+        "#nb-text-chunk-d00c2f4d-4efc-b973-db86-0904fc02b596"
+      );
+      if (!targetElement) {
+        return;
+      }
+
+      const maquinasCards = createMaquinasCards();
+      targetElement.insertAdjacentElement("afterend", maquinasCards);
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
+    }
+  })();
+</script>

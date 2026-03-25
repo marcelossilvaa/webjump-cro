@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal Diamante Unique - debug-modal.html</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .test-container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+        
+        .test-container h1 {
+            color: #041E42;
+            margin-bottom: 20px;
+        }
+        
+        .test-container p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: #0BB8E7;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(11, 184, 231, 0.3);
+        }
+        
+        button:hover {
+            background: #099ec7;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(11, 184, 231, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .info-box h3 {
+            margin-top: 0;
+            color: #041E42;
+        }
+        
+        .info-box pre {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #e7f5ff;
+            color: #0c5892;
+            display: none;
+        }
+        
+        .status.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔷 Modal Diamante Unique - Página de Teste</h1>
+        <p>Use os botões abaixo para testar o modal com diferentes cenários de dados de usuário.</p>
+        
+        <div class="btn-group">
+            <button onclick="showModalDirect()">Abrir Modal Diretamente</button>
+            <button onclick="showModalWithCookie()">Criar Cookie e Abrir Modal</button>
+            <button onclick="clearAll()">Limpar Tudo</button>
+            <button onclick="checkCookie()">Ver Cookie Atual</button>
+        </div>
+        
+        <div class="info-box">
+            <h3>ℹ️ Informações</h3>
+            <p><strong>Requisitos para ver o modal:</strong></p>
+            <ul style="text-align: left;">
+                <li>Entre 23.000 e 26.000 pontos de qualificação</li>
+                <li>Entre 23 e 26 voos realizados</li>
+            </ul>
+            <p><strong>O modal só aparece uma vez por sessão</strong> (usando sessionStorage)</p>
+        </div>
+        
+        <div id="status" class="status"></div>
+    </div>
+
+    <!-- Incluir o script do modal -->
+    <script src="modal-diamante.js"></script>
+    
+    <script>
+        // Função para abrir o modal diretamente sem precisar de cookie
+        function showModalDirect() {
+            // Limpa o sessionStorage para permitir que o modal apareça
+            sessionStorage.removeItem('diamante_unique_modal_shown');
+            
+            // Chama a função global do modal
+            if (window.TudoAzulCookie && window.TudoAzulCookie.showModal) {
+                window.TudoAzulCookie.showModal();
+                showStatus("✅ Modal aberto com sucesso!", "success");
+            } else {
+                showStatus("❌ Erro: Script do modal não foi carregado corretamente", "error");
+            }
+        }
+        
+        // Função para criar cookie e abrir modal
+        function showModalWithCookie() {
+            const mockData = {
+                Id: "TEST123456",
+                customerNumber: "TEST123456",
+                program: {
+                    flights: 24,
+                    qualifyingPoints: 24500
+                }
+            };
+            
+            // Codifica o JSON como string e depois URL encode
+            const encodedValue = encodeURIComponent(JSON.stringify(mockData));
+            
+            // Define o cookie
+            document.cookie = `TudoAzul=${encodedValue}; path=/; max-age=3600`;
+            
+            // Limpa sessionStorage
+            sessionStorage.clear();
+            
+            showStatus("✅ Cookie criado! Abrindo modal...", "success");
+            
+            // Aguarda um pouco e abre o modal
+            setTimeout(() => {
+                if (window.TudoAzulCookie) {
+                    window.TudoAzulCookie.sync();
+                    window.TudoAzulCookie.showModal();
+                }
+            }, 500);
+        }
+        
+        // Função para limpar tudo
+        function clearAll() {
+            document.cookie = "TudoAzul=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+            sessionStorage.clear();
+            localStorage.clear();
+            showStatus("🗑️ Tudo limpo! (Cookie, sessionStorage e localStorage)", "info");
+        }
+        
+        // Função para verificar o cookie atual
+        function checkCookie() {
+            const cookieValue = getCookie('TudoAzul');
+            
+            if (!cookieValue) {
+                showStatus("❌ Nenhum cookie TudoAzul encontrado", "error");
+                return;
+            }
+            
+            try {
+                const decoded = decodeURIComponent(cookieValue);
+                const data = JSON.parse(decoded);
+                
+                const flights = data.program?.flights || 0;
+                const points = data.program?.qualifyingPoints || 0;
+                
+                showStatus(
+                    `✅ Cookie encontrado!<br>` +
+                    `ID: ${data.Id || data.customerNumber}<br>` +
+                    `Voos: ${flights}<br>` +
+                    `Pontos: ${points.toLocaleString('pt-BR')}`,
+                    "success"
+                );
+            } catch (e) {
+                showStatus("⚠️ Erro ao decodificar cookie: " + e.message, "error");
+            }
+        }
+        
+        // Função auxiliar para obter cookie
+        function getCookie(name) {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.indexOf(name + '=') === 0) {
+                    return cookie.substring(name.length + 1);
+                }
+            }
+            return null;
+        }
+        
+        // Função para mostrar mensagens de status
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = message;
+            statusDiv.className = 'status show';
+            
+            if (type === 'success') {
+                statusDiv.style.background = '#d4edda';
+                statusDiv.style.color = '#155724';
+            } else if (type === 'error') {
+                statusDiv.style.background = '#f8d7da';
+                statusDiv.style.color = '#721c24';
+            } else {
+                statusDiv.style.background = '#e7f5ff';
+                statusDiv.style.color = '#0c5892';
+            }
+            
+            setTimeout(() => {
+                statusDiv.classList.remove('show');
+            }, 5000);
+        }
+        
+        // Ao carregar a página
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                // Verifica se o script foi carregado
+                if (window.TudoAzulCookie) {
+                    showStatus("✅ Script do modal carregado com sucesso! Use os botões acima para testar.", "success");
+                } else {
+                    showStatus("⚠️ Aguardando carregamento do script...", "info");
+                }
+                
+                // Verifica cookie
+                const cookieValue = getCookie('TudoAzul');
+                if (cookieValue) {
+                    checkCookie();
+                }
+            }, 500);
+        });
+    </script>
+</body>
+</html>

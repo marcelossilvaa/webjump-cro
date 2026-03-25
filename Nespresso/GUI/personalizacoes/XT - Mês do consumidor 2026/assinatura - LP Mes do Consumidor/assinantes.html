@@ -1,0 +1,33 @@
+<script>
+  (function () {
+    "use strict";
+    if (window.mediaTextBannerAssinantes) return;
+    window.mediaTextBannerAssinantes = true;
+    gtmDataObject = window.gtmDataObject || [];
+    gtmDataObject.push({
+      event: "adobe_target",
+      event_raised_by: "adobe target",
+      experiment_id: "${campaign.id}",
+      experiment_type: "AB",
+      experiment_name: "${campaign.name}",
+      experiment_variant_id: "${campaign.recipe.id}",
+      experiment_variant: "${campaign.recipe.name}",
+    });
+    var newSrc =
+      "https://www.nespresso.com/ecom/medias/sys_master/public/48681081962526/Large-Push-1.jpg?attachment=true&cimgnr=d5apn";
+
+    var interval = setInterval(function () {
+      var mediaTextBanner = document.querySelector(
+        "#container-ofertasCompreGanheAcessorios .cardAcessoriosContainer img",
+      );
+      if (mediaTextBanner) {
+        clearInterval(interval);
+        mediaTextBanner.src = newSrc;
+        document.head.insertAdjacentHTML(
+          "beforeend",
+          `<style>#container-ofertasCompreGanheAcessorios p{display:none !important;}</style>`,
+        );
+      }
+    }, 500);
+  })();
+</script>

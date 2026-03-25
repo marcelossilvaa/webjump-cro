@@ -1,0 +1,539 @@
+<!-- Casper_MiniCartPerso_RecoProduct -->
+<script>
+  if (!window.minicartRecomendation) {
+    window.minicartRecomendation = "true";
+    gtmDataObject = window.gtmDataObject || [];
+    gtmDataObject.push({
+      event: "adobe_target",
+      event_raised_by: "adobe target",
+      experiment_id: "${campaign.id}",
+      experiment_type: "AB",
+      experiment_name: "${campaign.name}",
+      experiment_variant_id: "${campaign.recipe.id}",
+      experiment_variant: "${campaign.recipe.name}",
+    });
+
+    $(function () {
+      const recoTexts = {
+        //Original
+        "7860.90": {
+          item_name: "Caramello",
+          en: "To create recipes with Milk",
+          pt: "Para criar receitas com leite",
+          bgColor: "#876C43",
+          color: "#fff",
+        },
+        "7858.90": {
+          item_name: "Nocciola",
+          en: "To create recipes with Milk",
+          pt: "Para criar receitas com leite",
+          bgColor: "#876C43",
+          color: "#fff",
+        },
+        "7859.90": {
+          item_name: "Cioccolato",
+          en: "To create recipes with Milk",
+          pt: "Para criar receitas com leite",
+          bgColor: "#876C43",
+          color: "#fff",
+        },
+        "7854.90": {
+          item_name: "Vaniglia",
+          en: "To create recipes with Milk",
+          pt: "Para criar receitas com leite",
+          bgColor: "#876C43",
+          color: "#fff",
+        },
+
+        //Vertuo
+
+        "7292.80": {
+          item_name: "Sweet Vanilla",
+          en: "To create recipes with Milk",
+          pt: "Para criar receitas com leite",
+          bgColor: "#876C43",
+          color: "#fff",
+        },
+        "7057.80": {
+          item_name: "Sweet Vanilla Decaff",
+          en: "To create recipes with Milk",
+          pt: "Para criar receitas sem cafeína com leite",
+          bgColor: "#876C43",
+          color: "#fff",
+        },
+        "7069.80": {
+          item_name: "White Chocolate & Strawberry",
+          en: "To create recipes with Milk",
+          pt: "Para criar receitas com leite",
+          bgColor: "#876C43",
+          color: "#fff",
+        },
+        "7296.80": {
+          item_name: "Rich Chocolate",
+          en: "To create recipes with Milk",
+          pt: "Para criar receitas com leite",
+          bgColor: "#876C43",
+          color: "#fff",
+        },
+        "7294.80": {
+          item_name: "Roasted Hazelnut",
+          en: "To create recipes with Milk",
+          pt: "Para criar receitas com leite",
+          bgColor: "#876C43",
+          color: "#fff",
+        },
+        "7295.80": {
+          item_name: "Golden Caramel",
+          en: "To create recipes with Milk",
+          pt: "Para criar receitas com leite",
+          bgColor: "#876C43",
+          color: "#fff",
+        },
+      };
+
+      let hasMiniCartReco = false;
+
+      var launchMiniCartRecoScript = function (customerData) {
+        let defaultTech =
+          customerData && customerData.preferredTechnology.includes("vertuo")
+            ? "vl"
+            : "ol";
+
+        let isLoggedIn = customerData;
+
+        let defaultSkus = {
+          machineVl: [
+            "7292.80",
+            "7057.80",
+            "7069.80",
+            "7296.80",
+            "7294.80",
+            "7295.80",
+          ], //Vertuo Machine in cart
+          machineOl: ["7860.90", "7858.90", "7859.90", "7854.90"], //Original Machine in cart
+          elseOl: ["7860.90", "7858.90", "7859.90", "7854.90"], //No machine in cart, pref OL or caps OL in cart.
+          elseVl: [
+            "7292.80",
+            "7057.80",
+            "7069.80",
+            "7296.80",
+            "7294.80",
+            "7295.80",
+          ], //No machine in cart, pref VL or caps VL in cart.
+        };
+
+        new casperEventHub.Experience("machine-incart-minicartreco")
+          .basketContains({
+            type: "machine",
+          })
+          .executeOnMatch(function (data) {
+            //has machine
+            let maquinasNoCarrinho = data.products.filter(function (product) {
+              return product.modelType == "Machine";
+            });
+            let skuRecomendacaoAtual =
+              maquinasNoCarrinho[0].technologies[0] == "original"
+                ? defaultSkus.machineOl
+                : defaultSkus.machineVl;
+            miniBasketPushEligible.apply(null, skuRecomendacaoAtual);
+            data.unsubscribe();
+          })
+          .executeOnMismatch(function (data) {
+            //has no machine
+            new casperEventHub.Experience("vlcaps-incart-minicartreco")
+              .basketContains({
+                rootCategory: "capsules_vertuo",
+              })
+              .executeOnMatch(function (data2) {
+                //has VL Capsule
+                miniBasketPushEligible.apply(null, defaultSkus.elseVl);
+                data2.unsubscribe();
+              })
+              .executeOnMismatch(function (data2) {
+                new casperEventHub.Experience("olcaps-incart-minicartreco")
+                  .basketContains({
+                    rootCategory: "capsules_original",
+                  })
+                  .executeOnMatch(function (data3) {
+                    //has OL Capsule
+                    miniBasketPushEligible.apply(null, defaultSkus.elseOl);
+                    data3.unsubscribe();
+                  })
+                  .executeOnMismatch(function (data3) {
+                    miniBasketPushEligible.apply(
+                      null,
+                      defaultTech == "ol"
+                        ? defaultSkus.elseOl
+                        : defaultSkus.elseVl
+                    );
+                    data3.unsubscribe();
+                  })
+                  .evaluate();
+
+                data2.unsubscribe();
+              })
+              .evaluate();
+
+            data.unsubscribe();
+          })
+          .evaluate();
+      };
+
+      function miniBasketPushEligible() {
+        let stockData = sessionStorage.getItem("stocks-ca-b2c")
+          ? JSON.parse(sessionStorage.getItem("stocks-ca-b2c"))
+          : {
+              default: {},
+            };
+
+        var args = Array.from(arguments);
+        var newArgs = Array.from(arguments);
+
+        args.forEach(function (arg, argIndex) {
+          let skuIsInStock = stockData.default.hasOwnProperty(
+            "erp.br.b2c/prod/" + arg
+          )
+            ? stockData.default["erp.br.b2c/prod/" + arg]
+            : true;
+
+          if (!skuIsInStock) {
+            newArgs.splice(argIndex, 1);
+          }
+        });
+
+        if (!newArgs.length) return false;
+
+        var mainSku = newArgs[0];
+        var backupSku = newArgs[1] || false;
+
+        if (newArgs.length > 1) {
+          newArgs = newArgs.slice(1);
+        }
+
+        new casperEventHub.Experience(
+          "sku-" + mainSku + "-notincart-minicartreco"
+        )
+          .basketContains(
+            casperEventHub.noneOf({
+              id: "erp.br.b2c/prod/" + mainSku,
+            })
+          )
+          .executeOnMatch(function (data) {
+            var checkMiniBasketReadyTrigger = setInterval(function () {
+              if ($("#ta-mini-basket__open").length > 0) {
+                $("#ta-mini-basket__open").on("click", function () {
+                  miniBasketPushAdd(mainSku);
+                });
+                miniBasketPushAdd(mainSku);
+
+                window.napi
+                  .data()
+                  .on("cart.update", function (event, cartUpdateData) {
+                    cartUpdateData?.cartUpdates?.item?.forEach(function (
+                      cartUpdateItem
+                    ) {
+                      let updatedSku =
+                        cartUpdateItem?.productInfo?.productLocalSKU;
+
+                      if (
+                        updatedSku &&
+                        updatedSku == mainSku &&
+                        cartUpdateItem?.quantity?.productQuantity > 0
+                      ) {
+                        $("#ta-mini-basket__open").off("click");
+                        miniBasketPushRemove();
+
+                        if (backupSku)
+                          miniBasketPushEligible.apply(null, newArgs);
+                      }
+                    });
+                  });
+
+                clearInterval(checkMiniBasketReadyTrigger);
+              }
+            }, 50);
+
+            data.unsubscribe();
+          })
+          .executeOnMismatch(function (data) {
+            if (backupSku) {
+              miniBasketPushEligible.apply(null, newArgs);
+
+              window.napi
+                .data()
+                .on("cart.update", function (event, cartUpdateData) {
+                  cartUpdateData?.cartUpdates?.item?.forEach(function (
+                    cartUpdateItem
+                  ) {
+                    let updatedSku =
+                      cartUpdateItem?.productInfo?.productLocalSKU;
+
+                    if (
+                      updatedSku &&
+                      updatedSku == backupSku &&
+                      cartUpdateItem?.quantity?.productQuantity > 0
+                    ) {
+                      miniBasketPushRemove();
+                    }
+                  });
+                });
+            }
+            data.unsubscribe();
+          })
+          .evaluate();
+      }
+
+      function miniBasketPushAdd(pushSku) {
+        var checkMiniBasketDropdownReady = setInterval(function () {
+          if ($(".MiniBasketDropdown__content-wrapper").length > 0) {
+            if (
+              $("#MiniBasketPush").length == 0 &&
+              $(".MiniBasketFooter").length > 0
+            ) {
+              gtmDataObject.push({
+                event: "local_event",
+                event_raised_by: "br",
+                local_event_category: "Push mini-basket",
+                local_event_action: "Display push",
+                local_event_label: pushSku,
+              });
+
+              let lang = document.documentElement.lang;
+              let miniBasketPushClaimLabel =
+                lang == "pt"
+                  ? "Já experimentou nosso café de edição limitada?"
+                  : "Have you tried our limited edition coffee?";
+              let styles = "";
+
+              if (recoTexts.hasOwnProperty(pushSku)) {
+                miniBasketPushClaimLabel = recoTexts[pushSku][lang];
+
+                if (recoTexts[pushSku].bgColor) {
+                  styles +=
+                    "background-color: " + recoTexts[pushSku].bgColor + ";";
+                }
+                if (recoTexts[pushSku].color) {
+                  styles += "color: " + recoTexts[pushSku].color + ";";
+                }
+              }
+
+              $(".MiniBasketDropdown__content-wrapper").after(
+                '<div id="MiniBasketPush" style="display: block !important;"><div style="' +
+                  styles +
+                  '" id="MiniBasketPushClaim">' +
+                  miniBasketPushClaimLabel +
+                  '</div><div id="MiniBasketPushAddProduct"></div></div>'
+              );
+              $("#MiniBasketPushAddProduct").html(
+                '<div id="MiniBasketPushAddProductImage"></div><div id="MiniBasketPushAddProductText"><div id="MiniBasketPushAddProductName"></div><div id="MiniBasketPushAddProductDescription"></div><div id="MiniBasketPushAddProductPrice"></div></div><div id="MiniBasketPushAddProductCTA"></div><div style="clear:both"></div>'
+              );
+              napi
+                .catalog()
+                .getProduct(pushSku)
+                .then(function (value) {
+                  $("#MiniBasketPushAddProductImage").html(
+                    '<img src="' +
+                      value.responsiveImages.standard +
+                      '?impolicy=product&imwidth=60" alt="' +
+                      value.name +
+                      '" width="60px" />'
+                  );
+                  $("#MiniBasketPushAddProductName").html(value.name);
+                  $("#MiniBasketPushAddProductDescription").html(
+                    value.headline
+                  );
+                  $("#MiniBasketPushAddProductPrice").html(
+                    "R$ " +
+                      (value.price * value.salesMultiple)
+                        .toFixed(2)
+                        .replace(".", ",") +
+                      ' <span style="color:#666;font-weight:600;white-space:nowrap;">(' +
+                      value.salesMultiple +
+                      " x " +
+                      ("R$ " + value.price.toFixed(2).replace(".", ",")) +
+                      ")</span>"
+                  );
+                  $("#MiniBasketPushAddProductCTA").html(
+                    '<div class="add-to-bag" data-product-id="erp.br.b2c/prod/' +
+                      pushSku +
+                      '" data-button-size="small"></div>'
+                  );
+                  mosaic.initializeAllFreeHTMLModules(
+                    document.getElementById("MiniBasketPush")
+                  );
+                  $("#MiniBasketPush .add-to-bag").on("click", function () {
+                    gtmDataObject.push({
+                      event: "local_event",
+                      event_raised_by: "br",
+                      local_event_category: "Push mini-basket",
+                      local_event_action: "Add to bag",
+                      local_event_label: pushSku,
+                      value: value.price * value.salesMultiple,
+                    });
+                  });
+                });
+
+              $("#MiniBasketPushClaim").on("click", function () {
+                $("#MiniBasketPush").toggleClass("collapsed");
+              });
+            }
+            clearInterval(checkMiniBasketDropdownReady);
+          }
+        }, 50);
+      }
+
+      function miniBasketPushRemove() {
+        var checkMiniBasketReadyRemove = setInterval(function () {
+          if ($("#MiniBasketPush").length > 0) {
+            $("#MiniBasketPush").remove();
+            // $("#ta-mini-basket__open").off('click');
+          }
+          clearInterval(checkMiniBasketReadyRemove);
+        }, 50);
+      }
+
+      function miniCartRecoWatchCartChanges(customerData) {
+        window.napi.data().on("cart.update", function () {
+          window.napi
+            .cart()
+            .read()
+            .then(function (data) {
+              if (data.length == 0) {
+                miniBasketPushRemove();
+              } else if ($("#MiniBasketPush").length == 0) {
+                launchMiniCartRecoScript(customerData);
+              }
+            });
+        });
+      }
+
+      setTimeout(function () {
+        window.napi
+          .customer()
+          .read()
+          .then(function (customerData) {
+            launchMiniCartRecoScript(customerData);
+            miniCartRecoWatchCartChanges(customerData);
+          })
+          .catch(function (errorData) {
+            launchMiniCartRecoScript();
+            miniCartRecoWatchCartChanges();
+          });
+      }, 1000);
+    });
+  }
+</script>
+
+<style>
+  #MiniBasketPush {
+    width: 100%;
+    background: #f3f0eb;
+  }
+
+  #MiniBasketPushClaim {
+    padding: 8px 0 5px 0;
+    background-color: #3e5c98;
+    /*background-color: #001D2F;*/
+    color: #fff;
+    /* text-transform: uppercase; */
+    letter-spacing: 0.7px;
+    font-size: 12px;
+    font-family: "NespressoLucas";
+    line-height: 12px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  #MiniBasketPushClaim.alternateLayout {
+    background-color: #e8d1b9;
+  }
+
+  #MiniBasketPushClaim.pumpkin {
+    background-color: #e5812e;
+  }
+
+  #MiniBasketPushClaim:after {
+    top: -4px;
+    border-style: solid;
+    content: "";
+    display: inline-block;
+    position: relative;
+    transform: rotate(135deg);
+    border-width: 2px 2px 0 0;
+    height: 7px;
+    width: 7px;
+    margin-left: 1em;
+    vertical-align: middle;
+  }
+
+  #MiniBasketPush.collapsed #MiniBasketPushClaim:after {
+    top: -2px;
+    transform: rotate(-45deg);
+  }
+
+  #MiniBasketPush.collapsed #MiniBasketPushAddProduct {
+    padding: 0;
+    height: 0.1px;
+  }
+
+  #MiniBasketPushAddProduct {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    transition: 0.15s linear all;
+  }
+
+  #MiniBasketPush.collapsed #MiniBasketPushAddProduct {
+    overflow: hidden;
+  }
+
+  #MiniBasketPushAddProductImage {
+    width: 100px;
+    height: 60px;
+    padding-left: 20px;
+    padding-right: 20px;
+    float: left;
+  }
+
+  #MiniBasketPushAddProductText {
+    width: calc(100% - 170px);
+    float: left;
+  }
+
+  #MiniBasketPushAddProductName {
+    font-weight: 600;
+    line-height: 20px;
+    /* text-transform: uppercase; */
+  }
+
+  #MiniBasketPushAddProductPrice {
+    font-weight: 600;
+    line-height: 20px;
+    color: #986f38;
+  }
+
+  #MiniBasketPushAddProductCTA {
+    width: 70px;
+    height: 40px;
+    padding-left: 10px;
+    padding-right: 20px;
+    float: right;
+  }
+
+  #MiniBasketPushLink {
+    margin-left: 100px;
+    margin-right: 80px;
+    padding-bottom: 10px;
+  }
+
+  #MiniBasketPushLink a {
+    color: #bcd0ff;
+    text-decoration: underline;
+  }
+  /*
+  @media (max-width: 767px) {
+    #MiniBasketPush {
+      display: none;
+    }
+  }*/
+</style>

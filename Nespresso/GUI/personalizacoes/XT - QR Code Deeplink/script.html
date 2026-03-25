@@ -1,0 +1,71 @@
+<script>
+  (function () {
+    "use strict";
+
+    // Inserir CSS no head da página para ocultar elementos
+    function injectCSS() {
+      const style = document.createElement("style");
+      style.textContent = `
+        .list-app-banner .android-app,
+        .list-app-banner .ios-app {
+          display: none !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // Injetar CSS imediatamente
+    injectCSS();
+
+    let QRCodePNGUrl = "https://iili.io/KpPlGwP.png";
+
+    // Função para criar o componente do QR Code
+    function createQRCodeComponent() {
+      const qrImage = document.createElement("img");
+      qrImage.src = QRCodePNGUrl;
+      qrImage.alt = "QR Code Aplicativo";
+      qrImage.style.cssText = `
+        max-width: 300px;
+        width: 100%;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+      `;
+
+      return qrImage;
+    }
+
+    // Função para inserir o componente dentro do elemento .list-app-banner
+    function insertQRCodeComponent() {
+      const listAppBanner = document.querySelector(".list-app-banner");
+
+      if (
+        listAppBanner &&
+        !listAppBanner.querySelector("img[alt='QR Code Aplicativo']")
+      ) {
+        const qrComponent = createQRCodeComponent();
+        listAppBanner.appendChild(qrComponent);
+        return true; // Componente inserido com sucesso
+      }
+
+      return false; // Elemento não encontrado ou componente já existe
+    }
+
+    // Tentar inserir imediatamente
+    if (insertQRCodeComponent()) {
+      return; // Se inseriu com sucesso, não precisa do setInterval
+    }
+
+    // Se não encontrou, usar setInterval para tentar periodicamente
+    const intervalId = setInterval(function () {
+      if (insertQRCodeComponent()) {
+        clearInterval(intervalId); // Para o intervalo quando inserir com sucesso
+      }
+    }, 500); // Verifica a cada 500ms
+
+    // Limpar o intervalo após 30 segundos para evitar execução infinita
+    setTimeout(function () {
+      clearInterval(intervalId);
+    }, 30000);
+  })();
+</script>

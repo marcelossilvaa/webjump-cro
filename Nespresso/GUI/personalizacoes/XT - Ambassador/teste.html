@@ -1,0 +1,159 @@
+<script>
+  (function () {
+    var config = {
+      copy: 'CLIENTE AMBASSADOR, FAÇA LOGIN PARA COMPRAR SEU ACESSÓRIO <span class="spanAmbassador">EXCLUSIVO VERTUO MUG</span>',
+      imageUrl:
+        "https://www.nespresso.com/ecom/medias/sys_master/public/35039205163038/Zoom-2025-ECOMM-Caneca-Vertuo-Pantone-1054x350px.png?attachment=true&cimgnr=WEp2n",
+      targetSelector: "#block-8826536187381",
+    };
+
+    var bannerHTML =
+      '<div class="ambassadorPersonalizacao"><div class="ambassador-content"><p>' +
+      config.copy +
+      "</p></div></div>";
+
+    var styles =
+      "<style>" +
+      ".ambassadorPersonalizacao {" +
+      "position: relative;" +
+      "width: 100%;" +
+      "max-width: 1054px;" +
+      "margin: 0 auto 20px;" +
+      "background-color: transparent;" +
+      "}" +
+      ".ambassador-content {" +
+      "background-image: url(" +
+      config.imageUrl +
+      ");" +
+      "background-repeat: no-repeat;" +
+      "background-position: center;" +
+      "background-size: contain;" +
+      "height: 143px;" +
+      "display: flex;" +
+      "justify-content: center;" +
+      "align-items: flex-start;" +
+      "}" +
+      ".ambassadorPersonalizacao p {" +
+      "padding: 20px 15px;" +
+      "letter-spacing: 1px;" +
+      "color: #000;" +
+      "font-weight: 600;" +
+      "text-align: center;" +
+      "font-family: NespressoLucas, Arial, sans-serif;" +
+      "margin: 0;" +
+      "width: 100%;" +
+      "max-width: 800px;" +
+      "}" +
+      ".spanAmbassador {" +
+      "background-color: #eb7047;" +
+      "color: #fff;" +
+      "padding: 2px 6px;" +
+      "border-radius: 4px;" +
+      "display: inline-block;" +
+      "margin: 0 2px;" +
+      "}" +
+      "@media screen and (min-width: 768px) {" +
+      ".ambassador-content {" +
+      "height: 200px;" +
+      "}" +
+      ".ambassadorPersonalizacao p {" +
+      "padding: 25px 20px;" +
+      "font-size: 16px;" +
+      "}" +
+      "}" +
+      "@media screen and (max-width: 767px) {" +
+      ".ambassadorPersonalizacao {" +
+      "margin-bottom: 10px;" +
+      "}" +
+      ".ambassadorPersonalizacao p {" +
+      "font-size: 14px;" +
+      "padding: 15px 10px;" +
+      "}" +
+      "}" +
+      "#loginFormBlock div[data-error-display] {margin: -18px;}" +
+      "</style>";
+
+    // Função de inicialização
+    function init() {
+      try {
+        var targetElement = document.querySelector(config.targetSelector);
+        if (!targetElement) {
+          return;
+        }
+        document.head.insertAdjacentHTML("beforeend", styles);
+        targetElement.insertAdjacentHTML("afterend", bannerHTML);
+      } catch (error) {}
+    }
+
+    // Executar quando o DOM estiver pronto
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
+    }
+  })();
+</script>
+
+<style>
+  .ambassadorPersonalizacao {
+    position: relative;
+    width: 100%;
+    max-width: 1054px;
+    margin: 0 auto 20px;
+    background-color: transparent;
+  }
+
+  .ambassador-content {
+    background-image: url("https://www.nespresso.com/ecom/medias/sys_master/public/35039205163038/Zoom-2025-ECOMM-Caneca-Vertuo-Pantone-1054x350px.png?attachment=true&cimgnr=WEp2n");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    height: 143px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .ambassadorPersonalizacao p {
+    padding: 20px 15px;
+    letter-spacing: 1px;
+    color: #000;
+    font-weight: 600;
+    text-align: center;
+    font-family: NespressoLucas, Arial, sans-serif;
+    margin: 0;
+    width: 100%;
+    max-width: 800px;
+  }
+
+  .spanAmbassador {
+    background-color: #eb7047;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    margin: 0 2px;
+  }
+
+  @media screen and (min-width: 768px) {
+    .ambassador-content {
+      height: 200px;
+    }
+    .ambassadorPersonalizacao p {
+      padding: 25px 20px;
+      font-size: 16px;
+    }
+  }
+  @media screen and (max-width: 767px) {
+    .ambassadorPersonalizacao {
+      margin-bottom: 10px;
+    }
+    .ambassadorPersonalizacao p {
+      font-size: 14px;
+      padding: 15px 10px;
+    }
+    #loginFormBlock div[data-error-display] {
+      margin: -18px;
+    }
+  }
+</style>
