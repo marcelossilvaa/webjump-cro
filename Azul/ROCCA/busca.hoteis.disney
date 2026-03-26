@@ -1,0 +1,702 @@
+// =============================================================
+// Personalizacao - Banner Disney na busca de hoteis
+// Exibe banner promocional quando o usuario busca por termos
+// relacionados a Disney na pagina de hoteis da Azul Viagens
+// =============================================================
+(function () {
+  'use strict';
+
+  // Configuracoes
+  var EXPERIMENT_NAME = 'AT_Disney_busca_hoteis';
+  var BANNER_LINK = 'https://www.voeazul.com.br/br/pt/disney/hoteis-disney?topic=Onde+Se+Hospedar&content=1%40Disney%27s+All-Star+Movies+Resort';
+  var STYLE_ID = 'at-disney-busca-hoteis-style';
+  var BANNER_ID = 'at-disney-busca-hoteis-banner';
+  var EVAR84 = 'AT_Disney_busca_hoteis_campaign';
+  var SESSION_KEY = 'at_disney_busca_hoteis_shown';
+
+  // Controle de execucao
+  var isProcessing = false;
+  var debounceTimer = null;
+  var bannerShown = false;
+
+  // Termos relacionados a Disney para deteccao
+  var DISNEY_TERMS = [
+    'disney',
+    'walt disney',
+    'magic kingdom',
+    'epcot',
+    'animal kingdom',
+    'hollywood studios',
+    'all-star',
+    'all star',
+    'art of animation',
+    'pop century',
+    'contemporary resort',
+    'polynesian',
+    'grand floridian',
+    'caribbean beach',
+    'coronado springs',
+    'boardwalk',
+    'wilderness lodge',
+    'saratoga springs',
+    'riviera resort',
+    'fort wilderness'
+  ];
+
+  // Verifica se ja exibiu nesta sessao
+  function alreadyShownInSession() {
+    try {
+      return sessionStorage.getItem(SESSION_KEY) === 'true';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function markShownInSession() {
+    try {
+      sessionStorage.setItem(SESSION_KEY, 'true');
+    } catch (e) {
+      // Sem suporte a sessionStorage, segue sem marcar
+    }
+  }
+
+  // Verifica se o texto contem termos relacionados a Disney
+  function containsDisneyTerm(text) {
+    if (!text) return false;
+    var lower = text.toLowerCase().trim();
+    for (var i = 0; i < DISNEY_TERMS.length; i++) {
+      if (lower.indexOf(DISNEY_TERMS[i]) !== -1) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Tracking Adobe Analytics
+  function analyticsEvent(eventLabel, eventType) {
+    if (!eventLabel) return;
+    var labelEvent = EXPERIMENT_NAME + '_' + eventType + ' ' + eventLabel;
+    console.log('[Tracking Disney Busca Hoteis] Evento disparado: ' + labelEvent);
+    (function () {
+      var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+      if (!s || typeof s.tl !== 'function') return;
+      s.linkTrackVars = 'events,eVar82,eVar84';
+      s.linkTrackEvents = 'event90';
+      s.events = 'event90';
+      s.eVar82 = labelEvent;
+      s.eVar84 = EVAR84;
+      s.tl(true, 'o', 'target_activity_action');
+    })();
+  }
+
+  // Injeta CSS do banner
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+
+    var css = ''
+      // ===== BANNER OVERLAY =====
+      + '#' + BANNER_ID + ' {'
+      + '  position:fixed; top:0; left:0; width:100%; height:100%;'
+      + '  z-index:999998; display:flex; align-items:center; justify-content:center;'
+      + '  background:rgba(0,0,0,0.7); opacity:0; transition:opacity 0.6s ease;'
+      + '}'
+      + '#' + BANNER_ID + '.at-dbh-visible { opacity:1; }'
+      + '#' + BANNER_ID + '.at-dbh-fade-out { opacity:0; pointer-events:none; }'
+
+      // ===== CONTAINER PRINCIPAL 720x386 =====
+      + '.at-dbh-container {'
+      + '  position:relative; width:720px; height:386px;'
+      + '  background:#0150B5; border-radius:16px; overflow:hidden;'
+      + '  box-shadow:0 20px 80px rgba(0,0,0,0.5);'
+      + '  animation:atDbhBannerIn 0.6s ease-out forwards;'
+      + '}'
+      + '@keyframes atDbhBannerIn {'
+      + '  0%{transform:scale(0.8) translateY(30px);opacity:0}'
+      + '  100%{transform:scale(1) translateY(0);opacity:1}'
+      + '}'
+
+      // ===== CAMADAS DE BRILHO =====
+      + '.at-dbh-glow-layer {'
+      + '  position:absolute; pointer-events:none;'
+      + '  background:radial-gradient(ellipse at center, rgba(100,180,255,0.18) 0%, rgba(50,130,255,0.08) 30%, transparent 70%);'
+      + '  mix-blend-mode:plus-lighter;'
+      + '}'
+      + '.at-dbh-glow-1 {'
+      + '  width:548px; height:548px;'
+      + '  left:23.93%; top:148.95px;'
+      + '  transform:rotate(164.96deg);'
+      + '}'
+      + '.at-dbh-glow-2 {'
+      + '  width:548px; height:548px;'
+      + '  left:-97.75%; top:306.49px;'
+      + '  transform:rotate(164.96deg);'
+      + '}'
+
+      // ===== BRILHOS PONTUAIS =====
+      + '.at-dbh-lens-flare {'
+      + '  position:absolute; pointer-events:none; mix-blend-mode:screen;'
+      + '  background:radial-gradient(ellipse at center, rgba(255,255,255,0.35) 0%, rgba(200,230,255,0.12) 30%, transparent 60%);'
+      + '}'
+      + '.at-dbh-lens-1 {'
+      + '  width:200px; height:180px;'
+      + '  left:-34.23%; top:-74.54%;'
+      + '  transform:rotate(103.19deg);'
+      + '}'
+      + '.at-dbh-lens-2 {'
+      + '  width:220px; height:200px;'
+      + '  left:44.25%; top:23.17%;'
+      + '  transform:rotate(131.48deg);'
+      + '}'
+      + '.at-dbh-lens-3 {'
+      + '  width:200px; height:180px;'
+      + '  left:41.67%; top:-41.25%;'
+      + '  transform:rotate(-121.02deg);'
+      + '}'
+
+      // ===== ESTRELINHAS PISCANDO =====
+      + '.at-dbh-sparkle-layer {'
+      + '  position:absolute; top:0; left:0; width:100%; height:100%;'
+      + '  pointer-events:none; overflow:hidden; z-index:2;'
+      + '}'
+      + '.at-dbh-shine {'
+      + '  position:absolute; width:3px; height:3px; background:#fff;'
+      + '  border-radius:50%; opacity:0;'
+      + '  box-shadow:0 0 6px 2px rgba(255,255,255,0.6);'
+      + '  animation:atDbhTwinkle 2s ease-in-out infinite;'
+      + '}'
+      + '@keyframes atDbhTwinkle {'
+      + '  0%,100%{opacity:0;transform:scale(0.5)}'
+      + '  50%{opacity:1;transform:scale(1.2)}'
+      + '}'
+
+      // ===== TITULO =====
+      + '.at-dbh-txt {'
+      + '  position:absolute; width:342px; height:35px;'
+      + '  left:calc(50% - 342px/2 - 125.31px); top:75.67px;'
+      + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
+      + '  font-weight:300; font-size:22px; line-height:25px;'
+      + '  letter-spacing:-0.025em; color:#FFFFFF; z-index:5;'
+      + '}'
+
+      // ===== FRAME OFERTA =====
+      + '.at-dbh-offer-frame {'
+      + '  position:absolute; box-sizing:border-box;'
+      + '  width:365.61px; height:112.66px;'
+      + '  left:58.19px; top:123.84px;'
+      + '  border:1px solid #FFFFFF; border-radius:13px;'
+      + '  z-index:5;'
+      + '}'
+
+      // ===== TEXTOS DE PRECO =====
+      + '.at-dbh-desconto {'
+      + '  position:absolute;'
+      + '  left:calc(50% - 153.61px/2 - 210.24px); top:calc(50% - 39px/2 - 34.83px);'
+      + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
+      + '  font-weight:700; font-size:33px; line-height:120%; color:#FFFFFF; z-index:5;'
+      + '}'
+      + '.at-dbh-de {'
+      + '  position:absolute;'
+      + '  left:calc(50% - 26.67px/2 - 271.61px); top:calc(50% - 27px/2 - 7.36px);'
+      + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
+      + '  font-weight:300; font-size:22px; line-height:120%; color:#FFFFFF; z-index:5;'
+      + '}'
+      + '.at-dbh-rs {'
+      + '  position:absolute;'
+      + '  left:calc(50% - 28.57px/2 - 270.65px); top:calc(50% - 24px/2 + 11.43px);'
+      + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
+      + '  font-weight:700; font-size:20px; line-height:120%; color:#FFFFFF; z-index:5;'
+      + '}'
+      + '.at-dbh-preco {'
+      + '  position:absolute;'
+      + '  left:calc(50% - 121.16px/2 - 194.02px); top:calc(50% - 57px/2 + 1.58px);'
+      + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
+      + '  font-weight:700; font-size:47px; line-height:120%; color:#FFFFFF; z-index:5;'
+      + '}'
+      + '.at-dbh-asterisco {'
+      + '  position:absolute; left:224.53px; top:174.89px;'
+      + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
+      + '  font-weight:700; font-size:21px; line-height:120%; color:#FFFFFF; z-index:5;'
+      + '}'
+      + '.at-dbh-hoteis-txt {'
+      + '  position:absolute;'
+      + '  left:calc(50% - 159.28px/2 - 30.9px); top:calc(50% - 66px/2 - 14.69px);'
+      + '  width:159px; font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
+      + '  font-weight:300; font-size:20px; line-height:109%; color:#FFFFFF; z-index:5;'
+      + '}'
+
+      // ===== CTA =====
+      + '.at-dbh-cta {'
+      + '  position:absolute; width:206.95px; height:49.13px;'
+      + '  left:56.95px; top:270.42px;'
+      + '  background:#5EDCFF; border-radius:45.28px; border:none;'
+      + '  cursor:pointer; z-index:5;'
+      + '  display:flex; align-items:center; justify-content:center;'
+      + '  padding:0 30px; gap:5.66px;'
+      + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
+      + '  font-weight:700; font-size:19px; line-height:20px; color:#00043E;'
+      + '  transition:transform 0.2s ease, box-shadow 0.2s ease;'
+      + '}'
+      + '.at-dbh-cta:hover {'
+      + '  transform:translateY(-2px); box-shadow:0 4px 20px rgba(94,220,255,0.4);'
+      + '}'
+
+      // ===== LOGOS =====
+      + '.at-dbh-logos {'
+      + '  position:absolute; display:flex; align-items:center; gap:9px;'
+      + '  width:125.65px; height:18.17px;'
+      + '  left:calc(50% - 125.65px/2 - 13.09px); top:288.4px; z-index:5;'
+      + '}'
+      + '.at-dbh-logos-divider {'
+      + '  width:0; height:18px; border-left:0.6px solid #FFFFFF; flex:none;'
+      + '}'
+
+      // ===== CONSULTE CONDICOES =====
+      + '.at-dbh-consult {'
+      + '  position:absolute; left:102.47px; top:329.43px;'
+      + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
+      + '  font-weight:400; font-size:12px; line-height:120%; color:#FFFFFF; z-index:5;'
+      + '}'
+
+      // ===== FOTO PERSONAGEM =====
+      + '.at-dbh-photo-wrapper {'
+      + '  position:absolute; width:350.12px; height:350.12px;'
+      + '  left:443.99px; top:14.59px; z-index:3;'
+      + '  border-radius:50%; overflow:hidden;'
+      + '}'
+      + '.at-dbh-photo-img {'
+      + '  position:absolute; width:508px; height:489px;'
+      + '  left:-113.95px; top:-27.88px;'
+      + '  object-fit:cover;'
+      + '}'
+      + '.at-dbh-photo-gradient {'
+      + '  position:absolute; bottom:0; left:0; width:100%; height:40%;'
+      + '  background:linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.6) 100%);'
+      + '  border-radius:0 0 175px 175px; z-index:4;'
+      + '}'
+
+      // ===== COPYRIGHT =====
+      + '.at-dbh-copyright {'
+      + '  position:absolute;'
+      + '  left:calc(50% - 59px/2 + 259.05px); top:343.11px;'
+      + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
+      + '  font-weight:400; font-size:9px; line-height:7px;'
+      + '  color:#FFFFFF; z-index:5; text-align:center;'
+      + '}'
+
+      // ===== BOTAO FECHAR =====
+      + '.at-dbh-close {'
+      + '  position:absolute; top:10px; right:10px; width:28px; height:28px;'
+      + '  background:rgba(255,255,255,0.15); border:none; border-radius:50%;'
+      + '  cursor:pointer; display:flex; align-items:center; justify-content:center;'
+      + '  z-index:10; transition:background 0.2s ease;'
+      + '}'
+      + '.at-dbh-close:hover { background:rgba(255,255,255,0.3); }'
+      + '.at-dbh-close svg { width:12px; height:12px; }'
+
+      // ===== RESPONSIVO =====
+      + '@media (max-width: 768px) {'
+      + '  .at-dbh-container {'
+      + '    width:95vw; height:auto; min-height:380px;'
+      + '    transform:scale(0.85); transform-origin:center center;'
+      + '  }'
+      + '}';
+
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.type = 'text/css';
+    if (style.styleSheet) {
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }
+    document.head.appendChild(style);
+  }
+
+  // Cria e exibe o banner Disney Hoteis
+  function createBanner() {
+    if (document.getElementById(BANNER_ID)) return;
+
+    var bannerOverlay = document.createElement('div');
+    bannerOverlay.id = BANNER_ID;
+
+    // Container principal 720x386
+    var container = document.createElement('div');
+    container.className = 'at-dbh-container';
+
+    // Camadas de brilho
+    var g1 = document.createElement('div');
+    g1.className = 'at-dbh-glow-layer at-dbh-glow-1';
+    container.appendChild(g1);
+
+    var g2 = document.createElement('div');
+    g2.className = 'at-dbh-glow-layer at-dbh-glow-2';
+    container.appendChild(g2);
+
+    // Lens flares
+    var lf1 = document.createElement('div');
+    lf1.className = 'at-dbh-lens-flare at-dbh-lens-1';
+    container.appendChild(lf1);
+
+    var lf2 = document.createElement('div');
+    lf2.className = 'at-dbh-lens-flare at-dbh-lens-2';
+    container.appendChild(lf2);
+
+    var lf3 = document.createElement('div');
+    lf3.className = 'at-dbh-lens-flare at-dbh-lens-3';
+    container.appendChild(lf3);
+
+    // Estrelinhas piscando
+    var sparkleLayer = document.createElement('div');
+    sparkleLayer.className = 'at-dbh-sparkle-layer';
+    for (var i = 0; i < 20; i++) {
+      var sh = document.createElement('div');
+      sh.className = 'at-dbh-shine';
+      sh.style.cssText = 'left:' + (Math.random() * 100) + '%;top:' + (Math.random() * 100) + '%;'
+        + 'animation-delay:' + (Math.random() * 3) + 's;animation-duration:' + (1.5 + Math.random() * 2) + 's;';
+      sparkleLayer.appendChild(sh);
+    }
+    container.appendChild(sparkleLayer);
+
+    // Botao fechar
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'at-dbh-close';
+    closeBtn.setAttribute('aria-label', 'Fechar');
+    closeBtn.innerHTML = '<svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">'
+      + '<path d="M1 1L13 13M13 1L1 13" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+    container.appendChild(closeBtn);
+
+    // Titulo
+    var txt = document.createElement('div');
+    txt.className = 'at-dbh-txt';
+    txt.textContent = 'Conhe\u00E7a os Hot\u00E9is Resort Disney';
+    container.appendChild(txt);
+
+    // Frame oferta
+    var offerFrame = document.createElement('div');
+    offerFrame.className = 'at-dbh-offer-frame';
+    container.appendChild(offerFrame);
+
+    // Textos de preco
+    var desconto = document.createElement('div');
+    desconto.className = 'at-dbh-desconto';
+    desconto.textContent = 'Desconto';
+    container.appendChild(desconto);
+
+    var de = document.createElement('div');
+    de.className = 'at-dbh-de';
+    de.textContent = 'de';
+    container.appendChild(de);
+
+    var rs = document.createElement('div');
+    rs.className = 'at-dbh-rs';
+    rs.textContent = 'R$';
+    container.appendChild(rs);
+
+    var preco = document.createElement('div');
+    preco.className = 'at-dbh-preco';
+    preco.textContent = '2.300';
+    container.appendChild(preco);
+
+    var asterisco = document.createElement('div');
+    asterisco.className = 'at-dbh-asterisco';
+    asterisco.textContent = '*';
+    container.appendChild(asterisco);
+
+    var hoteisTxt = document.createElement('div');
+    hoteisTxt.className = 'at-dbh-hoteis-txt';
+    hoteisTxt.textContent = 'em Hot\u00E9is Resort Disney a partir de 4 noites';
+    container.appendChild(hoteisTxt);
+
+    // CTA
+    var cta = document.createElement('button');
+    cta.className = 'at-dbh-cta';
+    cta.textContent = 'Eu quero';
+    container.appendChild(cta);
+
+    // Logos Azul Viagens | Disney Destinations
+    var logos = document.createElement('div');
+    logos.className = 'at-dbh-logos';
+
+    var logoAzul = document.createElement('div');
+    logoAzul.innerHTML = '<svg width="40" height="18" viewBox="0 0 40 18" fill="none" xmlns="http://www.w3.org/2000/svg">'
+      + '<text x="0" y="12" font-family="Helvetica Neue,Arial,sans-serif" font-weight="700" font-size="8" fill="#FFFFFF">Azul</text>'
+      + '<text x="0" y="18" font-family="Helvetica Neue,Arial,sans-serif" font-weight="400" font-size="6" fill="#FFFFFF">Viagens</text>'
+      + '</svg>';
+    logos.appendChild(logoAzul);
+
+    var logoDivider = document.createElement('div');
+    logoDivider.className = 'at-dbh-logos-divider';
+    logos.appendChild(logoDivider);
+
+    var logoDisney = document.createElement('div');
+    logoDisney.innerHTML = '<svg width="70" height="12" viewBox="0 0 70 12" fill="none" xmlns="http://www.w3.org/2000/svg">'
+      + '<text x="0" y="10" font-family="Helvetica Neue,Arial,sans-serif" font-weight="400" font-size="8" fill="#FFFFFF" letter-spacing="0.5">Disney Destinations</text>'
+      + '</svg>';
+    logos.appendChild(logoDisney);
+    container.appendChild(logos);
+
+    // Consulte condicoes
+    var consult = document.createElement('div');
+    consult.className = 'at-dbh-consult';
+    consult.textContent = '*Consulte condi\u00E7\u00F5es.';
+    container.appendChild(consult);
+
+    // Foto personagem (circulo grande)
+    var photoWrap = document.createElement('div');
+    photoWrap.className = 'at-dbh-photo-wrapper';
+
+    var photoImg = document.createElement('img');
+    photoImg.className = 'at-dbh-photo-img';
+    photoImg.src = 'https://i.imgur.com/iLqzxWT.png';
+    photoImg.alt = 'Disney';
+    photoWrap.appendChild(photoImg);
+
+    var photoGrad = document.createElement('div');
+    photoGrad.className = 'at-dbh-photo-gradient';
+    photoWrap.appendChild(photoGrad);
+    container.appendChild(photoWrap);
+
+    // Copyright
+    var copy = document.createElement('div');
+    copy.className = 'at-dbh-copyright';
+    copy.textContent = '\u00A9 2026 Disney';
+    container.appendChild(copy);
+
+    // Monta tudo
+    bannerOverlay.appendChild(container);
+    document.body.appendChild(bannerOverlay);
+
+    requestAnimationFrame(function () {
+      bannerOverlay.classList.add('at-dbh-visible');
+    });
+
+    // Tracking de visualizacao
+    analyticsEvent('banner_disney_busca_hoteis', 'view');
+
+    // Evento CTA - direciona para pagina de hoteis Disney
+    cta.addEventListener('click', function (e) {
+      e.stopPropagation();
+      analyticsEvent('banner_disney_busca_hoteis_cta', 'click');
+      window.location.href = BANNER_LINK;
+    });
+
+    // Clique no container (exceto fechar e CTA) - direciona para hoteis Disney
+    container.addEventListener('click', function (e) {
+      if (e.target === closeBtn || closeBtn.contains(e.target)) return;
+      if (e.target === cta) return;
+      e.stopPropagation();
+      analyticsEvent('banner_disney_busca_hoteis_container', 'click');
+      window.location.href = BANNER_LINK;
+    });
+
+    // Fechar banner - usuario ve os resultados normais
+    closeBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      analyticsEvent('banner_disney_busca_hoteis_fechar', 'click');
+      closeBanner(bannerOverlay);
+    });
+
+    // Clique no overlay (fora do banner) - fecha
+    bannerOverlay.addEventListener('click', function (e) {
+      if (e.target === bannerOverlay) {
+        analyticsEvent('banner_disney_busca_hoteis_overlay_fechar', 'click');
+        closeBanner(bannerOverlay);
+      }
+    });
+
+    // Tecla Escape fecha o banner
+    var handleEsc = function (e) {
+      if (e.key === 'Escape') {
+        analyticsEvent('banner_disney_busca_hoteis_esc_fechar', 'click');
+        closeBanner(bannerOverlay);
+        document.removeEventListener('keydown', handleEsc);
+      }
+    };
+    document.addEventListener('keydown', handleEsc);
+  }
+
+  // Fecha o banner com fade-out
+  function closeBanner(el) {
+    if (!el) return;
+    el.classList.add('at-dbh-fade-out');
+    setTimeout(function () {
+      if (el.parentNode) el.parentNode.removeChild(el);
+    }, 600);
+  }
+
+  // Verifica se o destino exibido na pagina contem termo Disney
+  function checkDestinyText() {
+    // Seletor do nome do destino na pagina de resultados de hoteis
+    var destinyEl = document.querySelector('.styles__ItemTitle-sc-1uec0uv-3 b');
+    if (!destinyEl) {
+      // Fallback para mobile
+      destinyEl = document.querySelector('.styles__ItemTitle-sc-1uec0uv-3');
+    }
+    if (destinyEl && containsDisneyTerm(destinyEl.textContent)) {
+      return true;
+    }
+    return false;
+  }
+
+  // Verifica inputs de busca na pagina por termos Disney
+  function checkSearchInputs() {
+    var inputs = document.querySelectorAll('input[type="text"], input[type="search"], input:not([type])');
+    for (var i = 0; i < inputs.length; i++) {
+      var val = inputs[i].value || '';
+      if (containsDisneyTerm(val)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Verifica a URL por termos Disney (parametros de busca)
+  function checkUrlForDisney() {
+    var url = window.location.href.toLowerCase();
+    if (url.indexOf('disney') !== -1) {
+      return true;
+    }
+    // Verifica parametros de busca decodificados
+    try {
+      var decoded = decodeURIComponent(url);
+      if (decoded.indexOf('disney') !== -1) {
+        return true;
+      }
+    } catch (e) {
+      // URL invalida, ignora
+    }
+    return false;
+  }
+
+  // Verifica sugestoes de autocomplete visiveis
+  function checkAutocompleteSuggestions() {
+    var suggestions = document.querySelectorAll('[role="option"], [role="listbox"] li, .autocomplete-suggestion, .suggestion-item');
+    for (var i = 0; i < suggestions.length; i++) {
+      var text = suggestions[i].textContent || '';
+      if (containsDisneyTerm(text)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Funcao principal de deteccao
+  function detectDisneySearch() {
+    if (isProcessing || bannerShown) return;
+    isProcessing = true;
+
+    var isDisneySearch = checkUrlForDisney() || checkDestinyText() || checkSearchInputs();
+
+    if (isDisneySearch) {
+      console.log('[Disney Busca Hoteis] Busca relacionada a Disney detectada.');
+      bannerShown = true;
+      markShownInSession();
+      injectStyles();
+      createBanner();
+    }
+
+    isProcessing = false;
+  }
+
+  // Configura listeners nos inputs de busca
+  function setupInputListeners() {
+    var inputs = document.querySelectorAll('input[type="text"], input[type="search"], input:not([type])');
+    inputs.forEach(function (input) {
+      if (input.hasAttribute('data-dbh-listener-added')) return;
+      input.setAttribute('data-dbh-listener-added', 'true');
+
+      input.addEventListener('input', function () {
+        if (bannerShown) return;
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(function () {
+          if (containsDisneyTerm(input.value)) {
+            // Aguarda um pouco para o usuario terminar de digitar
+            setTimeout(function () {
+              if (containsDisneyTerm(input.value)) {
+                detectDisneySearch();
+              }
+            }, 800);
+          }
+        }, 300);
+      });
+    });
+  }
+
+  // Configura MutationObserver para detectar mudancas no DOM
+  function setupObserver() {
+    if (window._atDisneyBuscaHoteisObserver) return;
+
+    var observer = new MutationObserver(function (mutations) {
+      if (bannerShown || isProcessing) return;
+
+      // Ignora mudancas causadas pelo proprio banner
+      var isBannerChange = mutations.some(function (mutation) {
+        var addedNodes = Array.from(mutation.addedNodes);
+        return addedNodes.some(function (node) {
+          return node.nodeType === 1 && (
+            node.id === BANNER_ID ||
+            node.id === STYLE_ID ||
+            (node.querySelector && node.querySelector('#' + BANNER_ID))
+          );
+        });
+      });
+
+      if (isBannerChange) return;
+
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(function () {
+        // Reaplica listeners em novos inputs
+        setupInputListeners();
+        // Verifica se destino Disney apareceu nos resultados
+        detectDisneySearch();
+      }, 500);
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+
+    window._atDisneyBuscaHoteisObserver = observer;
+    console.log('[Disney Busca Hoteis] Observer configurado.');
+  }
+
+  // Funcao de inicializacao
+  function init() {
+    // Verifica se ja exibiu nesta sessao
+    if (alreadyShownInSession()) {
+      console.log('[Disney Busca Hoteis] Banner ja exibido nesta sessao, ignorando.');
+      return;
+    }
+
+    // Verifica se estamos na pagina de hoteis
+    var url = window.location.href.toLowerCase();
+    var isHotelPage = url.indexOf('/hoteis') !== -1
+      || url.indexOf('/hotel') !== -1
+      || url.indexOf('hoteis-disney') !== -1;
+
+    if (!isHotelPage) {
+      console.log('[Disney Busca Hoteis] Pagina nao e de hoteis, ignorando.');
+      return;
+    }
+
+    console.log('[Disney Busca Hoteis] Inicializando na pagina de hoteis.');
+
+    // Verifica imediatamente se ja tem conteudo Disney na pagina
+    detectDisneySearch();
+
+    // Se ainda nao mostrou, configura listeners e observer
+    if (!bannerShown) {
+      setupInputListeners();
+      setupObserver();
+    }
+  }
+
+  // Inicializar quando DOM estiver pronto
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
