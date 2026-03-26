@@ -17,6 +17,40 @@
   let retryCount = 0;
   let viewTracked = false;
 
+  function getSearchComponent() {
+    return document.querySelector('tim-search-input[input-id="search-menu-desktop"]');
+  }
+
+  function queryWithin(root, selector) {
+    if (!root) return null;
+    if (root.querySelector) return root.querySelector(selector);
+    return null;
+  }
+
+  function getDropdown() {
+    const selector = '.tim-search-input-dropdown-items[data-ic-section="sec-busca-sugestoes"]';
+
+    // 1) Prioriza o dropdown associado ao input visivel (#search-menu-desktop)
+    const input = document.getElementById('search-menu-desktop');
+    if (input) {
+      const container = input.closest('.tim-search-input-container') || input.parentElement;
+      const scoped = queryWithin(container, selector);
+      if (scoped) return scoped;
+    }
+
+    // 2) Light DOM (fallback global)
+    const lightDom = document.querySelector(selector);
+    if (lightDom) return lightDom;
+
+    // 3) Shadow DOM (tim-search-input)
+    const comp = getSearchComponent();
+    const shadow = comp && comp.shadowRoot;
+    const inShadow = queryWithin(shadow, selector);
+    if (inShadow) return inShadow;
+
+    return null;
+  }
+
   // Itens da secao "Recomendado para voce"
   const itensRecomendados = [
     {
@@ -127,7 +161,7 @@
 
   // ---- Dispara tracking de view quando dropdown abre ----
   function setupViewTracking() {
-    const searchComponent = document.querySelector('tim-search-input[input-id="search-menu-desktop"]');
+    const searchComponent = getSearchComponent();
     if (!searchComponent || searchComponent.getAttribute('data-view-tracking-added')) return;
     searchComponent.setAttribute('data-view-tracking-added', 'true');
 
@@ -151,7 +185,7 @@
     isProcessing = true;
 
     try {
-      const dropdown = document.querySelector('.tim-search-input-dropdown-items[data-ic-section="sec-busca-sugestoes"]');
+      const dropdown = getDropdown();
       if (!dropdown) {
         console.log('[Busca Sugestiva] Dropdown nao encontrado.');
         return;
@@ -165,9 +199,9 @@
       const secaoRecomendado = criarSecaoRecomendado();
 
       // Insere antes do primeiro filho (antes de "Mais buscados")
-      const primeiroFilho = dropdown.firstChild;
-      if (primeiroFilho) {
-        dropdown.insertBefore(secaoRecomendado, primeiroFilho);
+      const primeiraSecao = dropdown.querySelector('.tim-search-input-dropdown-items-div');
+      if (primeiraSecao) {
+        dropdown.insertBefore(secaoRecomendado, primeiraSecao);
       } else {
         dropdown.appendChild(secaoRecomendado);
       }
@@ -202,10 +236,14 @@
       }, DEBOUNCE_MS);
     });
 
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
+    // Observa o body (criacoes em light DOM) e, se existir, o shadowRoot do componente
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    const comp = getSearchComponent();
+    const shadow = comp && comp.shadowRoot;
+    if (shadow) {
+      observer.observe(shadow, { childList: true, subtree: true });
+    }
 
     window._timBuscaSugestivaObserver = observer;
     console.log('[Busca Sugestiva] MutationObserver configurado.');
@@ -215,7 +253,7 @@
   function init() {
     injectStyles();
 
-    const dropdown = document.querySelector('.tim-search-input-dropdown-items[data-ic-section="sec-busca-sugestoes"]');
+    const dropdown = getDropdown();
 
     if (dropdown) {
       run();
@@ -233,7 +271,7 @@
         return;
       }
 
-      const el = document.querySelector('.tim-search-input-dropdown-items[data-ic-section="sec-busca-sugestoes"]');
+      const el = getDropdown();
       if (el) {
         clearInterval(interval);
         run();
