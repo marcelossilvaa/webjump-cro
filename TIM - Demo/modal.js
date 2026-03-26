@@ -218,6 +218,16 @@
       '  color: #FFFFFF;',
       '  margin: 0;',
       '}',
+      '.tim-card-img {',
+      '  position: absolute;',
+      '  right: 60px;',
+      '  top: 0;',
+      '  width: 116px;',
+      '  height: 72px;',
+      '  object-fit: contain;',
+      '  pointer-events: none;',
+      '  z-index: 0;',
+      '}',
       '.tim-card-top-right {',
       '  position: absolute;',
       '  right: 12px;',
@@ -316,7 +326,7 @@
       '  display: flex;',
       '  justify-content: center;',
       '  align-items: center;',
-      '  padding: 8px 38px;',
+      '  padding: 8px;',
       '  flex: 1;',
       '  height: 38px;',
       '  border: 1.5px solid #DDDDDD;',
@@ -338,7 +348,7 @@
       '  display: flex;',
       '  justify-content: center;',
       '  align-items: center;',
-      '  padding: 8px 16px;',
+      '  padding: 8px;',
       '  flex: 1;',
       '  height: 38.5px;',
       '  border: 1px solid #0027E2;',
@@ -455,7 +465,14 @@
     direita.appendChild(amount);
     direita.appendChild(sub);
 
+    // Imagem decorativa ao lado dos dados
+    var cardImg = document.createElement('img');
+    cardImg.className = 'tim-card-img';
+    cardImg.src = 'https://i.imgur.com/u9m6any.png';
+    cardImg.alt = '';
+
     top.appendChild(info);
+    top.appendChild(cardImg);
     top.appendChild(direita);
 
     // Parte inferior (preco + CTA)
@@ -549,17 +566,11 @@
     headerContent.appendChild(headerTextWrap);
     header.appendChild(headerContent);
 
-    // Imagem do header (placeholder inline SVG representando a imagem promocional)
+    // Imagem do header
     var headerImg = document.createElement('img');
     headerImg.className = 'tim-modal-header-img';
     headerImg.alt = 'Promocao Mes do Consumidor';
-    // Usando uma imagem placeholder. Substituir pelo URL real da imagem.
-    headerImg.src = 'data:image/svg+xml,' + encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="217" height="144" viewBox="0 0 217 144">'
-      + '<rect width="217" height="144" fill="none"/>'
-      + '<text x="108" y="72" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="14" font-family="Arial">Imagem Promo</text>'
-      + '</svg>'
-    );
+    headerImg.src = 'https://i.imgur.com/OcNCa0I.png';
     header.appendChild(headerImg);
 
     // -- Body (cards) --

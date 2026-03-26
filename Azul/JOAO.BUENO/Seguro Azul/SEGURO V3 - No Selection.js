@@ -175,6 +175,19 @@
 
                   console.log("[AT] Submit button clicked.", typeEvent);
 
+                  // Verifica se alguma opcao foi selecionada
+                  const checkedOption = document.querySelector("input[name=insurances]:checked");
+
+                  if (!checkedOption) {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      event.stopImmediatePropagation();
+                      showInsuranceError();
+                      return;
+                  }
+
+                  clearInsuranceError();
+
                   const userWantsInsurance = document.querySelector("input#insurance_yes")?.checked;
 
                   if (!userWantsInsurance) {
@@ -323,11 +336,40 @@
                   document.body.appendChild(div);
               }
 
+              function showInsuranceError() {
+                  const wrapper = document.querySelector(".injectedInsuranceWrapper");
+                  if (wrapper) {
+                      wrapper.classList.add("injectedInsuranceWrapper--error");
+                  }
+
+                  const existingMsg = document.querySelector(".injectedInsuranceWrapper__errorMsg");
+                  if (!existingMsg && wrapper) {
+                      const errorMsg = document.createElement("span");
+                      errorMsg.className = "injectedInsuranceWrapper__errorMsg";
+                      errorMsg.textContent = "Selecione uma das op\u00e7\u00f5es do Seguro viagem";
+                      wrapper.appendChild(errorMsg);
+                  }
+              }
+
+              function clearInsuranceError() {
+                  const wrapper = document.querySelector(".injectedInsuranceWrapper");
+                  if (wrapper) {
+                      wrapper.classList.remove("injectedInsuranceWrapper--error");
+                  }
+
+                  const existingMsg = document.querySelector(".injectedInsuranceWrapper__errorMsg");
+                  if (existingMsg) {
+                      existingMsg.remove();
+                  }
+              }
+
               function addListenersToInjections() {
                   const insuranceInput = document.querySelectorAll("input[name=insurances]");
 
                   insuranceInput.forEach(input => {
                       input.addEventListener("click", () => {
+                          clearInsuranceError();
+
                           const checkedInput = document.querySelector("input[name=insurances]:checked");
                           const isYesInput = checkedInput.id === "insurance_yes";
 
@@ -745,6 +787,20 @@
                     text-decoration: none;
                     cursor: pointer;
                     font-size: 14px;
+                }
+
+                /* ============ ESTADO DE ERRO ============ */
+
+                .injectedInsuranceWrapper--error {
+                    border-color: rgb(184, 44, 37);
+                }
+
+                .injectedInsuranceWrapper__errorMsg {
+                    font-family: "Helvetica Neue", "Arial", sans-serif;
+                    font-size: 12px;
+                    color: rgb(184, 44, 37);
+                    display: block;
+                    text-align: left;
                 }
             `;
 
