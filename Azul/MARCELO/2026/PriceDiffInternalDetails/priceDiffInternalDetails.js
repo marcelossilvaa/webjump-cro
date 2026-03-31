@@ -132,9 +132,29 @@
 
   function getFareItemsForCard(flightCard) {
     if (!flightCard) return [];
-    const container = flightCard.querySelector('.card-content .fares-container');
+    // A Azul muda bastante a estrutura/classe dos itens (ex.: <li class="css-...">).
+    // Fallbacks evitam processar só a última coluna quando os seletores mudam.
+    const container =
+      flightCard.querySelector('.card-content .fares-container') ||
+      flightCard.querySelector('.fares-container') ||
+      flightCard.querySelector('[class*="fares-container"]');
     if (!container) return [];
-    return Array.from(container.querySelectorAll('.fare-item'));
+
+    const fareItemSelectorPrimary = '.fare-item';
+    let candidates = Array.from(container.querySelectorAll(fareItemSelectorPrimary));
+
+    // Fallback: quando as tarifas vêm como <li> (ex.: li.css-16j8y95)
+    if (!candidates.length) {
+      candidates = Array.from(container.querySelectorAll('li'));
+    }
+
+    // Mantém apenas nós que parecem uma tarifa (tem preço e botão/cta)
+    return candidates.filter(function (node) {
+      if (!node || !node.querySelector) return false;
+      const hasPrice = !!node.querySelector('.fare-price [data-test-id="fare-price"], [data-test-id="fare-price"]');
+      const hasCta = !!node.querySelector('[data-test-id="select-fare"], [data-test-id="select-fare"] *');
+      return hasPrice && hasCta;
+    });
   }
 
   function computeCheapestFare(fareItems) {
