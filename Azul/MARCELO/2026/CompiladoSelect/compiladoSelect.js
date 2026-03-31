@@ -88,7 +88,7 @@
 
   const TI_DONT_HAVE_ICON =
     '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-    '<path d="M9 0C13.9706 0 18 4.02944 18 9C18 13.9706 13.9706 18 9 18C4.02944 18 0 13.9706 0 9C0 4.02944 4.02944 0 9 0ZM9 8.29297L6.35352 5.64648L5.64648 6.35352L8.29297 9L5.64648 11.6465L6.35352 12.3535L9 9.70703L11.6465 12.3535L12.3535 11.6465L9.70703 9L12.3535 6.35352L11.6465 5.64648L9 8.29297Z" fill="#EB001B" />' +
+    '<path d="M9 0C13.9706 0 18 4.02944 18 9C18 13.9706 13.9706 18 9 18C4.02944 18 0 13.9706 0 9C0 4.02944 4.02944 0 9 0ZM9 8.29297L6.35352 5.64648L5.64648 6.35352L8.29297 9L5.64648 11.6465L6.35352 12.3535L9 9.70703L11.6465 12.3535L12.3535 11.6465L9.70703 9L12.3535 6.35352L11.6465 5.64648L9 8.29297Z" fill="rgb(235, 0, 27)" />' +
     '</svg>';
 
   const TI_DONT_HAVE_BAGS_ICON =
@@ -278,6 +278,43 @@
     return tag;
   }
 
+  function trMarkFlightCardType(flightCards) {
+    if (!flightCards || flightCards.length === 0) {
+      return;
+    }
+
+    Array.from(flightCards).forEach(function (card) {
+      let flightsTypes = card.querySelectorAll(COMMON_SELECTORS.flightTypeLabel);
+      let hasBusiness = Array.from(flightsTypes).some(function (label) {
+        return (label.textContent || '').indexOf('Business') !== -1;
+      });
+
+      if (hasBusiness) {
+        card.classList.add('at-international-card');
+      } else {
+        card.classList.remove('at-international-card');
+      }
+    });
+  }
+
+  function trMarkCabineMista(flightCards) {
+    if (!flightCards || flightCards.length === 0) {
+      return;
+    }
+
+    Array.from(flightCards).forEach(function (card) {
+      let farePrices = card.querySelectorAll('.fare-price.css-13gs6uq');
+      Array.from(farePrices).forEach(function (fp) {
+        let cabineMistaSpan = fp.querySelector('.css-18wb4my span');
+        if (cabineMistaSpan && (cabineMistaSpan.textContent || '').indexOf('Voo em Cabine Mista') !== -1) {
+          fp.classList.add('at-cabine-mista');
+        } else {
+          fp.classList.remove('at-cabine-mista');
+        }
+      });
+    });
+  }
+
   function trInjectCss() {
     if (trCssInjected || document.getElementById(TR_STYLE_ID)) {
       trCssInjected = true;
@@ -290,7 +327,10 @@
     styles.textContent =
       '.' +
       TR_BODY_CLASS +
-      ' .flight-card .fares-container > ul > li > ul > li:first-child { position: relative; height: 183px; padding-top: 45px; }' +
+      ' .flight-card .fares-container > ul > li > ul > li:first-child { position: relative; height: 175px; padding-top: 50px; }' +
+      '.' +
+      TR_BODY_CLASS +
+      ' .flight-card.at-international-card .fares-container > ul > li > ul > li:first-child { height: 204px; padding-top: 38px; }' +
       '.' +
       TR_BODY_CLASS +
       ' .' +
@@ -319,7 +359,10 @@
       '--international svg { display: none; }' +
       '.' +
       TR_BODY_CLASS +
-      ' .flight-card .fares-container .fare-price.css-13gs6uq { margin-top: -45px; padding-top: 53px; }';
+      ' .flight-card .fares-container .fare-price.css-13gs6uq { margin-top: -45px; padding-top: 53px; }' +
+      '.' +
+      TR_BODY_CLASS +
+      ' .flight-card .fares-container .fare-price.css-13gs6uq.at-cabine-mista { margin-top: -76px; }';
 
     document.head.appendChild(styles);
     trCssInjected = true;
@@ -402,6 +445,9 @@
         return;
       }
 
+      trMarkFlightCardType(flightCards);
+      trMarkCabineMista(flightCards);
+
       const flightType = trGetFlightType(flightCards);
       const availableTariffs = trGetOnlyNotSoldOutTariffs(flightCards);
 
@@ -420,6 +466,15 @@
     });
 
     trObserver.observe(domChecker, { childList: true, subtree: true });
+
+    const initialTrips = document.querySelector(COMMON_SELECTORS.flightsTrips);
+    if (initialTrips) {
+      const initialCards = initialTrips.querySelectorAll(COMMON_SELECTORS.flightCard);
+      if (initialCards && initialCards.length > 0) {
+        trMarkFlightCardType(initialCards);
+        trMarkCabineMista(initialCards);
+      }
+    }
   }
 
   // =========================
@@ -940,7 +995,7 @@
       '.pre-select-floating-cta .floating-continue-btn { background: #008058; color: #FFFFFF; border: none; border-radius: 4px; padding: 14px 48px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; min-width: 280px; letter-spacing: 0.5px; font-family: "Helvetica Neue Medium", Arial; }' +
       '.pre-select-floating-cta .floating-continue-btn:hover:not(:disabled) { opacity: 0.9; }' +
       '.pre-select-floating-cta .floating-continue-btn:disabled, .pre-select-floating-cta .floating-continue-btn.disabled { background: #FFF !important; color: #999999 !important; cursor: not-allowed !important; opacity: 0.7; }' +
-      'body .fare-selected-disabled { background: #163B70 !important; color: #FFF !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 0.8 !important; }' +
+      'body .fare-selected-disabled { background: #026CB6 !important; color: #FFF !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 0.8 !important; }' +
       'body .fare-selected-disabled .button__text, body .fare-selected-disabled .button__text--mobile { color: #FFF !important; }' +
       'button[aria-label="Tarifa esgotada"], button[aria-label="Tarifa esgotada"]:hover, button[aria-label="Tarifa esgotada"]:active, button[aria-label="Tarifa esgotada"]:focus { background: #F5F7F9 !important; border: 1px solid #D0D7DE !important; color: #94A5B1 !important; cursor: not-allowed !important; opacity: 1 !important; pointer-events: none !important; }' +
       'button[aria-label="Tarifa esgotada"] .button__text, button[aria-label="Tarifa esgotada"] .button__text--mobile { color: #94A5B1 !important; }' +
@@ -949,7 +1004,8 @@
       '.css-guj3i2 { background-color: #FFF !important; color: #026CB6 !important; border: 1px solid #026CB6 !important; }' +
       '.css-guj3i2:hover { background-color: #EBF4FA !important; }' +
       '.css-ist1h5 { background-color: #EBF4FA !important; }' +
-      '.css-ou6pmp { background: #163B70 !important; color: #FFF !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 0.8 !important; border-radius: 4px !important; }' +
+      '.css-ou6pmp { background: #026CB6 !important; color: #FFF !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 0.8 !important; border-radius: 4px !important; }' +
+      '.fare-item:has(button[aria-label="Tarifa esgotada"]) li.mobile-string svg path { fill: #616161 !important; }' +
       '@media (max-width: 768px) { .pre-select-floating-cta { padding: 15px; padding-top: 30px; } .pre-select-floating-cta .floating-continue-btn { width: 100%; padding: 14px 24px; font-size: 14px; } }';
 
     document.head.appendChild(styles);
