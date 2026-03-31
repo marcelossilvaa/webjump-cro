@@ -731,6 +731,9 @@
           btn.classList.add('active');
         }
       }
+
+      setTimeout(ofOrderSoldOutFlightsToEnd, 300);
+      setTimeout(ofOrderSoldOutFlightsToEnd, 800);
     }, 150);
   }
 
@@ -882,13 +885,10 @@
       item.style.flexDirection = 'column';
     });
 
-    const soldOutItems = Array.from(flightItems).filter((card) => {
+    Array.from(flightItems).forEach((card) => {
       const fareElement = card.querySelector('.flight-card__fare');
-      return fareElement && fareElement.getAttribute('aria-label') === 'Voo esgotado';
-    });
-
-    soldOutItems.forEach((item) => {
-      item.style.order = 2;
+      const isSoldOut = fareElement && fareElement.getAttribute('aria-label') === 'Voo esgotado';
+      card.style.order = isSoldOut ? '2' : '0';
     });
   }
 
