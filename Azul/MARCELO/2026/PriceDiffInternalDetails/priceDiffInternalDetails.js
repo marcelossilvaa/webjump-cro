@@ -41,9 +41,10 @@
       '.' + VARIANT_NAME + '__box{' +
       'display:flex;flex-direction:column;justify-content:center;align-items:flex-end;padding:0;' +
       'width:152px;max-width:100%;' +
-      'font-family:\'Helvetica Neue\', Arial, sans-serif;color:#FFFFFF;' +
+      'font-family:\'Helvetica Neue\', Arial, sans-serif;color:rgb(2,108,182);' +
       'pointer-events:none;' +
       '}' +
+      '.' + VARIANT_NAME + '__isBusiness .' + VARIANT_NAME + '__box{color:#FFFFFF;}' +
       '.' + VARIANT_NAME + '__from{' +
       'width:148px;max-width:100%;min-height:21px;font-weight:400;font-size:14px;line-height:109.45%;' +
       'display:flex;align-items:center;text-align:right;' +
@@ -62,7 +63,10 @@
       'width:17px;height:21px;font-weight:400;font-size:12px;line-height:16px;display:flex;align-items:center;' +
       '}' +
       '.' + VARIANT_NAME + '__hide{display:none !important;}' +
-      '.' + VARIANT_NAME + '__hideOldPrice .css-1qvpjit{display:none !important;}';
+      '.' + VARIANT_NAME + '__hideOldPrice .css-1qvpjit{display:none !important;}' +
+      '.' + VARIANT_NAME + '__hideOldPrice [data-test-id="fare-price"]{display:none !important;}' +
+      // Não mexer no preço do "resumo" (lado direito do card, fora da tabela)
+      '.flight-card__fare [data-test-id="fare-price"]{display:none !important;}';
 
     document.head.appendChild(style);
   }
@@ -126,6 +130,13 @@
     return parsePtBrMoney(priceEl.textContent);
   }
 
+  function getFarePriceRoot(fareItem) {
+    if (!fareItem) return null;
+    const priceEl = fareItem.querySelector('[data-test-id="fare-price"]');
+    if (!priceEl) return null;
+    return priceEl.closest('.fare-price') || priceEl.parentElement;
+  }
+
   function getFlightCardsToProcess() {
     return Array.from(document.querySelectorAll('.flight-card'));
   }
@@ -153,7 +164,18 @@
       if (!node || !node.querySelector) return false;
       const hasPrice = !!node.querySelector('.fare-price [data-test-id="fare-price"], [data-test-id="fare-price"]');
       const hasCta = !!node.querySelector('[data-test-id="select-fare"], [data-test-id="select-fare"] *');
-      return hasPrice && hasCta;
+
+      // Quando a tarifa está selecionada, a Azul pode substituir o CTA por um texto tipo "Tarifa selecionada"
+      const fullText = (node.textContent || '').toLowerCase();
+      const hasSelectedLabel = fullText.indexOf('tarifa selecionada') > -1;
+
+      // Alguns layouts colocam esse label em classes específicas (ex.: css-ou6pmp)
+      const hasSelectedLabelByClass = !!node.querySelector('.css-ou6pmp');
+
+      // Alguns layouts também marcam o botão com aria-pressed="true"
+      const hasPressedButton = !!node.querySelector('button[aria-pressed="true"]');
+
+      return hasPrice && (hasCta || hasSelectedLabel || hasSelectedLabelByClass || hasPressedButton);
     });
   }
 
@@ -169,7 +191,7 @@
   }
 
   function cleanupFarePrice(fareItem) {
-    const farePrice = fareItem && fareItem.querySelector ? fareItem.querySelector('.fare-price') : null;
+    const farePrice = getFarePriceRoot(fareItem);
     if (!farePrice) return;
     farePrice.classList.remove(VARIANT_NAME + '__hideOldPrice');
     farePrice.classList.remove(VARIANT_NAME + '__isBusiness');
@@ -209,14 +231,20 @@
 
     box.appendChild(from);
     box.appendChild(diff);
-    farePriceRoot.appendChild(box);
+    // Quando existe o badge/tooltip (ex.: "Voo em Cabine Mista"), queremos o box acima dele.
+    const badgeAnchor = farePriceRoot.querySelector('.css-18wb4my');
+    if (badgeAnchor && badgeAnchor.parentNode === farePriceRoot) {
+      farePriceRoot.insertBefore(box, badgeAnchor);
+    } else {
+      farePriceRoot.appendChild(box);
+    }
     return box;
   }
 
   function renderPriceDiff(fareItem, cheapestValue) {
     if (!fareItem) return;
 
-    const farePrice = fareItem.querySelector('.fare-price');
+    const farePrice = getFarePriceRoot(fareItem);
     if (!farePrice) return;
 
     const value = getFarePriceValue(fareItem);
