@@ -1,5 +1,6 @@
     (function(window, document) {
         'use strict';
+        
 
         // Previne dupla inicialização
         if (window.__wjDiscountConsolidateInit) return;
