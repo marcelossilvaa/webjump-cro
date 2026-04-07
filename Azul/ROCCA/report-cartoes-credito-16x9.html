@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise Estratégica 2025 - Benchmarking Cartões de Crédito</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * { box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #1e293b;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        .slide {
+            width: 1280px;
+            height: 720px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+            padding: 40px;
+        }
+        
+        .slide-number {
+            position: absolute;
+            bottom: 20px;
+            right: 30px;
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+        }
+
+        .slide-footer {
+            position: absolute;
+            bottom: 20px;
+            left: 40px;
+            font-size: 10px;
+            color: #94a3b8;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+        
+        .gradient-blue { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
+        .gradient-dark { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+
+        .bar-fill {
+            transition: width 1s ease-out;
+        }
+
+        .card-hover {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .slide { 
+                box-shadow: none; 
+                page-break-after: always;
+                margin: 0;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SLIDE 1: Capa -->
+    <div class="slide">
+        <div class="gradient-dark text-white p-12 rounded-3xl h-full flex flex-col justify-center items-center text-center relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-blue-600/20 to-transparent"></div>
+            <div class="z-10">
+                <div class="mb-6">
+                    <div class="inline-flex items-center gap-3 bg-white/10 px-6 py-3 rounded-full border border-white/20 mb-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        <span class="text-xs font-bold uppercase tracking-widest">Benchmarking de Cartoes de Credito</span>
+                    </div>
+                    <h1 class="text-6xl font-black italic tracking-tighter mb-4">Analise Estrategica</h1>
+                    <h2 class="text-4xl font-light text-blue-300">2025</h2>
+                </div>
+                <p class="text-xl text-slate-400 mb-8 max-w-2xl">Visao completa do mercado de cartoes, programas de fidelidade aereo e outlook estrategico</p>
+                
+                <div class="text-left bg-white/5 rounded-2xl p-6 mb-8 border border-white/10 max-w-xl">
+                    <ul class="space-y-2 text-sm text-slate-300">
+                        <li class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-blue-500"></span>Volume de R$ 2.8 Trilhoes em TPV anual</li>
+                        <li class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-purple-500"></span>5 principais players do mercado analisados</li>
+                        <li class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-amber-500"></span>Analise SWOT e tendencias para 2025</li>
+                    </ul>
+                </div>
+                
+                <div class="flex space-x-6 text-sm uppercase font-bold tracking-wider justify-center">
+                    <div class="flex items-center space-x-2 bg-white/10 px-5 py-3 rounded-full border border-white/20">
+                        <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                        <span>Mercado</span>
+                    </div>
+                    <div class="flex items-center space-x-2 bg-white/10 px-5 py-3 rounded-full border border-white/20">
+                        <span class="w-3 h-3 rounded-full bg-purple-500"></span>
+                        <span>Aereo</span>
+                    </div>
+                    <div class="flex items-center space-x-2 bg-white/10 px-5 py-3 rounded-full border border-white/20">
+                        <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                        <span>Estrategia</span>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-8 text-slate-500 text-sm font-bold">Confidencial | Uso Interno | Q1 2025</div>
+        </div>
+        <div class="slide-number">1</div>
+    </div>
+
+    <!-- SLIDE 2: Visao Geral do Mercado -->
+    <div class="slide flex flex-col">
+        <h2 class="text-2xl font-black text-slate-800 mb-6 flex items-center uppercase tracking-tight italic">
+            <span class="mr-4 p-3 bg-blue-600 text-white rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+            </span>
+            Visao Geral do Mercado
+        </h2>
+        
+        <!-- KPIs -->
+        <div class="grid grid-cols-3 gap-6 mb-6">
+            <div class="bg-blue-600 p-6 rounded-2xl text-white shadow-lg">
+                <p class="text-blue-100 text-xs font-bold uppercase mb-1">Volume Anual (TPV)</p>
+                <h2 class="text-4xl font-black italic tracking-tighter">R$ 2.8 Tri</h2>
+                <div class="mt-2 text-xs flex items-center gap-2 text-blue-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    +12% YoY Growth
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-slate-400 text-xs font-bold uppercase mb-1">Lider em Volume</p>
+                <h2 class="text-4xl font-black text-orange-500 italic tracking-tighter uppercase">Itau</h2>
+                <p class="mt-2 text-xs text-slate-500 font-medium">25% Market Share Financeiro</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-slate-400 text-xs font-bold uppercase mb-1">Lider em Clientes</p>
+                <h2 class="text-4xl font-black text-purple-600 italic tracking-tighter uppercase">Nubank</h2>
+                <p class="mt-2 text-xs text-slate-500 font-medium">109M Clientes Ativos</p>
+            </div>
+        </div>
+
+        <!-- Bullets -->
+        <div class="bg-slate-50 rounded-xl p-4 mb-4 border border-slate-100">
+            <ul class="flex gap-8 text-xs font-medium text-slate-600">
+                <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>Itau lidera em volume com 25% do mercado</li>
+                <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-purple-600"></span>Nubank lidera em clientes com 109M</li>
+                <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>Crescimento de 12% YoY no setor</li>
+            </ul>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-2 gap-6 flex-1">
+            <!-- TPV Chart -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 flex flex-col">
+                <h3 class="font-bold text-slate-800 mb-5 flex items-center gap-2 text-sm">
+                    <div class="w-1 h-4 bg-blue-600 rounded-full"></div>
+                    Participacao por TPV (%)
+                </h3>
+                <div class="space-y-4 flex-1 flex flex-col justify-center">
+                    <div class="group">
+                        <div class="flex justify-between items-end mb-1">
+                            <span class="text-sm font-bold text-slate-700">Itau Unibanco</span>
+                            <span class="text-lg font-black text-slate-900 tracking-tighter">25%</span>
+                        </div>
+                        <div class="h-4 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div class="bg-orange-500 h-full rounded-full bar-fill" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div class="group">
+                        <div class="flex justify-between items-end mb-1">
+                            <span class="text-sm font-bold text-slate-700">Bradesco</span>
+                            <span class="text-lg font-black text-slate-900 tracking-tighter">18%</span>
+                        </div>
+                        <div class="h-4 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div class="bg-red-600 h-full rounded-full bar-fill" style="width: 72%"></div>
+                        </div>
+                    </div>
+                    <div class="group">
+                        <div class="flex justify-between items-end mb-1">
+                            <span class="text-sm font-bold text-slate-700">Santander</span>
+                            <span class="text-lg font-black text-slate-900 tracking-tighter">14%</span>
+                        </div>
+                        <div class="h-4 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div class="bg-red-500 h-full rounded-full bar-fill" style="width: 56%"></div>
+                        </div>
+                    </div>
+                    <div class="group">
+                        <div class="flex justify-between items-end mb-1">
+                            <span class="text-sm font-bold text-slate-700">Nubank</span>
+                            <span class="text-lg font-black text-slate-900 tracking-tighter">12%</span>
+                        </div>
+                        <div class="h-4 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div class="bg-purple-600 h-full rounded-full bar-fill" style="width: 48%"></div>
+                        </div>
+                    </div>
+                    <div class="group">
+                        <div class="flex justify-between items-end mb-1">
+                            <span class="text-sm font-bold text-slate-700">Inter</span>
+                            <span class="text-lg font-black text-slate-900 tracking-tighter">4%</span>
+                        </div>
+                        <div class="h-4 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div class="bg-orange-400 h-full rounded-full bar-fill" style="width: 16%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NPS Ranking -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 flex flex-col">
+                <h3 class="font-bold text-slate-800 mb-5 flex items-center gap-2 text-sm">
+                    <div class="w-1 h-4 bg-purple-600 rounded-full"></div>
+                    Satisfacao do Cliente (NPS)
+                </h3>
+                <div class="space-y-3 flex-1 flex flex-col justify-center">
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 card-hover">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-lg flex items-center justify-center text-white font-black text-lg bg-purple-600">88</div>
+                            <div>
+                                <p class="font-bold text-slate-800">Nubank</p>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase">Geracao Z / Massa</p>
+                            </div>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 card-hover">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-lg flex items-center justify-center text-white font-black text-lg bg-orange-400">78</div>
+                            <div>
+                                <p class="font-bold text-slate-800">Inter</p>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase">Investidores / E-com</p>
+                            </div>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 card-hover">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-lg flex items-center justify-center text-white font-black text-lg bg-orange-500">68</div>
+                            <div>
+                                <p class="font-bold text-slate-800">Itau Unibanco</p>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase">Alta Renda / Corp</p>
+                            </div>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 card-hover">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-lg flex items-center justify-center text-white font-black text-lg bg-red-500">62</div>
+                            <div>
+                                <p class="font-bold text-slate-800">Santander</p>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase">Alta Renda / Select</p>
+                            </div>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-footer">Confidencial / Uso Interno | Q1 2025</div>
+        <div class="slide-number">2</div>
+    </div>
+
+    <!-- SLIDE 3: Mercado Cobranded Aereo -->
+    <div class="slide flex flex-col">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-black text-slate-800 flex items-center uppercase tracking-tight italic">
+                <span class="mr-4 p-3 bg-indigo-600 text-white rounded-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                </span>
+                Mercado Cobranded Aereo
+            </h2>
+            <div class="text-right">
+                <p class="text-slate-500 font-medium text-sm">Ouro do mercado: Alta Principalidade e Ticket Medio Elevado</p>
+            </div>
+        </div>
+        
+        <!-- Bullets -->
+        <div class="bg-slate-50 rounded-xl p-4 mb-4 border border-slate-100">
+            <ul class="flex gap-6 text-xs font-medium text-slate-600">
+                <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>Azul Fidelidade oferece ate 5.27 pts/$</li>
+                <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>LATAM Pass com Mastercard Black</li>
+                <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>Smiles com multiplos emissores</li>
+            </ul>
+        </div>
+
+        <div class="grid grid-cols-3 gap-6 flex-1">
+            <!-- Azul Fidelidade -->
+            <div class="border-t-8 border-blue-600 bg-blue-50 p-8 rounded-b-2xl shadow-sm flex flex-col justify-between card-hover">
+                <div>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-blue-700">Itau</span>
+                    <h3 class="text-2xl font-black text-slate-900 mt-1 mb-2 leading-tight">Azul Fidelidade</h3>
+                    <div class="flex items-center gap-2 mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                        </svg>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-tighter">Visa Infinite</span>
+                    </div>
+                </div>
+                
+                <div class="bg-white/60 p-5 rounded-xl border border-white/80 mb-6">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-1 tracking-widest">Pontuacao Maxima</p>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-black tracking-tighter text-blue-700">3.0 a 5.27</span>
+                        <span class="text-xs font-bold text-slate-400 uppercase">pts/$</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2 text-sm font-bold text-slate-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Upgrade de Cabine
+                    </div>
+                    <div class="flex items-center gap-2 text-sm font-bold text-slate-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Salas VIP
+                    </div>
+                    <div class="flex items-center gap-2 text-sm font-bold text-slate-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Bagagem Gratis
+                    </div>
+                </div>
+            </div>
+
+            <!-- LATAM Pass -->
+            <div class="border-t-8 border-indigo-800 bg-indigo-50 p-8 rounded-b-2xl shadow-sm flex flex-col justify-between card-hover">
+                <div>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-indigo-900">Itau</span>
+                    <h3 class="text-2xl font-black text-slate-900 mt-1 mb-2 leading-tight">LATAM Pass</h3>
+                    <div class="flex items-center gap-2 mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                        </svg>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-tighter">Mastercard Black</span>
+                    </div>
+                </div>
+                
+                <div class="bg-white/60 p-5 rounded-xl border border-white/80 mb-6">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-1 tracking-widest">Pontuacao Maxima</p>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-black tracking-tighter text-indigo-900">2.5 a 3.5</span>
+                        <span class="text-xs font-bold text-slate-400 uppercase">pts/$</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2 text-sm font-bold text-slate-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Upgrade de Cabine
+                    </div>
+                    <div class="flex items-center gap-2 text-sm font-bold text-slate-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Salas VIP
+                    </div>
+                    <div class="flex items-center gap-2 text-sm font-bold text-slate-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Bagagem Gratis
+                    </div>
+                </div>
+            </div>
+
+            <!-- Smiles (GOL) -->
+            <div class="border-t-8 border-orange-500 bg-orange-50 p-8 rounded-b-2xl shadow-sm flex flex-col justify-between card-hover">
+                <div>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-orange-700">Bradesco / BB / Sant.</span>
+                    <h3 class="text-2xl font-black text-slate-900 mt-1 mb-2 leading-tight">Smiles (GOL)</h3>
+                    <div class="flex items-center gap-2 mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                        </svg>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-tighter">Visa Infinite</span>
+                    </div>
+                </div>
+                
+                <div class="bg-white/60 p-5 rounded-xl border border-white/80 mb-6">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-1 tracking-widest">Pontuacao Maxima</p>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-black tracking-tighter text-orange-700">2.0 a 4.0</span>
+                        <span class="text-xs font-bold text-slate-400 uppercase">pts/$</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2 text-sm font-bold text-slate-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Upgrade de Cabine
+                    </div>
+                    <div class="flex items-center gap-2 text-sm font-bold text-slate-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Salas VIP
+                    </div>
+                    <div class="flex items-center gap-2 text-sm font-bold text-slate-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Bagagem Gratis
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-footer">Confidencial / Uso Interno | Q1 2025</div>
+        <div class="slide-number">3</div>
+    </div>
+
+    <!-- SLIDE 4: Matriz de Competitividade -->
+    <div class="slide flex flex-col">
+        <h2 class="text-2xl font-black text-slate-800 mb-6 flex items-center uppercase tracking-tight italic">
+            <span class="mr-4 p-3 bg-slate-800 text-white rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+            </span>
+            Matriz de Competitividade
+        </h2>
+        
+        <!-- Bullets -->
+        <div class="bg-slate-50 rounded-xl p-4 mb-4 border border-slate-100">
+            <ul class="flex gap-6 text-xs font-medium text-slate-600">
+                <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-orange-600"></span>Itau domina o segmento alta renda</li>
+                <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-purple-600"></span>Nubank tem menor custo de aquisicao</li>
+                <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-red-600"></span>Bradesco forte em capilaridade fisica</li>
+            </ul>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden flex-1 shadow-sm">
+            <table class="w-full h-full text-left">
+                <thead class="bg-slate-50 border-b border-slate-100">
+                    <tr>
+                        <th class="p-6 text-xs font-black uppercase tracking-widest text-slate-400">Player</th>
+                        <th class="p-6 text-xs font-black uppercase tracking-widest text-slate-400">Estrategia de Retencao</th>
+                        <th class="p-6 text-xs font-black uppercase tracking-widest text-slate-400">Vantagem Killer</th>
+                        <th class="p-6 text-xs font-black uppercase tracking-widest text-slate-400">Fidelidade</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-6 font-black text-2xl italic text-orange-600">Itau</td>
+                        <td class="p-6 text-sm font-bold text-slate-700">Credito & Alta Renda</td>
+                        <td class="p-6 text-sm font-medium text-slate-500">Oligopolio Aereo (Azul/LATAM)</td>
+                        <td class="p-6">
+                            <span class="bg-slate-900 text-white text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest">IUPP / VIP</span>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-6 font-black text-2xl italic text-purple-600">Nubank</td>
+                        <td class="p-6 text-sm font-bold text-slate-700">Engajamento & UX</td>
+                        <td class="p-6 text-sm font-medium text-slate-500">Menor Custo de Aquisicao</td>
+                        <td class="p-6">
+                            <span class="bg-slate-900 text-white text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest">NuCoins</span>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-6 font-black text-2xl italic text-red-600">Bradesco</td>
+                        <td class="p-6 text-sm font-bold text-slate-700">Capilaridade Fisica</td>
+                        <td class="p-6 text-sm font-medium text-slate-500">Ecossistema Livelo</td>
+                        <td class="p-6">
+                            <span class="bg-slate-900 text-white text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest">Livelo / Smiles</span>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-6 font-black text-2xl italic text-orange-500">Inter</td>
+                        <td class="p-6 text-sm font-bold text-slate-700">Cross-selling (Super App)</td>
+                        <td class="p-6 text-sm font-medium text-slate-500">Cashback em Marketplace</td>
+                        <td class="p-6">
+                            <span class="bg-slate-900 text-white text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest">Inter Shop</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="slide-footer">Confidencial / Uso Interno | Q1 2025</div>
+        <div class="slide-number">4</div>
+    </div>
+
+    <!-- SLIDE 5: Outlook Estratgico - SWOT -->
+    <div class="slide flex flex-col">
+        <h2 class="text-2xl font-black text-slate-800 mb-6 flex items-center uppercase tracking-tight italic">
+            <span class="mr-4 p-3 bg-amber-500 text-white rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+            </span>
+            Outlook Estrategico 2025
+        </h2>
+        
+        <!-- SWOT Matrix Container -->
+        <div class="flex-1 flex flex-col">
+            <!-- Eixo Labels -->
+            <div class="flex mb-3">
+                <div class="w-24"></div>
+                <div class="flex-1 flex">
+                    <div class="flex-1 text-center">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fatores Internos</span>
+                    </div>
+                    <div class="flex-1 text-center">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fatores Externos</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SWOT Grid 2x2 -->
+            <div class="flex flex-1 gap-0">
+                <!-- Eixo Vertical Labels -->
+                <div class="w-24 flex flex-col justify-around pr-3">
+                    <div class="flex items-center justify-end">
+                        <span class="text-[10px] font-black text-green-600 uppercase tracking-widest writing-mode-vertical transform -rotate-180" style="writing-mode: vertical-rl;">Positivo</span>
+                    </div>
+                    <div class="flex items-center justify-end">
+                        <span class="text-[10px] font-black text-red-600 uppercase tracking-widest" style="writing-mode: vertical-rl;">Negativo</span>
+                    </div>
+                </div>
+
+                <!-- Matrix 2x2 -->
+                <div class="flex-1 grid grid-cols-2 grid-rows-2 gap-4">
+                    <!-- S - Forcas (Interno + Positivo) -->
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 p-5 rounded-2xl border-2 border-green-200 shadow-lg relative">
+                        <div class="absolute -top-3 -left-3 w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg">S</div>
+                        <div class="ml-4">
+                            <h4 class="font-black text-green-700 uppercase tracking-tight text-sm mb-3">Forcas (Strengths)</h4>
+                            <ul class="space-y-2">
+                                <li class="text-sm font-medium flex items-start gap-2 text-slate-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5 shrink-0"></span>
+                                    Resiliencia do setor de cartoes
+                                </li>
+                                <li class="text-sm font-medium flex items-start gap-2 text-slate-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5 shrink-0"></span>
+                                    Ecossistemas de Milhas consolidados
+                                </li>
+                                <li class="text-sm font-medium flex items-start gap-2 text-slate-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5 shrink-0"></span>
+                                    Alta principalidade em cobranded
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- O - Oportunidades (Externo + Positivo) -->
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-2xl border-2 border-blue-200 shadow-lg relative">
+                        <div class="absolute -top-3 -left-3 w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg">O</div>
+                        <div class="ml-4">
+                            <h4 class="font-black text-blue-700 uppercase tracking-tight text-sm mb-3">Oportunidades (Opportunities)</h4>
+                            <ul class="space-y-2">
+                                <li class="text-sm font-medium flex items-start gap-2 text-slate-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0"></span>
+                                    IA para limites dinamicos
+                                </li>
+                                <li class="text-sm font-medium flex items-start gap-2 text-slate-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0"></span>
+                                    Cartao como Servico (CaaS)
+                                </li>
+                                <li class="text-sm font-medium flex items-start gap-2 text-slate-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0"></span>
+                                    Open Finance e integracao
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- W - Fraquezas (Interno + Negativo) -->
+                    <div class="bg-gradient-to-br from-amber-50 to-amber-100 p-5 rounded-2xl border-2 border-amber-200 shadow-lg relative">
+                        <div class="absolute -top-3 -left-3 w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg">W</div>
+                        <div class="ml-4">
+                            <h4 class="font-black text-amber-700 uppercase tracking-tight text-sm mb-3">Fraquezas (Weaknesses)</h4>
+                            <ul class="space-y-2">
+                                <li class="text-sm font-medium flex items-start gap-2 text-slate-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0"></span>
+                                    Inadimplencia elevada no rotativo
+                                </li>
+                                <li class="text-sm font-medium flex items-start gap-2 text-slate-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0"></span>
+                                    Desvalorizacao progressiva de milhas
+                                </li>
+                                <li class="text-sm font-medium flex items-start gap-2 text-slate-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0"></span>
+                                    Custo alto de aquisicao cliente
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- T - Ameacas (Externo + Negativo) -->
+                    <div class="bg-gradient-to-br from-red-50 to-red-100 p-5 rounded-2xl border-2 border-red-200 shadow-lg relative">
+                        <div class="absolute -top-3 -left-3 w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg">T</div>
+                        <div class="ml-4">
+                            <h4 class="font-black text-red-700 uppercase tracking-tight text-sm mb-3">Ameacas (Threats)</h4>
+                            <ul class="space-y-2">
+                                <li class="text-sm font-medium flex items-start gap-2 text-slate-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0"></span>
+                                    Pix Parcelado e Pix Garantido
+                                </li>
+                                <li class="text-sm font-medium flex items-start gap-2 text-slate-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0"></span>
+                                    Regulacao do rotativo (teto juros)
+                                </li>
+                                <li class="text-sm font-medium flex items-start gap-2 text-slate-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0"></span>
+                                    Pagamentos por biometria/NFC
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legenda -->
+            <div class="mt-4 flex justify-center gap-8">
+                <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <div class="w-4 h-4 bg-green-500 rounded"></div>
+                    <span class="font-bold">S</span> = Strengths
+                </div>
+                <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <div class="w-4 h-4 bg-amber-500 rounded"></div>
+                    <span class="font-bold">W</span> = Weaknesses
+                </div>
+                <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <div class="w-4 h-4 bg-blue-500 rounded"></div>
+                    <span class="font-bold">O</span> = Opportunities
+                </div>
+                <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <div class="w-4 h-4 bg-red-500 rounded"></div>
+                    <span class="font-bold">T</span> = Threats
+                </div>
+            </div>
+        </div>
+
+        <div class="slide-footer">Confidencial / Uso Interno | Q1 2025</div>
+        <div class="slide-number">5</div>
+    </div>
+
+    <!-- SLIDE 6: Encerramento -->
+    <div class="slide">
+        <div class="gradient-dark text-white p-12 rounded-3xl h-full flex flex-col justify-center items-center text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-600/10 to-purple-600/10"></div>
+            <div class="z-10">
+                <div class="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h1 class="text-5xl font-black italic tracking-tighter mb-4">Obrigado</h1>
+                <p class="text-xl text-slate-400 mb-6 max-w-xl">Analise Estrategica completa do mercado de cartoes de credito brasileiro</p>
+                
+                <!-- Bullets -->
+                <div class="text-left bg-white/5 rounded-2xl p-5 mb-6 border border-white/10 max-w-lg">
+                    <ul class="space-y-2 text-sm text-slate-300">
+                        <li class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-blue-400"></span>Mercado consolidado com 5 players principais</li>
+                        <li class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-purple-400"></span>Programas aereos como diferencial chave</li>
+                        <li class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-amber-400"></span>Transformacao digital impacta o setor</li>
+                    </ul>
+                </div>
+
+                <div class="grid grid-cols-3 gap-8 mt-4">
+                    <div class="bg-white/5 p-6 rounded-2xl border border-white/10">
+                        <div class="text-3xl font-black text-blue-400 mb-2">R$ 2.8 Tri</div>
+                        <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Volume Anual</p>
+                    </div>
+                    <div class="bg-white/5 p-6 rounded-2xl border border-white/10">
+                        <div class="text-3xl font-black text-purple-400 mb-2">5+</div>
+                        <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Players Mapeados</p>
+                    </div>
+                    <div class="bg-white/5 p-6 rounded-2xl border border-white/10">
+                        <div class="text-3xl font-black text-amber-400 mb-2">2025</div>
+                        <p class="text-xs text-slate-500 uppercase font-bold tracking-wider">Q1 Report</p>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-8 text-slate-600 text-sm font-bold">Confidencial | Uso Interno | Benchmarking de Cartoes de Credito</div>
+        </div>
+        <div class="slide-number">6</div>
+    </div>
+
+</body>
+</html>
