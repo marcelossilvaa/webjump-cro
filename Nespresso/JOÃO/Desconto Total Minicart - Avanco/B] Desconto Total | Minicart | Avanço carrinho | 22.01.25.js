@@ -244,7 +244,13 @@
 
                 componente.innerHTML =
                     '<th scope="row" class="MiniBasketTotalTable__rebate-label">' +
-                    'Desconto Total</th>' +
+                    'Desconto Total' +
+                    '<span style="display:inline-block;width:14px;height:14px;line-height:14px;' +
+                    'text-align:center;border-radius:50%;border:1px solid #3d8705;font-size:10px;' +
+                    'font-weight:400;color:#3d8705;margin-left:6px;' +
+                    'vertical-align:middle;text-decoration:none;cursor:pointer;' +
+                    'font-family:NespressoLucas,sans-serif;">i</span>' +
+                    '</th>' +
                     '<td class="MiniBasketTotalTable__rebate-value">' + formattedDiscount + '</td>';
 
                 // Posiciona o th como relative para ancorar o balao
