@@ -1001,8 +1001,8 @@
       'button[aria-label="Tarifa esgotada"] .button__text, button[aria-label="Tarifa esgotada"] .button__text--mobile { color: #94A5B1 !important; }' +
       '.fare-item-highlighted { position: relative; border: 1px solid #026CB6 !important; background-color: #EBF4FA !important; }' +
       'footer.pre-select-footer-adjusted { position: unset !important; }' +
-      '.css-guj3i2 { background-color: #008058 !important; color: #FFF !important; border: 1px solid #008058 !important; }' +
-      '.css-guj3i2:hover { background-color: #006a48 !important; }' +
+      '.css-guj3i2 { background-color: #026AB6 !important; color: #FFF !important; border: 1px solid #026AB6 !important; }' +
+      '.css-guj3i2:hover { background-color: #01589a !important; }' +
       '.css-ist1h5 { background-color: #EBF4FA !important; }' +
       '.css-ou6pmp { background: #FFF !important; color: #026CB6 !important; border: 1px solid #026CB6 !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 1 !important; border-radius: 4px !important; }' +
       '.fare-item:has(button[aria-label="Tarifa esgotada"]) li.mobile-string svg path { fill: #616161 !important; }' +
