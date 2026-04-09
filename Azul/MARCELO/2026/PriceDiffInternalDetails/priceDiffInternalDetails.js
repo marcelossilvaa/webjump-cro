@@ -6,7 +6,8 @@
   const WRAP_ATTR = 'data-wj-price-diff-internal-details';
 
   let isProcessing = false;
-  let debounceTimer = null;
+  let debounceTimer = null; // timeout id (legacy)
+  let debounceRaf = 0; // requestAnimationFrame id
   let hasTrackedView = false;
   let styleRetryRaf = 0;
 
@@ -36,33 +37,68 @@
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent =
-      '.' + VARIANT_NAME + '__priceWrap{position:relative !important;}' +
-      '.' + VARIANT_NAME + '__isBusiness .' + VARIANT_NAME + '__box{background-color:transparent !important;}' +
-      '.' + VARIANT_NAME + '__box{' +
+      '.' +
+      VARIANT_NAME +
+      '__priceWrap{position:relative !important;}' +
+      '.' +
+      VARIANT_NAME +
+      '__isBusiness .' +
+      VARIANT_NAME +
+      '__box{background-color:transparent !important;}' +
+      '.' +
+      VARIANT_NAME +
+      '__box{' +
       'display:flex;flex-direction:column;justify-content:center;align-items:flex-end;padding:0;' +
       'width:152px;max-width:100%;' +
-      'font-family:\'Helvetica Neue\', Arial, sans-serif;color:#FFFFFF;' +
+      "font-family:'Helvetica Neue', Arial, sans-serif;color:rgb(2,108,182);" +
       'pointer-events:none;' +
       '}' +
-      '.' + VARIANT_NAME + '__from{' +
-      'width:148px;max-width:100%;min-height:21px;font-weight:400;font-size:14px;line-height:109.45%;' +
+      '.' +
+      VARIANT_NAME +
+      '__isBusiness .' +
+      VARIANT_NAME +
+      '__box{color:#FFFFFF;}' +
+      '.' +
+      VARIANT_NAME +
+      '__from{' +
+      'max-width:100%;min-height:21px;font-weight:400;font-size:14px;line-height:109.45%;' +
       'display:flex;align-items:center;text-align:right;' +
       '}' +
-      '.' + VARIANT_NAME + '__diff{' +
+      '.' +
+      VARIANT_NAME +
+      '__diff{' +
       'display:flex;flex-direction:row;justify-content:flex-end;align-items:flex-end;padding:0;gap:2px;' +
       'width:152px;max-width:100%;min-height:24px;' +
       '}' +
-      '.' + VARIANT_NAME + '__currency{' +
-      'width:17px;height:21px;font-weight:400;font-size:12px;line-height:13px;display:flex;align-items:center;' +
+      '.' +
+      VARIANT_NAME +
+      '__sign{' +
+      'height:21px;font-weight:400;font-size:20px;line-height:13px;display:flex;align-items:center;' +
       '}' +
-      '.' + VARIANT_NAME + '__int{' +
-      'height:24px;font-weight:300;font-size:24px;line-height:24px;display:flex;align-items:center;text-align:center;' +
+      '.' +
+      VARIANT_NAME +
+      '__int{' +
+      'height:24px;font-weight:300;font-size:24px;line-height:24px;display:inline-flex;align-items:baseline;flex-wrap:nowrap;gap:1px;' +
       '}' +
-      '.' + VARIANT_NAME + '__dec{' +
+      '.' +
+      VARIANT_NAME +
+      '__intCurrency{' +
+      'font-size:16px;font-weight:400;line-height:1;' +
+      '}' +
+      '.' +
+      VARIANT_NAME +
+      '__dec{' +
       'width:17px;height:21px;font-weight:400;font-size:12px;line-height:16px;display:flex;align-items:center;' +
       '}' +
-      '.' + VARIANT_NAME + '__hide{display:none !important;}' +
-      '.' + VARIANT_NAME + '__hideOldPrice .css-1qvpjit{display:none !important;}';
+      '.' +
+      VARIANT_NAME +
+      '__hide{display:none !important;}' +
+      '.' +
+      VARIANT_NAME +
+      '__hideOldPrice .css-1qvpjit{display:none !important;}' +
+      '.' +
+      VARIANT_NAME +
+      '__hideOldPrice [data-test-id="fare-price"]{display:none !important;}';
 
     document.head.appendChild(style);
   }
@@ -90,7 +126,10 @@
   }
 
   function formatPtBr(value) {
-    return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+    return new Intl.NumberFormat('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
   }
 
   function splitPtBr(valueFormatted) {
@@ -115,7 +154,9 @@
   function isBusinessFare(fareItem) {
     if (!fareItem) return false;
     const promo = fareItem.querySelector('.promotional');
-    const name = (promo && promo.textContent ? promo.textContent : fareItem.textContent || '').toLowerCase();
+    const name = (
+      promo && promo.textContent ? promo.textContent : fareItem.textContent || ''
+    ).toLowerCase();
     return name.indexOf('business') > -1;
   }
 
@@ -124,6 +165,13 @@
     const priceEl = fareItem.querySelector('[data-test-id="fare-price"]');
     if (!priceEl) return null;
     return parsePtBrMoney(priceEl.textContent);
+  }
+
+  function getFarePriceRoot(fareItem) {
+    if (!fareItem) return null;
+    const priceEl = fareItem.querySelector('[data-test-id="fare-price"]');
+    if (!priceEl) return null;
+    return priceEl.closest('.fare-price') || priceEl.parentElement;
   }
 
   function getFlightCardsToProcess() {
@@ -151,9 +199,26 @@
     // Mantém apenas nós que parecem uma tarifa (tem preço e botão/cta)
     return candidates.filter(function (node) {
       if (!node || !node.querySelector) return false;
-      const hasPrice = !!node.querySelector('.fare-price [data-test-id="fare-price"], [data-test-id="fare-price"]');
-      const hasCta = !!node.querySelector('[data-test-id="select-fare"], [data-test-id="select-fare"] *');
-      return hasPrice && hasCta;
+      const hasPrice = !!node.querySelector(
+        '.fare-price [data-test-id="fare-price"], [data-test-id="fare-price"]',
+      );
+      const hasCta = !!node.querySelector(
+        '[data-test-id="select-fare"], [data-test-id="select-fare"] *',
+      );
+
+      // Quando a tarifa está selecionada, a Azul pode substituir o CTA por um texto tipo "Tarifa selecionada"
+      const fullText = (node.textContent || '').toLowerCase();
+      const hasSelectedLabel = fullText.indexOf('tarifa selecionada') > -1;
+
+      // Alguns layouts colocam esse label em classes específicas (ex.: css-ou6pmp)
+      const hasSelectedLabelByClass = !!node.querySelector('.css-ou6pmp');
+
+      // Alguns layouts também marcam o botão com aria-pressed="true"
+      const hasPressedButton = !!node.querySelector('button[aria-pressed="true"]');
+
+      return (
+        hasPrice && (hasCta || hasSelectedLabel || hasSelectedLabelByClass || hasPressedButton)
+      );
     });
   }
 
@@ -169,13 +234,51 @@
   }
 
   function cleanupFarePrice(fareItem) {
-    const farePrice = fareItem && fareItem.querySelector ? fareItem.querySelector('.fare-price') : null;
+    const farePrice = getFarePriceRoot(fareItem);
     if (!farePrice) return;
     farePrice.classList.remove(VARIANT_NAME + '__hideOldPrice');
     farePrice.classList.remove(VARIANT_NAME + '__isBusiness');
     const box = farePrice.querySelector('.' + VARIANT_NAME + '__box');
     if (box) box.remove();
     farePrice.removeAttribute('data-wj-price-diff-signature');
+  }
+
+  /** __diff: + → __int (R$ + inteiro na mesma tag) → __dec. Remove __currency legado. */
+  function ensureDiffRowStructure(diffRow) {
+    if (!diffRow) return;
+    const legacyCur = diffRow.querySelector('.' + VARIANT_NAME + '__currency');
+    if (legacyCur) legacyCur.remove();
+
+    let signEl = diffRow.querySelector('.' + VARIANT_NAME + '__sign');
+    let intEl = diffRow.querySelector('.' + VARIANT_NAME + '__int');
+    const decEl = diffRow.querySelector('.' + VARIANT_NAME + '__dec');
+    if (!signEl) {
+      signEl = document.createElement('span');
+      signEl.className = VARIANT_NAME + '__sign';
+      signEl.textContent = '+';
+      diffRow.insertBefore(signEl, diffRow.firstChild);
+    }
+    if (!intEl) {
+      intEl = document.createElement('span');
+      intEl.className = VARIANT_NAME + '__int';
+      diffRow.insertBefore(intEl, decEl || null);
+    }
+    const ordered = [signEl, intEl, decEl].filter(function (n) {
+      return !!n;
+    });
+    ordered.forEach(function (el) {
+      diffRow.appendChild(el);
+    });
+  }
+
+  function setDiffIntContent(intEl, intPart) {
+    if (!intEl) return;
+    while (intEl.firstChild) intEl.removeChild(intEl.firstChild);
+    const rs = document.createElement('span');
+    rs.className = VARIANT_NAME + '__intCurrency';
+    rs.textContent = 'R$';
+    intEl.appendChild(rs);
+    intEl.appendChild(document.createTextNode(intPart));
   }
 
   function ensureBox(farePriceRoot) {
@@ -193,9 +296,9 @@
     const diff = document.createElement('div');
     diff.className = VARIANT_NAME + '__diff';
 
-    const currency = document.createElement('span');
-    currency.className = VARIANT_NAME + '__currency';
-    currency.textContent = 'R$';
+    const sign = document.createElement('span');
+    sign.className = VARIANT_NAME + '__sign';
+    sign.textContent = '+';
 
     const intPart = document.createElement('span');
     intPart.className = VARIANT_NAME + '__int';
@@ -203,20 +306,26 @@
     const decPart = document.createElement('span');
     decPart.className = VARIANT_NAME + '__dec';
 
-    diff.appendChild(currency);
+    diff.appendChild(sign);
     diff.appendChild(intPart);
     diff.appendChild(decPart);
 
     box.appendChild(from);
     box.appendChild(diff);
-    farePriceRoot.appendChild(box);
+    // Quando existe o badge/tooltip (ex.: "Voo em Cabine Mista"), queremos o box acima dele.
+    const badgeAnchor = farePriceRoot.querySelector('.css-18wb4my');
+    if (badgeAnchor && badgeAnchor.parentNode === farePriceRoot) {
+      farePriceRoot.insertBefore(box, badgeAnchor);
+    } else {
+      farePriceRoot.appendChild(box);
+    }
     return box;
   }
 
   function renderPriceDiff(fareItem, cheapestValue) {
     if (!fareItem) return;
 
-    const farePrice = fareItem.querySelector('.fare-price');
+    const farePrice = getFarePriceRoot(fareItem);
     if (!farePrice) return;
 
     const value = getFarePriceValue(fareItem);
@@ -243,17 +352,24 @@
     if (!box) return;
 
     const fromEl = box.querySelector('.' + VARIANT_NAME + '__from');
-    const intEl = box.querySelector('.' + VARIANT_NAME + '__int');
-    const decEl = box.querySelector('.' + VARIANT_NAME + '__dec');
     const diffRow = box.querySelector('.' + VARIANT_NAME + '__diff');
 
-    if (!fromEl || !intEl || !decEl || !diffRow) return;
+    if (!fromEl || !diffRow) return;
 
-    fromEl.textContent = 'A partir de R$ ' + formatPtBr(cheapestValue);
+    ensureDiffRowStructure(diffRow);
+
+    const signEl = diffRow.querySelector('.' + VARIANT_NAME + '__sign');
+    const intEl = diffRow.querySelector('.' + VARIANT_NAME + '__int');
+    const decEl = diffRow.querySelector('.' + VARIANT_NAME + '__dec');
+    if (!intEl || !decEl) return;
+
+    if (signEl) signEl.textContent = '+';
+
+    fromEl.textContent = 'R$ ' + formatPtBr(cheapestValue);
     diffRow.classList.remove(VARIANT_NAME + '__hide');
     const diffFormatted = formatPtBr(diffValue);
     const split = splitPtBr(diffFormatted);
-    intEl.textContent = '+' + split.intPart;
+    setDiffIntContent(intEl, split.intPart);
     decEl.textContent = ',' + split.fracPart;
 
     farePrice.setAttribute('data-wj-price-diff-signature', signature);
@@ -308,17 +424,23 @@
       if (isProcessing) return;
       if (mutations && mutations.some(isOwnMutation)) return;
 
-      if (debounceTimer) window.clearTimeout(debounceTimer);
-      debounceTimer = window.setTimeout(function () {
+      // Agendar no próximo frame reduz flicker vs timeout fixo
+      if (debounceTimer) {
+        window.clearTimeout(debounceTimer);
+        debounceTimer = null;
+      }
+      if (debounceRaf) window.cancelAnimationFrame(debounceRaf);
+      debounceRaf = window.requestAnimationFrame(function () {
+        debounceRaf = 0;
         run();
-      }, 80);
+      });
     });
 
     observer.observe(document.body, {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['class', 'style', 'disabled', 'aria-hidden']
+      attributeFilter: ['class', 'style', 'disabled', 'aria-hidden'],
     });
 
     window._wjPriceDiffInternalDetailsObserver = observer;
@@ -336,7 +458,10 @@
 
         const btn = target.closest('button');
         const text = ((btn && btn.textContent) || '').toLowerCase();
-        const aria = ((btn && btn.getAttribute && btn.getAttribute('aria-label')) || '').toLowerCase();
+        const aria = (
+          (btn && btn.getAttribute && btn.getAttribute('aria-label')) ||
+          ''
+        ).toLowerCase();
         const combined = text + ' ' + aria;
 
         if (
@@ -351,7 +476,7 @@
           }, 0);
         }
       },
-      true
+      true,
     );
   }
 

@@ -731,6 +731,9 @@
           btn.classList.add('active');
         }
       }
+
+      setTimeout(ofOrderSoldOutFlightsToEnd, 300);
+      setTimeout(ofOrderSoldOutFlightsToEnd, 800);
     }, 150);
   }
 
@@ -882,13 +885,10 @@
       item.style.flexDirection = 'column';
     });
 
-    const soldOutItems = Array.from(flightItems).filter((card) => {
+    Array.from(flightItems).forEach((card) => {
       const fareElement = card.querySelector('.flight-card__fare');
-      return fareElement && fareElement.getAttribute('aria-label') === 'Voo esgotado';
-    });
-
-    soldOutItems.forEach((item) => {
-      item.style.order = 2;
+      const isSoldOut = fareElement && fareElement.getAttribute('aria-label') === 'Voo esgotado';
+      card.style.order = isSoldOut ? '2' : '0';
     });
   }
 
@@ -995,16 +995,16 @@
       '.pre-select-floating-cta .floating-continue-btn { background: #008058; color: #FFFFFF; border: none; border-radius: 4px; padding: 14px 48px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; min-width: 280px; letter-spacing: 0.5px; font-family: "Helvetica Neue Medium", Arial; }' +
       '.pre-select-floating-cta .floating-continue-btn:hover:not(:disabled) { opacity: 0.9; }' +
       '.pre-select-floating-cta .floating-continue-btn:disabled, .pre-select-floating-cta .floating-continue-btn.disabled { background: #FFF !important; color: #999999 !important; cursor: not-allowed !important; opacity: 0.7; }' +
-      'body .fare-selected-disabled { background: #026CB6 !important; color: #FFF !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 0.8 !important; }' +
-      'body .fare-selected-disabled .button__text, body .fare-selected-disabled .button__text--mobile { color: #FFF !important; }' +
+      'body .fare-selected-disabled { background: #FFF !important; color: #026CB6 !important; border: 1px solid #026CB6 !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 1 !important; }' +
+      'body .fare-selected-disabled .button__text, body .fare-selected-disabled .button__text--mobile { color: #026CB6 !important; }' +
       'button[aria-label="Tarifa esgotada"], button[aria-label="Tarifa esgotada"]:hover, button[aria-label="Tarifa esgotada"]:active, button[aria-label="Tarifa esgotada"]:focus { background: #F5F7F9 !important; border: 1px solid #D0D7DE !important; color: #94A5B1 !important; cursor: not-allowed !important; opacity: 1 !important; pointer-events: none !important; }' +
       'button[aria-label="Tarifa esgotada"] .button__text, button[aria-label="Tarifa esgotada"] .button__text--mobile { color: #94A5B1 !important; }' +
       '.fare-item-highlighted { position: relative; border: 1px solid #026CB6 !important; background-color: #EBF4FA !important; }' +
       'footer.pre-select-footer-adjusted { position: unset !important; }' +
-      '.css-guj3i2 { background-color: #FFF !important; color: #026CB6 !important; border: 1px solid #026CB6 !important; }' +
-      '.css-guj3i2:hover { background-color: #EBF4FA !important; }' +
+      '.css-guj3i2 { background-color: #026AB6 !important; color: #FFF !important; border: 1px solid #026AB6 !important; }' +
+      '.css-guj3i2:hover { background-color: #01589a !important; }' +
       '.css-ist1h5 { background-color: #EBF4FA !important; }' +
-      '.css-ou6pmp { background: #026CB6 !important; color: #FFF !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 0.8 !important; border-radius: 4px !important; }' +
+      '.css-ou6pmp { background: #FFF !important; color: #026CB6 !important; border: 1px solid #026CB6 !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 1 !important; border-radius: 4px !important; }' +
       '.fare-item:has(button[aria-label="Tarifa esgotada"]) li.mobile-string svg path { fill: #616161 !important; }' +
       '@media (max-width: 768px) { .pre-select-floating-cta { padding: 15px; padding-top: 30px; } .pre-select-floating-cta .floating-continue-btn { width: 100%; padding: 14px 24px; font-size: 14px; } }';
 
