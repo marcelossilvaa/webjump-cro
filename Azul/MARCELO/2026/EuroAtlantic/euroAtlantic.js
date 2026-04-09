@@ -12,6 +12,9 @@
 
   const STYLE_ID = 'at-euroatlantic-modal-style';
   const OVERLAY_ID = 'at-euroatlantic-modal-overlay';
+  const BG_PRELOAD_ID = 'at-euroatlantic-modal-bg-preload';
+  // Imagem do modal (URL curta; pré-carregamento abaixo melhora tempo até aparecer no fundo).
+  const MODAL_BG_URL = 'https://i.imgur.com/lqJsA3T.png';
 
   const SELECTORS = {
     selectFareButton: 'button[data-test-id="select-fare"]',
@@ -22,11 +25,15 @@
   let pendingOriginalButton = null;
   let hasSentEuroAtlanticPresenceEvent = false;
   const MODAL_SESSION_KEY = 'at_euroatlantic_modal_shown';
+  let isBgPreloading = false;
+  let isBgReady = false;
 
   function onTargetPage() {
     const path = window.location && window.location.pathname ? window.location.pathname : '';
     const search = window.location && window.location.search ? window.location.search : '';
-    return path.indexOf(PAGE_PATH_TARGET) !== -1 && search.indexOf(QUERY_PARAM_MONEY_PAYMENT) !== -1;
+    return (
+      path.indexOf(PAGE_PATH_TARGET) !== -1 && search.indexOf(QUERY_PARAM_MONEY_PAYMENT) !== -1
+    );
   }
 
   function debounce(fn, waitMs) {
@@ -146,7 +153,7 @@
       ' .at-ea-body { display: flex; flex-direction: row; width: 100%; }' +
       '#' +
       OVERLAY_ID +
-      ' .at-ea-image { width: 652px; height: 437px; background-size: cover; background-position: center; background-repeat: no-repeat; }' +
+      ' .at-ea-image { width: 652px; height: 437px; background-size: cover; background-position: center; background-repeat: no-repeat; background-color: #E9EEF5; }' +
       '#' +
       OVERLAY_ID +
       ' .at-ea-content { width: 284px; min-height: 437px; background: #F8F8F8; padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; gap: 24px; }' +
@@ -230,6 +237,84 @@
     document.head.appendChild(style);
   }
 
+  function ensureBgPreloadLink() {
+    if (document.getElementById(BG_PRELOAD_ID)) {
+      return;
+    }
+
+    const bgUrl = MODAL_BG_URL;
+
+    try {
+      const link = document.createElement('link');
+      link.id = BG_PRELOAD_ID;
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = bgUrl;
+      document.head.appendChild(link);
+    } catch (e) {
+      // Ignora: preload é opcional
+    }
+  }
+
+  function applyBgIfReady() {
+    if (!isBgReady) {
+      return;
+    }
+
+    const overlay = document.getElementById(OVERLAY_ID);
+    if (!overlay) {
+      return;
+    }
+
+    const imageEl = overlay.querySelector('.at-ea-image');
+    if (!imageEl) {
+      return;
+    }
+
+    if (imageEl.getAttribute('data-at-ea-bg-applied') === '1') {
+      return;
+    }
+
+    imageEl.setAttribute('data-at-ea-bg-applied', '1');
+    imageEl.style.backgroundImage = 'url("' + MODAL_BG_URL + '")';
+  }
+
+  function preloadModalBg() {
+    if (isBgPreloading || isBgReady) {
+      return;
+    }
+    isBgPreloading = true;
+
+    ensureBgPreloadLink();
+
+    try {
+      const bgUrl = MODAL_BG_URL;
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = bgUrl;
+
+      const markReady = function () {
+        isBgReady = true;
+        applyBgIfReady();
+      };
+
+      img.onload = markReady;
+
+      if (typeof img.decode === 'function') {
+        img
+          .decode()
+          .then(function () {
+            markReady();
+          })
+          .catch(function () {
+            // decode pode falhar em alguns browsers; onload cobre
+          });
+      }
+    } catch (e) {
+      // Ignora: a imagem pode carregar direto via CSS
+    }
+  }
+
   function ensureModal() {
     let overlay = document.getElementById(OVERLAY_ID);
     if (overlay) {
@@ -270,7 +355,10 @@
 
     const image = document.createElement('div');
     image.className = 'at-ea-image';
-    image.style.backgroundImage = 'url("https://i.imgur.com/lqJsA3T.png")';
+    if (isBgReady) {
+      image.setAttribute('data-at-ea-bg-applied', '1');
+      image.style.backgroundImage = 'url("' + MODAL_BG_URL + '")';
+    }
 
     const content = document.createElement('div');
     content.className = 'at-ea-content';
@@ -307,7 +395,9 @@
         'Seu voo é operado pela nossa parceira Euroatlantic e a aeronave não dispõe de sistema de entretenimento (tela e Wi-Fi)',
       ),
     );
-    list.appendChild(makeItem('Ainda dá tempo de baixar seu conteúdo favorito! Tenha um excelente voo'));
+    list.appendChild(
+      makeItem('Ainda dá tempo de baixar seu conteúdo favorito! Tenha um excelente voo'),
+    );
 
     content.appendChild(contentTitle);
     content.appendChild(list);
@@ -336,6 +426,7 @@
 
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
+    applyBgIfReady();
 
     // Fechar ao clicar fora
     if (!overlay.hasAttribute('data-at-ea-overlay-listener')) {
@@ -386,6 +477,7 @@
   }
 
   function openModal() {
+    preloadModalBg();
     const overlay = ensureModal();
     overlay.classList.add('is-open');
     overlay.classList.remove('is-animating-out');
@@ -569,6 +661,7 @@
       injectStyles();
       addGlobalClickInterceptor();
       maybeSendEuroAtlanticPresenceEvent();
+      preloadModalBg();
     } finally {
       isProcessing = false;
     }
