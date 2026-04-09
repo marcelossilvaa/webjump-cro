@@ -215,7 +215,7 @@
       // ===== CONSULTE CONDICOES (lateral esquerda do frame) =====
       + '.at-disney-consult {'
       + '  position:absolute; white-space:nowrap;'
-      + '  left:60px; top:340px;'
+      + '  left:40px; top:300px;'
       + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
       + '  font-weight:400; font-size:10px; line-height:120%; color:#FFFFFF;'
       + '  transform:rotate(-90deg); transform-origin:left bottom;'
@@ -307,12 +307,92 @@
       + '.at-disney-banner-close:hover { background:rgba(255,255,255,0.3); }'
       + '.at-disney-banner-close svg { width:14px; height:14px; }'
 
-      // ===== RESPONSIVO =====
+      // ===== RESPONSIVO MOBILE =====
       + '@media (max-width: 768px) {'
+      // Container principal mobile 360x532
       + '  .at-disney-banner-container {'
-      + '    width:95vw; height:auto; min-height:460px;'
-      + '    transform:scale(0.85); transform-origin:center center;'
+      + '    width:360px; height:532px; border-radius:16px;'
+      + '    transform:none;'
       + '  }'
+      // Camadas de brilho mobile
+      + '  .at-disney-glow-1 { top:-962px; left:-195%; right:146%; }'
+      + '  .at-disney-glow-2 { top:174px; left:-94%; right:45%; transform:rotate(-120deg); }'
+      + '  .at-disney-glow-3 { top:-566px; left:46%; right:-95%; transform:rotate(45deg); }'
+      // Lens flares mobile
+      + '  .at-disney-lens-1 { width:159px; height:105px; left:390px; top:149px; }'
+      + '  .at-disney-lens-2 { width:150px; height:98px; left:509px; top:267px; transform:rotate(-4.52deg); }'
+      + '  .at-disney-lens-3 { width:auto; left:79%; right:-14%; top:-5%; bottom:80%; transform:rotate(90deg); }'
+      + '  .at-disney-lens-4 { left:-26%; right:90%; top:79%; bottom:-5%; transform:matrix(0.35,-0.94,0.98,0.19,0,0); }'
+      // Titulo mobile
+      + '  .at-disney-txt {'
+      + '    width:285px; height:90px; left:20px; top:43px;'
+      + '    font-size:26px; line-height:30px;'
+      + '  }'
+      // Logos mobile - reposicionados abaixo do titulo
+      + '  .at-disney-logos {'
+      + '    width:200px; height:26px; left:20px; top:11px;'
+      + '    gap:8.93px;'
+      + '  }'
+      // Faixa branca mobile
+      + '  .at-disney-strip {'
+      + '    width:319px; height:32px; left:20px; top:148px;'
+      + '  }'
+      + '  .at-disney-strip span { font-size:18px; }'
+      // Frame oferta mobile
+      + '  .at-disney-offer-frame {'
+      + '    width:319px; height:183px; left:20px; top:196px;'
+      + '    border-radius:20px;'
+      + '  }'
+      // Textos oferta mobile - centralizados no frame
+      + '  .at-disney-offer-pacotes {'
+      + '    left:31px; top:12px; font-size:22px;'
+      + '  }'
+      + '  .at-disney-offer-aereo {'
+      + '    left:31px; top:38px; font-size:19px;'
+      + '  }'
+      + '  .at-disney-offer-20 {'
+      + '    left:31px; top:55px; font-size:128px;'
+      + '  }'
+      + '  .at-disney-offer-percent {'
+      + '    left:160px; top:55px; font-size:65px;'
+      + '  }'
+      + '  .at-disney-offer-off {'
+      + '    left:160px; top:110px; font-size:42px;'
+      + '  }'
+      // Consulte condicoes mobile - alinhado a esquerda do 20, centralizado com o 2
+      + '  .at-disney-consult {'
+      + '    width:96px; height:12px; left:20px; top:330px;'
+      + '    font-size:10px; transform:rotate(-90deg); transform-origin:left top;'
+      + '  }'
+      // Foto personagem mobile - oculta
+      + '  .at-disney-photo-wrapper { display:none; }'
+      // Copyright mobile
+      + '  .at-disney-copyright {'
+      + '    left:260px; top:347px; font-size:7px;'
+      + '  }'
+      // Cupom mobile - centralizado e menor
+      + '  .at-disney-coupon {'
+      + '    width:272px; height:43px; left:44px; top:395px;'
+      + '    border-radius:10px;'
+      + '  }'
+      + '  .at-disney-coupon-code { font-size:21px; }'
+      // Toast mobile
+      + '  .at-disney-toast { left:44px; top:368px; }'
+      // CTA mobile - largura total
+      + '  .at-disney-cta {'
+      + '    width:319px; height:43px; left:20px; top:454px;'
+      + '    font-size:18px; border-radius:27px;'
+      + '  }'
+      + '}'
+      // Extra small mobile
+      + '@media (max-width: 374px) {'
+      + '  .at-disney-banner-container { width:95vw; height:auto; min-height:500px; }'
+      + '  .at-disney-txt { width:90%; left:5%; }'
+      + '  .at-disney-strip { width:calc(100% - 20px); left:10px; }'
+      + '  .at-disney-offer-frame { width:calc(100% - 20px); left:10px; }'
+      + '  .at-disney-coupon { width:calc(100% - 40px); left:20px; }'
+      + '  .at-disney-cta { width:calc(100% - 20px); left:10px; }'
+      + '  .at-disney-photo-wrapper { left:auto; right:-40px; }'
       + '}';
 
     var style = document.createElement('style');

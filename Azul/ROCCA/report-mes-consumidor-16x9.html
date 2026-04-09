@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gantt Roadmap & Fluxos - Azul Viagens & Disney</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        * { box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #2d2d2d;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        /* Slide container - 16:9 aspect ratio */
+        .slide {
+            width: 1280px;
+            height: 720px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 4px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+            padding: 40px;
+        }
+        
+        .slide-number {
+            position: absolute;
+            bottom: 15px;
+            right: 25px;
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+        
+        .gradient-azul { background: linear-gradient(135deg, #003399 0%, #0055cc 100%); }
+        
+        .gantt-grid {
+            display: grid;
+            grid-template-columns: 200px repeat(11, 1fr);
+        }
+        .day-column { border-left: 1px solid #e2e8f0; }
+        .task-row { border-bottom: 1px solid #f1f5f9; min-height: 32px; }
+        .event-bar { height: 16px; border-radius: 8px; margin-top: 8px; margin-bottom: 8px; position: relative; }
+        .event-shot { 
+            width: 18px; height: 18px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            color: white; font-size: 8px; font-weight: bold; 
+            cursor: pointer; transition: transform 0.2s; position: relative; z-index: 10; 
+        }
+        .event-shot:hover { transform: scale(1.2); }
+        
+        .flow-step { position: relative; }
+        .flow-step:not(:last-child)::after {
+            content: '→';
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #cbd5e1;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .event-shot[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 8px;
+            white-space: nowrap;
+            z-index: 20;
+        }
+        
+        /* Print styles for export */
+        @media print {
+            body { background: white; padding: 0; }
+            .slide { 
+                box-shadow: none; 
+                page-break-after: always;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SLIDE 1: Capa -->
+    <div class="slide">
+        <div class="gradient-azul text-white p-10 rounded-2xl h-full flex flex-col justify-center items-center text-center">
+            <div class="mb-8">
+                <h1 class="text-5xl font-bold mb-4">Roadmap & Fluxos</h1>
+                <h2 class="text-3xl font-light text-blue-100">Disney 2026</h2>
+            </div>
+            <p class="text-xl text-blue-200 mb-12">Planeamento Estratégico e Fluxogramas de Jornada</p>
+            <div class="flex space-x-6 text-sm uppercase font-bold tracking-wider">
+                <div class="flex items-center space-x-2 bg-white/10 px-5 py-3 rounded-full border border-white/20">
+                    <span class="w-3 h-3 rounded-full bg-blue-400"></span>
+                    <span>CRM</span>
+                </div>
+                <div class="flex items-center space-x-2 bg-white/10 px-5 py-3 rounded-full border border-white/20">
+                    <span class="w-3 h-3 rounded-full bg-purple-400"></span>
+                    <span>On-Site</span>
+                </div>
+                <div class="flex items-center space-x-2 bg-white/10 px-5 py-3 rounded-full border border-white/20">
+                    <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
+                    <span>Features</span>
+                </div>
+            </div>
+            <div class="absolute bottom-8 text-blue-200 text-sm">Azul Viagens | Abril 2026</div>
+        </div>
+        <div class="slide-number">1</div>
+    </div>
+
+    <!-- SLIDE 2: Gantt Chart -->
+    <div class="slide">
+        <h2 class="text-2xl font-bold text-slate-800 mb-4 flex items-center">
+            <span class="mr-3 p-2 bg-blue-600 text-white rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </span>
+            Cronograma Gantt - Abril 2026
+        </h2>
+        
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
+            <div class="gantt-grid bg-slate-50 border-b border-slate-200 font-bold text-slate-500 text-[8px] uppercase tracking-wider text-center">
+                <div class="p-2 bg-slate-100 text-left text-[9px]">Atividade</div>
+                <div class="p-2 day-column">15</div>
+                <div class="p-2 day-column">16</div>
+                <div class="p-2 day-column">17</div>
+                <div class="p-2 day-column">18</div>
+                <div class="p-2 day-column">19</div>
+                <div class="p-2 day-column">20</div>
+                <div class="p-2 day-column">21</div>
+                <div class="p-2 day-column">22</div>
+                <div class="p-2 day-column">23</div>
+                <div class="p-2 day-column">24</div>
+                <div class="p-2 day-column">25</div>
+            </div>
+
+            <!-- Group: CRM -->
+            <div class="bg-blue-50/50 px-3 py-1 text-[8px] font-bold text-blue-700 uppercase tracking-widest border-b border-blue-100">Réguas de CRM</div>
+            
+            <!-- D2 WDW -->
+            <div class="gantt-grid task-row">
+                <div class="p-2 text-[10px] text-slate-700 flex flex-col justify-center">
+                    <span class="font-bold text-blue-700">D2 WDW Pré Viagem</span>
+                    <span class="text-[8px] text-slate-400">MCO/FLL</span>
+                </div>
+                <div class="flex justify-center items-center day-column"><div class="event-shot bg-blue-800 shadow-sm" title="Shot 1">1</div></div>
+                <div class="day-column"></div>
+                <div class="flex justify-center items-center day-column"><div class="event-shot bg-blue-600 shadow-sm" title="Shot 2">2</div></div>
+                <div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div>
+                <div class="flex justify-center items-center day-column"><div class="event-shot bg-blue-400 shadow-sm" title="Shot 3">3</div></div>
+                <div class="day-column"></div>
+            </div>
+
+            <!-- Abandono Pesquisa -->
+            <div class="gantt-grid task-row">
+                <div class="p-2 text-[10px] text-slate-700 flex flex-col justify-center">
+                    <span class="font-semibold">Abandono Pesquisa</span>
+                    <span class="text-[8px] text-slate-400">D0 + D2</span>
+                </div>
+                <div class="flex justify-center items-center day-column"><div class="event-shot bg-blue-600">1</div></div>
+                <div class="day-column"></div>
+                <div class="flex justify-center items-center day-column"><div class="event-shot bg-blue-400">2</div></div>
+                <div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div>
+            </div>
+
+            <!-- Abandono Carrinho -->
+            <div class="gantt-grid task-row">
+                <div class="p-2 text-[10px] text-slate-700 flex flex-col justify-center">
+                    <span class="font-semibold">Abandono Carrinho</span>
+                    <span class="text-[8px] text-slate-400">15-17 Abr</span>
+                </div>
+                <div class="flex justify-center items-center day-column"><div class="event-shot bg-blue-700">1</div></div>
+                <div class="flex justify-center items-center day-column"><div class="event-shot bg-blue-600">2</div></div>
+                <div class="flex justify-center items-center day-column"><div class="event-shot bg-blue-500">3</div></div>
+                <div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div>
+            </div>
+
+            <!-- Group: On-site -->
+            <div class="bg-purple-50/50 px-3 py-1 text-[8px] font-bold text-purple-700 uppercase tracking-widest border-b border-purple-100">On-site</div>
+            
+            <div class="gantt-grid task-row">
+                <div class="p-2 text-[10px] text-slate-700 font-semibold flex flex-col justify-center">
+                    <span>Banner & Topbar 20%</span>
+                    <span class="text-[8px] text-slate-400 font-normal">Via UTM</span>
+                </div>
+                <div class="col-span-11 px-1 flex items-center day-column">
+                    <div class="event-bar bg-purple-500 w-full flex items-center px-2 text-[7px] text-white font-bold uppercase">Restrito: Via E-mail</div>
+                </div>
+            </div>
+
+            <!-- Features Disney -->
+            <div class="bg-yellow-50/50 px-3 py-1 text-[8px] font-bold text-yellow-700 uppercase tracking-widest border-b border-yellow-100">Features Fase 2</div>
+            
+            <div class="gantt-grid task-row">
+                <div class="p-2 text-[10px] text-slate-700 font-semibold">Animacao + Redirect</div>
+                <div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div>
+                <div class="col-span-6 px-1 flex items-center day-column">
+                    <div class="event-bar bg-yellow-400 w-full flex items-center px-2 text-[7px] text-yellow-900 font-bold">ESTRELA CADENTE</div>
+                </div>
+            </div>
+
+            <div class="gantt-grid task-row">
+                <div class="p-2 text-[10px] text-slate-700 font-semibold">Botao Mickey</div>
+                <div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div>
+                <div class="col-span-6 px-1 flex items-center day-column">
+                    <div class="event-bar bg-red-400 w-full flex items-center px-2 text-[7px] text-white font-bold">WIDGET FLUTUANTE</div>
+                </div>
+            </div>
+
+            <div class="gantt-grid task-row">
+                <div class="p-2 text-[10px] text-slate-700 font-semibold">Checklist da Magia</div>
+                <div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div><div class="day-column"></div>
+                <div class="col-span-6 px-1 flex items-center day-column">
+                    <div class="event-bar bg-green-500 w-full flex items-center px-2 text-[7px] text-white font-bold">AREA LOGADA</div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">2</div>
+    </div>
+
+    <!-- SLIDE 3: Fluxo Banner & Topbar -->
+    <div class="slide">
+        <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+            <span class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center mr-3 text-lg">01</span>
+            Fluxo: Banner & Topbar (20% OFF)
+        </h2>
+        
+        <div class="flex gap-4 items-stretch mt-8">
+            <div class="flex-1 bg-slate-100 p-5 rounded-2xl flow-step">
+                <p class="text-xs font-bold text-slate-400 uppercase mb-3">Gatilho</p>
+                <p class="text-sm text-slate-700">Recebe e-mail marketing de <strong>Abandono de Carrinho ou Pesquisa</strong>.</p>
+            </div>
+            <div class="flex-1 bg-slate-100 p-5 rounded-2xl flow-step">
+                <p class="text-xs font-bold text-slate-400 uppercase mb-3">Acao</p>
+                <p class="text-sm text-slate-700">Clica na promocao do e-mail e e direcionado ao site.</p>
+            </div>
+            <div class="flex-1 bg-slate-100 p-5 rounded-2xl flow-step">
+                <p class="text-xs font-bold text-slate-400 uppercase mb-3">Validacao</p>
+                <p class="text-sm text-slate-700">Site identifica as <strong>UTMs parametrizadas</strong> na URL.</p>
+            </div>
+            <div class="flex-1 bg-indigo-100 p-5 rounded-2xl flow-step border-2 border-indigo-300">
+                <p class="text-xs font-bold text-indigo-500 uppercase mb-3">Ativacao</p>
+                <p class="text-sm text-indigo-900 font-semibold">Exibe Estrela Cadente, Banner e Topbar com Cupom.</p>
+            </div>
+            <div class="flex-1 bg-green-100 p-5 rounded-2xl border-2 border-green-300">
+                <p class="text-xs font-bold text-green-500 uppercase mb-3">Objetivo</p>
+                <p class="text-sm text-green-900 font-semibold">Interage e e conduzido a <strong>Pesquisa de Hoteis</strong>.</p>
+            </div>
+        </div>
+        
+        <div class="mt-10 p-6 bg-slate-800 rounded-2xl text-white">
+            <h4 class="font-bold text-indigo-400 uppercase text-xs tracking-widest mb-3">Nota Tecnica</h4>
+            <p class="text-sm text-slate-300">As UTMs de e-mail devem ativar um <code class="bg-slate-700 px-2 py-1 rounded">flag</code> no SessionStorage para que a Topbar nao desapareca durante a navegacao.</p>
+        </div>
+        <div class="slide-number">3</div>
+    </div>
+
+    <!-- SLIDE 4: Fluxo Animacao + Redirect -->
+    <div class="slide">
+        <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+            <span class="w-10 h-10 bg-yellow-500 text-white rounded-xl flex items-center justify-center mr-3 text-lg">02</span>
+            Fluxo: Animacao + Redirect (Hospedagem)
+        </h2>
+        
+        <div class="flex gap-4 items-stretch mt-8">
+            <div class="flex-1 bg-slate-100 p-5 rounded-2xl flow-step">
+                <p class="text-xs font-bold text-slate-400 uppercase mb-3">Gatilho</p>
+                <p class="text-sm text-slate-700">Recebe e-mail de <strong>Confirmacao/Incentivo de Hospedagem</strong>.</p>
+            </div>
+            <div class="flex-1 bg-slate-100 p-5 rounded-2xl flow-step">
+                <p class="text-xs font-bold text-slate-400 uppercase mb-3">Entrada</p>
+                <p class="text-sm text-slate-700">Clica no link e acede ao ambiente Azul Viagens.</p>
+            </div>
+            <div class="flex-1 bg-yellow-100 p-5 rounded-2xl flow-step border-2 border-yellow-400">
+                <p class="text-xs font-bold text-yellow-600 uppercase mb-3">Efeito</p>
+                <p class="text-sm text-yellow-900 font-semibold">Executa animacao <strong>Estrela Cadente</strong> + Banner Cupom.</p>
+            </div>
+            <div class="flex-1 bg-green-100 p-5 rounded-2xl border-2 border-green-300">
+                <p class="text-xs font-bold text-green-500 uppercase mb-3">Conversao</p>
+                <p class="text-sm text-green-900 font-semibold">Redirecionamento automatico para o <strong>Fluxo de Hoteis</strong>.</p>
+            </div>
+        </div>
+        
+        <div class="mt-12 flex justify-center">
+            <div class="bg-gradient-to-r from-yellow-400 to-orange-500 p-8 rounded-3xl text-center shadow-xl">
+                <div class="text-5xl mb-3">✨</div>
+                <p class="text-white font-bold text-lg">Efeito Estrela Cadente</p>
+                <p class="text-yellow-100 text-sm">Animacao visual de impacto</p>
+            </div>
+        </div>
+        <div class="slide-number">4</div>
+    </div>
+
+    <!-- SLIDE 5: Fluxo Botao Mickey -->
+    <div class="slide">
+        <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+            <span class="w-10 h-10 bg-red-500 text-white rounded-xl flex items-center justify-center mr-3 text-lg">03</span>
+            Fluxo: Botao Mickey (Omnipresenca)
+        </h2>
+        
+        <div class="flex gap-4 items-stretch mt-8">
+            <div class="flex-1 bg-slate-100 p-5 rounded-2xl flow-step">
+                <p class="text-xs font-bold text-slate-400 uppercase mb-3">Contexto</p>
+                <p class="text-sm text-slate-700">Navega na <strong>Home</strong> ou paginas de <strong>Destino Disney</strong>.</p>
+            </div>
+            <div class="flex-1 bg-slate-100 p-5 rounded-2xl flow-step">
+                <p class="text-xs font-bold text-slate-400 uppercase mb-3">Intencao</p>
+                <p class="text-sm text-slate-700">Pesquisa "Orlando" ou "Kissimmee" no <strong>Booking Flow</strong>.</p>
+            </div>
+            <div class="flex-1 bg-red-100 p-5 rounded-2xl flow-step border-2 border-red-300">
+                <p class="text-xs font-bold text-red-500 uppercase mb-3">Presenca</p>
+                <p class="text-sm text-red-900 font-semibold">Botao Mickey surge de forma flutuante na lateral.</p>
+            </div>
+            <div class="flex-1 bg-green-100 p-5 rounded-2xl border-2 border-green-300">
+                <p class="text-xs font-bold text-green-500 uppercase mb-3">Suporte</p>
+                <p class="text-sm text-green-900 font-semibold">Clique abre menu com <strong>Ofertas e Canais de Apoio</strong>.</p>
+            </div>
+        </div>
+        
+        <div class="mt-10 p-6 bg-slate-800 rounded-2xl text-white">
+            <h4 class="font-bold text-red-400 uppercase text-xs tracking-widest mb-3">Detecao de Destino</h4>
+            <p class="text-sm text-slate-300">O Botao Mickey deve ser ativado por scripts que monitorizam o campo <code class="bg-slate-700 px-2 py-1 rounded">destination-input</code> do motor de reservas, reagindo aos codigos IATA: <strong class="text-red-400">MCO</strong> e <strong class="text-red-400">FLL</strong>.</p>
+        </div>
+        <div class="slide-number">5</div>
+    </div>
+
+    <!-- SLIDE 6: Fluxo Vitrine & Checklist -->
+    <div class="slide">
+        <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+            <span class="w-10 h-10 bg-purple-600 text-white rounded-xl flex items-center justify-center mr-3 text-lg">04</span>
+            Fluxo: Vitrine & Checklist (Area Logada)
+        </h2>
+        
+        <div class="flex gap-4 items-stretch mt-8">
+            <div class="flex-1 bg-slate-100 p-5 rounded-2xl flow-step">
+                <p class="text-xs font-bold text-slate-400 uppercase mb-3">Identificacao</p>
+                <p class="text-sm text-slate-700">Utilizador faz login na seccao <strong>Minhas Viagens</strong>.</p>
+            </div>
+            <div class="flex-1 bg-slate-100 p-5 rounded-2xl flow-step">
+                <p class="text-xs font-bold text-slate-400 uppercase mb-3">Segmentacao</p>
+                <p class="text-sm text-slate-700">Sistema deteta voo ativo para <strong>MCO ou FLL</strong>.</p>
+            </div>
+            <div class="flex-1 bg-purple-100 p-5 rounded-2xl flow-step border-2 border-purple-300">
+                <p class="text-xs font-bold text-purple-500 uppercase mb-3">Oferta</p>
+                <p class="text-sm text-purple-900 font-semibold">Injeta Vitrine de Hoteis Disney e o <strong>Checklist da Magia</strong>.</p>
+            </div>
+            <div class="flex-1 bg-green-100 p-5 rounded-2xl border-2 border-green-300">
+                <p class="text-xs font-bold text-green-500 uppercase mb-3">Engajamento</p>
+                <p class="text-sm text-green-900 font-semibold">Consumo de conteudo pre-viagem e reserva de hospedagem.</p>
+            </div>
+        </div>
+        
+        <div class="mt-10 grid grid-cols-3 gap-6">
+            <div class="bg-purple-600 p-6 rounded-2xl text-white text-center">
+                <div class="text-3xl mb-2">🏰</div>
+                <p class="font-bold">Vitrine Disney</p>
+                <p class="text-purple-200 text-xs">Hoteis tematicos</p>
+            </div>
+            <div class="bg-green-600 p-6 rounded-2xl text-white text-center">
+                <div class="text-3xl mb-2">✅</div>
+                <p class="font-bold">Checklist</p>
+                <p class="text-green-200 text-xs">Preparacao viagem</p>
+            </div>
+            <div class="bg-blue-600 p-6 rounded-2xl text-white text-center">
+                <div class="text-3xl mb-2">✈️</div>
+                <p class="font-bold">MCO / FLL</p>
+                <p class="text-blue-200 text-xs">Destinos alvo</p>
+            </div>
+        </div>
+        <div class="slide-number">6</div>
+    </div>
+
+    <!-- SLIDE 7: Resumo Tecnico -->
+    <div class="slide flex flex-col">
+        <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+            <span class="mr-3 p-2 bg-slate-800 text-white rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </span>
+            Especificacoes Tecnicas
+        </h2>
+        
+        <div class="flex-1 grid grid-cols-2 gap-6">
+            <div class="bg-slate-800 p-6 rounded-2xl text-white">
+                <h4 class="font-bold text-indigo-400 uppercase text-xs tracking-widest mb-4 border-b border-slate-700 pb-2">Persistencia de Sessao</h4>
+                <p class="text-sm text-slate-300 leading-relaxed">As UTMs de e-mail devem ativar um <code class="bg-slate-700 px-2 py-1 rounded text-indigo-300">flag</code> no SessionStorage para que a Topbar nao desapareca durante a navegacao entre abas de hoteis.</p>
+            </div>
+            <div class="bg-slate-800 p-6 rounded-2xl text-white">
+                <h4 class="font-bold text-red-400 uppercase text-xs tracking-widest mb-4 border-b border-slate-700 pb-2">Detecao de Destino</h4>
+                <p class="text-sm text-slate-300 leading-relaxed">O Botao Mickey deve ser ativado por scripts que monitorizam o campo <code class="bg-slate-700 px-2 py-1 rounded text-red-300">destination-input</code> do motor de reservas, reagindo aos codigos IATA: MCO e FLL.</p>
+            </div>
+            <div class="bg-slate-800 p-6 rounded-2xl text-white">
+                <h4 class="font-bold text-yellow-400 uppercase text-xs tracking-widest mb-4 border-b border-slate-700 pb-2">Animacoes</h4>
+                <p class="text-sm text-slate-300 leading-relaxed">Efeitos visuais como Estrela Cadente devem usar CSS animations com <code class="bg-slate-700 px-2 py-1 rounded text-yellow-300">@keyframes</code> e fallback para navegadores sem suporte.</p>
+            </div>
+            <div class="bg-slate-800 p-6 rounded-2xl text-white">
+                <h4 class="font-bold text-green-400 uppercase text-xs tracking-widest mb-4 border-b border-slate-700 pb-2">Tracking</h4>
+                <p class="text-sm text-slate-300 leading-relaxed">Todos os componentes devem implementar tracking via Adobe Analytics com <code class="bg-slate-700 px-2 py-1 rounded text-green-300">eVar82</code> e <code class="bg-slate-700 px-2 py-1 rounded text-green-300">eVar84</code>.</p>
+            </div>
+        </div>
+        
+        <div class="mt-6 text-center text-slate-400 text-sm">
+            Azul Viagens | CRO Team | Abril 2026
+        </div>
+        <div class="slide-number">7</div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full text-sm font-medium shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none z-50">
+        Informacao copiada!
+    </div>
+
+    <script>
+        function copyToClipboard(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            const toast = document.getElementById('toast');
+            toast.style.opacity = '1';
+            setTimeout(function() { toast.style.opacity = '0'; }, 2000);
+        }
+    </script>
+</body>
+</html>

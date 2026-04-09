@@ -24,12 +24,12 @@
       ".page-header .minicart-wrapper .block-minicart .block-title .qty:before { content: '('; }",
       ".page-header .minicart-wrapper .block-minicart .block-title .qty:after { content: ')'; }",
       ".page-header .minicart-wrapper .action.close { top: 24px; right: 24px; margin: 0px; height: 16px; width: 16px; }",
-      ".page-header .minicart-wrapper .block-minicart .block-content { padding: 32px 0px 0px; background-color: #fff; border-radius: 0px 0px 0px 20px; }",
+      ".page-header .minicart-wrapper .block-minicart .block-content { padding: 32px 0px 260px; background-color: #fff; border-radius: 0px 0px 0px 20px; position: relative; }",
       ".page-header .minicart-wrapper .block-minicart .items-total { display: none; }",
       ".page-header .minicart-wrapper .block-minicart .block-content .subtotal { position: absolute; bottom: 230px; font-size: 24px; width: 100%; text-align: left; left: 0px; display: flex; align-items: center; justify-content: space-between; padding: 0px 40px; box-sizing: border-box; z-index: 2; }",
       ".page-header .minicart-wrapper .block-minicart .block-content .subtotal span.label { margin: 0px; }",
       ".page-header .minicart-wrapper .block-minicart .amount .price-wrapper:first-child .price { font-size: 24px; }",
-      ".page-header .minicart-items-wrapper { border: none; margin: 0px; padding: 0px; max-height: 100% !important; height: 85dvh !important; }",
+      ".page-header .minicart-items-wrapper { border: none; margin: 0px; padding: 0px; max-height: calc(100dvh - 340px) !important; height: calc(100dvh - 340px) !important; }",
       ".page-header .minicart-items .product-item { padding: 32px 0px !important; }",
       ".page-header .minicart-items .product-item:not(:first-child) { border-top: 1px solid #94A5B1; }",
       ".page-header .minicart-items .product-item:first-child { padding-top: 0px !important; }",
@@ -43,10 +43,10 @@
       ".page-header .minicart-items .product-item-details .price-including-tax, .page-header .minicart-items .product-item-details .price-excluding-tax { margin: 0px; }",
       ".page-header .minicart-wrapper .product .actions { margin: 0px; position: absolute; top: 0px; right: 0px; }",
       ".page-header .minicart-wrapper .block-minicart .message.notice { margin: 16px 0px 0px; }",
-      ".page-header .block-minicart .block-content>.actions:last-child { bottom: 80px; background-color: #fff; position: absolute; height: 197px; display: table; width: 100%; left: 0px; max-width: 472px; padding: 24px 40px 40px; box-sizing: border-box; z-index: 1; border-radius: 20px 0px 0px; }",
+      ".page-header .block-minicart .block-content>.actions:last-child { bottom: 0px; background-color: #fff; position: absolute; min-height: 197px; display: table; width: 100%; left: 0px; max-width: 472px; padding: 24px 40px 40px; box-sizing: border-box; z-index: 3; border-radius: 20px 0px 0px; }",
       ".page-header .minicart-wrapper .block-minicart .block-content>.actions>.primary .action.primary.checkout { display: none; }",
-      ".page-header .block-minicart .block-content>.actions:nth-child(6) { position: absolute; bottom: 120px; right: 0px; display: table; z-index: 2; width: 100%; max-width: 100%; padding: 0px 40px; box-sizing: border-box; }",
-      ".page-header .minicart-wrapper .action.viewcart { margin: 0px auto; border: none; font-size: 18px; line-height: 20px; width: auto; padding: 0px; display: none; }",
+      ".page-header .block-minicart .block-content>.actions { position: relative; z-index: 3; }",
+      ".page-header .minicart-wrapper .action.viewcart { margin: 0px auto; border: none; font-size: 18px; line-height: 20px; width: auto; padding: 0px; display: block; }",
       ".page-header .minicart-wrapper .action.viewcart:focus, .page-header .minicart-wrapper .action.viewcart:active, .page-header .minicart-wrapper .action.viewcart:hover { background: none; border: none; text-decoration: underline; }",
       ".page-header .block-minicart .block-content>.actions:last-child .primary { margin: 52px 0px 0px; }",
       ".page-header .minicart-wrapper .block-minicart:before { content: ''; display: table; width: 100%; height: 100%; background-color: #000; opacity: 0.3; z-index: 1; position: fixed; border: unset; top: 0px !important; right: 473px !important; }",
@@ -73,9 +73,10 @@
       ".custom-view-cart-btn:hover { background-color: var(--uni-color-primary-main-hover); color: #fff; text-decoration: none; }",
       ".custom-continue-shopping-btn { display: block; padding: 0px; margin: 0px auto; background: none; border: none; color: var(--uni-color-primary-main); font-size: 18px; line-height: 20px; font-weight: 600; text-align: center; cursor: pointer; transition: all 0.3s ease; }",
       ".custom-continue-shopping-btn:hover { text-decoration: underline; border: none; background-color: unset; }",
-      ".page-header .minicart-wrapper .actions .secondary { text-align: center; }",
+      ".page-header .minicart-wrapper .actions .secondary { text-align: center; display: block; visibility: visible; opacity: 1; }",
       ".page-header .block-minicart .block-content>.actions:last-child .custom-cart-buttons { display: flex; flex-direction: column; gap: 0px; }",
-      "@media screen and (max-width: 580px) { .page-header .minicart-wrapper .block-minicart { max-width: 100%; height: 100%; top: unset; bottom: 0px; border-radius: 0px; } .page-header .minicart-wrapper .block-minicart .block-title { padding: 24px; border-radius: 0px; } .page-header .minicart-items { height: 59dvh; padding: 0px 24px; } .page-header .minicart-items .product-item { padding: 24px 0px !important; } .page-header .minicart-items .product-item-name { max-width: 192px; } .page-header .block-minicart .block-content>.actions:last-child { max-width: 100%; bottom: 160px; padding: 24px 24px 40px; border-radius: 0px; } .page-header .block-minicart .block-content>.actions:nth-child(6) { bottom: 200px; } .page-header .minicart-wrapper .block-minicart .block-content .subtotal { bottom: 310px; font-size: 20px; } .page-header .minicart-wrapper .block-minicart .amount .price-wrapper:first-child .price { font-size: 20px; } .page-header .minicart-wrapper .block-minicart:before { right: 0px !important; } .page-header .minicart-items-wrapper { height: 100dvh !important; } }"
+      ".page-header .block-minicart .block-content>.actions:last-child .custom-continue-shopping-btn { display: block; margin: 0px auto; }",
+      "@media screen and (max-width: 580px) { .page-header .minicart-wrapper .block-minicart { max-width: 100%; height: 100%; top: unset; bottom: 0px; border-radius: 0px; } .page-header .minicart-wrapper .block-minicart .block-title { padding: 24px; border-radius: 0px; } .page-header .minicart-items { height: 59dvh; padding: 0px 24px; } .page-header .minicart-items .product-item { padding: 24px 0px !important; } .page-header .minicart-items .product-item-name { max-width: 192px; } .page-header .block-minicart .block-content { padding-bottom: 320px; } .page-header .block-minicart .block-content>.actions:last-child { max-width: 100%; bottom: 0px; padding: 24px 24px 40px; border-radius: 0px; } .page-header .minicart-wrapper .block-minicart .block-content .subtotal { bottom: 310px; font-size: 20px; } .page-header .minicart-wrapper .block-minicart .amount .price-wrapper:first-child .price { font-size: 20px; } .page-header .minicart-wrapper .block-minicart:before { right: 0px !important; } .page-header .minicart-items-wrapper { height: calc(100dvh - 390px) !important; max-height: calc(100dvh - 390px) !important; } }"
     ].join('\n');
   }
 
@@ -179,11 +180,17 @@
   }
 
   function createContinueShoppingButton($) {
-    const viewCartLink = $('.minicart-wrapper .actions .secondary .action.viewcart');
+    const actionsContainer = $('.block-minicart .block-content > .actions:last-child');
 
-    if (viewCartLink.length && !viewCartLink.next('.custom-continue-shopping-btn').length) {
+    if (actionsContainer.length && !actionsContainer.find('.custom-continue-shopping-btn').length) {
+      const primaryContainer = actionsContainer.find('.primary').first();
       const continueBtn = '<button class="custom-continue-shopping-btn" type="button">Continuar comprando</button>';
-      viewCartLink.after(continueBtn);
+
+      if (primaryContainer.length) {
+        primaryContainer.after(continueBtn);
+      } else {
+        actionsContainer.append(continueBtn);
+      }
     }
 
     $('.custom-continue-shopping-btn').each(function () {
@@ -241,7 +248,7 @@
     const cart = customerData.get('cart');
     cart.subscribe(function () {
       setTimeout(function () {
-        updateProgressBar($, customerData);
+        applyMiniCartCustomizations($, customerData);
       }, 300);
     });
 
