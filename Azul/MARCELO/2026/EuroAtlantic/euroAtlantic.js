@@ -20,6 +20,8 @@
   };
 
   let pendingOriginalButton = null;
+  let hasSentEuroAtlanticPresenceEvent = false;
+  const MODAL_SESSION_KEY = 'at_euroatlantic_modal_shown';
 
   function onTargetPage() {
     const path = window.location && window.location.pathname ? window.location.pathname : '';
@@ -57,6 +59,43 @@
     }
   }
 
+  function getSessionValue(key) {
+    try {
+      return window.sessionStorage ? window.sessionStorage.getItem(key) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function setSessionValue(key, value) {
+    try {
+      if (!window.sessionStorage) return;
+      window.sessionStorage.setItem(key, value);
+    } catch (e) {
+      // Ignora: alguns ambientes bloqueiam storage
+    }
+  }
+
+  function hasShownModalThisSession() {
+    return getSessionValue(MODAL_SESSION_KEY) === '1';
+  }
+
+  function hasEuroAtlanticFlightsOnScreen() {
+    const yuLogo = document.querySelector(SELECTORS.operatedByYUImg);
+    return !!yuLogo;
+  }
+
+  function maybeSendEuroAtlanticPresenceEvent() {
+    if (hasSentEuroAtlanticPresenceEvent) {
+      return;
+    }
+    if (!hasEuroAtlanticFlightsOnScreen()) {
+      return;
+    }
+    hasSentEuroAtlanticPresenceEvent = true;
+    analyticsSend('AT_euroatlantic_presence Exibido', '[AT] EuroAtlantic:');
+  }
+
   function injectStyles() {
     if (document.getElementById(STYLE_ID)) {
       return;
@@ -68,7 +107,7 @@
       'body.at-euroatlantic-modal-open { overflow: hidden !important; }' +
       '#' +
       OVERLAY_ID +
-      ' { position: fixed; inset: 0; z-index: 999999; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(0, 0, 0, 0.55); box-sizing: border-box; opacity: 0; transition: opacity 220ms ease; }' +
+      ' { position: fixed; inset: 0; z-index: 999999; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(4, 30, 66, 0.88); box-sizing: border-box; opacity: 0; transition: opacity 220ms ease; }' +
       '#' +
       OVERLAY_ID +
       '.is-open { display: flex; }' +
@@ -113,7 +152,10 @@
       ' .at-ea-content { width: 284px; min-height: 437px; background: #F8F8F8; padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; gap: 24px; }' +
       '#' +
       OVERLAY_ID +
-      ' .at-ea-content h4 { margin: 0; font-family: "Helvetica Neue", Arial, sans-serif; font-style: normal; font-weight: 700; font-size: 20px; line-height: 24px; color: #026CB6; }' +
+      ' .at-ea-content h4 { margin: 0; font-family: "Helvetica Neue", Arial, sans-serif; font-style: normal; font-weight: 400; font-size: 20px; line-height: 24px; color: #041E42; }' +
+      '#' +
+      OVERLAY_ID +
+      ' .at-ea-content h4 strong { color: #026CB6; font-weight: 700; }' +
       '#' +
       OVERLAY_ID +
       ' .at-ea-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; }' +
@@ -137,6 +179,18 @@
       ' .at-ea-cta { width: 232px; height: 48px; border: 0; cursor: pointer; border-radius: 8px; background: #026CB6; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 16px; box-sizing: border-box; }' +
       '#' +
       OVERLAY_ID +
+      ' .at-ea-cta { transition: background-color 160ms ease, opacity 160ms ease; }' +
+      '#' +
+      OVERLAY_ID +
+      ' .at-ea-cta:hover { background: #01589a; }' +
+      '#' +
+      OVERLAY_ID +
+      ' .at-ea-cta:active { opacity: 0.92; }' +
+      '#' +
+      OVERLAY_ID +
+      ' .at-ea-cta:focus-visible { outline: 2px solid rgba(2, 108, 182, 0.45); outline-offset: 3px; }' +
+      '#' +
+      OVERLAY_ID +
       ' .at-ea-cta span { font-family: "Helvetica Neue", Arial, sans-serif; font-style: normal; font-weight: 400; font-size: 16px; line-height: 19px; color: #FFFFFF; }' +
       '#' +
       OVERLAY_ID +
@@ -151,6 +205,9 @@
       '#' +
       OVERLAY_ID +
       ' .at-ea-modal { transition: none !important; transform: none !important; }' +
+      '#' +
+      OVERLAY_ID +
+      ' .at-ea-cta { transition: none !important; }' +
       '}' +
       '@media (max-width: 1023px) {' +
       '#' +
@@ -219,7 +276,7 @@
     content.className = 'at-ea-content';
 
     const contentTitle = document.createElement('h4');
-    contentTitle.textContent = 'Itens';
+    contentTitle.innerHTML = '<strong>Atenção</strong> para uma dica importante!';
 
     const list = document.createElement('ul');
     list.className = 'at-ea-list';
@@ -251,7 +308,6 @@
       ),
     );
     list.appendChild(makeItem('Ainda dá tempo de baixar seu conteúdo favorito! Tenha um excelente voo'));
-    list.appendChild(makeItem('Selecione sua tarifa'));
 
     content.appendChild(contentTitle);
     content.appendChild(list);
@@ -267,7 +323,7 @@
     cta.type = 'button';
     cta.setAttribute('data-at-ea-continue', '1');
     cta.innerHTML =
-      '<span>Continuar</span>' +
+      '<span>Prosseguir</span>' +
       '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
       '<path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"></path>' +
       '</svg>';
@@ -339,6 +395,9 @@
     // Força reflow e aplica classe de animação de entrada
     overlay.offsetHeight;
     overlay.classList.add('is-animating-in');
+
+    // Marca como exibido nesta sessão
+    setSessionValue(MODAL_SESSION_KEY, '1');
   }
 
   function closeModal() {
@@ -477,6 +536,11 @@
           return;
         }
 
+        // Se já exibimos nesta sessão, segue o fluxo normal sem modal
+        if (hasShownModalThisSession()) {
+          return;
+        }
+
         // Bloqueia o fluxo original e exibe modal
         e.preventDefault();
         e.stopPropagation();
@@ -499,10 +563,12 @@
     isProcessing = true;
     try {
       if (!onTargetPage()) {
+        hasSentEuroAtlanticPresenceEvent = false;
         return;
       }
       injectStyles();
       addGlobalClickInterceptor();
+      maybeSendEuroAtlanticPresenceEvent();
     } finally {
       isProcessing = false;
     }
