@@ -2,7 +2,7 @@
   'use strict';
 
   // =========================================================
-  // EuroAtlantic - Modal ao selecionar tarifa (operatedby/YU)
+  // EuroAtlantic v.2 - Modal ao selecionar tarifa (operatedby/YU)
   // =========================================================
   let isProcessing = false;
   let debounceTimer = null;
@@ -13,11 +13,10 @@
   const STYLE_ID = 'at-euroatlantic-modal-style';
   const OVERLAY_ID = 'at-euroatlantic-modal-overlay';
   const BG_PRELOAD_ID = 'at-euroatlantic-modal-bg-preload';
-  // Imagem do modal (URL curta; pré-carregamento abaixo melhora tempo até aparecer no fundo).
   const MODAL_BG_URL = 'https://i.imgur.com/lqJsA3T.png';
 
   const SELECTORS = {
-    selectFareButton: 'button[data-test-id="select-fare"]',
+    selectFareButton: '[data-test-id="select-fare"]',
     flightCard: '.flight-card',
     operatedByYUImg: 'img[src*="/operatedby/YU"], img[src*="operatedby/YU"]',
   };
@@ -25,12 +24,11 @@
   let pendingOriginalButton = null;
   let hasSentEuroAtlanticPresenceEvent = false;
   const MODAL_SESSION_KEY = 'at_euroatlantic_modal_shown';
-  let isBgPreloading = false;
   let isBgReady = false;
 
   function onTargetPage() {
-    const path = window.location && window.location.pathname ? window.location.pathname : '';
-    const search = window.location && window.location.search ? window.location.search : '';
+    var path = window.location && window.location.pathname ? window.location.pathname : '';
+    var search = window.location && window.location.search ? window.location.search : '';
     return (
       path.indexOf(PAGE_PATH_TARGET) !== -1 && search.indexOf(QUERY_PARAM_MONEY_PAYMENT) !== -1
     );
@@ -51,7 +49,7 @@
     try {
       console.log((consolePrefix || '[AT] EuroAtlantic:') + ' Analytics event:', labelEvent);
       (function () {
-        const s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+        var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
         if (!s || typeof s.tl !== 'function') {
           return;
         }
@@ -62,7 +60,7 @@
         s.tl(true, 'o', 'target_activity_action');
       })();
     } catch (e) {
-      // Silencioso para não quebrar o fluxo
+      // Silencioso
     }
   }
 
@@ -79,7 +77,7 @@
       if (!window.sessionStorage) return;
       window.sessionStorage.setItem(key, value);
     } catch (e) {
-      // Ignora: alguns ambientes bloqueiam storage
+      // Ignora
     }
   }
 
@@ -87,9 +85,30 @@
     return getSessionValue(MODAL_SESSION_KEY) === '1';
   }
 
+  // -------------------------------------------------------
+  // Marcacao proativa de cards (operatedby/YU)
+  // -------------------------------------------------------
+  function scanAndMarkAllCards() {
+    var cards = document.querySelectorAll(SELECTORS.flightCard);
+    if (!cards || !cards.length) {
+      return;
+    }
+
+    for (var i = 0; i < cards.length; i += 1) {
+      var card = cards[i];
+      var yuLogo = card.querySelector(SELECTORS.operatedByYUImg);
+      if (yuLogo) {
+        card.setAttribute('data-at-ea-yu', '1');
+      }
+    }
+  }
+
+  function isCardMarkedAsYU(cardEl) {
+    return cardEl && cardEl.getAttribute('data-at-ea-yu') === '1';
+  }
+
   function hasEuroAtlanticFlightsOnScreen() {
-    const yuLogo = document.querySelector(SELECTORS.operatedByYUImg);
-    return !!yuLogo;
+    return !!document.querySelector(SELECTORS.operatedByYUImg);
   }
 
   function maybeSendEuroAtlanticPresenceEvent() {
@@ -103,12 +122,109 @@
     analyticsSend('AT_euroatlantic_presence Exibido', '[AT] EuroAtlantic:');
   }
 
+  // -------------------------------------------------------
+  // Deteccao de YU para um botao
+  // -------------------------------------------------------
+  function isEuroAtlanticForButton(buttonEl) {
+    if (!buttonEl || !buttonEl.closest) {
+      return false;
+    }
+
+    var card = buttonEl.closest(SELECTORS.flightCard);
+    if (!card) {
+      return false;
+    }
+
+    // 1) flag pre-setada pelo scan (mais rapido e confiavel)
+    if (isCardMarkedAsYU(card)) {
+      return true;
+    }
+
+    // 2) busca direta no DOM do card (caso scan nao pegou ainda)
+    var yuLogo = card.querySelector(SELECTORS.operatedByYUImg);
+    if (yuLogo) {
+      card.setAttribute('data-at-ea-yu', '1');
+      return true;
+    }
+
+    return false;
+  }
+
+  // -------------------------------------------------------
+  // Imagem de fundo do modal
+  // -------------------------------------------------------
+  function ensureBgPreloadLink() {
+    if (document.getElementById(BG_PRELOAD_ID)) {
+      return;
+    }
+
+    try {
+      var link = document.createElement('link');
+      link.id = BG_PRELOAD_ID;
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = MODAL_BG_URL;
+      document.head.appendChild(link);
+    } catch (e) {
+      // Ignora
+    }
+  }
+
+  function preloadModalBg() {
+    if (isBgReady) {
+      return;
+    }
+
+    ensureBgPreloadLink();
+
+    try {
+      var img = new Image();
+      img.src = MODAL_BG_URL;
+
+      var markReady = function () {
+        isBgReady = true;
+        applyBgToModal();
+      };
+
+      if (img.complete) {
+        markReady();
+        return;
+      }
+
+      img.onload = markReady;
+    } catch (e) {
+      // Ignora
+    }
+  }
+
+  function applyBgToModal() {
+    var overlay = document.getElementById(OVERLAY_ID);
+    if (!overlay) {
+      return;
+    }
+
+    var imageEl = overlay.querySelector('.at-ea-image');
+    if (!imageEl) {
+      return;
+    }
+
+    if (imageEl.getAttribute('data-at-ea-bg-applied') === '1') {
+      return;
+    }
+
+    imageEl.setAttribute('data-at-ea-bg-applied', '1');
+    imageEl.style.backgroundImage = 'url("' + MODAL_BG_URL + '")';
+  }
+
+  // -------------------------------------------------------
+  // CSS
+  // -------------------------------------------------------
   function injectStyles() {
     if (document.getElementById(STYLE_ID)) {
       return;
     }
 
-    const style = document.createElement('style');
+    var style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent =
       'body.at-euroatlantic-modal-open { overflow: hidden !important; }' +
@@ -183,10 +299,7 @@
       ' .at-ea-footer { box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 16px 32px; gap: 16px; height: 80px; background: #FFFFFF; border-top: 1px solid rgba(0, 0, 0, 0.15); }' +
       '#' +
       OVERLAY_ID +
-      ' .at-ea-cta { width: 232px; height: 48px; border: 0; cursor: pointer; border-radius: 8px; background: #026CB6; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 16px; box-sizing: border-box; }' +
-      '#' +
-      OVERLAY_ID +
-      ' .at-ea-cta { transition: background-color 160ms ease, opacity 160ms ease; }' +
+      ' .at-ea-cta { width: 232px; height: 48px; border: 0; cursor: pointer; border-radius: 8px; background: #026CB6; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 16px; box-sizing: border-box; transition: background-color 160ms ease, opacity 160ms ease; }' +
       '#' +
       OVERLAY_ID +
       ' .at-ea-cta:hover { background: #01589a; }' +
@@ -237,86 +350,11 @@
     document.head.appendChild(style);
   }
 
-  function ensureBgPreloadLink() {
-    if (document.getElementById(BG_PRELOAD_ID)) {
-      return;
-    }
-
-    const bgUrl = MODAL_BG_URL;
-
-    try {
-      const link = document.createElement('link');
-      link.id = BG_PRELOAD_ID;
-      link.rel = 'preload';
-      link.as = 'image';
-      link.href = bgUrl;
-      document.head.appendChild(link);
-    } catch (e) {
-      // Ignora: preload é opcional
-    }
-  }
-
-  function applyBgIfReady() {
-    if (!isBgReady) {
-      return;
-    }
-
-    const overlay = document.getElementById(OVERLAY_ID);
-    if (!overlay) {
-      return;
-    }
-
-    const imageEl = overlay.querySelector('.at-ea-image');
-    if (!imageEl) {
-      return;
-    }
-
-    if (imageEl.getAttribute('data-at-ea-bg-applied') === '1') {
-      return;
-    }
-
-    imageEl.setAttribute('data-at-ea-bg-applied', '1');
-    imageEl.style.backgroundImage = 'url("' + MODAL_BG_URL + '")';
-  }
-
-  function preloadModalBg() {
-    if (isBgPreloading || isBgReady) {
-      return;
-    }
-    isBgPreloading = true;
-
-    ensureBgPreloadLink();
-
-    try {
-      const bgUrl = MODAL_BG_URL;
-      const img = new Image();
-      img.decoding = 'async';
-      img.src = bgUrl;
-
-      const markReady = function () {
-        isBgReady = true;
-        applyBgIfReady();
-      };
-
-      img.onload = markReady;
-
-      if (typeof img.decode === 'function') {
-        img
-          .decode()
-          .then(function () {
-            markReady();
-          })
-          .catch(function () {
-            // decode pode falhar em alguns browsers; onload cobre
-          });
-      }
-    } catch (e) {
-      // Ignora: a imagem pode carregar direto via CSS
-    }
-  }
-
+  // -------------------------------------------------------
+  // Modal HTML
+  // -------------------------------------------------------
   function ensureModal() {
-    let overlay = document.getElementById(OVERLAY_ID);
+    var overlay = document.getElementById(OVERLAY_ID);
     if (overlay) {
       return overlay;
     }
@@ -325,20 +363,20 @@
     overlay.id = OVERLAY_ID;
     overlay.setAttribute('aria-hidden', 'true');
 
-    const modal = document.createElement('div');
+    var modal = document.createElement('div');
     modal.className = 'at-ea-modal';
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
     modal.setAttribute('aria-label', 'Voo operado pela EuroAtlantic');
 
-    const header = document.createElement('div');
+    var header = document.createElement('div');
     header.className = 'at-ea-header';
 
-    const title = document.createElement('h3');
+    var title = document.createElement('h3');
     title.className = 'at-ea-title';
     title.textContent = 'Voo operado pela EuroAtlantic';
 
-    const closeBtn = document.createElement('button');
+    var closeBtn = document.createElement('button');
     closeBtn.className = 'at-ea-close';
     closeBtn.type = 'button';
     closeBtn.setAttribute('aria-label', 'Fechar');
@@ -350,39 +388,38 @@
     header.appendChild(title);
     header.appendChild(closeBtn);
 
-    const body = document.createElement('div');
+    var body = document.createElement('div');
     body.className = 'at-ea-body';
 
-    const image = document.createElement('div');
+    var image = document.createElement('div');
     image.className = 'at-ea-image';
-    if (isBgReady) {
-      image.setAttribute('data-at-ea-bg-applied', '1');
-      image.style.backgroundImage = 'url("' + MODAL_BG_URL + '")';
-    }
+    // Aplica imagem imediatamente (preload ja comecou no run())
+    image.setAttribute('data-at-ea-bg-applied', '1');
+    image.style.backgroundImage = 'url("' + MODAL_BG_URL + '")';
 
-    const content = document.createElement('div');
+    var content = document.createElement('div');
     content.className = 'at-ea-content';
 
-    const contentTitle = document.createElement('h4');
+    var contentTitle = document.createElement('h4');
     contentTitle.innerHTML = '<strong>Atenção</strong> para uma dica importante!';
 
-    const list = document.createElement('ul');
+    var list = document.createElement('ul');
     list.className = 'at-ea-list';
 
     function makeItem(text) {
-      const li = document.createElement('li');
+      var li = document.createElement('li');
       li.className = 'at-ea-item';
 
-      const icon =
+      var icon =
         '<svg class="at-ea-check" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
         '<circle cx="10" cy="10" r="10"></circle>' +
         '<path d="M8.4 13.7L5.7 11l1.1-1.1 1.6 1.6 4-4 1.1 1.1-5.1 5.1z" fill="#FFFFFF"></path>' +
         '</svg>';
 
-      const p = document.createElement('p');
+      var p = document.createElement('p');
       p.textContent = text;
 
-      const iconWrap = document.createElement('div');
+      var iconWrap = document.createElement('div');
       iconWrap.innerHTML = icon;
 
       li.appendChild(iconWrap.firstChild);
@@ -405,10 +442,10 @@
     body.appendChild(image);
     body.appendChild(content);
 
-    const footer = document.createElement('div');
+    var footer = document.createElement('div');
     footer.className = 'at-ea-footer';
 
-    const cta = document.createElement('button');
+    var cta = document.createElement('button');
     cta.className = 'at-ea-cta';
     cta.type = 'button';
     cta.setAttribute('data-at-ea-continue', '1');
@@ -426,45 +463,35 @@
 
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
-    applyBgIfReady();
 
     // Fechar ao clicar fora
-    if (!overlay.hasAttribute('data-at-ea-overlay-listener')) {
-      overlay.setAttribute('data-at-ea-overlay-listener', '1');
-      overlay.addEventListener('click', function (e) {
-        if (e.target === overlay) {
-          closeModal();
-        }
-      });
-    }
-
-    // Botão fechar
-    if (!closeBtn.hasAttribute('data-at-ea-close-listener')) {
-      closeBtn.setAttribute('data-at-ea-close-listener', '1');
-      closeBtn.addEventListener('click', function () {
-        analyticsSend('AT_euroatlantic_modal Fechar', '[AT] EuroAtlantic:');
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) {
         closeModal();
-      });
-    }
+      }
+    });
+
+    // Botao fechar
+    closeBtn.addEventListener('click', function () {
+      analyticsSend('AT_euroatlantic_modal Fechar', '[AT] EuroAtlantic:');
+      closeModal();
+    });
 
     // CTA continuar
-    if (!cta.hasAttribute('data-at-ea-cta-listener')) {
-      cta.setAttribute('data-at-ea-cta-listener', '1');
-      cta.addEventListener('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        analyticsSend('AT_euroatlantic_modal Continuar', '[AT] EuroAtlantic:');
-        continueOriginalFlow();
-      });
-    }
+    cta.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      analyticsSend('AT_euroatlantic_modal Continuar', '[AT] EuroAtlantic:');
+      continueOriginalFlow();
+    });
 
     // ESC
     if (!document.documentElement.hasAttribute('data-at-ea-esc-listener')) {
       document.documentElement.setAttribute('data-at-ea-esc-listener', '1');
       document.addEventListener('keydown', function (e) {
-        const key = e && (e.key || e.code);
+        var key = e && (e.key || e.code);
         if (key === 'Escape') {
-          const isOpen = document.body.classList.contains('at-euroatlantic-modal-open');
+          var isOpen = document.body.classList.contains('at-euroatlantic-modal-open');
           if (isOpen) {
             analyticsSend('AT_euroatlantic_modal ESC', '[AT] EuroAtlantic:');
             closeModal();
@@ -477,30 +504,27 @@
   }
 
   function openModal() {
-    preloadModalBg();
-    const overlay = ensureModal();
+    var overlay = ensureModal();
     overlay.classList.add('is-open');
     overlay.classList.remove('is-animating-out');
     overlay.setAttribute('aria-hidden', 'false');
     document.body.classList.add('at-euroatlantic-modal-open');
 
-    // Força reflow e aplica classe de animação de entrada
     overlay.offsetHeight;
     overlay.classList.add('is-animating-in');
 
-    // Marca como exibido nesta sessão
     setSessionValue(MODAL_SESSION_KEY, '1');
   }
 
   function closeModal() {
-    const overlay = document.getElementById(OVERLAY_ID);
+    var overlay = document.getElementById(OVERLAY_ID);
     if (!overlay) {
       return;
     }
     overlay.classList.remove('is-animating-in');
     overlay.classList.add('is-animating-out');
 
-    const finalizeClose = function () {
+    var finalizeClose = function () {
       overlay.classList.remove('is-open');
       overlay.classList.remove('is-animating-out');
       overlay.setAttribute('aria-hidden', 'true');
@@ -508,22 +532,21 @@
       pendingOriginalButton = null;
     };
 
-    // Fecha após a transição do modal (ou timeout de segurança)
-    let done = false;
-    const safetyTimer = setTimeout(function () {
+    var done = false;
+    var safetyTimer = setTimeout(function () {
       if (done) return;
       done = true;
       finalizeClose();
     }, 340);
 
-    const modal = overlay.querySelector('.at-ea-modal');
+    var modal = overlay.querySelector('.at-ea-modal');
     if (!modal) {
       clearTimeout(safetyTimer);
       finalizeClose();
       return;
     }
 
-    const onEnd = function (e) {
+    var onEnd = function (e) {
       if (done) return;
       if (!e || e.target !== modal) return;
       done = true;
@@ -535,14 +558,13 @@
   }
 
   function continueOriginalFlow() {
-    const btn = pendingOriginalButton;
+    var btn = pendingOriginalButton;
     closeModal();
 
     if (!btn) {
       return;
     }
 
-    // Anti-loop: libera o clique programático
     btn.setAttribute('data-at-ea-bypass', '1');
     setTimeout(function () {
       btn.removeAttribute('data-at-ea-bypass');
@@ -551,46 +573,15 @@
     try {
       btn.click();
     } catch (e) {
-      // fallback
-      const evt = document.createEvent('MouseEvents');
+      var evt = document.createEvent('MouseEvents');
       evt.initEvent('click', true, true);
       btn.dispatchEvent(evt);
     }
   }
 
-  function isEuroAtlanticFlightForButton(buttonEl) {
-    if (!buttonEl) {
-      return false;
-    }
-
-    const card = buttonEl.closest(SELECTORS.flightCard);
-    if (!card) {
-      return false;
-    }
-
-    const yuLogo = card.querySelector(SELECTORS.operatedByYUImg);
-    return !!yuLogo;
-  }
-
-  function isSelectFareButton(buttonEl) {
-    if (!buttonEl) {
-      return false;
-    }
-
-    if (buttonEl.matches && buttonEl.matches(SELECTORS.selectFareButton)) {
-      const aria = (buttonEl.getAttribute('aria-label') || '').toLowerCase();
-      const txt = (buttonEl.textContent || '').toLowerCase();
-      if (aria.indexOf('selecionar tarifa') !== -1) {
-        return true;
-      }
-      if (txt.indexOf('selecionar tarifa') !== -1) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
+  // -------------------------------------------------------
+  // Interceptor de clique
+  // -------------------------------------------------------
   function addGlobalClickInterceptor() {
     if (document.documentElement.hasAttribute('data-at-ea-click-interceptor')) {
       return;
@@ -600,40 +591,44 @@
     document.addEventListener(
       'click',
       function (e) {
-        const target = e && e.target ? e.target : null;
-        if (!target) {
+        var target = e && e.target ? e.target : null;
+        if (!target || !target.closest) {
           return;
         }
 
-        const button = target.closest ? target.closest(SELECTORS.selectFareButton) : null;
+        // Encontra o botao select-fare mais proximo
+        var button = target.closest(SELECTORS.selectFareButton);
         if (!button) {
           return;
         }
 
-        if (!isSelectFareButton(button)) {
+        // Ignora botoes desabilitados (Tarifa esgotada)
+        if (button.disabled || button.hasAttribute('disabled')) {
           return;
         }
 
+        // Anti-loop
         if (button.hasAttribute('data-at-ea-bypass')) {
           return;
         }
 
-        // Evita duplo clique e garante que estamos na página alvo
         if (!onTargetPage()) {
           return;
         }
 
-        const isYU = isEuroAtlanticFlightForButton(button);
-        if (!isYU) {
-          return;
-        }
-
-        // Se já exibimos nesta sessão, segue o fluxo normal sem modal
         if (hasShownModalThisSession()) {
           return;
         }
 
-        // Bloqueia o fluxo original e exibe modal
+        // Verifica se e YU (pelo flag ou pelo DOM)
+        var isYU = isEuroAtlanticForButton(button);
+        console.log('[AT] EuroAtlantic: click interceptado, isYU=' + isYU);
+
+        if (!isYU) {
+          return;
+        }
+
+        // Bloqueia o fluxo original
         e.preventDefault();
         e.stopPropagation();
         if (typeof e.stopImmediatePropagation === 'function') {
@@ -648,6 +643,9 @@
     );
   }
 
+  // -------------------------------------------------------
+  // Run / Init
+  // -------------------------------------------------------
   function run() {
     if (isProcessing) {
       return;
@@ -659,9 +657,10 @@
         return;
       }
       injectStyles();
-      addGlobalClickInterceptor();
-      maybeSendEuroAtlanticPresenceEvent();
       preloadModalBg();
+      addGlobalClickInterceptor();
+      scanAndMarkAllCards();
+      maybeSendEuroAtlanticPresenceEvent();
     } finally {
       isProcessing = false;
     }
@@ -670,10 +669,9 @@
   function init() {
     debounce(run, 0);
 
-    // Observa mudanças de rota / conteúdo (SPA)
     if (!window._euroAtlanticObserver) {
-      let localTimer = null;
-      const observer = new MutationObserver(function () {
+      var localTimer = null;
+      var observer = new MutationObserver(function () {
         if (localTimer) {
           clearTimeout(localTimer);
         }
