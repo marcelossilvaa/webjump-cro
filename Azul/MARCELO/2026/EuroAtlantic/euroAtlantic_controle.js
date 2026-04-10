@@ -2,7 +2,7 @@
   'use strict';
 
   // =========================================================
-  // EuroAtlantic (CONTROLE) - Evento de presença (operatedby/YU)
+  // EuroAtlantic (CONTROLE) v2 - Evento de presença (operatedby/YU)
   // =========================================================
   let isProcessing = false;
   let debounceTimer = null;
@@ -15,10 +15,111 @@
     operatedByYUImg: 'img[src*="/operatedby/YU"], img[src*="operatedby/YU"]',
   };
 
+  // =========================================================
+  // Cache de journeys operados por YU (EuroAtlantic) via API
+  // =========================================================
+  window.AT_EA_YU_JOURNEYS = window.AT_EA_YU_JOURNEYS || {};
+
+  function processAvailabilityPayload(payload) {
+    try {
+      const trips = (payload && payload.data && payload.data.trips) || payload.trips || [];
+      for (let t = 0; t < trips.length; t += 1) {
+        const journeys = trips[t].journeys || [];
+        for (let j = 0; j < journeys.length; j += 1) {
+          const journey = journeys[j];
+          if (!journey || !journey.journeyKey) continue;
+
+          let isYU = false;
+          if (journey.identifier && journey.identifier.operatedBy === 'YU') {
+            isYU = true;
+          }
+
+          if (!isYU && journey.segments) {
+            for (let s = 0; s < journey.segments.length; s += 1) {
+              const seg = journey.segments[s];
+              if (seg && seg.identifier && seg.identifier.operatedBy === 'YU') {
+                isYU = true;
+                break;
+              }
+              if (seg && seg.equipment && seg.equipment.suffix === 'YU') {
+                isYU = true;
+                break;
+              }
+            }
+          }
+
+          if (isYU) {
+            window.AT_EA_YU_JOURNEYS[journey.journeyKey] = true;
+          }
+        }
+      }
+    } catch (e) {
+      // Silencioso
+    }
+  }
+
+  function installAvailabilityInterceptors() {
+    if (window._atEaAvailabilityInterceptedControle) return;
+    window._atEaAvailabilityInterceptedControle = true;
+
+    // Hook no XHR
+    const origOpen = window.XMLHttpRequest && window.XMLHttpRequest.prototype.open;
+    if (typeof origOpen === 'function') {
+      window.XMLHttpRequest.prototype.open = function (method, url) {
+        this.addEventListener('load', function () {
+          try {
+            if (typeof url === 'string' && url.indexOf('availability') !== -1) {
+              const resp = JSON.parse(this.responseText);
+              processAvailabilityPayload(resp);
+              debounce(run, 0);
+            }
+          } catch (e) {
+            // Silencioso
+          }
+        });
+        return origOpen.apply(this, arguments);
+      };
+    }
+
+    // Hook no Fetch
+    const origFetch = window.fetch;
+    if (typeof origFetch === 'function') {
+      window.fetch = async function (...args) {
+        const response = await origFetch(...args);
+        try {
+          const req = args && args.length ? args[0] : null;
+          const url =
+            req && typeof req === 'string'
+              ? req
+              : req && typeof req.url === 'string'
+                ? req.url
+                : req
+                  ? String(req)
+                  : '';
+          if (url.indexOf('availability') !== -1) {
+            const clone = response.clone();
+            clone
+              .json()
+              .then(function (data) {
+                processAvailabilityPayload(data);
+                debounce(run, 0);
+              })
+              .catch(function () {});
+          }
+        } catch (e) {
+          // Silencioso
+        }
+        return response;
+      };
+    }
+  }
+
   function onTargetPage() {
     const path = window.location && window.location.pathname ? window.location.pathname : '';
     const search = window.location && window.location.search ? window.location.search : '';
-    return path.indexOf(PAGE_PATH_TARGET) !== -1 && search.indexOf(QUERY_PARAM_MONEY_PAYMENT) !== -1;
+    return (
+      path.indexOf(PAGE_PATH_TARGET) !== -1 && search.indexOf(QUERY_PARAM_MONEY_PAYMENT) !== -1
+    );
   }
 
   function debounce(fn, waitMs) {
@@ -34,7 +135,10 @@
     }
 
     try {
-      console.log((consolePrefix || '[AT] EuroAtlantic Controle:') + ' Analytics event:', labelEvent);
+      console.log(
+        (consolePrefix || '[AT] EuroAtlantic Controle:') + ' Analytics event:',
+        labelEvent,
+      );
       (function () {
         const s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
         if (!s || typeof s.tl !== 'function') {
@@ -52,6 +156,13 @@
   }
 
   function hasEuroAtlanticFlightsOnScreen() {
+    try {
+      if (window.AT_EA_YU_JOURNEYS && Object.keys(window.AT_EA_YU_JOURNEYS).length > 0) {
+        return true;
+      }
+    } catch (e) {
+      // Silencioso
+    }
     const yuLogo = document.querySelector(SELECTORS.operatedByYUImg);
     return !!yuLogo;
   }
@@ -85,6 +196,7 @@
   }
 
   function init() {
+    installAvailabilityInterceptors();
     debounce(run, 0);
 
     // Observa mudanças de rota / conteúdo (SPA)
@@ -114,4 +226,3 @@
     init();
   }
 })();
-

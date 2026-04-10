@@ -2,7 +2,7 @@
   'use strict';
 
   // =========================================================
-  // EuroAtlantic v.2 - Modal ao selecionar tarifa (operatedby/YU)
+  // EuroAtlantic v3 - Modal ao selecionar tarifa (operatedby/YU)
   // =========================================================
   let isProcessing = false;
   let debounceTimer = null;
@@ -25,6 +25,588 @@
   let hasSentEuroAtlanticPresenceEvent = false;
   const MODAL_SESSION_KEY = 'at_euroatlantic_modal_shown';
   let isBgReady = false;
+
+  // =========================================================
+  // Cache de journeys operados por YU (EuroAtlantic) via API
+  // =========================================================
+  window.AT_EA_YU_JOURNEYS = window.AT_EA_YU_JOURNEYS || {};
+  // Modo produção (Target): sem logs extras e sem heurísticas pesadas.
+  const DEBUG_MODE = false;
+
+  function addYuJourneyKey(journeyKey) {
+    if (!journeyKey) return;
+    if (!window.AT_EA_YU_JOURNEYS[journeyKey]) {
+      window.AT_EA_YU_JOURNEYS[journeyKey] = true;
+    }
+  }
+
+  function safeStringIncludes(haystack, needle) {
+    try {
+      return String(haystack).indexOf(needle) !== -1;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Heurística leve (fallback) para o caso do Target entrar tarde e não interceptar availability.
+  // Procura por objetos que contenham { journeyKey, operatedBy: 'YU' } em estados globais comuns.
+  function ensureYuCacheFromPageState() {
+    try {
+      const cacheCount = Object.keys(window.AT_EA_YU_JOURNEYS || {}).length;
+      if (cacheCount > 0) return;
+
+      const now = Date.now();
+      if (window._atEaYuPageStateLastRun && now - window._atEaYuPageStateLastRun < 1200) return;
+      window._atEaYuPageStateLastRun = now;
+
+      const roots = [];
+      try {
+        if (window.__APOLLO_STATE__) roots.push(window.__APOLLO_STATE__);
+      } catch (e) {}
+      try {
+        if (window.__PRELOADED_STATE__) roots.push(window.__PRELOADED_STATE__);
+      } catch (e) {}
+      try {
+        if (window.__INITIAL_STATE__) roots.push(window.__INITIAL_STATE__);
+      } catch (e) {}
+      try {
+        if (window.__NEXT_DATA__) roots.push(window.__NEXT_DATA__);
+      } catch (e) {}
+
+      if (!roots.length) return;
+
+      const seen = new Set();
+      const queue = [];
+      for (let i = 0; i < roots.length; i += 1) {
+        queue.push({ v: roots[i], d: 0 });
+      }
+
+      const MAX_NODES = 5000;
+      const MAX_DEPTH = 8;
+      let nodes = 0;
+
+      while (queue.length && nodes < MAX_NODES) {
+        const item = queue.shift();
+        nodes += 1;
+        if (!item || !item.v) continue;
+        const v = item.v;
+        const d = item.d;
+        if (typeof v !== 'object') continue;
+        if (seen.has(v)) continue;
+        seen.add(v);
+
+        try {
+          const jk = v.journeyKey;
+          const op = v.operatedBy || (v.identifier && v.identifier.operatedBy);
+          if (jk && op === 'YU') {
+            addYuJourneyKey(jk);
+          }
+        } catch (e) {
+          // ignora
+        }
+
+        if (d >= MAX_DEPTH) continue;
+
+        if (Array.isArray(v)) {
+          for (let i = 0; i < v.length; i += 1) {
+            const child = v[i];
+            if (child && typeof child === 'object' && !seen.has(child)) {
+              queue.push({ v: child, d: d + 1 });
+            }
+          }
+          continue;
+        }
+
+        for (const k in v) {
+          if (!Object.prototype.hasOwnProperty.call(v, k)) continue;
+          const child = v[k];
+          if (!child || typeof child !== 'object') continue;
+          if (seen.has(child)) continue;
+          queue.push({ v: child, d: d + 1 });
+        }
+      }
+    } catch (e) {
+      // silencioso
+    }
+  }
+
+  function processAvailabilityPayload(payload) {
+    try {
+      const trips = (payload && payload.data && payload.data.trips) || payload.trips || [];
+      for (let t = 0; t < trips.length; t += 1) {
+        const journeys = trips[t].journeys || [];
+        for (let j = 0; j < journeys.length; j += 1) {
+          const journey = journeys[j];
+          if (!journey || !journey.journeyKey) continue;
+
+          let isYU = false;
+          if (journey.identifier && journey.identifier.operatedBy === 'YU') {
+            isYU = true;
+          }
+
+          if (!isYU && journey.segments) {
+            for (let s = 0; s < journey.segments.length; s += 1) {
+              const seg = journey.segments[s];
+              if (seg && seg.identifier && seg.identifier.operatedBy === 'YU') {
+                isYU = true;
+                break;
+              }
+              if (seg && seg.equipment && seg.equipment.suffix === 'YU') {
+                isYU = true;
+                break;
+              }
+            }
+          }
+
+          if (isYU) {
+            window.AT_EA_YU_JOURNEYS[journey.journeyKey] = true;
+          }
+        }
+      }
+    } catch (e) {
+      // Silencioso
+    }
+  }
+
+  function installAvailabilityInterceptors() {
+    if (window._atEaAvailabilityIntercepted) return;
+    window._atEaAvailabilityIntercepted = true;
+
+    // Guarda a última requisição (url + body) para replay se o Target entrar tarde.
+    window.AT_EA_LAST_AVAILABILITY_REQUEST = window.AT_EA_LAST_AVAILABILITY_REQUEST || null;
+    window.AT_EA_AVAILABILITY_REPLAY_IN_FLIGHT =
+      window.AT_EA_AVAILABILITY_REPLAY_IN_FLIGHT || false;
+
+    // Hook no XHR
+    const origOpen = window.XMLHttpRequest && window.XMLHttpRequest.prototype.open;
+    const origSend = window.XMLHttpRequest && window.XMLHttpRequest.prototype.send;
+    const origSetHeader = window.XMLHttpRequest && window.XMLHttpRequest.prototype.setRequestHeader;
+    if (typeof origOpen === 'function') {
+      window.XMLHttpRequest.prototype.open = function (method, url) {
+        try {
+          this.__atEaMethod = method;
+          this.__atEaUrl = url;
+          this.__atEaHeaders = {};
+        } catch (e) {
+          // Silencioso
+        }
+        this.addEventListener('load', function () {
+          try {
+            if (typeof url === 'string' && url.indexOf('availability') !== -1) {
+              const resp = JSON.parse(this.responseText);
+              processAvailabilityPayload(resp);
+              if (DEBUG_MODE && window.AT_EA_YU_JOURNEYS) {
+                console.log(
+                  '[AT] EuroAtlantic: availability XHR interceptado. cache=' +
+                    Object.keys(window.AT_EA_YU_JOURNEYS).length,
+                );
+              }
+            }
+          } catch (e) {
+            // Silencioso
+          }
+        });
+        return origOpen.apply(this, arguments);
+      };
+    }
+
+    if (typeof origSetHeader === 'function') {
+      window.XMLHttpRequest.prototype.setRequestHeader = function (name, value) {
+        try {
+          if (this.__atEaHeaders && name) {
+            this.__atEaHeaders[String(name).toLowerCase()] = String(value);
+          }
+        } catch (e) {
+          // Silencioso
+        }
+        return origSetHeader.apply(this, arguments);
+      };
+    }
+
+    if (typeof origSend === 'function') {
+      window.XMLHttpRequest.prototype.send = function (body) {
+        try {
+          const url = this.__atEaUrl;
+          const method = this.__atEaMethod;
+          if (typeof url === 'string' && url.indexOf('availability') !== -1) {
+            // body costuma ser JSON.stringify(...)
+            window.AT_EA_LAST_AVAILABILITY_REQUEST = {
+              method: method || 'POST',
+              url,
+              body: typeof body === 'string' ? body : null,
+              headers: this.__atEaHeaders || null,
+              ts: Date.now(),
+              source: 'xhr',
+            };
+            if (DEBUG_MODE) {
+              try {
+                console.log(
+                  '[AT] EuroAtlantic: availability request capturado (xhr). bodyLen=' +
+                    (typeof body === 'string' ? body.length : 0),
+                );
+              } catch (e) {
+                // Silencioso
+              }
+            }
+          }
+        } catch (e) {
+          // Silencioso
+        }
+        return origSend.apply(this, arguments);
+      };
+    }
+
+    // Hook no Fetch
+    const origFetch = window.fetch;
+    if (typeof origFetch === 'function') {
+      window.fetch = async function (...args) {
+        // Captura request para replay (quando possível)
+        try {
+          const req = args && args.length ? args[0] : null;
+          const init = args && args.length > 1 ? args[1] : null;
+          const url =
+            req && typeof req === 'string'
+              ? req
+              : req && typeof req.url === 'string'
+                ? req.url
+                : req
+                  ? String(req)
+                  : '';
+
+          const method = (init && init.method) || (req && req.method) || 'GET';
+          const headers = (init && init.headers) || (req && req.headers) || null;
+
+          // body pode estar em init.body (string) ou dentro de Request (stream). Vamos tentar capturar.
+          let body = init && typeof init.body === 'string' ? init.body : null;
+          if (!body && req && typeof req.clone === 'function') {
+            try {
+              const cloneReq = req.clone();
+              if (cloneReq && typeof cloneReq.text === 'function') {
+                cloneReq
+                  .text()
+                  .then(function (txt) {
+                    if (!txt) return;
+                    if (
+                      window.AT_EA_LAST_AVAILABILITY_REQUEST &&
+                      window.AT_EA_LAST_AVAILABILITY_REQUEST.url === url &&
+                      !window.AT_EA_LAST_AVAILABILITY_REQUEST.body
+                    ) {
+                      window.AT_EA_LAST_AVAILABILITY_REQUEST.body = txt;
+                    }
+                  })
+                  .catch(function () {});
+              }
+            } catch (e) {
+              // Silencioso
+            }
+          }
+
+          if (typeof url === 'string' && url.indexOf('availability') !== -1) {
+            window.AT_EA_LAST_AVAILABILITY_REQUEST = {
+              method,
+              url,
+              body,
+              headers,
+              ts: Date.now(),
+              source: 'fetch',
+            };
+            if (DEBUG_MODE) {
+              try {
+                console.log(
+                  '[AT] EuroAtlantic: availability request capturado (fetch). bodyLen=' +
+                    (body ? body.length : 0),
+                );
+              } catch (e) {
+                // Silencioso
+              }
+            }
+          }
+        } catch (e) {
+          // Silencioso
+        }
+
+        const response = await origFetch(...args);
+        try {
+          const req = args && args.length ? args[0] : null;
+          const url =
+            req && typeof req === 'string'
+              ? req
+              : req && typeof req.url === 'string'
+                ? req.url
+                : req
+                  ? String(req)
+                  : '';
+          if (url.indexOf('availability') !== -1) {
+            const clone = response.clone();
+            clone
+              .json()
+              .then(function (data) {
+                processAvailabilityPayload(data);
+                if (DEBUG_MODE && window.AT_EA_YU_JOURNEYS) {
+                  console.log(
+                    '[AT] EuroAtlantic: availability fetch interceptado. cache=' +
+                      Object.keys(window.AT_EA_YU_JOURNEYS).length,
+                  );
+                }
+              })
+              .catch(function () {});
+          }
+        } catch (e) {
+          // Silencioso
+        }
+        return response;
+      };
+    }
+  }
+
+  function replayAvailabilityOnce(onDone) {
+    try {
+      if (window.AT_EA_AVAILABILITY_REPLAY_IN_FLIGHT) {
+        if (typeof onDone === 'function') onDone(false);
+        return;
+      }
+
+      const req = window.AT_EA_LAST_AVAILABILITY_REQUEST;
+      if (!req || !req.url) {
+        if (typeof onDone === 'function') onDone(false);
+        return;
+      }
+
+      // Se não temos body (Request stream), não tentamos replay pra evitar request inválido.
+      if (!req.body) {
+        console.log(
+          '[AT] EuroAtlantic: replay indisponível (body não capturado). source=' +
+            (req.source || 'N/A'),
+        );
+        if (typeof onDone === 'function') onDone(false);
+        return;
+      }
+
+      console.log(
+        '[AT] EuroAtlantic: replay availability iniciado. source=' +
+          (req.source || 'N/A') +
+          ' bodyLen=' +
+          (req.body ? req.body.length : 0),
+      );
+      window.AT_EA_AVAILABILITY_REPLAY_IN_FLIGHT = true;
+
+      const headers = {};
+      try {
+        // Copia headers capturados (se houver) para aumentar chance de resposta igual ao app.
+        if (req.headers) {
+          if (typeof req.headers.forEach === 'function') {
+            req.headers.forEach(function (v, k) {
+              headers[String(k).toLowerCase()] = String(v);
+            });
+          } else {
+            for (const k in req.headers) {
+              if (!Object.prototype.hasOwnProperty.call(req.headers, k)) continue;
+              headers[String(k).toLowerCase()] = String(req.headers[k]);
+            }
+          }
+        }
+      } catch (e) {
+        // Silencioso
+      }
+      if (!headers['content-type']) {
+        headers['content-type'] = 'application/json';
+      }
+
+      fetch(req.url, {
+        method: req.method || 'POST',
+        headers,
+        body: req.body,
+        credentials: 'include',
+      })
+        .then(function (r) {
+          console.log('[AT] EuroAtlantic: replay availability status=' + r.status);
+          return r.json();
+        })
+        .then(function (data) {
+          processAvailabilityPayload(data);
+          console.log(
+            '[AT] EuroAtlantic: replay availability concluído. cache=' +
+              Object.keys(window.AT_EA_YU_JOURNEYS || {}).length,
+          );
+          if (typeof onDone === 'function') onDone(true);
+        })
+        .catch(function () {
+          if (typeof onDone === 'function') onDone(false);
+        })
+        .finally(function () {
+          window.AT_EA_AVAILABILITY_REPLAY_IN_FLIGHT = false;
+        });
+    } catch (e) {
+      if (typeof onDone === 'function') onDone(false);
+      window.AT_EA_AVAILABILITY_REPLAY_IN_FLIGHT = false;
+    }
+  }
+
+  function ensureAvailabilityCacheReady(cb) {
+    const cacheCount = window.AT_EA_YU_JOURNEYS ? Object.keys(window.AT_EA_YU_JOURNEYS).length : 0;
+    if (cacheCount > 0) {
+      cb();
+      return;
+    }
+
+    const req = window.AT_EA_LAST_AVAILABILITY_REQUEST;
+    if (!req) {
+      console.log('[AT] EuroAtlantic: cache=0 e nenhum request availability capturado ainda.');
+      setTimeout(cb, 0);
+      return;
+    }
+
+    // Faz um replay (se tivermos url+body capturados). Se falhar, tenta via URL params.
+    replayAvailabilityOnce(function (ok) {
+      if (!ok) {
+        setTimeout(cb, 0);
+        return;
+      }
+      setTimeout(cb, 0);
+    });
+  }
+
+  function getQueryValue(params, key) {
+    try {
+      return params.get(key) || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function buildAvailabilityPayloadFromUrl() {
+    try {
+      const params = new URLSearchParams(window.location.search || '');
+      const trips = [];
+
+      for (let i = 0; i < 6; i += 1) {
+        const ds = getQueryValue(params, 'c[' + i + '].ds');
+        const as = getQueryValue(params, 'c[' + i + '].as');
+        const std = getQueryValue(params, 'c[' + i + '].std');
+        if (!ds || !as || !std) break;
+
+        // std vem como MM/DD/YYYY no deeplink; API costuma aceitar ISO, mas vamos enviar como string original.
+        trips.push({
+          departureStation: ds,
+          arrivalStation: as,
+          std,
+        });
+      }
+
+      const passengers = [];
+      for (let i = 0; i < 6; i += 1) {
+        const t = getQueryValue(params, 'p[' + i + '].t');
+        const c = getQueryValue(params, 'p[' + i + '].c');
+        if (!t || !c) break;
+        passengers.push({ type: t, count: Number(c) || 0 });
+      }
+
+      const cc = getQueryValue(params, 'cc') || 'BRL';
+      const dl = Number(getQueryValue(params, 'f.dl') || '0') || 0;
+      const dr = Number(getQueryValue(params, 'f.dr') || '0') || 0;
+
+      return {
+        currencyCode: cc,
+        flexibleDays: { dl, dr },
+        passengers,
+        trips,
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function fetchAvailabilityFromUrlParams(done) {
+    try {
+      if (window._atEaUrlAvailabilityInFlight) {
+        if (typeof done === 'function') done(false);
+        return;
+      }
+      window._atEaUrlAvailabilityInFlight = true;
+
+      const payload = buildAvailabilityPayloadFromUrl();
+      if (!payload || !payload.trips || !payload.trips.length) {
+        console.log('[AT] EuroAtlantic: não foi possível montar payload da availability pela URL.');
+        window._atEaUrlAvailabilityInFlight = false;
+        if (typeof done === 'function') done(false);
+        return;
+      }
+
+      const url =
+        'https://b2c-api.voeazul.com.br/reservationavailability/api/reservation/availability/v5/availability';
+
+      console.log('[AT] EuroAtlantic: fetch availability via URL params iniciado.');
+
+      fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      })
+        .then(function (r) {
+          console.log('[AT] EuroAtlantic: fetch availability via URL params status=' + r.status);
+          if (r.status === 401 || r.status === 403) {
+            throw new Error('unauthorized');
+          }
+          return r.json();
+        })
+        .then(function (data) {
+          processAvailabilityPayload(data);
+          console.log(
+            '[AT] EuroAtlantic: fetch availability via URL params concluído. cache=' +
+              Object.keys(window.AT_EA_YU_JOURNEYS || {}).length,
+          );
+          if (typeof done === 'function') done(true);
+        })
+        .catch(function () {
+          if (typeof done === 'function') done(false);
+        })
+        .finally(function () {
+          window._atEaUrlAvailabilityInFlight = false;
+        });
+    } catch (e) {
+      window._atEaUrlAvailabilityInFlight = false;
+      if (typeof done === 'function') done(false);
+    }
+  }
+
+  function forceLazyOperatedByLoad(cardEl, done) {
+    try {
+      if (!cardEl) {
+        if (typeof done === 'function') done(false);
+        return;
+      }
+
+      if (cardEl.querySelector(SELECTORS.operatedByYUImg)) {
+        if (typeof done === 'function') done(true);
+        return;
+      }
+
+      const originalY = window.scrollY || 0;
+      const itinerary =
+        cardEl.querySelector('.itinerary') ||
+        cardEl.querySelector('[class*="itinerary"]') ||
+        cardEl.querySelector('h3, h2');
+
+      if (!itinerary || typeof itinerary.scrollIntoView !== 'function') {
+        if (typeof done === 'function') done(false);
+        return;
+      }
+
+      itinerary.scrollIntoView({ block: 'center', behavior: 'auto' });
+      setTimeout(function () {
+        const has = !!cardEl.querySelector(SELECTORS.operatedByYUImg);
+        try {
+          window.scrollTo(0, originalY);
+        } catch (e) {
+          // Silencioso
+        }
+        if (typeof done === 'function') done(has);
+      }, 250);
+    } catch (e) {
+      if (typeof done === 'function') done(false);
+    }
+  }
 
   function onTargetPage() {
     var path = window.location && window.location.pathname ? window.location.pathname : '';
@@ -108,6 +690,14 @@
   }
 
   function hasEuroAtlanticFlightsOnScreen() {
+    // Presença: considera cache (availability) + fallback DOM
+    try {
+      if (window.AT_EA_YU_JOURNEYS && Object.keys(window.AT_EA_YU_JOURNEYS).length > 0) {
+        return true;
+      }
+    } catch (e) {
+      // Silencioso
+    }
     return !!document.querySelector(SELECTORS.operatedByYUImg);
   }
 
@@ -133,6 +723,11 @@
     var card = buttonEl.closest(SELECTORS.flightCard);
     if (!card) {
       return false;
+    }
+
+    var cardId = card.id || '';
+    if (cardId && window.AT_EA_YU_JOURNEYS && window.AT_EA_YU_JOURNEYS[cardId]) {
+      return true;
     }
 
     // 1) flag pre-setada pelo scan (mais rapido e confiavel)
@@ -620,11 +1215,52 @@
           return;
         }
 
-        // Verifica se e YU (pelo flag ou pelo DOM)
+        var card = button.closest(SELECTORS.flightCard);
+        var cardId = card && card.id ? card.id : 'N/A';
+        var cacheCount = window.AT_EA_YU_JOURNEYS
+          ? Object.keys(window.AT_EA_YU_JOURNEYS).length
+          : 0;
+        var hasDomYu = card ? !!card.querySelector(SELECTORS.operatedByYUImg) : false;
+
+        // Tenta enriquecer o cache sem depender de API/scroll
+        ensureYuCacheFromPageState();
+        cacheCount = window.AT_EA_YU_JOURNEYS ? Object.keys(window.AT_EA_YU_JOURNEYS).length : 0;
+
+        // Verifica se e YU (API cache -> flag -> DOM)
         var isYU = isEuroAtlanticForButton(button);
-        console.log('[AT] EuroAtlantic: click interceptado, isYU=' + isYU);
+        if (DEBUG_MODE) {
+          console.log(
+            '[AT] EuroAtlantic: click interceptado, isYU=' +
+              isYU +
+              ' cardId=' +
+              cardId +
+              ' cache=' +
+              cacheCount +
+              ' domYu=' +
+              hasDomYu,
+          );
+        }
 
         if (!isYU) {
+          // Se o cache da API ainda não existe (Target entrou tarde), tenta replay 1x e reavalia.
+          if (cacheCount === 0) {
+            ensureAvailabilityCacheReady(function () {
+              // Tenta forçar o lazy-load do DOM (Operado por) sem depender da API (que retorna 401 aqui)
+              forceLazyOperatedByLoad(card, function () {
+                var isAfter = isEuroAtlanticForButton(button);
+                if (DEBUG_MODE) {
+                  console.log('[AT] EuroAtlantic: recheck após replay. isYU=' + isAfter);
+                }
+                if (isAfter) {
+                  analyticsSend('AT_euroatlantic_modal Exibido', '[AT] EuroAtlantic:');
+                  openModal();
+                } else {
+                  continueOriginalFlow();
+                }
+              });
+            });
+            return;
+          }
           return;
         }
 
@@ -660,6 +1296,7 @@
       preloadModalBg();
       addGlobalClickInterceptor();
       scanAndMarkAllCards();
+      ensureYuCacheFromPageState();
       maybeSendEuroAtlanticPresenceEvent();
     } finally {
       isProcessing = false;
@@ -667,6 +1304,8 @@
   }
 
   function init() {
+    // Importante: interceptar o quanto antes (em SPA, a chamada pode ocorrer antes do DOMContentLoaded)
+    installAvailabilityInterceptors();
     debounce(run, 0);
 
     if (!window._euroAtlanticObserver) {
@@ -688,6 +1327,9 @@
     return;
   }
   window.euroAtlanticInitialized = true;
+
+  // Instala interceptores o mais cedo possível, mesmo antes do init().
+  installAvailabilityInterceptors();
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
