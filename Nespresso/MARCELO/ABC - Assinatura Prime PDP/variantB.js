@@ -123,9 +123,21 @@
       '[data-at-prime-pdp-abc="B"] .signUpPrime { display: none !important; }' +
       ROOT_SELECTOR +
       '[data-at-prime-pdp-abc="B"] .observacaoPrime { font-family: NespressoLucas, Helvetica, Arial, sans-serif !important; font-weight: 400 !important; font-size: 10px !important; line-height: 18px !important; color: #17171A !important; text-align: center !important; margin-top: -18px !important; box-shadow: initial !important; }' +
-      '@media (max-width: 380px) {' +
+      '@media (max-width: 420px) {' +
       ROOT_SELECTOR +
-      '[data-at-prime-pdp-abc="B"] .at-prime-cta { width: 150px; }' +
+      '[data-at-prime-pdp-abc="B"] .at-prime-pill { padding: 0 12px !important; }' +
+      ROOT_SELECTOR +
+      '[data-at-prime-pdp-abc="B"] .at-prime-pill-main { gap: 8px !important; }' +
+      ROOT_SELECTOR +
+      '[data-at-prime-pdp-abc="B"] .at-prime-cta { width: 42% !important; padding: 0 10px !important; }' +
+      ROOT_SELECTOR +
+      '[data-at-prime-pdp-abc="B"] .at-prime-cta span { font-size: 15px !important; }' +
+      ROOT_SELECTOR +
+      '[data-at-prime-pdp-abc="B"] .at-prime-price-amount { font-size: 20px !important; }' +
+      ROOT_SELECTOR +
+      '[data-at-prime-pdp-abc="B"] .at-prime-price-caption { font-size: 9px !important; }' +
+      ROOT_SELECTOR +
+      '[data-at-prime-pdp-abc="B"] .at-prime-flag { width: 34px !important; }' +
       '}';
 
     document.head.appendChild(style);

@@ -103,9 +103,15 @@
       R + ' .beneficiosPrime .containerBeneficioPrime span { display: none !important; }' +
       R + ' .signUpPrime { display: none !important; }' +
       R + ' .observacaoPrime { display: none !important; }' +
-      '@media (max-width: 360px) {' +
-      R + ' .at-prime-cta { width: 140px !important; }' +
-      R + ' .at-prime-cta span { font-size: 16px !important; }' +
+      '@media (max-width: 420px) {' +
+      // No mobile: reduzir o CTA usando % (sem diminuir o resto do bloco)
+      R + ' .at-prime-pill { padding: 0 12px !important; }' +
+      R + ' .at-prime-pill-main { gap: 8px !important; }' +
+      R + ' .at-prime-cta { width: 42% !important; padding: 0 10px !important; }' +
+      R + ' .at-prime-cta span { font-size: 15px !important; }' +
+      R + ' .at-prime-price-amount { font-size: 20px !important; }' +
+      R + ' .at-prime-price-caption { font-size: 9px !important; }' +
+      R + ' .at-prime-flag { width: 34px !important; }' +
       '}';
 
     document.head.appendChild(style);
