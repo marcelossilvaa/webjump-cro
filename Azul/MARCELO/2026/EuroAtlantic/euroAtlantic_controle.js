@@ -2,18 +2,21 @@
   'use strict';
 
   // =========================================================
-  // EuroAtlantic (CONTROLE) v2 - Evento de presença (operatedby/YU)
+  // EuroAtlantic (CONTROLE) v3 - Evento de presença (operatedby/YU)
   // =========================================================
   let isProcessing = false;
   let debounceTimer = null;
   let hasSentEuroAtlanticPresenceEvent = false;
 
   const PAGE_PATH_TARGET = '/selecao-voo';
+  const PAGE_PATH_MY_TRIPS = '/minhas-viagens';
   const QUERY_PARAM_MONEY_PAYMENT = 'cc=BRL';
 
   const SELECTORS = {
     operatedByYUImg: 'img[src*="/operatedby/YU"], img[src*="operatedby/YU"]',
   };
+
+  let hasSentEuroAtlanticMyTripsPresenceEvent = false;
 
   // =========================================================
   // Cache de journeys operados por YU (EuroAtlantic) via API
@@ -122,6 +125,36 @@
     );
   }
 
+  function onMyTripsPage() {
+    const path = window.location && window.location.pathname ? window.location.pathname : '';
+    return path.indexOf(PAGE_PATH_MY_TRIPS) !== -1;
+  }
+
+  function normalizeText(s) {
+    try {
+      return String(s || '')
+        .replace(/\u00A0/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function hasEuroAtlanticMyTripsOnScreen() {
+    const nodes = document.querySelectorAll('p');
+    if (!nodes || !nodes.length) return false;
+
+    for (let i = 0; i < nodes.length; i += 1) {
+      const txt = normalizeText(nodes[i].textContent);
+      if (!txt) continue;
+      if (txt.indexOf('EuroAtlantic') !== -1 && txt.indexOf('Direto') !== -1) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   function debounce(fn, waitMs) {
     if (debounceTimer) {
       clearTimeout(debounceTimer);
@@ -178,18 +211,35 @@
     analyticsSend('AT_euroatlantic_presence Exibido', '[AT] EuroAtlantic Controle:');
   }
 
+  function maybeSendEuroAtlanticMyTripsPresenceEvent() {
+    if (hasSentEuroAtlanticMyTripsPresenceEvent) {
+      return;
+    }
+    if (!hasEuroAtlanticMyTripsOnScreen()) {
+      return;
+    }
+    hasSentEuroAtlanticMyTripsPresenceEvent = true;
+    analyticsSend('AT_euroatlantic_presence Exibido minhas-viagens', '[AT] EuroAtlantic Controle:');
+  }
+
   function run() {
     if (isProcessing) {
       return;
     }
     isProcessing = true;
     try {
-      if (!onTargetPage()) {
+      if (!onTargetPage() && !onMyTripsPage()) {
         hasSentEuroAtlanticPresenceEvent = false;
+        hasSentEuroAtlanticMyTripsPresenceEvent = false;
         return;
       }
 
-      maybeSendEuroAtlanticPresenceEvent();
+      if (onTargetPage()) {
+        maybeSendEuroAtlanticPresenceEvent();
+      }
+      if (onMyTripsPage()) {
+        maybeSendEuroAtlanticMyTripsPresenceEvent();
+      }
     } finally {
       isProcessing = false;
     }

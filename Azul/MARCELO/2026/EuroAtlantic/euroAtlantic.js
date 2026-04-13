@@ -2,12 +2,13 @@
   'use strict';
 
   // =========================================================
-  // EuroAtlantic v3 - Modal ao selecionar tarifa (operatedby/YU)
+  // EuroAtlantic v4 - Modal ao selecionar tarifa (operatedby/YU)
   // =========================================================
   let isProcessing = false;
   let debounceTimer = null;
 
   const PAGE_PATH_TARGET = '/selecao-voo';
+  const PAGE_PATH_MY_TRIPS = '/minhas-viagens';
   const QUERY_PARAM_MONEY_PAYMENT = 'cc=BRL';
 
   const STYLE_ID = 'at-euroatlantic-modal-style';
@@ -24,7 +25,10 @@
   let pendingOriginalButton = null;
   let hasSentEuroAtlanticPresenceEvent = false;
   const MODAL_SESSION_KEY = 'at_euroatlantic_modal_shown';
+  const MODAL_MY_TRIPS_SESSION_KEY = 'at_euroatlantic_modal_my_trips_shown';
   let isBgReady = false;
+  let currentModalContext = 'selecao-voo';
+  let currentModalMode = 'selection';
 
   // =========================================================
   // Cache de journeys operados por YU (EuroAtlantic) via API
@@ -616,6 +620,19 @@
     );
   }
 
+  function onMyTripsPage() {
+    var path = window.location && window.location.pathname ? window.location.pathname : '';
+    return path.indexOf(PAGE_PATH_MY_TRIPS) !== -1;
+  }
+
+  function getContextLabelSuffix() {
+    return currentModalContext === 'minhas-viagens' ? ' minhas-viagens' : '';
+  }
+
+  function buildModalEventLabel(action) {
+    return 'AT_euroatlantic_modal ' + action + getContextLabelSuffix();
+  }
+
   function debounce(fn, waitMs) {
     if (debounceTimer) {
       clearTimeout(debounceTimer);
@@ -665,6 +682,34 @@
 
   function hasShownModalThisSession() {
     return getSessionValue(MODAL_SESSION_KEY) === '1';
+  }
+
+  function hasShownMyTripsModalThisSession() {
+    return getSessionValue(MODAL_MY_TRIPS_SESSION_KEY) === '1';
+  }
+
+  function normalizeText(s) {
+    try {
+      return String(s || '')
+        .replace(/\u00A0/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function hasEuroAtlanticMyTripsOnScreen() {
+    const nodes = document.querySelectorAll('p');
+    if (!nodes || !nodes.length) return false;
+    for (let i = 0; i < nodes.length; i += 1) {
+      const txt = normalizeText(nodes[i].textContent);
+      if (!txt) continue;
+      if (txt.indexOf('EuroAtlantic') !== -1 && txt.indexOf('Direto') !== -1) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // -------------------------------------------------------
@@ -1068,7 +1113,7 @@
 
     // Botao fechar
     closeBtn.addEventListener('click', function () {
-      analyticsSend('AT_euroatlantic_modal Fechar', '[AT] EuroAtlantic:');
+      analyticsSend(buildModalEventLabel('Fechar'), '[AT] EuroAtlantic:');
       closeModal();
     });
 
@@ -1076,7 +1121,11 @@
     cta.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      analyticsSend('AT_euroatlantic_modal Continuar', '[AT] EuroAtlantic:');
+      analyticsSend(buildModalEventLabel('Continuar'), '[AT] EuroAtlantic:');
+      if (currentModalMode === 'info') {
+        closeModal();
+        return;
+      }
       continueOriginalFlow();
     });
 
@@ -1088,7 +1137,7 @@
         if (key === 'Escape') {
           var isOpen = document.body.classList.contains('at-euroatlantic-modal-open');
           if (isOpen) {
-            analyticsSend('AT_euroatlantic_modal ESC', '[AT] EuroAtlantic:');
+            analyticsSend(buildModalEventLabel('ESC'), '[AT] EuroAtlantic:');
             closeModal();
           }
         }
@@ -1108,7 +1157,11 @@
     overlay.offsetHeight;
     overlay.classList.add('is-animating-in');
 
-    setSessionValue(MODAL_SESSION_KEY, '1');
+    if (currentModalContext === 'minhas-viagens') {
+      setSessionValue(MODAL_MY_TRIPS_SESSION_KEY, '1');
+    } else {
+      setSessionValue(MODAL_SESSION_KEY, '1');
+    }
   }
 
   function closeModal() {
@@ -1252,7 +1305,9 @@
                   console.log('[AT] EuroAtlantic: recheck após replay. isYU=' + isAfter);
                 }
                 if (isAfter) {
-                  analyticsSend('AT_euroatlantic_modal Exibido', '[AT] EuroAtlantic:');
+                  currentModalContext = 'selecao-voo';
+                  currentModalMode = 'selection';
+                  analyticsSend(buildModalEventLabel('Exibido'), '[AT] EuroAtlantic:');
                   openModal();
                 } else {
                   continueOriginalFlow();
@@ -1272,7 +1327,9 @@
         }
 
         pendingOriginalButton = button;
-        analyticsSend('AT_euroatlantic_modal Exibido', '[AT] EuroAtlantic:');
+        currentModalContext = 'selecao-voo';
+        currentModalMode = 'selection';
+        analyticsSend(buildModalEventLabel('Exibido'), '[AT] EuroAtlantic:');
         openModal();
       },
       true,
@@ -1288,16 +1345,34 @@
     }
     isProcessing = true;
     try {
-      if (!onTargetPage()) {
+      var isSelection = onTargetPage();
+      var isMyTrips = onMyTripsPage();
+
+      if (!isSelection && !isMyTrips) {
         hasSentEuroAtlanticPresenceEvent = false;
         return;
       }
+
       injectStyles();
       preloadModalBg();
-      addGlobalClickInterceptor();
-      scanAndMarkAllCards();
-      ensureYuCacheFromPageState();
-      maybeSendEuroAtlanticPresenceEvent();
+
+      if (isSelection) {
+        addGlobalClickInterceptor();
+        scanAndMarkAllCards();
+        ensureYuCacheFromPageState();
+        maybeSendEuroAtlanticPresenceEvent();
+      }
+
+      if (isMyTrips) {
+        // Modal informativo: abre ao detectar texto "Direto • EuroAtlantic"
+        if (!hasShownMyTripsModalThisSession() && hasEuroAtlanticMyTripsOnScreen()) {
+          currentModalContext = 'minhas-viagens';
+          currentModalMode = 'info';
+          pendingOriginalButton = null;
+          analyticsSend(buildModalEventLabel('Exibido'), '[AT] EuroAtlantic:');
+          openModal();
+        }
+      }
     } finally {
       isProcessing = false;
     }
