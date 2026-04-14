@@ -275,11 +275,11 @@
 
       // ===== CTA PULSE =====
       + '@keyframes atDisneyCTAPulse {'
-      + '  0%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,255,255,0.6)}'
-      + '  50%{transform:scale(1.07);box-shadow:0 0 18px 6px rgba(255,255,255,0.4)}'
+      + '  0%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,255,255,0.25)}'
+      + '  50%{transform:scale(1.02);box-shadow:0 0 10px 3px rgba(255,255,255,0.25)}'
       + '  100%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,255,255,0)}'
       + '}'
-      + '.at-disney-cta-pulse { animation:atDisneyCTAPulse 0.5s ease-in-out 4; }'
+      + '.at-disney-cta-pulse { animation:atDisneyCTAPulse 0.9s ease-out 2; }'
 
       // ===== CTA =====
       + '.at-disney-cta {'

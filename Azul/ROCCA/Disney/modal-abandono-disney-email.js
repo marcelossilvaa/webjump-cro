@@ -337,7 +337,7 @@
 		parts.push('<span class="disneyAbandonmentModal__divider"></span>');
 		parts.push('<span class="disneyAbandonmentModal__brand">Disney</span>');
 		parts.push('</div>');
-		parts.push('<h3 class="disneyAbandonmentModal__title">Seu sonho Disney pode ficar ainda melhor</h3>');
+		parts.push('<h3 class="disneyAbandonmentModal__title">Não Saia ainda! Seu sonho Disney pode ficar ainda melhor</h3>');
 		parts.push('<div class="disneyAbandonmentModal__tag">Conheça nossas ofertas e aproveite</div>');
 		parts.push('<div class="disneyAbandonmentModal__offerCard">');
 		parts.push('<p class="disneyAbandonmentModal__offerKicker">Pacotes (aereo + hotel) com</p>');
