@@ -594,10 +594,10 @@
 
     var couponIcon = document.createElement('div');
     couponIcon.className = 'at-dh-coupon-icon';
-    couponIcon.innerHTML = '<svg width="20" height="13" viewBox="0 0 20 13" fill="none" xmlns="http://www.w3.org/2000/svg">'
-      + '<rect x="0.5" y="0.5" width="19" height="12" rx="2" stroke="#216FB7"/>'
-      + '<path d="M7 0.5V12.5" stroke="#216FB7" stroke-dasharray="2 2"/>'
-      + '<circle cx="13" cy="6.5" r="2" stroke="#216FB7"/></svg>';
+    couponIcon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">'
+      + '<path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1Z" fill="#216FB7"/>'
+      + '<path d="M19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z" fill="#216FB7"/>'
+      + '</svg>';
     coupon.appendChild(couponIcon);
 
     var couponCode = document.createElement('span');
@@ -634,9 +634,7 @@
     logos.appendChild(logoDivider);
 
     var logoDisney = document.createElement('div');
-    logoDisney.innerHTML = '<svg width="70" height="12" viewBox="0 0 70 12" fill="none" xmlns="http://www.w3.org/2000/svg">'
-      + '<text x="0" y="10" font-family="Helvetica Neue,Arial,sans-serif" font-weight="400" font-size="8" fill="#FFFFFF" letter-spacing="0.5">Disney Destinations</text>'
-      + '</svg>';
+    logoDisney.innerHTML = '<img src="https://i.imgur.com/1CwQhAX.png" alt="Disney Destinations" style="display:block;width:70px;height:12px;object-fit:contain;"/>';
     logos.appendChild(logoDisney);
     container.appendChild(logos);
 

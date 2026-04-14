@@ -354,14 +354,14 @@
       + '    left:31px; top:55px; font-size:128px;'
       + '  }'
       + '  .at-disney-offer-percent {'
-      + '    left:160px; top:55px; font-size:65px;'
+      + '    left:182px; top:55px; font-size:65px;'
       + '  }'
       + '  .at-disney-offer-off {'
-      + '    left:160px; top:110px; font-size:42px;'
+      + '    left:182px; top:110px; font-size:42px;'
       + '  }'
       // Consulte condicoes mobile - alinhado a esquerda do 20, centralizado com o 2
       + '  .at-disney-consult {'
-      + '    width:96px; height:12px; left:20px; top:330px;'
+      + '    width:96px; height:12px; left:28px; top:330px;'
       + '    font-size:10px; transform:rotate(-90deg); transform-origin:left top;'
       + '  }'
       // Foto personagem mobile - oculta
@@ -590,9 +590,7 @@
     logos.appendChild(logoDivider);
 
     var logoDisney = document.createElement('div');
-    logoDisney.innerHTML = '<svg width="118" height="17" viewBox="0 0 118 17" fill="none" xmlns="http://www.w3.org/2000/svg">'
-      + '<text x="0" y="13" font-family="Helvetica Neue,Arial,sans-serif" font-weight="400" font-size="11" fill="#FFFFFF" letter-spacing="1">Disney Destinations</text>'
-      + '</svg>';
+    logoDisney.innerHTML = '<img src="https://i.imgur.com/1CwQhAX.png" alt="Disney Destinations" style="display:block;width:118px;height:17px;object-fit:contain;"/>';
     logos.appendChild(logoDisney);
     container.appendChild(logos);
 
@@ -669,10 +667,10 @@
     coupon.className = 'at-disney-coupon';
 
     var couponIcon = document.createElement('div');
-    couponIcon.innerHTML = '<svg width="28" height="18" viewBox="0 0 28 18" fill="none" xmlns="http://www.w3.org/2000/svg">'
-      + '<rect x="0.5" y="0.5" width="27" height="17" rx="3" stroke="#FFFFFF"/>'
-      + '<path d="M10 0.5V17.5" stroke="#FFFFFF" stroke-dasharray="2 2"/>'
-      + '<circle cx="19" cy="9" r="3" stroke="#FFFFFF"/></svg>';
+    couponIcon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">'
+      + '<path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1Z" fill="#FFFFFF"/>'
+      + '<path d="M19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z" fill="#FFFFFF"/>'
+      + '</svg>';
     coupon.appendChild(couponIcon);
 
     var couponCode = document.createElement('span');
