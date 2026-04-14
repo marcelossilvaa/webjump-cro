@@ -1,0 +1,334 @@
+import React, { useState } from 'react';
+import { 
+  BarChart3, 
+  Users, 
+  TrendingUp, 
+  Award, 
+  ShieldCheck, 
+  Zap, 
+  LayoutDashboard,
+  ArrowRight,
+  Info,
+  CheckCircle2,
+  Plane,
+  CreditCard,
+  Crown,
+  ChevronRight,
+  FileDown
+} from 'lucide-react';
+
+const App = () => {
+  const [activeTab, setActiveTab] = useState('market');
+
+  const data = [
+    { name: 'Itaú Unibanco', tpv: 25, nps: 68, clients: 85, color: 'bg-orange-500', focus: 'Alta Renda / Corp' },
+    { name: 'Nubank', tpv: 12, nps: 88, clients: 109, color: 'bg-purple-600', focus: 'Geração Z / Massa' },
+    { name: 'Bradesco', tpv: 18, nps: 55, clients: 104, color: 'bg-red-600', focus: 'Varejo / INSS' },
+    { name: 'Santander', tpv: 14, nps: 62, clients: 65, color: 'bg-red-500', focus: 'Alta Renda / Select' },
+    { name: 'Inter', tpv: 4, nps: 78, clients: 32, color: 'bg-orange-400', focus: 'Investidores / E-com' },
+  ];
+
+  const airlineData = [
+    { program: 'Azul Fidelidade', bank: 'Itaú', score: '3.0 a 5.27', tier: 'Visa Infinite', color: 'border-blue-600', bg: 'bg-blue-50', text: 'text-blue-700' },
+    { program: 'LATAM Pass', bank: 'Itaú', score: '2.5 a 3.5', tier: 'Mastercard Black', color: 'border-indigo-800', bg: 'bg-indigo-50', text: 'text-indigo-900' },
+    { program: 'Smiles (GOL)', bank: 'Bradesco / BB / Sant.', score: '2.0 a 4.0', tier: 'Visa Infinite', color: 'border-orange-500', bg: 'bg-orange-50', text: 'text-orange-700' },
+  ];
+
+  const swot = [
+    { type: 'Forças', items: ['Resiliência do setor', 'Ecossistemas de Milhas fortes'], icon: <Award className="text-green-500" />, color: 'bg-green-50' },
+    { type: 'Fraquezas', items: ['Inadimplência elevada', 'Desvalorização de milhas'], icon: <Info className="text-red-500" />, color: 'bg-red-50' },
+    { type: 'Oportunidades', items: ['IA para limites dinâmicos', 'Cartão como Serviço (CaaS)'], icon: <Zap className="text-blue-500" />, color: 'bg-blue-50' },
+    { type: 'Ameaças', items: ['Pix Parcelado', 'Regulação do Rotativo'], icon: <ShieldCheck className="text-amber-500" />, color: 'bg-amber-50' },
+  ];
+
+  const handleExportPDF = () => {
+    window.print();
+  };
+
+  return (
+    <div className="h-screen w-screen bg-slate-900 flex items-center justify-center p-0 md:p-4 overflow-hidden font-sans">
+      {/* Print Styles */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          @page { size: landscape; margin: 0; }
+          body { -webkit-print-color-adjust: exact; background-color: white !important; }
+          .no-print { display: none !important; }
+          .print-container { 
+            width: 100vw !important; 
+            height: 100vh !important; 
+            box-shadow: none !important; 
+            border: none !important;
+            border-radius: 0 !important;
+          }
+        }
+      `}} />
+
+      {/* 16:9 Presentation Container */}
+      <div className="print-container w-full max-w-7xl aspect-auto md:aspect-video h-[90vh] md:h-auto min-h-[600px] bg-slate-50 rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-slate-700">
+        
+        {/* Top Navigation Bar */}
+        <header className="bg-white border-b border-slate-200 px-4 md:px-8 py-4 flex items-center justify-between shrink-0 no-print">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-600 rounded-lg">
+              <LayoutDashboard className="text-white" size={24} />
+            </div>
+            <div>
+              <h1 className="font-bold text-xl text-slate-800 uppercase tracking-tight">Análise Estratégica 2025</h1>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Benchmarking de Cartões de Crédito</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <nav className="flex bg-slate-100 p-1 rounded-xl">
+              {[
+                { id: 'market', label: 'Mercado', icon: BarChart3 },
+                { id: 'airlines', label: 'Aéreo', icon: Plane },
+                { id: 'comparison', label: 'Comparação', icon: CreditCard },
+                { id: 'strategic', label: 'Estratégia', icon: Zap }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${
+                    activeTab === tab.id 
+                      ? 'bg-white text-blue-600 shadow-sm' 
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  <tab.icon size={16} />
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
+
+            <button 
+              onClick={handleExportPDF}
+              className="hidden md:flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-black text-white rounded-lg text-sm font-bold transition-all"
+              title="Exportar slide atual para PDF"
+            >
+              <FileDown size={18} />
+              <span>PDF</span>
+            </button>
+          </div>
+        </header>
+
+        {/* Slide Content Area */}
+        <div className="flex-1 p-4 md:p-8 overflow-y-auto overflow-x-hidden">
+          
+          {/* Market Overview Slide */}
+          {activeTab === 'market' && (
+            <div className="min-h-full flex flex-col animate-in fade-in zoom-in-95 duration-500 text-left">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
+                <div className="bg-blue-600 p-5 md:p-6 rounded-2xl text-white shadow-lg">
+                  <p className="text-blue-100 text-xs font-bold uppercase mb-1">Volume Anual (TPV)</p>
+                  <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter">R$ 2.8 Tri</h2>
+                  <div className="mt-2 text-xs flex items-center gap-1 text-blue-200">
+                    <TrendingUp size={14} /> +12% YoY Growth
+                  </div>
+                </div>
+                <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
+                  <p className="text-slate-400 text-xs font-bold uppercase mb-1">Líder em Volume</p>
+                  <h2 className="text-3xl md:text-4xl font-black text-orange-500 italic tracking-tighter uppercase">Itaú</h2>
+                  <p className="mt-2 text-xs text-slate-500 font-medium">25% Market Share Financeiro</p>
+                </div>
+                <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
+                  <p className="text-slate-400 text-xs font-bold uppercase mb-1">Líder em Clientes</p>
+                  <h2 className="text-3xl md:text-4xl font-black text-purple-600 italic tracking-tighter uppercase">Nubank</h2>
+                  <p className="mt-2 text-xs text-slate-500 font-medium">109M Clientes Ativos</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 flex-1">
+                <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-200 flex flex-col">
+                  <h3 className="font-bold text-slate-800 mb-4 md:mb-6 flex items-center gap-2">
+                    <div className="w-1 h-4 bg-blue-600 rounded-full"></div>
+                    Participação por TPV (%)
+                  </h3>
+                  <div className="space-y-4 md:space-y-5 flex-1 justify-center flex flex-col">
+                    {data.map((item) => (
+                      <div key={item.name} className="group">
+                        <div className="flex justify-between items-end mb-1">
+                          <span className="text-sm font-bold text-slate-700">{item.name}</span>
+                          <span className="text-lg font-black text-slate-900 tracking-tighter">{item.tpv}%</span>
+                        </div>
+                        <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden">
+                          <div 
+                            className={`${item.color} h-full rounded-full transition-all duration-1000 ease-out`} 
+                            style={{ width: `${item.tpv * 4}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-200 flex flex-col">
+                  <h3 className="font-bold text-slate-800 mb-4 md:mb-6 flex items-center gap-2">
+                    <div className="w-1 h-4 bg-purple-600 rounded-full"></div>
+                    Satisfação do Cliente (NPS)
+                  </h3>
+                  <div className="grid grid-cols-1 gap-2 md:gap-3">
+                    {[...data].sort((a, b) => b.nps - a.nps).slice(0, 4).map((item) => (
+                      <div key={item.name} className="flex items-center justify-between p-3 md:p-4 bg-slate-50 rounded-xl border border-slate-100">
+                        <div className="flex items-center gap-3 md:gap-4">
+                          <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center text-white font-black text-xs md:text-sm ${item.color}`}>
+                            {item.nps}
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-800 text-xs md:text-sm">{item.name}</p>
+                            <p className="text-[9px] md:text-[10px] text-slate-400 font-bold uppercase">{item.focus}</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="text-slate-300" size={16} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Airlines Slide */}
+          {activeTab === 'airlines' && (
+            <div className="h-full flex flex-col animate-in slide-in-from-right-8 duration-500 text-left">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-3xl font-black text-slate-800 italic tracking-tighter uppercase">Mercado Cobranded Aéreo</h2>
+                  <p className="text-slate-500 font-medium">Ouro do mercado: Alta Principalidade e Ticket Médio Elevado.</p>
+                </div>
+                <Plane size={48} className="text-blue-100 no-print" />
+              </div>
+              
+              <div className="grid grid-cols-3 gap-6 flex-1 items-center">
+                {airlineData.map((item) => (
+                  <div key={item.program} className={`h-full border-t-8 ${item.color} ${item.bg} p-8 rounded-b-2xl shadow-sm flex flex-col justify-between`}>
+                    <div>
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${item.text}`}>{item.bank}</span>
+                      <h3 className="text-2xl font-black text-slate-900 mt-1 mb-2 leading-tight">{item.program}</h3>
+                      <div className="flex items-center gap-2 mb-6">
+                        <Crown size={14} className={item.text} />
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter">{item.tier}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white/60 p-4 rounded-xl border border-white/80">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase mb-1 tracking-widest">Pontuação Máxima</p>
+                      <div className="flex items-baseline gap-1">
+                        <span className={`text-4xl font-black tracking-tighter ${item.text}`}>{item.score}</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase">pts/$</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 space-y-2">
+                      {['Upgrade de Cabine', 'Salas VIP', 'Bagagem Grátis'].map(feat => (
+                        <div key={feat} className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                          <CheckCircle2 size={12} className={item.text} /> {feat}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Comparison Slide */}
+          {activeTab === 'comparison' && (
+            <div className="h-full flex flex-col animate-in fade-in duration-500 text-left">
+              <h2 className="text-3xl font-black text-slate-800 italic tracking-tighter uppercase mb-8">Matriz de Competitividade</h2>
+              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden flex-1 shadow-sm">
+                <table className="w-full h-full text-left">
+                  <thead className="bg-slate-50 border-b border-slate-100">
+                    <tr>
+                      <th className="p-6 text-xs font-black uppercase tracking-widest text-slate-400">Player</th>
+                      <th className="p-6 text-xs font-black uppercase tracking-widest text-slate-400">Estratégia de Retenção</th>
+                      <th className="p-6 text-xs font-black uppercase tracking-widest text-slate-400">Vantagem Killer</th>
+                      <th className="p-6 text-xs font-black uppercase tracking-widest text-slate-400">Fidelidade</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {[
+                      { name: 'Itaú', strat: 'Crédito & Alta Renda', advantage: 'Oligopólio Aéreo (Azul/LATAM)', loyalty: 'IUPP / VIP', color: 'text-orange-600' },
+                      { name: 'Nubank', strat: 'Engajamento & UX', advantage: 'Menor Custo de Aquisição', loyalty: 'NuCoins', color: 'text-purple-600' },
+                      { name: 'Bradesco', strat: 'Capilaridade Física', advantage: 'Ecossistema Livelo', loyalty: 'Livelo / Smiles', color: 'text-red-600' },
+                      { name: 'Inter', strat: 'Cross-selling (Super App)', advantage: 'Cashback em Marketplace', loyalty: 'Inter Shop', color: 'text-orange-500' }
+                    ].map((row) => (
+                      <tr key={row.name} className="hover:bg-slate-50 transition-colors">
+                        <td className={`p-6 font-black text-xl italic ${row.color}`}>{row.name}</td>
+                        <td className="p-6 text-sm font-bold text-slate-700">{row.strat}</td>
+                        <td className="p-6 text-sm font-medium text-slate-500">{row.advantage}</td>
+                        <td className="p-6">
+                          <span className="bg-slate-900 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
+                            {row.loyalty}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Strategic Slide */}
+          {activeTab === 'strategic' && (
+            <div className="h-full flex flex-col animate-in slide-in-from-bottom-12 duration-700 text-left">
+              <h2 className="text-3xl font-black text-slate-800 italic tracking-tighter uppercase mb-8">Outlook Estratégico 2025</h2>
+              
+              <div className="grid grid-cols-4 gap-6 mb-8">
+                {swot.map((card) => (
+                  <div key={card.type} className={`${card.color} p-6 rounded-2xl border-2 border-white shadow-xl shadow-slate-200/50`}>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-2 bg-white rounded-lg shadow-sm">{card.icon}</div>
+                      <h4 className="font-black text-slate-800 uppercase tracking-tight italic">{card.type}</h4>
+                    </div>
+                    <ul className="space-y-3">
+                      {card.items.map((item, idx) => (
+                        <li key={idx} className="text-[11px] font-bold flex items-start gap-2 text-slate-600 leading-tight">
+                          <ArrowRight size={12} className="shrink-0 mt-0.5 text-slate-400" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex-1 bg-slate-900 rounded-3xl p-8 flex items-center justify-between relative overflow-hidden group">
+                <div className="z-10 max-w-2xl">
+                  <span className="text-blue-400 text-[10px] font-black uppercase tracking-widest mb-2 block">Tendência Global</span>
+                  <h3 className="text-3xl font-black text-white italic leading-none mb-4">A Morte do Plástico: Biometria e Pix Parcelado</h3>
+                  <p className="text-slate-400 text-sm font-medium leading-relaxed">
+                    Até 2026, 40% das transações de crédito via NFC serão substituídas por reconhecimento facial e integração direta com Pix Garantido, forçando emissores a reinventar a experiência de cashback.
+                  </p>
+                </div>
+                <div className="z-10 text-right no-print">
+                  <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                    <Zap className="text-white" size={40} />
+                  </div>
+                  <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Análise de Risco v.4.2</p>
+                </div>
+                <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-blue-600/20 to-transparent no-print"></div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Slide Footer */}
+        <footer className="px-8 py-4 bg-white border-t border-slate-100 flex items-center justify-between shrink-0 no-print">
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Confidencial / Uso Interno</span>
+            <div className="h-3 w-px bg-slate-200"></div>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Q1 2025</span>
+          </div>
+          <div className="flex gap-1">
+            {['market', 'airlines', 'comparison', 'strategic'].map((dot, idx) => (
+              <div key={idx} className={`w-8 h-1 rounded-full ${activeTab === dot ? 'bg-blue-600' : 'bg-slate-200'}`}></div>
+            ))}
+          </div>
+        </footer>
+      </div>
+    </div>
+  );
+};
+
+export default App;
