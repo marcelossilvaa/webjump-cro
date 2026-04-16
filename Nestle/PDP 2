@@ -1,0 +1,796 @@
+(function () {
+	'use strict';
+
+	let initAttempts = 0;
+	let initTimer = null;
+	let applyDebounceTimer = null;
+	let isProcessing = false;
+	let selectedPurchaseMode = 'single';
+	let selectedType = 'comfor';
+	let selectedPackage = '800g';
+	let selectedCombo = 'Leve 2';
+
+	const STYLE_ID = 'wj-nestle-pdp-fold1-style';
+	const ROOT_ID = 'wj-nestle-pdp-fold1-root';
+	const MAX_INIT_ATTEMPTS = 30;
+	const INIT_INTERVAL_MS = 700;
+	const APPLY_DEBOUNCE_MS = 180;
+	const PRODUCT_URL_SEARCH_QUERY = 'query PdpFold1BySearch($search: String!) { products(search: $search, pageSize: 24) { items { name meta_title url_key url_suffix } } }';
+
+	const TYPE_OPTIONS = [
+		{
+			key: 'comfor',
+			label: 'Nanlac Comfor',
+			matchTerm: 'comfor',
+			fallbackUrl: '/formula-infantil-de-primeira-infancia-nanlac-comfor-800g'
+		},
+		{
+			key: 'supremepro',
+			label: 'Nanlac Supreme Pro',
+			matchTerm: 'supreme',
+			fallbackUrl: '/formula-infantil-de-primeira-infancia-nanlac-supreme-pro-800g'
+		}
+	];
+
+	const PACKAGE_OPTIONS = ['800g', '400g'];
+	const COMBO_OPTIONS = ['Leve 2', 'Leve 3'];
+
+	function normalizeText(value) {
+		return String(value || '')
+			.toLowerCase()
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '');
+	}
+
+	function analyticsEvent(eventLabel, eventType) {
+		if (!eventLabel) {
+			return;
+		}
+
+		const labelEvent = 'AT_Nestle_PDP_Fold1_' + eventType + ' ' + eventLabel;
+		console.log('[Tracking PDP Fold1] Evento disparado:', labelEvent);
+
+		(function () {
+			const s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+			if (!s || typeof s.tl !== 'function') {
+				return;
+			}
+
+			s.linkTrackVars = 'events,eVar82,eVar84';
+			s.linkTrackEvents = 'event90';
+			s.events = 'event90';
+			s.eVar82 = labelEvent;
+			s.eVar84 = 'AT_nestle_pdp_fold1';
+			s.tl(true, 'o', 'target_activity_action');
+		})();
+	}
+
+	function pushDataLayerEvent(eventName, detail) {
+		const payload = {
+			event: eventName,
+			detail: detail || {},
+			experience_id: 'nestle-pdp-fold1',
+			timestamp: Date.now()
+		};
+
+		if (window.adobeDataLayer && typeof window.adobeDataLayer.push === 'function') {
+			window.adobeDataLayer.push(payload);
+		}
+
+		if (window.dataLayer && typeof window.dataLayer.push === 'function') {
+			window.dataLayer.push(payload);
+		}
+	}
+
+	function getTitle() {
+		const titleElement =
+			document.querySelector('.product-info-main .page-title-wrapper .base') ||
+			document.querySelector('h1.page-title .base') ||
+			document.querySelector('h1');
+
+		if (!titleElement) {
+			return 'Fórmula Infantil de primeira infância Nanlac Comfor 800g';
+		}
+
+		const text = (titleElement.textContent || '').trim();
+		return text || 'Fórmula Infantil de primeira infância Nanlac Comfor 800g';
+	}
+
+	function getReviewText() {
+		const selectors = [
+			'.reviews-actions .action.view',
+			'.product-reviews-summary .reviews-actions a',
+			'.product-reviews-summary .reviews-actions span'
+		];
+
+		let i = 0;
+		while (i < selectors.length) {
+			const element = document.querySelector(selectors[i]);
+			if (element) {
+				const text = (element.textContent || '').trim();
+				if (text) {
+					return text;
+				}
+			}
+			i = i + 1;
+		}
+
+		return '2 avaliações';
+	}
+
+	function getPriceText() {
+		const element =
+			document.querySelector('.product-info-main .price-box .price') ||
+			document.querySelector('.price-box .price-final_price .price') ||
+			document.querySelector('.price');
+
+		if (!element) {
+			return 'R$ 69,49';
+		}
+
+		const text = (element.textContent || '').trim();
+		return text || 'R$ 69,49';
+	}
+
+	function getOldPriceText() {
+		const element =
+			document.querySelector('.price-box .old-price .price') ||
+			document.querySelector('.price-box .price-container .price-label + .price-wrapper .price');
+
+		if (!element) {
+			return 'R$ 72,49';
+		}
+
+		const text = (element.textContent || '').trim();
+		return text || 'R$ 72,49';
+	}
+
+	function parseSelectionsFromContext(title) {
+		const text = normalizeText(title + ' ' + (window.location.pathname || ''));
+
+		if (text.indexOf('400g') !== -1 || text.indexOf('400 g') !== -1) {
+			selectedPackage = '400g';
+		} else {
+			selectedPackage = '800g';
+		}
+
+		if (text.indexOf('supreme') !== -1) {
+			selectedType = 'supremepro';
+		} else {
+			selectedType = 'comfor';
+		}
+
+		if (text.indexOf('leve 3') !== -1 || text.indexOf('kit 3') !== -1 || text.indexOf('3un') !== -1) {
+			selectedCombo = 'Leve 3';
+		} else {
+			selectedCombo = 'Leve 2';
+		}
+	}
+
+	function getTargetContainer() {
+		const selectors = [
+			'.product-info-main',
+			'.column.main',
+			'main'
+		];
+
+		let i = 0;
+		while (i < selectors.length) {
+			const element = document.querySelector(selectors[i]);
+			if (element) {
+				return element;
+			}
+			i = i + 1;
+		}
+
+		return null;
+	}
+
+	function hideNativeTopElements() {
+		const selectors = [
+			'.product-info-main .page-title-wrapper',
+			'.product-info-main .product-reviews-summary',
+			'.product-info-main .product-info-price',
+			'.product-info-main .product.attribute.overview',
+			'.product-info-main .product-add-form .product-options-wrapper',
+			'.product-info-main .product-add-form .fieldset',
+			'label.amrec-label.subscribe',
+			'.subscription-wrapper',
+			'.subscription-discount-block',
+			'.amrec-product-view.subscribe',
+			'.subscription-info',
+			'.freeshiping-conditions'
+		];
+
+		let i = 0;
+		while (i < selectors.length) {
+			const element = document.querySelector(selectors[i]);
+			if (element && !element.getAttribute('data-wj-fold1-hidden')) {
+				element.setAttribute('data-wj-fold1-hidden', 'true');
+				element.style.setProperty('display', 'none', 'important');
+			}
+			i = i + 1;
+		}
+	}
+
+	function injectStyles() {
+		if (document.getElementById(STYLE_ID)) {
+			return;
+		}
+
+		const css = [
+			'#' + ROOT_ID + ' { width: 100%; max-width: 610px; display: flex; flex-direction: column; gap: 12px; margin-top: 12px; color: #173C56; }',
+			'#' + ROOT_ID + ' * { box-sizing: border-box; }',
+			'#' + ROOT_ID + ' .wj-fold1-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }',
+			'#' + ROOT_ID + ' .wj-fold1-badge { display: inline-flex; align-items: center; justify-content: center; border-radius: 100px; padding: 2px 8px; height: 20px; font-family: Lato, sans-serif; font-weight: 700; font-size: 13px; line-height: 16px; color: #173C56; }',
+			'#' + ROOT_ID + ' .wj-fold1-badge.age { background: #DDE9C8; }',
+			'#' + ROOT_ID + ' .wj-fold1-badge.size { background: #B0D2F3; }',
+			'#' + ROOT_ID + ' .wj-fold1-head { display: flex; flex-direction: column; gap: 16px; }',
+			'#' + ROOT_ID + ' .wj-fold1-title { margin: 0px; font-family: Fraunces, serif; font-weight: 700; font-size: 39px; line-height: 48px; color: #173C56; }',
+			'#' + ROOT_ID + ' .wj-fold1-meta { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }',
+			'#' + ROOT_ID + ' .wj-fold1-rating { display: inline-flex; align-items: center; gap: 8px; font-family: Lato, sans-serif; font-weight: 400; font-size: 13px; line-height: 16px; color: #173C56; }',
+			'#' + ROOT_ID + ' .wj-fold1-stars { color: #FBC117; letter-spacing: 1px; font-size: 16px; line-height: 16px; }',
+			'#' + ROOT_ID + ' .wj-fold1-wishlist { font-family: Lato, sans-serif; font-weight: 700; font-size: 13px; line-height: 16px; color: #173C56; text-decoration: none; }',
+			'#' + ROOT_ID + ' .wj-fold1-groups { display: flex; flex-direction: column; gap: 24px; }',
+			'#' + ROOT_ID + ' .wj-fold1-groups-row { display: flex; gap: 24px; flex-wrap: wrap; }',
+			'#' + ROOT_ID + ' .wj-fold1-group { display: flex; flex-direction: column; gap: 8px; min-width: 140px; }',
+			'#' + ROOT_ID + ' .wj-fold1-label { font-family: Lato, sans-serif; font-weight: 400; font-size: 16px; line-height: 22px; color: #173C56; }',
+			'#' + ROOT_ID + ' .wj-fold1-chip-list { display: flex; gap: 8px; flex-wrap: wrap; }',
+			'#' + ROOT_ID + ' .wj-fold1-chip { border: 1px solid #D1D5DB; border-radius: 9999px; height: 43px; padding: 8px 16px; display: inline-flex; align-items: center; justify-content: center; font-family: Lato, sans-serif; font-weight: 700; font-size: 16px; line-height: 24px; color: #173C56; background: #FFFFFF; cursor: pointer; transition: all 0.2s ease; }',
+			'#' + ROOT_ID + ' .wj-fold1-chip:hover { border-color: #99A1AF; }',
+			'#' + ROOT_ID + ' .wj-fold1-chip.active { background: #004E99; border-color: #004E99; color: #FFFFFF; }',
+			'#' + ROOT_ID + ' .wj-fold1-offers { display: flex; flex-direction: column; gap: 12px; }',
+			'#' + ROOT_ID + ' .wj-fold1-offer { box-sizing: border-box; border: 1px solid #D1D5DB; border-radius: 12px; background: #FFFFFF; padding: 24px; cursor: pointer; display: flex; flex-direction: column; gap: 12px; }',
+			'#' + ROOT_ID + ' .wj-fold1-offer.active { border-color: #173C56; background: #E6F1FB; }',
+			'#' + ROOT_ID + ' .wj-fold1-offer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }',
+			'#' + ROOT_ID + ' .wj-fold1-offer-name { font-family: Lato, sans-serif; font-weight: 700; font-size: 18px; line-height: 22px; color: #173C56; }',
+			'#' + ROOT_ID + ' .wj-fold1-price-wrap { display: inline-flex; align-items: center; gap: 8px; }',
+			'#' + ROOT_ID + ' .wj-fold1-price-old { font-family: Lato, sans-serif; font-weight: 700; font-size: 14px; line-height: 17px; text-decoration: line-through; color: #173C56; }',
+			'#' + ROOT_ID + ' .wj-fold1-price-current { font-family: Lato, sans-serif; font-weight: 700; font-size: 24px; line-height: 29px; color: #173C56; }',
+			'#' + ROOT_ID + ' .wj-fold1-benefits { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }',
+			'#' + ROOT_ID + ' .wj-fold1-benefit { box-sizing: border-box; background: #F9FAFB; border: 0.8px solid #F3F4F6; border-radius: 10px; padding: 8px 12px; min-height: 38px; display: inline-flex; align-items: center; font-family: Lato, sans-serif; font-weight: 500; font-size: 16px; line-height: 20px; color: #364153; }',
+			'#' + ROOT_ID + ' .wj-fold1-note { margin: 0px; font-family: Lato, sans-serif; font-weight: 500; font-size: 10px; line-height: 16px; color: #99A1AF; }',
+			'#' + ROOT_ID + ' .wj-fold1-subscription-link { text-align: right; text-decoration: none; font-family: Lato, sans-serif; font-weight: 700; font-size: 14px; line-height: 17px; color: #004E99; }',
+			'#' + ROOT_ID + ' .wj-fold1-footer { display: flex; align-items: center; gap: 12px; }',
+			'#' + ROOT_ID + ' .wj-fold1-qty { width: 245px; display: flex; align-items: center; gap: 15px; }',
+			'#' + ROOT_ID + ' .wj-fold1-qty-btn { width: 24px; height: 24px; border: 0px; border-radius: 999px; background: #E9EBF8; color: #173C56; font-size: 18px; line-height: 18px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }',
+			'#' + ROOT_ID + ' .wj-fold1-qty-display { height: 48px; flex: 1; border: 1px solid #173C56; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-family: Lato, sans-serif; font-weight: 400; font-size: 16px; line-height: 20px; color: #173C56; }',
+			'#' + ROOT_ID + ' .wj-fold1-cta { flex: 1; height: 48px; border: 0px; border-radius: 100px; background: #173C56; color: #FFFFFF; font-family: Lato, sans-serif; font-weight: 700; font-size: 18px; line-height: 20px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }',
+			'#' + ROOT_ID + ' .wj-fold1-loading { opacity: 0.65; pointer-events: none; }',
+			'@media screen and (max-width: 1024px) { #' + ROOT_ID + ' { max-width: 100%; } #' + ROOT_ID + ' .wj-fold1-title { font-size: 32px; line-height: 40px; } }',
+			'@media screen and (max-width: 640px) { #' + ROOT_ID + ' .wj-fold1-title { font-size: 28px; line-height: 34px; } #' + ROOT_ID + ' .wj-fold1-offer-head { flex-direction: column; align-items: flex-start; } #' + ROOT_ID + ' .wj-fold1-benefits { grid-template-columns: 1fr; } #' + ROOT_ID + ' .wj-fold1-footer { flex-direction: column; align-items: stretch; } #' + ROOT_ID + ' .wj-fold1-qty { width: 100%; } }'
+		].join('\n');
+
+		const styleElement = document.createElement('style');
+		styleElement.id = STYLE_ID;
+		styleElement.type = 'text/css';
+		styleElement.appendChild(document.createTextNode(css));
+		document.head.appendChild(styleElement);
+	}
+
+	function buildRootHtml(title, reviewText, priceText, oldPriceText) {
+		return (
+			'<div class="wj-fold1-badges">' +
+			'<span class="wj-fold1-badge age">1 a 3 anos</span>' +
+			'<span class="wj-fold1-badge size">' +
+			selectedPackage +
+			'</span>' +
+			'</div>' +
+			'<div class="wj-fold1-head">' +
+			'<h1 class="wj-fold1-title">' +
+			title +
+			'</h1>' +
+			'<div class="wj-fold1-meta">' +
+			'<div class="wj-fold1-rating"><span class="wj-fold1-stars" aria-hidden="true">★★★★☆</span><span>' +
+			reviewText +
+			'</span></div>' +
+			'<a href="#" class="wj-fold1-wishlist" data-wj-action="wishlist">Adicionar à lista de desejos</a>' +
+			'</div>' +
+			'</div>' +
+			'<div class="wj-fold1-groups">' +
+			'<div class="wj-fold1-groups-row">' +
+			'<div class="wj-fold1-group">' +
+			'<span class="wj-fold1-label">Escolha o tipo:</span>' +
+			'<div class="wj-fold1-chip-list" data-wj-chip-group="type"></div>' +
+			'</div>' +
+			'<div class="wj-fold1-group">' +
+			'<span class="wj-fold1-label">Embalagem:</span>' +
+			'<div class="wj-fold1-chip-list" data-wj-chip-group="package"></div>' +
+			'</div>' +
+			'<div class="wj-fold1-group">' +
+			'<span class="wj-fold1-label">Combos:</span>' +
+			'<div class="wj-fold1-chip-list" data-wj-chip-group="combo"></div>' +
+			'</div>' +
+			'</div>' +
+			'<div class="wj-fold1-offers">' +
+			'<article class="wj-fold1-offer active" data-wj-offer="single">' +
+			'<div class="wj-fold1-offer-head">' +
+			'<strong class="wj-fold1-offer-name">Compra Única</strong>' +
+			'<div class="wj-fold1-price-wrap">' +
+			'<span class="wj-fold1-price-old">De ' +
+			oldPriceText +
+			'</span>' +
+			'<span class="wj-fold1-price-current">' +
+			priceText +
+			'</span>' +
+			'</div>' +
+			'</div>' +
+			'</article>' +
+			'<article class="wj-fold1-offer" data-wj-offer="subscribe">' +
+			'<div class="wj-fold1-offer-head">' +
+			'<strong class="wj-fold1-offer-name">Assine & Economize</strong>' +
+			'<div class="wj-fold1-price-wrap"><span class="wj-fold1-price-current">R$ 66,01</span></div>' +
+			'</div>' +
+			'<div class="wj-fold1-benefits">' +
+			'<span class="wj-fold1-benefit">Até 10% OFF</span>' +
+			'<span class="wj-fold1-benefit">Frete Grátis</span>' +
+			'<span class="wj-fold1-benefit">Frequência Mensal</span>' +
+			'<span class="wj-fold1-benefit">Cancele quando quiser</span>' +
+			'</div>' +
+			'<p class="wj-fold1-note">Economize até 10% na entrega recorrente. Frete grátis sujeito às regras do programa.</p>' +
+			'</article>' +
+			'<a href="#" class="wj-fold1-subscription-link" data-wj-action="subscription-info">Como funciona a assinatura?</a>' +
+			'</div>' +
+			'<div class="wj-fold1-footer">' +
+			'<div class="wj-fold1-qty">' +
+			'<button type="button" class="wj-fold1-qty-btn" data-wj-qty="minus">-</button>' +
+			'<div class="wj-fold1-qty-display" data-wj-qty-value="true">1 unidade</div>' +
+			'<button type="button" class="wj-fold1-qty-btn" data-wj-qty="plus">+</button>' +
+			'</div>' +
+			'<button type="button" class="wj-fold1-cta" data-wj-action="add-to-cart" data-wj-mode="single">Adicionar ao carrinho</button>' +
+			'</div>' +
+			'</div>'
+		);
+	}
+
+	function renderChips(container, values, selectedValue, groupName) {
+		const html = values
+			.map(function (value) {
+				const activeClass = value === selectedValue ? ' active' : '';
+				return (
+					'<button type="button" class="wj-fold1-chip' +
+					activeClass +
+					'" data-wj-chip="' +
+					groupName +
+					'" data-wj-value="' +
+					value +
+					'">' +
+					value +
+					'</button>'
+				);
+			})
+			.join('');
+
+		container.innerHTML = html;
+	}
+
+	function renderTypeChips(container) {
+		const html = TYPE_OPTIONS
+			.map(function (option) {
+				const activeClass = option.key === selectedType ? ' active' : '';
+				return (
+					'<button type="button" class="wj-fold1-chip' +
+					activeClass +
+					'" data-wj-chip="type" data-wj-key="' +
+					option.key +
+					'">' +
+					option.label +
+					'</button>'
+				);
+			})
+			.join('');
+
+		container.innerHTML = html;
+	}
+
+	function applyOfferMode(root, mode) {
+		const offers = root.querySelectorAll('[data-wj-offer]');
+		let i = 0;
+		while (i < offers.length) {
+			const offer = offers[i];
+			if (offer.getAttribute('data-wj-offer') === mode) {
+				offer.classList.add('active');
+			} else {
+				offer.classList.remove('active');
+			}
+			i = i + 1;
+		}
+
+		selectedPurchaseMode = mode;
+		const cta = root.querySelector('[data-wj-action="add-to-cart"]');
+		if (cta) {
+			cta.setAttribute('data-wj-mode', mode);
+		}
+	}
+
+	function scoreProductItem(item, typeKey, packageValue, comboValue) {
+		const itemName = normalizeText(item && item.name ? item.name : '');
+		const itemMeta = normalizeText(item && item.meta_title ? item.meta_title : '');
+		const text = itemName + ' ' + itemMeta;
+		let score = 0;
+
+		if (typeKey === 'comfor' && text.indexOf('comfor') !== -1) {
+			score = score + 40;
+		}
+
+		if (typeKey === 'supremepro' && text.indexOf('supreme') !== -1) {
+			score = score + 40;
+		}
+
+		if (packageValue && text.indexOf(normalizeText(packageValue)) !== -1) {
+			score = score + 35;
+		}
+
+		if (comboValue) {
+			const comboNormalized = normalizeText(comboValue);
+			if (comboNormalized === 'leve 2' && (text.indexOf('leve 2') !== -1 || text.indexOf('kit 2') !== -1)) {
+				score = score + 30;
+			}
+
+			if (comboNormalized === 'leve 3' && (text.indexOf('leve 3') !== -1 || text.indexOf('kit 3') !== -1)) {
+				score = score + 30;
+			}
+		}
+
+		return score;
+	}
+
+	function resolveProductUrl($, typeKey, packageValue, comboValue, onDone) {
+		const option = TYPE_OPTIONS.find(function (item) {
+			return item.key === typeKey;
+		});
+
+		if (!option) {
+			onDone('');
+			return;
+		}
+
+		const searchText = option.label + ' ' + packageValue + ' ' + comboValue;
+
+		$.ajax({
+			url: '/graphql',
+			method: 'POST',
+			contentType: 'application/json',
+			dataType: 'json',
+			data: JSON.stringify({
+				query: PRODUCT_URL_SEARCH_QUERY,
+				variables: { search: searchText }
+			})
+		})
+			.done(function (response) {
+				const items = response && response.data && response.data.products && response.data.products.items ? response.data.products.items : [];
+				let best = null;
+				let bestScore = -1;
+				let i = 0;
+
+				while (i < items.length) {
+					const score = scoreProductItem(items[i], typeKey, packageValue, comboValue);
+					if (score > bestScore) {
+						bestScore = score;
+						best = items[i];
+					}
+					i = i + 1;
+				}
+
+				if (best && best.url_key) {
+					onDone('/' + best.url_key + (best.url_suffix || ''));
+					return;
+				}
+
+				onDone(option.fallbackUrl);
+			})
+			.fail(function () {
+				onDone(option.fallbackUrl);
+			});
+	}
+
+	function addInteractionListeners(root, $) {
+		const wishlist = root.querySelector('[data-wj-action="wishlist"]');
+		if (wishlist && !wishlist.getAttribute('data-wj-listener-added')) {
+			wishlist.setAttribute('data-wj-listener-added', 'true');
+			wishlist.addEventListener('click', function (event) {
+				event.preventDefault();
+				analyticsEvent('wishlist', 'clique');
+				pushDataLayerEvent('nestle_pdp_fold1_wishlist_click', {});
+			});
+		}
+
+		const subscriptionInfo = root.querySelector('[data-wj-action="subscription-info"]');
+		if (subscriptionInfo && !subscriptionInfo.getAttribute('data-wj-listener-added')) {
+			subscriptionInfo.setAttribute('data-wj-listener-added', 'true');
+			subscriptionInfo.addEventListener('click', function (event) {
+				event.preventDefault();
+				analyticsEvent('assinatura_como_funciona', 'clique');
+				pushDataLayerEvent('nestle_pdp_fold1_subscription_info_click', {});
+			});
+		}
+
+		const offerCards = root.querySelectorAll('[data-wj-offer]');
+		let i = 0;
+		while (i < offerCards.length) {
+			const offer = offerCards[i];
+			if (!offer.getAttribute('data-wj-listener-added')) {
+				offer.setAttribute('data-wj-listener-added', 'true');
+				offer.addEventListener('click', function () {
+					const mode = offer.getAttribute('data-wj-offer') || 'single';
+					applyOfferMode(root, mode);
+					analyticsEvent('modo_' + mode, 'clique');
+					pushDataLayerEvent('nestle_pdp_fold1_mode_change', { mode: mode });
+				});
+			}
+			i = i + 1;
+		}
+
+		const typeContainer = root.querySelector('[data-wj-chip-group="type"]');
+		if (typeContainer) {
+			renderTypeChips(typeContainer);
+		}
+
+		const packageContainer = root.querySelector('[data-wj-chip-group="package"]');
+		if (packageContainer) {
+			renderChips(packageContainer, PACKAGE_OPTIONS, selectedPackage, 'package');
+		}
+
+		const comboContainer = root.querySelector('[data-wj-chip-group="combo"]');
+		if (comboContainer) {
+			renderChips(comboContainer, COMBO_OPTIONS, selectedCombo, 'combo');
+		}
+
+		const chips = root.querySelectorAll('.wj-fold1-chip');
+		i = 0;
+		while (i < chips.length) {
+			const chip = chips[i];
+			if (!chip.getAttribute('data-wj-listener-added')) {
+				chip.setAttribute('data-wj-listener-added', 'true');
+				chip.addEventListener('click', function () {
+					const group = chip.getAttribute('data-wj-chip') || '';
+
+					if (group === 'type') {
+						const key = chip.getAttribute('data-wj-key') || '';
+						if (key && key !== selectedType) {
+							selectedType = key;
+							analyticsEvent('tipo_' + key, 'clique');
+							pushDataLayerEvent('nestle_pdp_fold1_type_click', { type: key });
+						}
+					}
+
+					if (group === 'package') {
+						const value = chip.getAttribute('data-wj-value') || '';
+						if (value) {
+							selectedPackage = value;
+							analyticsEvent('embalagem_' + normalizeText(value), 'clique');
+							pushDataLayerEvent('nestle_pdp_fold1_package_click', { package: value });
+						}
+					}
+
+					if (group === 'combo') {
+						const value = chip.getAttribute('data-wj-value') || '';
+						if (value) {
+							selectedCombo = value;
+							analyticsEvent('combo_' + normalizeText(value), 'clique');
+							pushDataLayerEvent('nestle_pdp_fold1_combo_click', { combo: value });
+						}
+					}
+
+					resolveProductUrl($, selectedType, selectedPackage, selectedCombo, function (resolvedUrl) {
+						if (!resolvedUrl) {
+							return;
+						}
+
+						const currentPath = normalizeText(window.location.pathname || '');
+						if (normalizeText(resolvedUrl) === currentPath) {
+							return;
+						}
+
+						window.location.href = resolvedUrl;
+					});
+				});
+			}
+			i = i + 1;
+		}
+
+		const qtyValueElement = root.querySelector('[data-wj-qty-value="true"]');
+		const minusButton = root.querySelector('[data-wj-qty="minus"]');
+		const plusButton = root.querySelector('[data-wj-qty="plus"]');
+		let qty = 1;
+
+		const renderQty = function () {
+			if (!qtyValueElement) {
+				return;
+			}
+
+			if (qty <= 1) {
+				qtyValueElement.textContent = '1 unidade';
+			} else {
+				qtyValueElement.textContent = qty + ' unidades';
+			}
+		};
+
+		renderQty();
+
+		if (minusButton && !minusButton.getAttribute('data-wj-listener-added')) {
+			minusButton.setAttribute('data-wj-listener-added', 'true');
+			minusButton.addEventListener('click', function () {
+				qty = Math.max(1, qty - 1);
+				renderQty();
+			});
+		}
+
+		if (plusButton && !plusButton.getAttribute('data-wj-listener-added')) {
+			plusButton.setAttribute('data-wj-listener-added', 'true');
+			plusButton.addEventListener('click', function () {
+				qty = qty + 1;
+				renderQty();
+			});
+		}
+
+		const cta = root.querySelector('[data-wj-action="add-to-cart"]');
+		if (cta && !cta.getAttribute('data-wj-listener-added')) {
+			cta.setAttribute('data-wj-listener-added', 'true');
+			cta.addEventListener('click', function () {
+				const currentMode = cta.getAttribute('data-wj-mode') || selectedPurchaseMode;
+				const originalButton = document.querySelector('#product-addtocart-button');
+				const qtyInput = document.querySelector('input[name="qty"]');
+
+				analyticsEvent('add_to_cart_' + currentMode, 'clique');
+				pushDataLayerEvent('nestle_pdp_fold1_add_to_cart_click', {
+					mode: currentMode,
+					type: selectedType,
+					package: selectedPackage,
+					combo: selectedCombo,
+					quantity: qty
+				});
+
+				if (qtyInput) {
+					qtyInput.value = String(qty);
+					qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
+				}
+
+				if (originalButton) {
+					originalButton.click();
+				}
+			});
+		}
+	}
+
+	function applyFold1($) {
+		if (isProcessing) {
+			return;
+		}
+
+		isProcessing = true;
+
+		try {
+			const target = getTargetContainer();
+			if (!target) {
+				return;
+			}
+
+			const title = getTitle();
+			const reviewText = getReviewText();
+			const priceText = getPriceText();
+			const oldPriceText = getOldPriceText();
+
+			parseSelectionsFromContext(title);
+			injectStyles();
+
+			let root = document.getElementById(ROOT_ID);
+			if (!root) {
+				root = document.createElement('section');
+				root.id = ROOT_ID;
+				root.setAttribute('data-wj-fold1-initialized', 'true');
+
+				const anchor = target.querySelector('.product-add-form') || target.querySelector('.box-tocart') || target.firstChild;
+				if (anchor && anchor.parentNode) {
+					anchor.parentNode.insertBefore(root, anchor);
+				} else {
+					target.appendChild(root);
+				}
+			}
+
+			hideNativeTopElements();
+			root.innerHTML = buildRootHtml(title, reviewText, priceText, oldPriceText);
+			addInteractionListeners(root, $);
+
+			analyticsEvent('componente_primeira_dobra', 'visualizacao');
+			pushDataLayerEvent('nestle_pdp_fold1_view', {
+				title: title,
+				price: priceText
+			});
+		} finally {
+			isProcessing = false;
+		}
+	}
+
+	function scheduleApply($) {
+		if (applyDebounceTimer) {
+			clearTimeout(applyDebounceTimer);
+		}
+
+		applyDebounceTimer = setTimeout(function () {
+			applyFold1($);
+		}, APPLY_DEBOUNCE_MS);
+	}
+
+	function setupObserver($) {
+		if (window._wjNestlePdpFold1Observer) {
+			return;
+		}
+
+		const observer = new MutationObserver(function (mutations) {
+			if (isProcessing) {
+				return;
+			}
+
+			let shouldApply = false;
+			let i = 0;
+			while (i < mutations.length) {
+				const mutation = mutations[i];
+				if (mutation.type === 'childList' && mutation.addedNodes && mutation.addedNodes.length) {
+					shouldApply = true;
+					break;
+				}
+				i = i + 1;
+			}
+
+			if (shouldApply) {
+				scheduleApply($);
+			}
+		});
+
+		observer.observe(document.body, {
+			childList: true,
+			subtree: true
+		});
+
+		window._wjNestlePdpFold1Observer = observer;
+	}
+
+	function attemptInit() {
+		require(['jquery', 'domReady!'], function ($) {
+			const target = getTargetContainer();
+			if (!target) {
+				initAttempts = initAttempts + 1;
+				if (initAttempts >= MAX_INIT_ATTEMPTS && initTimer) {
+					clearInterval(initTimer);
+					initTimer = null;
+				}
+				return;
+			}
+
+			applyFold1($);
+			setupObserver($);
+
+			if (initTimer) {
+				clearInterval(initTimer);
+				initTimer = null;
+			}
+		});
+	}
+
+	function init() {
+		attemptInit();
+
+		if (initTimer) {
+			clearInterval(initTimer);
+		}
+
+		initTimer = setInterval(function () {
+			if (initAttempts >= MAX_INIT_ATTEMPTS) {
+				clearInterval(initTimer);
+				initTimer = null;
+				return;
+			}
+
+			attemptInit();
+		}, INIT_INTERVAL_MS);
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', function () {
+			init();
+		});
+	} else {
+		init();
+	}
+})();
