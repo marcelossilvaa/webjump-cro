@@ -94,9 +94,9 @@
       ROOT_SELECTOR +
       '[data-at-prime-pdp-abc="B"] .primeDescontoProdutoContainer > a[href]:not(.at-prime-pill) { display: none !important; }' +
       ROOT_SELECTOR +
-      '[data-at-prime-pdp-abc="B"] .at-prime-pill { box-sizing: border-box !important; display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 12px !important; width: 100% !important; height: 76px !important; background: #FFFFFF !important; border: 1px solid #000000 !important; border-radius: 60px !important; padding: 0 18px !important; text-decoration: none !important; color: inherit !important; font-family: NespressoLucas, Helvetica, Arial, sans-serif !important; box-shadow: initial !important; }' +
+      '[data-at-prime-pdp-abc="B"] .at-prime-pill { box-sizing: border-box !important; display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 12px !important; width: 100% !important; height: 76px !important; background: #FFFFFF !important; border: 1px solid #86724E !important; border-radius: 60px !important; padding: 0 18px !important; text-decoration: none !important; color: inherit !important; font-family: NespressoLucas, Helvetica, Arial, sans-serif !important; box-shadow: initial !important; }' +
       ROOT_SELECTOR +
-      '[data-at-prime-pdp-abc="B"] .at-prime-cta { box-sizing: border-box !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 166px !important; height: 48px !important; background: #000000 !important; border: 1px solid #000000 !important; border-radius: 60px !important; flex: 0 0 auto !important; font-family: NespressoLucas, Helvetica, Arial, sans-serif !important; box-shadow: initial !important; }' +
+      '[data-at-prime-pdp-abc="B"] .at-prime-cta { box-sizing: border-box !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 166px !important; height: 48px !important; background: #000000 !important; border: 1px solid #86724E !important; border-radius: 60px !important; flex: 0 0 auto !important; font-family: NespressoLucas, Helvetica, Arial, sans-serif !important; box-shadow: initial !important; }' +
       ROOT_SELECTOR +
       '[data-at-prime-pdp-abc="B"] .at-prime-cta span { font-family: NespressoLucas, Helvetica, Arial, sans-serif !important; font-weight: 400 !important; font-size: 18px !important; line-height: 18px !important; color: #FFFFFF !important; }' +
       ROOT_SELECTOR +
@@ -123,9 +123,21 @@
       '[data-at-prime-pdp-abc="B"] .signUpPrime { display: none !important; }' +
       ROOT_SELECTOR +
       '[data-at-prime-pdp-abc="B"] .observacaoPrime { font-family: NespressoLucas, Helvetica, Arial, sans-serif !important; font-weight: 400 !important; font-size: 10px !important; line-height: 18px !important; color: #17171A !important; text-align: center !important; margin-top: -18px !important; box-shadow: initial !important; }' +
-      '@media (max-width: 380px) {' +
+      '@media (max-width: 420px) {' +
       ROOT_SELECTOR +
-      '[data-at-prime-pdp-abc="B"] .at-prime-cta { width: 150px; }' +
+      '[data-at-prime-pdp-abc="B"] .at-prime-pill { padding: 0 12px !important; }' +
+      ROOT_SELECTOR +
+      '[data-at-prime-pdp-abc="B"] .at-prime-pill-main { gap: 8px !important; }' +
+      ROOT_SELECTOR +
+      '[data-at-prime-pdp-abc="B"] .at-prime-cta { width: 42% !important; padding: 0 10px !important; }' +
+      ROOT_SELECTOR +
+      '[data-at-prime-pdp-abc="B"] .at-prime-cta span { font-size: 15px !important; }' +
+      ROOT_SELECTOR +
+      '[data-at-prime-pdp-abc="B"] .at-prime-price-amount { font-size: 20px !important; }' +
+      ROOT_SELECTOR +
+      '[data-at-prime-pdp-abc="B"] .at-prime-price-caption { font-size: 9px !important; }' +
+      ROOT_SELECTOR +
+      '[data-at-prime-pdp-abc="B"] .at-prime-flag { width: 34px !important; }' +
       '}';
 
     document.head.appendChild(style);
