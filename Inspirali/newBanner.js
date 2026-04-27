@@ -19,7 +19,7 @@
     style.id = STYLE_ID;
     style.textContent =
       '@media (min-width: 1280px){.cmp-banner-lead-form__title{width:515px !important}}' +
-      '.wj-banner-tags-row{display:flex;align-items:flex-start;gap:12px;}' +
+      '.wj-banner-tags-row{display:flex;align-items:center;gap:12px;}' +
       '.wj-banner-mec-badge{display:flex;align-items:center}' +
       '.wj-banner-mec-badge img{display:block;max-width:120px;height:auto}';
 

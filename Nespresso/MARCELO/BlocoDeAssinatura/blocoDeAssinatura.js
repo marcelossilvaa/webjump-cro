@@ -39,7 +39,7 @@
         align-items: stretch;
         background: #F5F0EB;
         border-radius: 16px;
-        padding: 48px 70px;
+        padding: 36px 70px;
         position: relative;
         overflow: hidden;
         gap: 80px;
@@ -78,7 +78,7 @@
         font-weight: 400;
         line-height: 1.5;
         color: #555;
-        margin: 0 0 28px 0;
+        margin: 0 0 18px 0;
         max-width: 380px;
       }
       .nespresso-assinatura-plp-cta {
@@ -127,8 +127,8 @@
       .nespresso-assinatura-plp-benefit {
         display: flex;
         align-items: center;
-        gap: 16px;
-        padding: 20px 24px;
+        gap: 8px;
+        padding: 16px 22px;
         background: rgba(255,255,255,0.85);
         backdrop-filter: blur(4px);
       }
@@ -169,7 +169,7 @@
         font-size: 14px;
         text-align: center;
         color: #636363;
-        margin-top: 12px;
+        margin-top: 8px;
       }
   
       /* Mobile */
@@ -180,7 +180,7 @@
         }
         .nespresso-assinatura-plp-block {
           flex-direction: column;
-          padding: 32px 24px 28px;
+          padding: 24px 20px 22px;
           gap: 24px;
         }
         .nespresso-assinatura-plp-block::after {
@@ -200,7 +200,7 @@
           max-width: 100%;
         }
         .nespresso-assinatura-plp-benefit {
-          padding: 16px 18px;
+          padding: 14px 16px;
         }
         .nespresso-assinatura-plp-cta-mobile { display: flex !important; margin-top: 0px; }
         .nespresso-assinatura-plp-cta-desktop { display: none !important; }
@@ -213,7 +213,7 @@
           width: 100%;
         }
         .nespresso-assinatura-plp-disclaimer {
-          margin-top: 16px;
+          margin-top: 12px;
         }
       }
 
@@ -224,7 +224,7 @@
           padding: 0 16px;
         }
         .nespresso-assinatura-plp-block {
-          padding: 40px 40px;
+          padding: 30px 32px;
           gap: 40px;
         }
         .nespresso-assinatura-plp-block::after {
@@ -237,13 +237,13 @@
         }
         .nespresso-assinatura-plp-left p {
           max-width: 360px;
-          margin-bottom: 22px;
+          margin-bottom: 16px;
         }
         .nespresso-assinatura-plp-right {
           max-width: 420px;
         }
         .nespresso-assinatura-plp-benefit {
-          padding: 18px 20px;
+          padding: 14px 18px;
         }
         .nespresso-assinatura-plp-cta {
           font-size: 18px;
@@ -256,7 +256,8 @@
       }
     `;
 
-  var HTML = `
+  var HTML =
+    `
       <div class="nespresso-assinatura-plp-section">
         <div class="nespresso-assinatura-plp-block">
           <div class="nespresso-assinatura-plp-left">
