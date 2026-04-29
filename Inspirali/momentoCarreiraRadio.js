@@ -4,9 +4,17 @@
   let isProcessing = false;
   let debounceTimer = null;
   let observer = null;
+  let scrollListenerAdded = false;
 
   const STYLE_ID = 'wj-inspirali-momento-carreira-radio-v1-style';
   const PROCESSED_ATTR = 'data-wj-inspirali-momento-carreira-radio-v1';
+  const FLOATING_CTA_ATTR = 'data-wj-inspirali-floating-cta-scroll-v1';
+  const FLOATING_CTA_SHOWN_CLASS = 'wj-floating-cta--shown';
+  const FLOATING_CTA_THRESHOLD_PX = 160;
+  const SUBMIT_COPY_ATTR = 'data-wj-inspirali-submit-copy-v1';
+  const SUBMIT_COPY_TEXT = 'Quero falar com um especialista';
+  const SUBMIT_HELPER_ATTR = 'data-wj-inspirali-submit-helper-v1';
+  const SUBMIT_HELPER_TEXT = 'Responderemos em até 1 dia útil - Seus dados estão seguros.';
 
   function injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
@@ -16,10 +24,31 @@
     style.textContent =
       '.wj-career-moment{margin-top:14px;}' +
       '.wj-career-moment__title{display:block;margin:0 0 10px 0;color:#fff;font-size:14px;line-height:1.2;}' +
-      '.wj-career-moment__options{display:flex;gap:22px;flex-wrap:wrap;}' +
+      '.wj-career-moment__options{display:flex;gap:10px;}' +
       '.wj-career-moment__option{display:inline-flex;align-items:center;gap:10px;color:#fff;font-size:14px;line-height:1.2;cursor:pointer;user-select:none;}' +
-      '.wj-career-moment__radio{width:14px;height:14px;accent-color:#d7d7d7;}' +
-      '.wj-career-moment__option-text{display:inline-block;}';
+      // Reset forte: o CSS global do form aplica width:100%/display:flex/padding em inputs.
+      '.wj-career-moment__option .wj-career-moment__radio{width:auto !important;height:auto !important;display:inline-block !important;padding:0 !important;gap:0 !important;align-self:auto !important;justify-content:initial !important;align-items:initial !important;accent-color:#d7d7d7;}' +
+      '.wj-career-moment__option-text{display:inline-block;}' +
+      // Mobile: ajustes finos de espaçamento.
+      '@media (max-width: 767px){' +
+      '.wj-career-moment__options{gap:4px !important;}' +
+      '.wj-career-moment__option{gap:6px !important;}' +
+      '.wj-career-moment__option .wj-career-moment__radio{margin:0 !important;}' +
+      '}' +
+      // Checkbox de termos: remove margin do texto para aproximar do layout.
+      '.banner-lead-form form.cmp-form fieldset.cmp-form-options--checkbox #user-agreement.cmp-text{margin:0 !important;}' +
+      '.banner-lead-form form.cmp-form fieldset.cmp-form-options--checkbox .cmp-text#user-agreement p{margin:0 !important;}' +
+      // Texto abaixo do botão.
+      '.wj-submit-helper{margin:-10px 0 !important;font-size:12px !important;line-height:1.3 !important;color:rgba(255,255,255,.8) !important;text-align:center !important;}' +
+      // Floating CTA: só aparece depois de scroll.
+      '.cmp-floating-cta[' +
+      FLOATING_CTA_ATTR +
+      '="1"]{opacity:0 !important;transform:translateY(10px) !important;pointer-events:none !important;will-change:opacity, transform !important;transition:opacity .55s cubic-bezier(.2,.8,.2,1), transform .55s cubic-bezier(.2,.8,.2,1) !important;}' +
+      '.cmp-floating-cta.' +
+      FLOATING_CTA_SHOWN_CLASS +
+      '[' +
+      FLOATING_CTA_ATTR +
+      '="1"]{opacity:1 !important;transform:translateY(0) !important;pointer-events:auto !important;}';
 
     document.head.appendChild(style);
   }
@@ -105,6 +134,9 @@
       const txt = document.createElement('span');
       txt.className = 'wj-career-moment__option-text';
       txt.textContent = optText;
+      if (optValue === 'sou-medico') {
+        txt.style.setProperty('min-width', '80px');
+      }
 
       radio.addEventListener('change', function () {
         if (!radio.checked) return;
@@ -131,6 +163,86 @@
     return true;
   }
 
+  function updateSubmitCopy() {
+    const btn = document.querySelector(
+      '.banner-lead-form form.cmp-form button.cmp-form-button[type="submit"], form.cmp-form button.cmp-form-button[type="submit"]',
+    );
+    if (!btn) return false;
+    if (btn.getAttribute(SUBMIT_COPY_ATTR) === '1') return false;
+
+    btn.textContent = SUBMIT_COPY_TEXT;
+    btn.setAttribute(SUBMIT_COPY_ATTR, '1');
+    return true;
+  }
+
+  function ensureSubmitHelperText() {
+    const btn = document.querySelector(
+      '.banner-lead-form form.cmp-form button.cmp-form-button[type="submit"], form.cmp-form button.cmp-form-button[type="submit"]',
+    );
+    if (!btn) return false;
+
+    const parent = btn.parentElement;
+    if (!parent) return false;
+
+    if (parent.getAttribute(SUBMIT_HELPER_ATTR) === '1') return false;
+
+    const helper = document.createElement('p');
+    helper.className = 'wj-submit-helper';
+    helper.textContent = SUBMIT_HELPER_TEXT;
+
+    if (btn.nextSibling) {
+      parent.insertBefore(helper, btn.nextSibling);
+    } else {
+      parent.appendChild(helper);
+    }
+
+    parent.setAttribute(SUBMIT_HELPER_ATTR, '1');
+    return true;
+  }
+
+  function initFloatingCtaScroll() {
+    const cta = document.querySelector('.cmp-floating-cta');
+    if (!cta) return false;
+
+    if (cta.getAttribute(FLOATING_CTA_ATTR) !== '1') {
+      cta.setAttribute(FLOATING_CTA_ATTR, '1');
+    }
+
+    function update() {
+      const y = window.pageYOffset || document.documentElement.scrollTop || 0;
+      const shouldShow = y > FLOATING_CTA_THRESHOLD_PX;
+      if (shouldShow) {
+        if (!cta.classList.contains(FLOATING_CTA_SHOWN_CLASS)) {
+          cta.classList.add(FLOATING_CTA_SHOWN_CLASS);
+        }
+      } else {
+        cta.classList.remove(FLOATING_CTA_SHOWN_CLASS);
+      }
+    }
+
+    update();
+
+    if (!scrollListenerAdded) {
+      scrollListenerAdded = true;
+      window.addEventListener(
+        'scroll',
+        function () {
+          scheduleRun();
+        },
+        { passive: true },
+      );
+      window.addEventListener(
+        'resize',
+        function () {
+          scheduleRun();
+        },
+        { passive: true },
+      );
+    }
+
+    return true;
+  }
+
   function run() {
     if (isProcessing) return;
     isProcessing = true;
@@ -139,11 +251,14 @@
       injectStyles();
 
       const careerSelect = document.querySelector(
-        '.ibcmed-lead-form__wrapper select[name="hour"], form.cmp-form select[name="hour"]'
+        '.ibcmed-lead-form__wrapper select[name="hour"], form.cmp-form select[name="hour"]',
       );
       if (!careerSelect) return;
 
       buildCareerMomentUi(careerSelect);
+      updateSubmitCopy();
+      ensureSubmitHelperText();
+      initFloatingCtaScroll();
     } finally {
       isProcessing = false;
     }
