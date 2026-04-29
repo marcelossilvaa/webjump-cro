@@ -19,7 +19,7 @@
 		'header a[href="/"]',
 		'header a[href*="voeazul.com.br"]'
 	];
-	const CTA_URL = 'https://www.voeazul.com.br/br/pt/disney/promocoes-disney';
+	const CTA_URL = 'https://www.voeazul.com.br/br/pt/home/hotel?ds=JPD036691&stdi=29/11/2026&stdo=18/12/2026&r[0].adt=2&s_emid=emkt_pmweb_azv_e-mail_banner_lf_azv_202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOPESQUISAHOSPDISNEY-D0_n_abandonopesquisahospedagem_rec_bnr_lp_&utm_term=202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOPESQUISAHOSPDISNEY-D0&utm_source=e-mail&utm_campaign=pmweb_azv_e-mail_banner_lf_azv_202603-azv-b2c-emm-168h-viagem-abandonopesquisahospdisney-d0_n&utm_medium=rec#hotelList';
 	const ASSET_BG = 'fundo disney.png';
 	const ASSET_GLOW = 'Group 11785.png';
 	const ASSET_SHINE_1 = 'BRILHO copy';
@@ -516,7 +516,7 @@
 			'  .disneyAbandonmentModal__offerOff { font-size: 42px; line-height: 51px; }',
 			'  .disneyAbandonmentModal__couponWrap { left: 43px; top: 379px; width: 273px; height: 43px; }',
 			'  .disneyAbandonmentModal__copyFeedback { left: 43px; top: 426px; }',
-			'  .disneyAbandonmentModal__ctaPrimary { left: 50%; top: 438px; width: 319px; height: 40px; transform: translateX(-50%); font-size: 16px; line-height: 40px; border-radius: 26px; }',
+			'  .disneyAbandonmentModal__ctaPrimary { left: 0; right: 0; margin-left: auto; margin-right: auto; top: 438px; width: 319px; height: 40px; transform: none; font-size: 16px; line-height: 40px; border-radius: 26px; }',
 			'  .disneyAbandonmentModal__ctaPrimary.is-pulsing { animation: disney-modal-cta-pulse 0.4s ease-in-out 4; }',
 			'  .disneyAbandonmentModal__ctaSecondary { left: 50%; top: 494px; transform: translateX(-50%); font-size: 16px; line-height: 16px; white-space: nowrap; }',
 			'  .disneyAbandonmentModal__legal { left: 24px; right: auto; top: 375px; transform: rotate(-90deg); transform-origin: top left; }',
