@@ -24,6 +24,20 @@ element.style.setProperty('background-color', '#CF527A', 'important');
 element.style.setProperty('border-radius', '65px', 'important');
 ```
 
+#### 3.2.1. Tipografia (padrão Azul)
+
+**Obrigatório**: em textos (labels, títulos, parágrafos, CTAs) use sempre:
+
+```css
+font-family: "Helvetica Neue", Arial, sans-serif;
+```
+
+Exemplo com `setProperty`:
+
+```javascript
+element.style.setProperty('font-family', '"Helvetica Neue", Arial, sans-serif', 'important');
+```
+
 Para remover:
 
 ```javascript
