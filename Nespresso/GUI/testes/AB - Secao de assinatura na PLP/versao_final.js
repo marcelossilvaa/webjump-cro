@@ -14,13 +14,13 @@
     experiment_variant: "${campaign.recipe.name}",
   });
 
-  function sendGAEvent(label) {
+  function sendGAEvent(label, action) {
     window.gtmDataObject = window.gtmDataObject || [];
     gtmDataObject.push({
       event: "local_event", //as is, do not change!!
       event_raised_by: "br", //please put the country code ex: us, ch, it
       local_event_category: "bloco_assinatura_plp", //free to fill field, please use lower case
-      local_event_action: "click", //free to fill field, please use lower case
+      local_event_action: action || "click", //free to fill field, please use lower case
       local_event_label: label, //free to fill field, please use lower case
     });
   }
@@ -35,12 +35,12 @@
     .nespresso-assinatura-plp-block {
       display: flex;
       align-items: stretch;
-      background: #F5F0EB;
+      background: #ffffff;
       border-radius: 16px;
-      padding: 48px 70px;
+      padding: 28px 40px;
       position: relative;
       overflow: hidden;
-      gap: 80px;
+      gap: 48px;
     }
     .nespresso-assinatura-plp-block::after {
       content: '';
@@ -48,8 +48,8 @@
       top: 0;
       right: 0;
       width: 280px;
-      height: 220px;
-      background: url('https://www.nespresso.com/ecom/medias/sys_master/public/31794307399710/Desktop-Original-.png') no-repeat top right;
+      height: 150px;
+      background: url('https://www.nespresso.com/ecom/medias/sys_master/public/50841865158686/20260429-nespr-ecomm-bloco-assinatura.png?') no-repeat top right;
       background-size: contain;
       pointer-events: none;
       z-index: 3;
@@ -58,17 +58,19 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
+      align-items: center;
       min-width: 0;
       z-index: 1;
     }
     .nespresso-assinatura-plp-left h2 {
       font-family: 'NespressoLucas', Arial, sans-serif;
-      font-size: 28px;
+      font-size: 24px;
       font-weight: 400;
       line-height: 1.25;
       color: #212121;
-      margin: 0 0 12px 0;
-      max-width: 390px;
+      margin: 0 0 16px 0;
+      max-width: 100%;
+      text-align: center;
     }
     .nespresso-assinatura-plp-left p {
       font-family: 'NespressoLucas', Arial, sans-serif;
@@ -99,6 +101,28 @@
     .nespresso-assinatura-plp-cta:hover {
       background: #1a5e42;
     }
+    .nespresso-assinatura-plp-cta-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .nespresso-assinatura-plp-cta--primary {
+      background: #247A57;
+      color: #fff;
+      border: none;
+    }
+    .nespresso-assinatura-plp-cta--primary:hover {
+      background: #1a5e42;
+    }
+    .nespresso-assinatura-plp-cta--secondary {
+      background: transparent;
+      color: #212121;
+      border: 1.5px solid #212121;
+    }
+    .nespresso-assinatura-plp-cta--secondary:hover {
+      background: rgba(28, 34, 32, 0.06);
+    }
     .nespresso-assinatura-plp-right {
       flex: 1;
       display: flex;
@@ -107,40 +131,39 @@
       z-index: 1;
       max-width: 480px;
     }
+    .nespresso-assinatura-plp-benefits-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
     .nespresso-assinatura-plp-benefit {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 16px;
-      padding: 20px 24px;
-      background: rgba(255,255,255,0.85);
+      text-align: center;
+      gap: 6px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.88);
       backdrop-filter: blur(4px);
-    }
-    .nespresso-assinatura-plp-benefit:first-child {
-      border-radius: 12px 12px 0 0;
-    }
-    .nespresso-assinatura-plp-benefit:last-child {
-      border-radius: 0 0 12px 12px;
-    }
-    .nespresso-assinatura-plp-benefit:not(:last-child) {
-      border-bottom: 1px solid #e5d5bb;
     }
     .nespresso-assinatura-plp-benefit-icon {
       flex-shrink: 0;
-      width: 44px;
-      height: 44px;
+      width: 28px;
+      height: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .nespresso-assinatura-plp-benefit-icon svg {
-      width: 40px;
-      height: 40px;
+      width: 28px;
+      height: 28px;
     }
     .nespresso-assinatura-plp-benefit-text {
       font-family: 'NespressoLucas', Arial, sans-serif;
-      font-size: 16px;
+      font-size: 14px;
       color: #17171a;
-      line-height: 1.45;
+      line-height: 1.35;
     }
     .nespresso-assinatura-plp-benefit-text strong {
       font-weight: 700;
@@ -163,12 +186,11 @@
       }
       .nespresso-assinatura-plp-block {
         flex-direction: column;
-        padding: 32px 24px 28px;
-        gap: 24px;
+        padding: 24px 20px 20px;
+        gap: 10px;
       }
       .nespresso-assinatura-plp-block::after {
-        width: 160px;
-        height: 120px;
+        display: none;
       }
       .nespresso-assinatura-plp-left h2 {
         font-size: 22px;
@@ -182,8 +204,32 @@
       .nespresso-assinatura-plp-right {
         max-width: 100%;
       }
+      .nespresso-assinatura-plp-benefits-grid {
+        grid-template-columns: auto auto;
+        gap: 6px;
+        justify-content: center;
+      }
       .nespresso-assinatura-plp-benefit {
-        padding: 16px 18px;
+        flex-direction: row;
+        text-align: left;
+        padding: 10px 10px;
+        align-items: center;
+      }
+      .nespresso-assinatura-plp-benefit-icon {
+        width: 22px;
+        height: 22px;
+      }
+      .nespresso-assinatura-plp-benefit-icon svg {
+        width: 22px;
+        height: 22px;
+      }
+      .nespresso-assinatura-plp-benefit-text {
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+      .nespresso-assinatura-plp-benefit:nth-child(n+3) {
+        display: none;
       }
       .nespresso-assinatura-plp-cta-mobile {
         display: flex !important;
@@ -192,9 +238,13 @@
       .nespresso-assinatura-plp-cta-desktop {
         display: none !important;
       }
-      .nespresso-assinatura-plp-cta {
+      .nespresso-assinatura-plp-cta-group {
+        flex-direction: column;
         width: 100%;
-        text-align: center;
+      }
+      .nespresso-assinatura-plp-cta--primary,
+      .nespresso-assinatura-plp-cta--secondary {
+        width: 100%;
         justify-content: center;
       }
       .nespresso-assinatura-plp-disclaimer {
@@ -215,16 +265,19 @@
     <div class="nespresso-assinatura-plp-section">
       <div class="nespresso-assinatura-plp-block">
         <div class="nespresso-assinatura-plp-left">
-          <h2>Eleve sua experiência Nespresso com a nossa <strong>Assinatura de Café</strong></h2>
-          <p>Configure um pedido automático do seu jeito e aproveite  benefícios exclusivos</p>
-          <a href="https://www.nespresso.com/br/pt/myaccount/standing-orders" class="nespresso-assinatura-plp-cta nespresso-assinatura-plp-cta-desktop">Faça sua Assinatura</a>
+          <h2>Nunca fique sem café. Assine e <strong>aproveite.</strong></h2>
+          <div class="nespresso-assinatura-plp-cta-group nespresso-assinatura-plp-cta-desktop">
+            <a href="https://www.nespresso.com/br/pt/myaccount/standing-orders" class="nespresso-assinatura-plp-cta nespresso-assinatura-plp-cta--primary">Faça sua Assinatura</a>
+            <a href="https://www.nespresso.com/br/pt/pedido-automatico" class="nespresso-assinatura-plp-cta nespresso-assinatura-plp-cta--secondary">Conheça os Benefícios</a>
+          </div>
         </div>
         <div class="nespresso-assinatura-plp-right">
+          <div class="nespresso-assinatura-plp-benefits-grid">
           <div class="nespresso-assinatura-plp-benefit">
             <div class="nespresso-assinatura-plp-benefit-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="#986f38"><path d="M15.7 3H3v12.7l15.5 15.5 12.7-12.7L15.7 3ZM4 15.3V4h11.3l14.5 14.5-11.3 11.3L4 15.3Z"></path><path d="m17.98 11-3 12h1.04l3-12h-1.04ZM12.5 12c-.93 0-2.5.39-2.5 3s1.57 3 2.5 3c.93 0 2.5-.39 2.5-3s-1.57-3-2.5-3Zm0 5c-.64 0-1.5-.2-1.5-2s.86-2 1.5-2 1.5.2 1.5 2-.86 2-1.5 2ZM21.5 16c-.93 0-2.5.39-2.5 3s1.57 3 2.5 3c.93 0 2.5-.39 2.5-3s-1.57-3-2.5-3Zm0 5c-.64 0-1.5-.2-1.5-2s.86-2 1.5-2 1.5.2 1.5 2-.86 2-1.5 2ZM6.5 7.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"></path></svg>            </div>
             <div class="nespresso-assinatura-plp-benefit-text">
-              <strong>15% OFF*</strong> nos 3 primeiros pedidos acima de 30 cápsulas
+              10% OFF em cafés*
             </div>
           </div>
           <div class="nespresso-assinatura-plp-benefit">
@@ -245,15 +298,18 @@
           </div>
           <div class="nespresso-assinatura-plp-benefit">
             <div class="nespresso-assinatura-plp-benefit-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#986f38"><path d="M17.61 13.6A7.37 7.37 0 0 0 19 9c0-4.38-2.62-7-7-7S5 4.62 5 9c0 1.89.49 3.44 1.39 4.6l-3.46 6.93.76.43 2.5-.83.92 2.8.57.32 3.64-7.28a10.25 10.25 0 0 0 1.36 0l3.64 7.28.57-.33.93-2.79 2.5.83.75-.43-3.46-6.92ZM7.6 21.2l-.77-2.33-2.33.77 2.63-5.26a6.45 6.45 0 0 0 3.15 1.46L7.59 21.2ZM12 15c-3.87 0-6-2.13-6-6s2.13-6 6-6 6 2.13 6 6-2.13 6-6 6Zm5.18 3.87-.77 2.33-2.68-5.36a6.45 6.45 0 0 0 3.15-1.46l2.63 5.26-2.33-.77Z"></path><path d="m11.46 10.75-2.1-2.1-.71.7 2.9 2.9 4.34-5.44-.78-.62-3.65 4.56Z"></path></svg>
-            </div>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#986f38"><path d="M17.61 13.6A7.37 7.37 0 0 0 19 9c0-4.38-2.62-7-7-7S5 4.62 5 9c0 1.89.49 3.44 1.39 4.6l-3.46 6.93.76.43 2.5-.83.92 2.8.57.32 3.64-7.28a10.25 10.25 0 0 0 1.36 0l3.64 7.28.57-.33.93-2.79 2.5.83.75-.43-3.46-6.92ZM7.6 21.2l-.77-2.33-2.33.77 2.63-5.26a6.45 6.45 0 0 0 3.15 1.46L7.59 21.2ZM12 15c-3.87 0-6-2.13-6-6s2.13-6 6-6 6 2.13 6 6-2.13 6-6 6Zm5.18 3.87-.77 2.33-2.68-5.36a6.45 6.45 0 0 0 3.15-1.46l2.63 5.26-2.33-.77Z"></path><path d="m11.46 10.75-2.1-2.1-.71.7 2.9 2.9 4.34-5.44-.78-.62-3.65 4.56Z"></path></svg>            </div>
             <div class="nespresso-assinatura-plp-benefit-text">
-            Status Ambassador no Nespresso Club
+            Acesso antecipado a novos sabores e edições limitadas
             </div>
           </div>
-          <span class="nespresso-assinatura-plp-disclaimer">*Após o 3° mês sua assinatura terá 10% OFF em todos os pedidos acima de 30 cápsulas. Oferta válida para Novos Assinantes</span>
+          </div>
+        <!-- <span class="nespresso-assinatura-plp-disclaimer">*Após o 3° mês sua assinatura terá 10% OFF em todos os pedidos acima de 30 cápsulas. Oferta válida para Novos Assinantes</span> -->
         </div>
-        <a href="https://www.nespresso.com/br/pt/myaccount/standing-orders" class="nespresso-assinatura-plp-cta nespresso-assinatura-plp-cta-mobile">Faça sua Assinatura</a>
+        <div class="nespresso-assinatura-plp-cta-group nespresso-assinatura-plp-cta-mobile">
+          <a href="https://www.nespresso.com/br/pt/myaccount/standing-orders" class="nespresso-assinatura-plp-cta nespresso-assinatura-plp-cta--primary">Faça sua Assinatura</a>
+          <a href="https://www.nespresso.com/br/pt/pedido-automatico" class="nespresso-assinatura-plp-cta nespresso-assinatura-plp-cta--secondary">Conheça os Benefícios</a>
+        </div>
       </div>
     </div>
   `;
@@ -340,11 +396,17 @@
     var section = wrapper.firstElementChild;
     target.parentNode.insertBefore(section, target.nextSibling);
 
+    sendGAEvent("plp_bloco_assinatura_view", "view");
+
     section
       .querySelectorAll(".nespresso-assinatura-plp-cta")
       .forEach(function (btn) {
         btn.addEventListener("click", function () {
-          sendGAEvent("plp_faca_sua_assinatura");
+          if (btn.classList.contains("nespresso-assinatura-plp-cta--secondary")) {
+            sendGAEvent("plp_conheca_os_beneficios");
+          } else {
+            sendGAEvent("plp_faca_sua_assinatura");
+          }
         });
       });
   }
