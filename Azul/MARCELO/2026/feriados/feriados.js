@@ -1,6 +1,6 @@
 (function () {
   const experienceName = 'AT_EXPERIENCE_HOLIDAYS_BANNER';
-  const experienceTargetUrl = '/br/pt/home';
+  const experienceTargetUrl = 'https://www.voeazul.com.br/br/pt/home';
   const experienceAlreadyExecuted = globalThis[experienceName] || false;
 
   let observer = null;
@@ -45,8 +45,11 @@
   ];
 
   function onExperienceTargetPage() {
-    const currentUrl = globalThis.location.pathname || '';
-    return currentUrl.includes(experienceTargetUrl);
+    const loc = globalThis.location;
+    const origin = (loc && loc.origin) || '';
+    const pathname = (loc && loc.pathname) || '';
+    const currentBaseUrl = origin + pathname;
+    return currentBaseUrl === experienceTargetUrl;
   }
 
   function analyticsEvent(eventLabel, eventType) {

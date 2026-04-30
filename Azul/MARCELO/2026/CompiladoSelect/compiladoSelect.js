@@ -2,6 +2,14 @@
   'use strict';
 
   // =========================
+  // Guard de URL (executa apenas na home exata)
+  // =========================
+  const EXACT_URL_TARGET = 'https://www.voeazul.com.br/br/pt/home';
+  if (window.location.href !== EXACT_URL_TARGET) {
+    return;
+  }
+
+  // =========================
   // Variáveis (escopo do script)
   // =========================
   let isProcessing = false;
@@ -83,16 +91,16 @@
 
   const TI_HAVE_ICON =
     '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-    '<path fill-rule="evenodd" clip-rule="evenodd" d="M0.600098 9.0001C0.600098 4.3591 4.3591 0.600098 9.0001 0.600098C13.6369 0.600098 17.4001 4.3591 17.4001 9.0001C17.4001 13.6376 13.6369 17.4001 9.0001 17.4001C4.3591 17.4001 0.600098 13.6376 0.600098 9.0001ZM5.3587 8.38223L4.8001 8.95508L7.81887 12.0547L13.5819 6.13663L13.024 5.56378L7.81887 10.9083L5.3587 8.38223Z" fill="currentColor"></path>' +
+    '<path fill-rule="evenodd" clip-rule="evenodd" d="M0.600098 9.0001C0.600098 4.3591 4.3591 0.600098 9.0001 0.600098C13.6369 0.600098 17.4001 4.3591 17.4001 9.0001C17.4001 13.6376 13.6369 17.4001 9.0001 17.4001C4.3591 17.4001 0.600098 13.6376 0.600098 9.0001ZM5.3587 8.38223L4.8001 8.95508L7.81887 12.0547L13.5819 6.13663L13.024 5.56378L7.81887 10.9083L5.3587 8.38223Z" fill="#008058"></path>' +
     '</svg>';
 
   const TI_DONT_HAVE_ICON =
     '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-    '<path d="M9 0C13.9706 0 18 4.02944 18 9C18 13.9706 13.9706 18 9 18C4.02944 18 0 13.9706 0 9C0 4.02944 4.02944 0 9 0ZM9 8.29297L6.35352 5.64648L5.64648 6.35352L8.29297 9L5.64648 11.6465L6.35352 12.3535L9 9.70703L11.6465 12.3535L12.3535 11.6465L9.70703 9L12.3535 6.35352L11.6465 5.64648L9 8.29297Z" fill="currentColor" />' +
+    '<path d="M9 0C13.9706 0 18 4.02944 18 9C18 13.9706 13.9706 18 9 18C4.02944 18 0 13.9706 0 9C0 4.02944 4.02944 0 9 0ZM9 8.29297L6.35352 5.64648L5.64648 6.35352L8.29297 9L5.64648 11.6465L6.35352 12.3535L9 9.70703L11.6465 12.3535L12.3535 11.6465L9.70703 9L12.3535 6.35352L11.6465 5.64648L9 8.29297Z" fill="rgb(235, 0, 27)" />' +
     '</svg>';
 
   const TI_DONT_HAVE_BAGS_ICON =
-    '<path d="M9.7793 20.1455C9.86915 20.1456 9.94434 20.2057 9.94434 20.2881V20.8574C9.94434 20.9323 9.86915 20.9999 9.7793 21H9.29199C9.20203 21 9.12695 20.9399 9.12695 20.8574V20.2881C9.12695 20.2131 9.20203 20.1455 9.29199 20.1455H9.7793ZM14.6895 20.1455C14.7794 20.1455 14.8545 20.2056 14.8545 20.2881V20.8574C14.8545 20.9324 14.7794 21 14.6895 21H14.2021C14.1122 21 14.0371 20.9399 14.0371 20.8574V20.2881C14.0371 20.2131 14.1122 20.1455 14.2021 20.1455H14.6895ZM9.13477 10.9883V16.3291H9.95117V11.9189L11.5859 13.7812V16.7793H12.4033V14.7129L16.041 18.8574C15.7706 19.1203 15.4017 19.2832 14.9971 19.2832H8.99902C8.17462 19.283 7.50014 18.6086 7.5 17.7842V9.12598L9.13477 10.9883ZM10.6035 4.7168C10.6935 4.7168 10.7686 4.79219 10.7686 4.88965V7.28809H13.2197V4.88965C13.2197 4.79229 13.2949 4.71695 13.3848 4.7168H13.8721C13.962 4.7168 14.0371 4.79219 14.0371 4.88965V7.28809H14.9971C15.8215 7.2882 16.4958 7.96274 16.4961 8.78711V17.4404L17.25 18.2998L16.6377 18.876L6.75 7.6084L7.3623 7.03223L7.95996 7.71191C8.23005 7.4508 8.59601 7.28818 8.99902 7.28809H9.95117V4.88965C9.95117 4.79226 10.0263 4.7169 10.1162 4.7168H10.6035ZM14.0371 14.6377L14.8545 15.5693V10.7139H14.0371V14.6377ZM11.5859 11.8447L12.4033 12.7764V9.85938H11.5859V11.8447ZM14.6895 3C14.7794 3 14.8467 3.07539 14.8467 3.17285V3.68945C14.8467 3.78691 14.7794 3.8623 14.6895 3.8623H9.28418C9.19425 3.86227 9.12695 3.78689 9.12695 3.68945V3.17285C9.12695 3.07541 9.19425 3.00004 9.28418 3H14.6895Z" fill="currentColor" />';
+    '<path d="M9.7793 20.1455C9.86915 20.1456 9.94434 20.2057 9.94434 20.2881V20.8574C9.94434 20.9323 9.86915 20.9999 9.7793 21H9.29199C9.20203 21 9.12695 20.9399 9.12695 20.8574V20.2881C9.12695 20.2131 9.20203 20.1455 9.29199 20.1455H9.7793ZM14.6895 20.1455C14.7794 20.1455 14.8545 20.2056 14.8545 20.2881V20.8574C14.8545 20.9324 14.7794 21 14.6895 21H14.2021C14.1122 21 14.0371 20.9399 14.0371 20.8574V20.2881C14.0371 20.2131 14.1122 20.1455 14.2021 20.1455H14.6895ZM9.13477 10.9883V16.3291H9.95117V11.9189L11.5859 13.7812V16.7793H12.4033V14.7129L16.041 18.8574C15.7706 19.1203 15.4017 19.2832 14.9971 19.2832H8.99902C8.17462 19.283 7.50014 18.6086 7.5 17.7842V9.12598L9.13477 10.9883ZM10.6035 4.7168C10.6935 4.7168 10.7686 4.79219 10.7686 4.88965V7.28809H13.2197V4.88965C13.2197 4.79229 13.2949 4.71695 13.3848 4.7168H13.8721C13.962 4.7168 14.0371 4.79219 14.0371 4.88965V7.28809H14.9971C15.8215 7.2882 16.4958 7.96274 16.4961 8.78711V17.4404L17.25 18.2998L16.6377 18.876L6.75 7.6084L7.3623 7.03223L7.95996 7.71191C8.23005 7.4508 8.59601 7.28818 8.99902 7.28809H9.95117V4.88965C9.95117 4.79226 10.0263 4.7169 10.1162 4.7168H10.6035ZM14.0371 14.6377L14.8545 15.5693V10.7139H14.0371V14.6377ZM11.5859 11.8447L12.4033 12.7764V9.85938H11.5859V11.8447ZM14.6895 3C14.7794 3 14.8467 3.07539 14.8467 3.17285V3.68945C14.8467 3.78691 14.7794 3.8623 14.6895 3.8623H9.28418C9.19425 3.86227 9.12695 3.78689 9.12695 3.68945V3.17285C9.12695 3.07541 9.19425 3.00004 9.28418 3H14.6895Z" fill="#EB001B" />';
 
   // Ordenação / filtros
   const OF_STYLE_ID = 'azul-ordenacao-filtros-style';
@@ -306,7 +314,10 @@
       let farePrices = card.querySelectorAll('.fare-price.css-13gs6uq');
       Array.from(farePrices).forEach(function (fp) {
         let cabineMistaSpan = fp.querySelector('.css-18wb4my span');
-        if (cabineMistaSpan && (cabineMistaSpan.textContent || '').indexOf('Voo em Cabine Mista') !== -1) {
+        if (
+          cabineMistaSpan &&
+          (cabineMistaSpan.textContent || '').indexOf('Voo em Cabine Mista') !== -1
+        ) {
           fp.classList.add('at-cabine-mista');
         } else {
           fp.classList.remove('at-cabine-mista');
@@ -532,6 +543,7 @@
     }
 
     if ((textForCheckedBags.textContent || '').includes('Não incluída')) {
+      textForCheckedBags.style.setProperty('color', '#EB001B', 'important');
       const svgBag = benefitCheckedBags.querySelector('svg');
       if (svgBag) {
         svgBag.innerHTML = TI_DONT_HAVE_BAGS_ICON;
@@ -579,6 +591,7 @@
     }
 
     if ((textForCheckedBags.textContent || '').includes('Não incluída')) {
+      textForCheckedBags.style.setProperty('color', '#EB001B', 'important');
       const svgBag = benefitCheckedBags.querySelector('svg');
       if (svgBag) {
         svgBag.innerHTML = TI_DONT_HAVE_BAGS_ICON;
@@ -755,8 +768,10 @@
       '.azul-sort-btn { -webkit-box-align: center; align-items: center; background-color: #fff; border-color: rgb(204, 204, 204); border-radius: 32px; border-style: solid; border-width: 1px; font-weight: bolder; box-shadow: rgba(31, 41, 61, 0.16) -1px 2px 4px; cursor: pointer; display: inline-flex; justify-content: center; min-height: 32px; outline: none; transition: 100ms; box-sizing: border-box; padding: 0 16px; white-space: nowrap; font-size: 13px; color: rgb(2, 108, 182); }' +
       '.azul-sort-btn.active { background-color: rgb(2, 108, 182); color: #fff; }' +
       '.ver-mais-btn { padding-right: 12px; border-color: rgb(204, 204, 204); }' +
+      '.ver-mais-btn svg path { fill: rgb(2, 108, 182); }' +
       '.ver-mais-btn svg { margin-left: 4px; transition: transform 0.2s ease; }' +
       '.ver-mais-btn.active svg { transform: rotate(180deg); }' +
+      '.ver-mais-btn.active svg path { fill: rgb(255, 255, 255); }' +
       '.azul-sort-custom-dropdown { position: absolute; top: 100%; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); border-radius: 4px; z-index: 1000; }' +
       '.azul-sort-custom-dropdown ul { list-style: none; margin: 0; padding: 4px 0; }' +
       '.azul-sort-custom-dropdown li { padding: 8px 12px; cursor: pointer; white-space: nowrap; color: #606060; }' +
@@ -1001,6 +1016,7 @@
       '.css-guj3i2:hover { background-color: #01589a !important; }' +
       '.css-ist1h5 { background-color: #EBF4FA !important; }' +
       '.css-ou6pmp { background: #FFF !important; color: #026CB6 !important; border: 1px solid #026CB6 !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 1 !important; border-radius: 4px !important; }' +
+      '.fare-item:has(button[aria-label="Tarifa esgotada"]) li.mobile-string svg path { fill: #616161 !important; }' +
       '@media (max-width: 768px) { .pre-select-floating-cta { padding: 15px; padding-top: 30px; } .pre-select-floating-cta .floating-continue-btn { width: 100%; padding: 14px 24px; font-size: 14px; } }';
 
     document.head.appendChild(styles);
