@@ -1,6 +1,6 @@
 (function () {
   const experienceName = 'AT_EXPERIENCE_HOLIDAYS_BANNER';
-  const experienceTargetUrl = 'home/br/pt/home';
+  const experienceTargetUrl = 'https://www.voeazul.com.br/br/pt/home';
   const experienceAlreadyExecuted = globalThis[experienceName] || false;
 
   let observer = null;
@@ -45,8 +45,11 @@
   ];
 
   function onExperienceTargetPage() {
-    const currentUrl = globalThis.location.pathname || '';
-    return currentUrl.includes(experienceTargetUrl);
+    const loc = globalThis.location;
+    const origin = (loc && loc.origin) || '';
+    const pathname = (loc && loc.pathname) || '';
+    const currentBaseUrl = origin + pathname;
+    return currentBaseUrl === experienceTargetUrl;
   }
 
   function analyticsEvent(eventLabel, eventType) {
@@ -160,6 +163,7 @@
       iconWrapper.insertAdjacentHTML('beforeend', item.svg);
 
       const textWrapper = document.createElement('span');
+      textWrapper.className = 'at-holidays-modal-text';
       textWrapper.textContent = item.label;
 
       linkElement.textContent = '';
@@ -195,12 +199,13 @@
 				width: 100% !important;
 				display: flex !important;
 				align-items: center !important;
-				justify-content: center !important;
+				justify-content: space-evenly !important;
 				cursor: pointer !important;
 				overflow-x: auto !important;
 				padding: 0 16px !important;
 				white-space: nowrap !important;
 				-webkit-overflow-scrolling: touch !important;
+
 			}
 
 			.at-holidays-modal-links-wrapper {
@@ -215,7 +220,6 @@
 			.at-holidays-modal-link {
 				color: #ffffff !important;
 				text-decoration: none !important;
-				font-family: Inter, sans-serif !important;
 				font-size: 14px !important;
 				font-weight: 400 !important;
 				display: inline-flex !important;
@@ -225,8 +229,11 @@
 				line-height: 1 !important;
 				align-items: center !important;
 				text-align: center !important;
-				min-width: 90px !important;
-				padding: 4px 0 !important;
+				padding: 4px 8px !important;
+			}
+
+			.at-holidays-modal-text {
+				font-family: "Helvetica Neue", Arial, sans-serif !important;
 			}
 
 			.at-holidays-modal-icon {
@@ -298,7 +305,7 @@
 
     observer.observe(document.body, {
       childList: true,
-      subtree: false,
+      subtree: true,
     });
 
     console.log('[AT] MutationObserver configured.');
@@ -346,7 +353,15 @@
     customizeBanner();
   }
 
-  if (experienceAlreadyExecuted || !onExperienceTargetPage()) {
+  // Em SPA, o script pode ficar "marcado" como executado entre rotas.
+  // Só bloqueamos se o banner já estiver presente no DOM.
+  if (!onExperienceTargetPage()) {
+    console.log('[AT] Page is not a correct page OR script already executed.');
+    return;
+  }
+
+  const bannerAlreadyInDom = !!document.getElementById(bannerId);
+  if (experienceAlreadyExecuted && bannerAlreadyInDom) {
     console.log('[AT] Page is not a correct page OR script already executed.');
     return;
   }

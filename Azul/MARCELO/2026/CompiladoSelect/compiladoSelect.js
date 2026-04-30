@@ -2,6 +2,14 @@
   'use strict';
 
   // =========================
+  // Guard de URL (executa apenas na home exata)
+  // =========================
+  const EXACT_URL_TARGET = 'https://www.voeazul.com.br/br/pt/home';
+  if (window.location.href !== EXACT_URL_TARGET) {
+    return;
+  }
+
+  // =========================
   // Variáveis (escopo do script)
   // =========================
   let isProcessing = false;
@@ -306,7 +314,10 @@
       let farePrices = card.querySelectorAll('.fare-price.css-13gs6uq');
       Array.from(farePrices).forEach(function (fp) {
         let cabineMistaSpan = fp.querySelector('.css-18wb4my span');
-        if (cabineMistaSpan && (cabineMistaSpan.textContent || '').indexOf('Voo em Cabine Mista') !== -1) {
+        if (
+          cabineMistaSpan &&
+          (cabineMistaSpan.textContent || '').indexOf('Voo em Cabine Mista') !== -1
+        ) {
           fp.classList.add('at-cabine-mista');
         } else {
           fp.classList.remove('at-cabine-mista');
@@ -1993,6 +2004,11 @@
     isProcessing = true;
 
     if (!onTargetPage()) {
+      isProcessing = false;
+      return;
+    }
+
+    if (!isDesktop()) {
       isProcessing = false;
       return;
     }

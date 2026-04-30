@@ -19,7 +19,12 @@
     style.id = STYLE_ID;
     style.textContent =
       '@media (min-width: 1280px){.cmp-banner-lead-form__title{width:515px !important}}' +
-      '.wj-banner-tags-row{display:flex;align-items:flex-start;gap:12px;}' +
+      '.wj-banner-tags-row{display:flex;align-items:center;gap:12px;}' +
+      '.wj-banner-tags{display:flex;flex-direction:column;gap:8px !important}' +
+      '.wj-banner-tags-top{display:flex;flex-wrap:wrap;gap:8px !important;align-items:center}' +
+      '.wj-banner-tags-places{display:flex;flex-wrap:wrap;gap:8px !important;align-items:center}' +
+      '.wj-banner-tags-bottom{display:flex;flex-wrap:nowrap;gap:8px !important;align-items:center}' +
+      '.wj-banner-tags-bottom .cmp-banner-lead-form__tag{white-space:nowrap}' +
       '.wj-banner-mec-badge{display:flex;align-items:center}' +
       '.wj-banner-mec-badge img{display:block;max-width:120px;height:auto}';
 
@@ -35,6 +40,45 @@
     span.className = 'cmp-banner-lead-form__tag';
     span.textContent = text;
     return span;
+  }
+
+  function ensureTagLines(tagsEl) {
+    if (!tagsEl) return null;
+
+    tagsEl.classList.add('wj-banner-tags');
+
+    let top = tagsEl.querySelector(':scope > .wj-banner-tags-top');
+    let bottom = tagsEl.querySelector(':scope > .wj-banner-tags-bottom');
+    let places = tagsEl.querySelector(':scope > .wj-banner-tags-top > .wj-banner-tags-places');
+
+    if (!top) {
+      top = document.createElement('div');
+      top.className = 'wj-banner-tags-top';
+      tagsEl.insertBefore(top, tagsEl.firstChild);
+    }
+
+    if (!bottom) {
+      bottom = document.createElement('div');
+      bottom.className = 'wj-banner-tags-bottom';
+      tagsEl.appendChild(bottom);
+    }
+
+    if (!places) {
+      places = document.createElement('div');
+      places.className = 'wj-banner-tags-places';
+      top.appendChild(places);
+    }
+
+    // Move tags soltas (span diretos) para o TOP por padrão
+    const directTags = Array.prototype.slice.call(
+      tagsEl.querySelectorAll(':scope > .cmp-banner-lead-form__tag'),
+    );
+
+    for (let i = 0; i < directTags.length; i++) {
+      top.appendChild(directTags[i]);
+    }
+
+    return { top: top, bottom: bottom, places: places };
   }
 
   function ensureTagsRow(tagsEl) {
@@ -82,7 +126,7 @@
 
     const h1 = contentEl.querySelector('.cmp-banner-lead-form__title');
     if (h1) {
-      h1.textContent = 'Especialize-se em Pediatria com prática em pacientes reais';
+      h1.textContent = 'Aprimore sua atuação na saúde pediátrica';
     }
 
     const cta = contentEl.querySelector('.cmp-banner-lead-form__cta');
@@ -92,50 +136,46 @@
 
     const tags = contentEl.querySelector('.cmp-banner-lead-form__tags');
     if (tags) {
-      const tagEls = Array.prototype.slice.call(
-        tags.querySelectorAll('.cmp-banner-lead-form__tag'),
-      );
-
-      // Remove estados individuais (BA, MG, PE, RJ, SP) e substitui por um único.
-      const statesToRemove = { BA: true, MG: true, PE: true, RJ: true, SP: true };
-      for (let i = 0; i < tagEls.length; i++) {
-        const t = getText(tagEls[i]);
-        if (statesToRemove[t]) {
-          tagEls[i].parentElement && tagEls[i].parentElement.removeChild(tagEls[i]);
-        }
-      }
+      const lines = ensureTagLines(tags);
 
       // Remove qualquer tag de texto do MEC (vai virar badge).
-      const updatedTagEls = Array.prototype.slice.call(
+      const allTagEls = Array.prototype.slice.call(
         tags.querySelectorAll('.cmp-banner-lead-form__tag'),
       );
-      for (let j = 0; j < updatedTagEls.length; j++) {
-        const tt = getText(updatedTagEls[j]).toLowerCase();
+      for (let j = 0; j < allTagEls.length; j++) {
+        const tt = getText(allTagEls[j]).toLowerCase();
         if (tt.indexOf('mec') !== -1) {
-          updatedTagEls[j].parentElement &&
-            updatedTagEls[j].parentElement.removeChild(updatedTagEls[j]);
+          allTagEls[j].parentElement && allTagEls[j].parentElement.removeChild(allTagEls[j]);
         }
       }
 
-      // Garante a tag agregada de estados logo após a tag wide (quando existir).
-      const wide = tags.querySelector('.cmp-banner-lead-form__tag--wide');
-      const combinedText = 'PE - BA - MG - RJ - SP';
-      const hasCombinedAlready = Array.prototype.slice
-        .call(tags.querySelectorAll('.cmp-banner-lead-form__tag'))
-        .some(function (el) {
-          return getText(el) === combinedText;
-        });
+      // Mantém praças separadas na linha de cima e força "horas" + "meses" na linha de baixo.
+      if (lines && lines.top && lines.bottom) {
+        const tagsNow = Array.prototype.slice.call(
+          tags.querySelectorAll('.cmp-banner-lead-form__tag'),
+        );
 
-      if (!hasCombinedAlready) {
-        const combined = createTag(combinedText);
-        if (wide && wide.parentElement) {
-          if (wide.nextSibling) {
-            wide.parentElement.insertBefore(combined, wide.nextSibling);
+        for (let k = 0; k < tagsNow.length; k++) {
+          const text = getText(tagsNow[k]).toLowerCase();
+          const isBottom = text.indexOf('hora') !== -1 || text.indexOf('mes') !== -1;
+          const isPlace =
+            text === 'ba' || text === 'mg' || text === 'pe' || text === 'rj' || text === 'sp';
+          if (isBottom) {
+            lines.bottom.appendChild(tagsNow[k]);
+          } else if (isPlace && lines.places) {
+            lines.places.appendChild(tagsNow[k]);
           } else {
-            wide.parentElement.appendChild(combined);
+            // Wide + praças continuam no topo, separados
+            lines.top.appendChild(tagsNow[k]);
           }
-        } else {
-          tags.appendChild(combined);
+        }
+
+        // Garante que o container de praças fique logo após a tag wide (quando existir).
+        if (lines.places && lines.places.parentElement === lines.top) {
+          const wide = lines.top.querySelector('.cmp-banner-lead-form__tag--wide');
+          if (wide && wide.nextSibling !== lines.places) {
+            lines.top.insertBefore(lines.places, wide.nextSibling);
+          }
         }
       }
 
