@@ -17,4 +17,5 @@ Este diretório contém as regras do projeto modularizadas por tema.
 - `05-inicializacao.md`: DOM ready, retry, polling.
 - `06-tracking.md`: padrão de tracking (Adobe Analytics), nomenclatura e listeners.
 - `99-checklist.md`: checklist de finalização.
+- `azul-design-system.md`: **somente pasta `Azul/`** — tipografia Helvetica Neue, cores, gradiente no topo, botão outline e fundo branco no corpo.
 
