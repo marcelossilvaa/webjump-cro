@@ -1,11 +1,10 @@
 (function () {
-  const experienceName = 'AT_EXPERIENCE_HOLIDAYS_ON_HOME_SEARCH_MOBA';
+  const experienceName = 'AT_EXPERIENCE_HOLIDAYS_ON_HOME_SEARCH';
   const experienceTargetUrl = 'https://www.voeazul.com.br/br/pt/home';
   const experienceAlreadyExecuted = window[experienceName] || false;
-  const stylesId = 'at-holidays-search-styles';
+  const stylesId = 'at-holidays-search-desktop-styles';
   const trackingCooldownMs = 1500;
   let lastCalendarLoadedTs = 0;
-  let lastObservedWrapper = null;
 
   function hasCustomizationInDom() {
     return (
@@ -13,7 +12,6 @@
       document.querySelectorAll('.inject-holiday-element, .inject-holiday-highlight').length > 0
     );
   }
-
   const onExperienceTargetPage = () => {
     const currentFullUrl = window.location.origin + window.location.pathname;
     return currentFullUrl === experienceTargetUrl;
@@ -21,10 +19,10 @@
 
   const initExperienceWhenReady = () => {
     const isReady = document.readyState === 'complete' || document.readyState === 'interactive';
-    const isMobaDevice = window.innerWidth < 992;
+    const isDesktopDevice = window.innerWidth >= 992;
 
-    if (!isMobaDevice) {
-      console.log('[AT] Not a mobile device, experience will not run.');
+    if (!isDesktopDevice) {
+      console.log('[AT] Not a desktop device, experience will not run.');
       return;
     }
 
@@ -40,8 +38,6 @@
     return;
   }
 
-  // Em SPA, o script pode ficar "marcado" como executado entre interações.
-  // Só bloqueamos se já existe personalização aplicada no DOM.
   if (experienceAlreadyExecuted && hasCustomizationInDom()) {
     console.log('[AT] Page is not a correct page OR script already executed.');
     return;
@@ -54,10 +50,10 @@
     console.log('[AT] Experience started:', experienceName);
 
     const SELECTORS = {
-      // Observação: classes "sc-*" podem mudar. Estes seletores foram atualizados
-      // para o markup atual do calendário do search.
+      // Seletores atualizados para o markup atual (desktop = 2 meses no wrapper)
       calendar: '.sc-cJbhSk.xLwAJ',
       calendarWrapper: '.sc-lccgLh.etFltt',
+      month: '.sc-eZuMGc.heCoXq',
       buttonDays: '.sc-dqYEFG',
     };
 
@@ -104,31 +100,22 @@
     ];
 
     // Observer to monitor changes in the body for calendar wrapper addition / updates
-    const calendarObserver = new MutationObserver(calendarObserverCallback);
-    // Observer to monitor changes in calendar wrapper (months/days re-render)
+    const bodyObserver = new MutationObserver(bodyObserverCallback);
+    // Observer to monitor changes in calendar wrapper
     const calendarWrapperObserver = new MutationObserver(calendarWrapperObserverCallback);
     // To keep track of last months seen to avoid redundant processing
-    let lastMonthSeen = {};
+    const lastMonthsSeen = [];
+    let lastObservedWrapper = null;
 
     initSetup();
 
     function initSetup() {
-      const calendarWrapper = getCalendarWrapper();
-
-      if (!calendarWrapper) {
-        requestAnimationFrame(initSetup);
-        return;
-      }
-
-      calendarObserver.observe(document.body, { childList: true, subtree: true });
       injectCSS();
-      initCalendarWhenIsReadyWithInfos();
-
-      lastObservedWrapper = calendarWrapper;
-      calendarWrapperObserver.observe(calendarWrapper, { childList: true, subtree: true });
+      bodyObserver.observe(document.body, { childList: true, subtree: true });
+      injectCalendarHolidaysIfNeeded();
     }
 
-    function calendarObserverCallback(mutations) {
+    function bodyObserverCallback(mutations) {
       const hasRelevant = mutations.some(
         (m) => m.type === 'childList' && (m.addedNodes.length > 0 || m.removedNodes.length > 0),
       );
@@ -137,7 +124,7 @@
       }
 
       if (!onExperienceTargetPage()) {
-        calendarObserver.disconnect();
+        bodyObserver.disconnect();
         calendarWrapperObserver.disconnect();
         console.log('[AT] User left the target page, observers disconnected.');
         return;
@@ -145,13 +132,13 @@
 
       const calendarWrapper = getCalendarWrapper();
       if (!calendarWrapper) {
-        lastMonthSeen = {};
+        lastMonthsSeen.length = 0;
         calendarWrapperObserver.disconnect();
         lastObservedWrapper = null;
         return;
       }
 
-      // Evita loop: se já estamos observando essa instância do wrapper, não reprocessa via body.
+      // Evita loop: uma vez que já estamos observando esse wrapper, não reprocessa via body.
       if (
         calendarWrapper === lastObservedWrapper &&
         calendarWrapper.getAttribute('data-at-holidays-observing')
@@ -159,93 +146,81 @@
         return;
       }
 
+      // Marca / observa apenas 1x por instância de wrapper.
       lastObservedWrapper = calendarWrapper;
+      if (!calendarWrapper.getAttribute('data-at-holidays-observing')) {
+        calendarWrapper.setAttribute('data-at-holidays-observing', 'true');
+        calendarWrapperObserver.observe(calendarWrapper, { childList: true, subtree: true });
+      }
 
-      // Throttle do tracking para não disparar em mutações internas geradas pela própria personalização.
+      // Throttle do tracking pra não disparar em mutações internas do próprio calendário.
       const now = Date.now();
       if (now - lastCalendarLoadedTs > trackingCooldownMs) {
         lastCalendarLoadedTs = now;
         analyticsEvent('calendar_loaded');
       }
 
-      initCalendarWhenIsReadyWithInfos();
-
-      if (!calendarWrapper.getAttribute('data-at-holidays-observing')) {
-        calendarWrapper.setAttribute('data-at-holidays-observing', 'true');
-        calendarWrapperObserver.observe(calendarWrapper, { childList: true, subtree: true });
-      }
+      injectCalendarHolidaysIfNeeded();
     }
 
     function calendarWrapperObserverCallback(mutations) {
       for (const mutation of mutations) {
         if (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0) {
-          initCalendarWhenIsReadyWithInfos();
+          injectCalendarHolidaysIfNeeded();
         }
       }
     }
 
-    function initCalendarWhenIsReadyWithInfos() {
-      let maximumAttempts = 50;
-
-      const checkCalendarReady = () => {
-        const calendarWrapper = getCalendarWrapper();
-        const alreadyHasDays = calendarWrapper?.querySelector(SELECTORS.buttonDays);
-        const calendarIsReady = alreadyHasDays?.querySelectorAll('span').length > 0;
-
-        if (!calendarIsReady && maximumAttempts > 0) {
-          maximumAttempts--;
-          requestAnimationFrame(checkCalendarReady);
-          return;
-        }
-
-        injectCalendarHolidaysIfNeeded();
-      };
-
-      checkCalendarReady();
-    }
-
     function injectCalendarHolidaysIfNeeded() {
       const calendarWrapper = getCalendarWrapper();
-      const monthProps = getMonthProps(calendarWrapper);
+      const monthsProps = getMonthsProps(calendarWrapper);
 
       const isDateRangeMode = checkIfIsDateRangeMode(calendarWrapper);
 
-      //check if month doesnt have changed
-      if (lastMonthSeen?.name === monthProps.name && !isDateRangeMode) {
-        console.log('[AT] Month didnt change, skipping...');
+      //check if months doesnt have changed
+      if (
+        lastMonthsSeen[0] === monthsProps[0]?.name &&
+        lastMonthsSeen[1] === monthsProps[1]?.name &&
+        !isDateRangeMode
+      ) {
+        console.log('[AT] Months didnt change or in date range mode, skipping...');
         return;
       }
 
       reinitCalendarClassesAndHolidayElement();
 
-      lastMonthSeen = {};
-      lastMonthSeen = { name: monthProps.name };
+      lastMonthsSeen.length = 0;
+      lastMonthsSeen.push(monthsProps[0]?.name, monthsProps[1]?.name);
 
-      const holidayMonth = HOLIDAYS.find((holiday) => holiday.month === monthProps.name);
-      if (!holidayMonth) return;
+      monthsProps.forEach((calendarMonth) => {
+        const holidayMonth = HOLIDAYS.find((holiday) => holiday.month === calendarMonth.name);
+        if (!holidayMonth) return;
 
-      holidayMonth.holidays.forEach((holiday) => {
-        const holidayIsInCalendar = [...monthProps.days].find((day) => day === String(holiday.day));
+        holidayMonth.holidays.forEach((holiday) => {
+          const holidayIsInCalendar = [...calendarMonth.days].find(
+            (day) => day === String(holiday.day),
+          );
 
-        if (holidayIsInCalendar) {
-          monthProps.element.querySelectorAll(SELECTORS.buttonDays).forEach((dayButton) => {
-            const spans = dayButton.querySelectorAll('span');
-            const textToVerify = spans.length > 1 ? spans[1] : spans[0];
+          if (holidayIsInCalendar) {
+            calendarMonth.element.querySelectorAll('button').forEach((dayButton) => {
+              const spans = dayButton.querySelectorAll('span');
+              const textToVerify = spans.length > 1 ? spans[1] : spans[0];
 
-            if (textToVerify.textContent.trim() === String(holiday.day)) {
-              dayButton.classList.add('inject-holiday-highlight');
-              dayButton.removeEventListener('click', addTrackingEvent);
-              dayButton.addEventListener('click', addTrackingEvent);
-            }
-          });
-        }
+              if (textToVerify.textContent.trim() === String(holiday.day)) {
+                dayButton.classList.add('inject-holiday-highlight');
+                dayButton.removeEventListener('click', addTrackingEvent);
+                dayButton.addEventListener('click', addTrackingEvent);
+              }
+            });
+          }
 
-        // Disconnect observer to avoid infinite loop
-        calendarWrapperObserver.disconnect();
-        const holidayElement = createHolidayElement(holiday);
-        monthProps.element.appendChild(holidayElement);
+          // Disconnect observer to avoid infinite loop
+          calendarWrapperObserver.disconnect();
+          const holidayElement = createHolidayElement(holiday);
+          calendarMonth.element.appendChild(holidayElement);
 
-        calendarWrapperObserver.observe(calendarWrapper, { childList: true, subtree: true });
+          calendarWrapperObserver.observe(calendarWrapper, { childList: true, subtree: true });
+        });
       });
     }
 
@@ -275,46 +250,33 @@
       return holidayElement;
     }
 
-    function getMonthProps(calendarWrapper) {
+    function getMonthsProps(calendarWrapper) {
       if (!calendarWrapper) return [];
 
-      const monthElement = calendarWrapper;
-      const monthProps = {
-        name: getMonthNameOfCalendar(monthElement),
-        days: getMonthDaysOfCalendar(monthElement),
-        element: monthElement,
-      };
+      const monthElements = calendarWrapper.querySelectorAll(SELECTORS.month);
+      const monthsProps = Array.from(monthElements).map((monthElement) => {
+        return {
+          name: getMonthNameOfCalendar(monthElement),
+          days: getMonthDaysOfCalendar(monthElement),
+          element: monthElement,
+        };
+      });
 
-      return monthProps;
+      return monthsProps;
     }
 
     function getMonthNameOfCalendar(monthElement) {
-      // Desktop costuma renderizar "Abril 2026" dentro do próprio bloco do mês.
-      // Mobile (search) renderiza o mês no cabeçalho acima do wrapper dos dias.
       const monthNames =
         '(Janeiro|Fevereiro|Março|Abril|Maio|Junho|Julho|Agosto|Setembro|Outubro|Novembro|Dezembro)';
       const monthYearRegex = new RegExp('^' + monthNames + '\\s+\\d{4}$', 'i');
 
-      // 1) Tentativa: achar dentro do próprio monthElement (desktop / dois meses)
-      if (monthElement) {
-        const spans = monthElement.querySelectorAll('span');
-        for (let i = 0; i < spans.length; i++) {
-          const t = (spans[i].textContent || '').trim();
-          if (monthYearRegex.test(t)) {
-            return t;
-          }
-        }
-      }
+      if (!monthElement) return '';
 
-      // 2) Fallback: achar no container do calendário (mobile)
-      const calendarEl = getCalendar();
-      if (calendarEl) {
-        const spans = calendarEl.querySelectorAll('span');
-        for (let i = 0; i < spans.length; i++) {
-          const t = (spans[i].textContent || '').trim();
-          if (monthYearRegex.test(t)) {
-            return t;
-          }
+      const spans = monthElement.querySelectorAll('span');
+      for (let i = 0; i < spans.length; i++) {
+        const t = (spans[i].textContent || '').trim();
+        if (monthYearRegex.test(t)) {
+          return t;
         }
       }
 
@@ -358,65 +320,50 @@
       styles.id = stylesId;
 
       styles.innerHTML = `
-                .inject-holiday-element {
-                    background: #def2f9;
-                    margin-bottom: 4px;
-                    border-radius: 12px;
-                    padding: 4px 8px;
-                    display: flex;
-                    gap: 8px;
-                    color: #026cb6;
-                    align-items: center;
-                    font-size: 14px;
-                    font-weight: 500;
-                    max-width: 336px;
-                    width: 100%;
-                }
-
-                .inject-holiday-highlight:not(:hover)::after {
-                    background: #def2f9;
-                    content: '';
-                    position: absolute;
-                    height: 4px;
-                    width: 4px;
-                    background: #026cb6;
-                    border-radius: 100%;
-                    bottom: 4px;
-                }
-
-                .inject-holiday-element span {
-                    font-weight: 700;
-                    display: inline-block;
-                    width: 17.8px;
-                    color: #026cb6;
-                    margin-left: 7.1px;
-                    text-align: center;
-                }
-
-                .inject-holiday-highlight span {
-                    font-weight: 700;
-                    color: #026cb6;
-                }
-
-                .inject-holiday-highlight[disabled] span {
-                    opacity: .6;
-                }
-
-                @media (max-width: 991px) {
-                    .sc-lccgLh.etFltt {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: flex-start;
-                        gap: 12px;
-                    }
-                }
-            `;
+                  .inject-holiday-element {
+                      background: #def2f9;
+                      margin-top: 4px;
+                      border-radius: 12px;
+                      padding: 4px 8px;
+                      display: flex;
+                      gap: 8px;
+                      color: #026cb6;
+                      align-items: center;
+                      font-size: 14px;
+                      font-weight: 500;
+                  }
+  
+                  .inject-holiday-highlight:not(:hover)::after {
+                      background: #def2f9;
+                      content: '';
+                      position: absolute;
+                      height: 4px;
+                      width: 4px;
+                      background: #026cb6;
+                      border-radius: 100%;
+                      bottom: 4px;
+                  }
+  
+                  .inject-holiday-element span {
+                      font-weight: 700;
+                      display: inline-block;
+                      width: 17.8px;
+                      color: #026cb6;
+                      margin-left: 7.1px;
+                      text-align: center;
+                  }
+  
+                  .inject-holiday-highlight span {
+                      font-weight: 700;
+                      color: #026cb6;
+                  }
+  
+                  .inject-holiday-highlight[disabled] span {
+                      opacity: .6;
+                  }
+              `;
 
       document.head.appendChild(styles);
-    }
-
-    function getCalendar() {
-      return document.querySelector(SELECTORS.calendar);
     }
 
     function getCalendarWrapper() {
