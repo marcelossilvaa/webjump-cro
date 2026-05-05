@@ -1,6 +1,6 @@
 (function () {
   const experienceName = 'AT_EXPERIENCE_HOLIDAYS_ON_HOME_SEARCH_MOBA';
-  const experienceTargetUrl = '/br/pt/home';
+  const experienceTargetUrl = 'https://www.voeazul.com.br/br/pt/home';
   const experienceAlreadyExecuted = window[experienceName] || false;
   const stylesId = 'at-holidays-search-styles';
   const trackingCooldownMs = 1500;
@@ -15,10 +15,8 @@
   }
 
   const onExperienceTargetPage = () => {
-    const currentUrl = window.location.pathname;
-    const testUrl = experienceTargetUrl;
-
-    return currentUrl.includes(testUrl);
+    const currentFullUrl = window.location.origin + window.location.pathname;
+    return currentFullUrl === experienceTargetUrl;
   };
 
   const initExperienceWhenReady = () => {

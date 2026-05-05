@@ -18,6 +18,10 @@ Instruções de repositório para o **GitHub Copilot** (Chat, PR, coding agent q
 
 **Ao gerar ou refatorar código**, siga os módulos em `.github/rules/` (ou `.cursor/rules/` — conteúdo igual). Se algo conflitar com este resumo, prevalece o módulo em `rules/`.
 
+## Cliente Azul (`Azul/`)
+
+Para qualquer script sob **`Azul/`**, além das regras gerais, use o guia visual em **`azul-design-system.md`** (espelho em `.cursor/rules/` e `.github/rules/`): tipografia `"Helvetica Neue", Arial`, texto escuro `rgb(1, 78, 132)` em fundo branco, texto branco sobre o gradiente azul do header, gradiente só na parte superior e botão outline conforme o módulo.
+
 ## Regras obrigatórias (resumo)
 
 1. **IIFE**: encapsular em `(function () { 'use strict'; ... })();`
