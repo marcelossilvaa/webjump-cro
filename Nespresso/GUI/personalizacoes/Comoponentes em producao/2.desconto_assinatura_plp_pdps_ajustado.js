@@ -1,0 +1,331 @@
+(function () {
+  let regexPDPs = /.*\/br\/pt\/order\/capsules\/.*\/(capsula|cafe|capsulas).*/;
+  let regexPLPs = /\/br\/pt\/order\/capsules\/(original|vertuo)$/;
+  let pagePathAtual = window.location.pathname;
+
+  function sendGAEvent(label) {
+    window.gtmDataObject = window.gtmDataObject || [];
+    gtmDataObject.push({
+      event: "local_event", //as is, do not change!!
+      event_raised_by: "br", //please put the country code ex: us, ch, it
+      local_event_category: "user engagement", //free to fill field, please use lower case
+      local_event_action: "click", //free to fill field, please use lower case
+      local_event_label: label, //free to fill field, please use lower case
+    });
+  }
+  if (!pagePathAtual.includes("checkout")) {
+    if (regexPLPs.test(pagePathAtual)) {
+      let produtosPLPAindaNaoAjustados = document.querySelectorAll(
+        "plp-cards-grid article[data-product-short-sku]:not(article[aria-label*='Kit'],article[aria-label*='KIT'],:has(footer.primeAB)",
+      );
+      setInterval(function () {
+        produtosPLPAindaNaoAjustados = document.querySelectorAll(
+          "plp-cards-grid article[data-product-short-sku]:not(article[aria-label*='Kit'],article[aria-label*='KIT'],:has(footer.primeAB)",
+        );
+        if (produtosPLPAindaNaoAjustados.length > 0) {
+          produtosPLPAindaNaoAjustados = Array.from(
+            produtosPLPAindaNaoAjustados,
+          );
+          produtosPLPAindaNaoAjustados = produtosPLPAindaNaoAjustados.filter(
+            function (produto) {
+              let tagsCard = produto.querySelectorAll(
+                "header[class*='tags'] span",
+              );
+              let isAbleToAdjust = true;
+              if (tagsCard) {
+                tagsCard.forEach(function (tagText) {
+                  if (tagText.innerText.toLowerCase() == "edição limitada") {
+                    isAbleToAdjust = false;
+                    produto.querySelector("footer").classList.add("primeAB");
+                  }
+                });
+              }
+              return isAbleToAdjust;
+            },
+          );
+          precoPrimePLP(produtosPLPAindaNaoAjustados);
+        }
+      }, 2000);
+      function precoPrimePLP(produtos) {
+        produtos.forEach(function (produto) {
+          let divPrecoTotalCapsula = produto.querySelector(
+            "span[class*='formattedPrice']",
+          );
+          let divPrecoCapsula = produto.querySelector(
+            "footer div[class*='purchaseSection'] div[class*='capsuleAndSleeveLabelWrapper']",
+          );
+          if (divPrecoCapsula && divPrecoTotalCapsula) {
+            produto.querySelector("footer").classList.add("primeAB");
+            let precoSleeve = parseFloat(
+              ajusteStringToNum(divPrecoTotalCapsula.innerText).replace(
+                ",",
+                ".",
+              ),
+            );
+            let precoComDesconto = (precoSleeve - precoSleeve * 0.1).toFixed(2);
+            precoComDesconto = precoComDesconto.toString().replace(".", ",");
+
+            let divPrime = document.createElement("div");
+            divPrime.classList.add("_capsuleSleeveLabel_10cre_45");
+            divPrime.classList.add("primeContainer");
+            divPrime.innerHTML =
+              "<span style='font-size: 14px;'> R$" +
+              precoComDesconto +
+              "</span> na Assinatura";
+            divPrime.addEventListener("click", function (e) {
+              e.stopPropagation();
+              sendGAEvent("click_economize_assinatura_plp");
+              window.location.href =
+                "https://www.nespresso.com/br/pt/pedido-automatico";
+            });
+            divPrecoCapsula.append(divPrime);
+          }
+        });
+      }
+    } else if (regexPDPs.test(pagePathAtual)) {
+      let conteudoCardCapsulas = document.querySelector(
+        "nb-sku-coffee .cb-content, nb-plp-product-card .cn_card__content",
+      );
+      let divPreco = document.querySelector(
+        "nb-plp-product-card .cn_card__priceWrapper, nb-sku-coffee .cb-shop",
+      );
+      let precoCaixaPDP = document.querySelector(
+        "nb-sku-coffee .cb-price-current, nb-plp-product-card .cn_card__priceWrapper--current",
+      );
+      let buscaCardPDP = setInterval(function () {
+        conteudoCardCapsulas = document.querySelector(
+          "nb-sku-coffee .cb-content, nb-plp-product-card .cn_card__content",
+        );
+        divPreco = document.querySelector(
+          "nb-plp-product-card .cn_card__priceWrapper, nb-sku-coffee .cb-shop",
+        );
+        precoCaixaPDP = document.querySelector(
+          "nb-sku-coffee .cb-price-current, nb-plp-product-card .cn_card__priceWrapper--current",
+        );
+
+        if (conteudoCardCapsulas && precoCaixaPDP) {
+          clearInterval(buscaCardPDP);
+          let tagsCard = conteudoCardCapsulas.parentNode.querySelectorAll(
+            "nb-card-labels span",
+          );
+          let isAbleToAdjustPDP = true;
+          tagsCard.forEach(function (tag) {
+            if (tag.innerText.toLowerCase() == "edição limitada") {
+              isAbleToAdjustPDP = false;
+            }
+          });
+          if (isAbleToAdjustPDP) {
+            let divPrimePDP = document.createElement("div");
+            let sectionPrimePDP = document.createElement("section");
+            let divDescontoPrime = document.createElement("div");
+            let paragrafoApartirCapsulas = document.createElement("p");
+            paragrafoApartirCapsulas.innerText = "* A partir de 30 cápsulas";
+
+            precoCaixaPDP = parseFloat(
+              ajusteStringToNum(precoCaixaPDP.innerText),
+            );
+            let precoComDesconto = (precoCaixaPDP - precoCaixaPDP * 0.1)
+              .toFixed(2)
+              .toString();
+            precoComDesconto = precoComDesconto.replace(".", ",");
+
+            divPrimePDP.classList.add("primePDP");
+            divDescontoPrime.classList.add("primeDescontoProdutoContainer");
+            sectionPrimePDP.classList.add("beneficiosPrime");
+            paragrafoApartirCapsulas.classList.add("observacaoPrime");
+
+            divDescontoPrime.innerHTML =
+              '<h3>Não tem Assinatura?<a href="https://www.nespresso.com/br/pt/pedido-automatico" target="_blank">Conheça os benefícios</a></h3><a href="/br/pt/myaccount/standing-orders#/orders/list" title="Economize com a Assinatura: 10% de desconto e frete grátis para pedidos de 30+ cápsulas."><div class="descontoPDP"><p>Assine e pague:</p><h5><span class="precoCaixaPrime">R$ ' +
+              precoComDesconto +
+              '</span><br><span>por caixa com Assinatura</span></h5><span class="flagDescontoPDP">-10%</span></div></a>';
+            divPrimePDP.append(divDescontoPrime);
+            divPrimePDP.append(sectionPrimePDP);
+            sectionPrimePDP.append(
+              beneficioPrime(
+                '<nb-icon icon="24/symbol/promotions"></nb-icon>',
+                "10% OFF*",
+                "",
+              ),
+            );
+            sectionPrimePDP.append(
+              beneficioPrime(
+                '<nb-icon icon="32/delivery/free-delivery"></nb-icon>',
+                "Frete Grátis*",
+                "",
+              ),
+            );
+            sectionPrimePDP.append(
+              beneficioPrime(
+                '<nb-icon icon="24/service/effortless-experience"></nb-icon>',
+                "Zero mensalidade",
+                "",
+              ),
+            );
+
+            conteudoCardCapsulas.insertBefore(
+              divPrimePDP,
+              divPreco.nextSibling,
+            );
+            let botaoAssinaturaPrime = document.createElement("a");
+            botaoAssinaturaPrime.setAttribute(
+              "href",
+              "/br/pt/myaccount/standing-orders#/orders/list",
+            );
+            botaoAssinaturaPrime.setAttribute(
+              "title",
+              "Economize com a Assinatura: 10% de desconto e frete grátis para pedidos de 30+ cápsulas.",
+            );
+            botaoAssinaturaPrime.classList.add("signUpPrime");
+            botaoAssinaturaPrime.innerText = "ASSINE AGORA";
+            divPrimePDP.append(botaoAssinaturaPrime);
+            divPrimePDP.append(paragrafoApartirCapsulas);
+          }
+          document
+            .querySelector(
+              ".primeDescontoProdutoContainer a[href='/br/pt/myaccount/standing-orders#/orders/list']",
+            )
+            .addEventListener("click", function () {
+              sendGAEvent("click_assine_e_pague_pdp");
+            });
+          document
+            .querySelector(".primePDP a.signUpPrime")
+            .addEventListener("click", function () {
+              sendGAEvent("click_cta_assinatura_pdp");
+            });
+        }
+      }, 1000);
+
+      function beneficioPrime(iconHTML, title, description) {
+        let beneficioPrime = document.createElement("div");
+        beneficioPrime.classList.add("containerBeneficioPrime");
+        beneficioPrime.innerHTML =
+          iconHTML + "<p>" + title + "</p><span>" + description + "</span>";
+        return beneficioPrime;
+      }
+    }
+  }
+
+  function ajusteStringToNum(string) {
+    return string.replace(/[^0-9.,]+/g, "");
+  }
+
+  let css = `<style>
+          @media screen and (max-width: 768px) {
+            .primeContainer {
+              font-size: 10px !important;
+            }
+            .descontoPDP {
+              padding: 18px 4px !important;
+              font-size: 14px !important;
+            }
+          }
+    
+         .primeAB div.AddToBagButtonSmall__quantity {
+            position: absolute !important;
+          }
+          .primeAB span[class*='addToCart']{
+            align-items:flex-start !important;
+          }
+          .primeContainer {
+            font-weight: bold;
+            font-size: 12px;
+            background-color: rgb(153, 34, 26);
+            color: #fff;
+            padding: 4px;
+            margin-top: 8px;
+            margin-bottom: 4px;
+            border-radius: 4px;
+          }
+          div.primePDP,
+          div.primePDP * {
+            font-family: "NespressoLucas", Helvetica, Arial, sans-serif;
+          }
+        
+          div.primePDP {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-top: 16px;
+          }
+          .primeDescontoProdutoContainer {
+            width: 100%;
+          }
+          .primeDescontoProdutoContainer > h3 {
+            font-size: 18px;
+            display: none;
+          }
+          .descontoPDP {
+            padding: 18px;
+            display: flex;
+            justify-content: space-evenly;
+            font-size: 18px;
+            background-color: #86724e;
+            color: #fff;
+            border-radius: 16px 16px 0px 0px;
+            align-items: center;
+            width: 100%;
+          }
+          span.flagDescontoPDP {
+            background: #fff;
+            color: #000;
+            font-weight: 800;
+            padding: 2px 4px;
+            border-radius: 20px;
+          }
+          .descontoPDP > h5 {
+            font-weight: 700;
+          }
+          .descontoPDP .precoCaixaPrime {
+            font-size: 26px;
+          }
+          .descontoPDP span:not(.precoCaixaPrime) {
+            font-size: 12px;
+          }
+        
+          section.beneficiosPrime {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            padding: 12px !important;
+            border-radius: 0px 0px 16px 16px;
+            background-color: #fff;
+            box-shadow: 0 0 8px #17171a0d, 0 2px 8px #17171a14;
+          }
+          div.containerBeneficioPrime {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            width: 70px;
+          }
+          div.containerBeneficioPrime p {
+            font-weight: 700;
+          }
+        
+          div.containerBeneficioPrime nb-icon svg {
+            min-width: 32px;
+            min-height: 32px;
+          }
+          .observacaoPrime {
+            margin-top: 16px !important;
+          }
+          .signUpPrime {
+            background-color: #000;
+            border: 1px solid #000;
+            color: #fff;
+            font-weight: 400;
+            font-size: 20px;
+            padding: 14px 16px;
+            margin-top: 14px;
+            border-radius: 60px;
+            transition: all 0.2s ease-in;
+          }
+          .signUpPrime:hover {
+            background-color: #fff;
+            color: #000;
+            scale: 1.01;
+          }
+        </style>`;
+  document.head.insertAdjacentHTML("beforeend", css);
+})();

@@ -251,6 +251,7 @@
   }
 
   function updateImage(img) {
+    if (!img.closest("plp-products")) return;
     const productEl = img.closest("nb-sku-machine");
     if (!productEl) return;
 
@@ -307,7 +308,9 @@
 
   // ?? inicial + retry (IMPORTANTE)
   function init() {
-    document.querySelectorAll("nb-sku-machine img").forEach(updateImage);
+    document
+      .querySelectorAll("plp-products nb-sku-machine img")
+      .forEach(updateImage);
   }
 
   init();

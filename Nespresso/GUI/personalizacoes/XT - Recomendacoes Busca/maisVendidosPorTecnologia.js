@@ -1,34 +1,43 @@
 (function () {
   "use strict";
-  if (window.abBarraBusca) {
+  if (window.recomendacoesBuscaXT) {
     return;
   }
-  window.abBarraBusca = "true";
+  window.recomendacoesBuscaXT = "true";
   var isDesktop = window.innerWidth >= 996;
-
+  gtmDataObject = window.gtmDataObject || [];
+  gtmDataObject.push({
+    event: "adobe_target",
+    event_raised_by: "adobe target",
+    experiment_id: "${campaign.id}",
+    experiment_type: "AB",
+    experiment_name: "${campaign.name}",
+    experiment_variant_id: "${campaign.recipe.id}",
+    experiment_variant: "${campaign.recipe.name}",
+  });
   var sugestoesRecomendacoes = [
     {
-      href: "https://www.nespresso.com/br/pt/busca?q=Pixie+Redesign+Dark+Blue+110v&tab=Products&p=1",
+      href: "https://www.nespresso.com/br/pt/busca?action=searchboxSubmitStandalone&q=Vertuo",
       texto: "Vertuo",
       hasFlag: false,
     },
     {
-      href: "https://www.nespresso.com/br/pt/busca?q=Vertuo+Pop+Red+110V&tab=Products&p=1",
+      href: "https://www.nespresso.com/br/pt/busca?q=aeroccino&tab=Products&p=1",
       texto: "Aeroccino",
       hasFlag: false,
     },
     {
-      href: "https://www.nespresso.com/br/pt/busca?q=BSO+50+Caps+Variedades+2020&tab=Products&p=1",
+      href: "https://www.nespresso.com/br/pt/busca?q=ristretto&tab=Products&p=1",
       texto: "Ristretto",
       hasFlag: true,
     },
     {
-      href: "https://www.nespresso.com/br/pt/busca?q=Travel+Mug+S+Terracotta&tab=Products&p=1",
+      href: "https://www.nespresso.com/br/pt/busca?q=Volluto&tab=Products&p=1",
       texto: "Volluto",
       hasFlag: false,
     },
     {
-      href: "https://www.nespresso.com/br/pt/busca?q=CitiZ+Platinum+Titan+C140+110v&tab=Products&p=1",
+      href: "https://www.nespresso.com/br/pt/busca?q=essenza&tab=Products&p=1",
       texto: "Essenza",
       hasFlag: false,
     },
@@ -36,33 +45,33 @@
 
   var sugestoesImagens = [
     {
-      href: "https://www.nespresso.com/br/pt/order/capsules/original/capsulas-cafe-ispirazione-ristretto-italiano?q=ristretto&search_category=Products&selected_term=ristretto&searchProductResults=32&searchArticlesResults=37&searchFaqResults=1",
-      produto: "Ristretto Italiano",
-      tecnologia: "Original",
+      href: "https://www.nespresso.com/br/pt/order/machines/vertuo/cafeteira-vertuo-pop-vermelho-pimenta-110v",
+      produto: "Vertuo Pop",
+      tecnologia: "Vertuo",
       imagemProduto:
-        "https://www.nespresso.com/ecom/medias/sys_master/public/12807617347614/Desktop-Standard-2000x2000.png",
+        "https://www.nespresso.com/shared_res/agility/global/machines/vl/sku-main-info-product/vertuo-pop-c_liquorice-black_front-coffee-nespresso_2x.png?impolicy=small&imwidth=600&imdensity=1",
       hasFlag: true,
     },
     {
-      href: "https://www.nespresso.com/br/pt/order/capsules/vertuo/capsula-cafe-ristretto-classico?q=ristretto&search_category=Products&selected_term=ristretto&searchProductResults=32&searchArticlesResults=37&searchFaqResults=1",
-      produto: "Ristretto Clássico",
-      tecnologia: "Vertuo",
-      imagemProduto:
-        "https://www.nespresso.com/ecom/medias/sys_master/public/27750724042782/C-1131-ResponsiveStandard.png",
-      hasFlag: false,
-    },
-    {
-      href: "https://www.nespresso.com/br/pt/order/capsules/original/capsulas-cafe-ispirazione-ristretto-italiano-decaffeinato?q=ristretto&search_category=Products&selected_term=ristretto&searchProductResults=32&searchArticlesResults=37&searchFaqResults=1",
-      produto: "Ristretto Italiano Decaffeinato",
+      href: "https://www.nespresso.com/br/pt/order/machines/original/maquina-cafe-comprar-essenza-mini-preta-110v",
+      produto: "Essenza Mini",
       tecnologia: "Original",
       imagemProduto:
-        "https://www.nespresso.com/ecom/medias/sys_master/public/32925718216734/Ristretto-decaf-2000x2000.png",
+        "https://www.nespresso.com/ecom/medias/sys_master/public/46921759784990/EssenzaMiniPreta-2000x2000-110v.png?impolicy=small&imwidth=284&imdensity=1",
+      hasFlag: true,
+    },
+    {
+      href: "https://www.nespresso.com/br/pt/order/machines/original/comprar-maquina-cafe-pixie-redesign-prata-110v",
+      produto: "Pixie Redesign",
+      tecnologia: "Original",
+      imagemProduto:
+        "https://www.nespresso.com/ecom/medias/sys_master/public/45990015270942/PixiePrata-2000x2000-110v-TQ.png?impolicy=small&imwidth=284&imdensity=1",
       hasFlag: false,
     },
   ];
 
   var svgLupa =
-    '<svg viewBox="0 0 16 16" stroke="white" stroke-width="1.2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="_icon_1v3wd_216">' +
+    '<svg viewBox="0 0 16 16" width="24" height="24" stroke="white" stroke-width="1.2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="_icon_1v3wd_216">' +
     '<path d="m6.4 0c3.5 0 6.4 2.9 6.4 6.4 0 1.4-.4 2.7-1.2 3.7l4 4c.4.4.4 1 .1 1.5l-.1.1c-.2.2-.5.3-.8.3s-.6-.1-.8-.3l-4-4c-1 .7-2.3 1.2-3.7 1.2-3.4-.1-6.3-3-6.3-6.5s2.9-6.4 6.4-6.4zm0 2.1c-2.3 0-4.3 1.9-4.3 4.3s1.9 4.3 4.3 4.3 4.3-1.9 4.3-4.3-1.9-4.3-4.3-4.3z"></path>' +
     "</svg>";
 
@@ -70,6 +79,16 @@
     document.head.insertAdjacentHTML("beforeend", "<style>" + css + "</style>");
   }
 
+  function sendGAEvent(label) {
+    window.gtmDataObject = window.gtmDataObject || [];
+    gtmDataObject.push({
+      event: "local_event", //as is, do not change!!
+      event_raised_by: "br", //please put the country code ex: us, ch, it
+      local_event_category: "recomendacoes_busca_target", //free to fill field, please use lower case
+      local_event_action: "click", //free to fill field, please use lower case
+      local_event_label: label, //free to fill field, please use lower case
+    });
+  }
   function esperarElemento(selector, callback) {
     var intervalo = setInterval(function () {
       var elemento = document.querySelector(selector);
@@ -104,7 +123,7 @@
             width: 200%;
           }
     
-          .sugestoesRecomendacao {
+          .containerRecomendacoesBusca .sugestoesRecomendacao {
             background: #f6f7f9;
             border-right: 1px solid #e5e8e8;
             display: grid;
@@ -114,13 +133,13 @@
             width: 50%;
           }
     
-          .sugestoesRecomendacao:after {
+          .containerRecomendacoesBusca .sugestoesRecomendacao:after {
             background: #fff;
             content: "";
             grid-row: span 6;
           }
     
-          .sugestoesResultadosImagens {
+          .containerRecomendacoesBusca .sugestoesResultadosImagens {
             background: #f6f7f9;
             color: #17171a;
             display: grid;
@@ -131,7 +150,7 @@
             width: 50%;
           }
     
-          .linhaSugestao {
+          .containerRecomendacoesBusca .linhaSugestao {
             align-items: center;
             background: #fff;
             color: #17171a;
@@ -143,7 +162,7 @@
             width: 100%;
           }
     
-          .imagemSugestaoResultado {
+          .containerRecomendacoesBusca .imagemSugestaoResultado {
             align-items: center;
             background: #fff;
             color: #17171a;
@@ -151,51 +170,57 @@
             padding: 0 2rem;
           }
     
-          .colunaResultadosRecomendacao {
+          .containerRecomendacoesBusca .colunaResultadosRecomendacao {
             display: flex;
             justify-content: center;
             padding: 3px;
           }
     
-          .linhaImagensResultados {
+          .containerRecomendacoesBusca .linhaImagensResultados {
             display: flex;
             padding: 3px;
           }
     
-          .colunaResultadosRecomendacao img {
+          .containerRecomendacoesBusca .colunaResultadosRecomendacao img {
             height: auto;
             max-width: none;
             width: 48px;
           }
     
-          .colunaResultadosRecomendacao strong {
+          .containerRecomendacoesBusca .colunaResultadosRecomendacao strong {
             font-size: 16px;
             font-weight: 700;
           }
     
-          .colunaResultadosRecomendacao .linhaImagensResultados.tecnologia {
+          .containerRecomendacoesBusca .colunaResultadosRecomendacao .linhaImagensResultados.tecnologia {
             color: #6f6f70;
             font-size: 14px;
             font-weight: 500;
           }
     
-          .linhaSugestao:hover,.imagemSugestaoResultado:hover {
+          .containerRecomendacoesBusca .linhaSugestao:hover,.containerRecomendacoesBusca .imagemSugestaoResultado:hover {
             background-color:#F6F7F9;
           }
           .containerRecomendacoesBusca .flag{
-            background: #D14900 !important;
+            background: #19171C !important;
             color: #fff;
             font-weight: 600;
             padding: 2px 4px;
             border-radius: 4px;
             font-size:16px;
           }
-          .imagemSugestaoResultado .flag{
+          .containerRecomendacoesBusca .imagemSugestaoResultado .flag{
             margin-left:6px;
             font-size:16px;
             align-self:flex-start;
           }
-          .imagemSugestaoResultado .firstColumnRecomendacoes{
+          .containerRecomendacoesBusca .imagemSugestaoResultado .flag.Vertuo{
+            background-color:#54301A !important;
+          }
+          .containerRecomendacoesBusca .imagemSugestaoResultado .flag.Original{
+            background-color:#876C43 !important;
+          }
+          .containerRecomendacoesBusca .imagemSugestaoResultado .firstColumnRecomendacoes{
             display:flex;
             flex-direction:column;
           }
@@ -226,7 +251,9 @@
             ? "<div class='flag'>Mais vendido</div>"
             : "";
           var sugestaoHTML =
-            "<a class='linhaSugestao' href='" +
+            "<a class='linhaSugestao' title='" +
+            sugestao.texto +
+            "' href='" +
             sugestao.href +
             "'>" +
             svgLupa +
@@ -244,10 +271,16 @@
           );
         sugestoesImagens.forEach(function (sugestao) {
           let flag = sugestao.hasFlag
-            ? "<div class='flag'>Mais vendido</div>"
+            ? "<div class='flag " +
+              sugestao.tecnologia +
+              "'>Mais vendido em " +
+              sugestao.tecnologia +
+              "</div>"
             : "";
           var sugestaoHTML =
-            "<a class='imagemSugestaoResultado' href='" +
+            "<a class='imagemSugestaoResultado' title='" +
+            sugestao.produto +
+            "' href='" +
             sugestao.href +
             "'>" +
             "<div class='colunaResultadosRecomendacao'><img alt='" +
@@ -292,6 +325,28 @@
           }
         });
       }
+      document
+        .querySelectorAll(".sugestoesRecomendacao a")
+        .forEach(function (a) {
+          a.addEventListener("click", function (e) {
+            let label = e.currentTarget.getAttribute("title");
+            if (label) {
+              label = label.toLowerCase().replaceAll(" ", "_");
+              sendGAEvent("busca_click_termos_" + label);
+            }
+          });
+        });
+      document
+        .querySelectorAll(".sugestoesResultadosImagens a")
+        .forEach(function (a) {
+          a.addEventListener("click", function (e) {
+            let label = e.currentTarget.getAttribute("title");
+            if (label) {
+              label = label.toLowerCase().replaceAll(" ", "_");
+              sendGAEvent("busca_click_imagens_" + label);
+            }
+          });
+        });
     }
 
     esperarElemento("cv-search-bar", function (containerBusca) {
@@ -348,7 +403,7 @@
           top: calc(100% + 1px);
           width: 100%;
         }
-        .recomendacoesMobile{
+        .mobileRecomendacoes .recomendacoesMobile{
           background-color: #fff !important;
           border-right: 0;
           display: grid;
@@ -357,7 +412,7 @@
           row-gap: var(--row-gap);
           width: 100%;
         }
-        .linhaSugestao{
+        .mobileRecomendacoes .linhaSugestao{
           gap: .5rem;
           padding: 0;
           align-items: center;
@@ -368,19 +423,19 @@
           height: 100%;
           width: 100%;
         }
-        .linhaSugestao svg{
+        .mobileRecomendacoes .linhaSugestao svg{
           aspect-ratio: 1 / 1;
           display: inline-block;
           height: 1.25rem;
           margin: 0 .25rem;
         }
-        .linhaSugestao:after{
+        .mobileRecomendacoes .linhaSugestao:after{
           background: #fff;
           content: "";
           grid-row: span 6;
         }
-        .recomendacoesMobile .flag{
-          background: #D14900 !important;
+        .mobileRecomendacoes .recomendacoesMobile .flag{
+          background: #19171C !important;
           color: #fff;
           font-weight: 600;
           padding: 2px 4px;
@@ -417,7 +472,9 @@
                   ? "<div class='flag'>Mais vendido</div>"
                   : "";
                 var sugestaoHTML =
-                  "<a class='linhaSugestao' href='" +
+                  "<a class='linhaSugestao' title='" +
+                  sugestao.texto +
+                  "' href='" +
                   sugestao.href +
                   "'>" +
                   svgLupa +
@@ -432,6 +489,17 @@
                 );
               });
             }
+            document
+              .querySelectorAll(".recomendacoesMobile a")
+              .forEach(function (a) {
+                a.addEventListener("click", function (e) {
+                  let label = e.currentTarget.getAttribute("title");
+                  if (label) {
+                    label = label.toLowerCase().replaceAll(" ", "_");
+                    sendGAEvent("busca_click_termos_" + label);
+                  }
+                });
+              });
           }, 500);
         });
       }

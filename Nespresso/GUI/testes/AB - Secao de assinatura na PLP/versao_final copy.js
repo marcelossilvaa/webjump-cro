@@ -99,6 +99,33 @@
     .nespresso-assinatura-plp-cta:hover {
       background: #1a5e42;
     }
+    .nespresso-assinatura-plp-cta-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .nespresso-assinatura-plp-cta-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      color: #212121;
+      font-family: 'NespressoLucas', Arial, sans-serif;
+      font-size: 20px;
+      font-weight: 400;
+      padding: 14px 36px;
+      border-radius: 30px;
+      text-decoration: none;
+      border: 1px solid #212121;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      width: fit-content;
+    }
+    .nespresso-assinatura-plp-cta-secondary:hover {
+      background: #000;
+      color: #fff;
+    }
     .nespresso-assinatura-plp-right {
       flex: 1;
       display: flex;
@@ -197,6 +224,14 @@
         text-align: center;
         justify-content: center;
       }
+      .nespresso-assinatura-plp-cta-secondary {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+      }
+      .nespresso-assinatura-plp-cta-group {
+        flex-direction: column;
+      }
       .nespresso-assinatura-plp-disclaimer {
         margin-top: 16px;
       }
@@ -206,7 +241,7 @@
         display: none !important;
       }
       .nespresso-assinatura-plp-cta-desktop {
-        display: inline-flex !important;
+        display: flex !important;
       }
     }
   `;
@@ -217,7 +252,10 @@
         <div class="nespresso-assinatura-plp-left">
           <h2>Eleve sua experiência Nespresso com a nossa <strong>Assinatura de Café</strong></h2>
           <p>Configure um pedido automático do seu jeito e aproveite  benefícios exclusivos</p>
-          <a href="https://www.nespresso.com/br/pt/myaccount/standing-orders" class="nespresso-assinatura-plp-cta nespresso-assinatura-plp-cta-desktop">Faça sua Assinatura</a>
+          <div class="nespresso-assinatura-plp-cta-group nespresso-assinatura-plp-cta-desktop">
+            <a href="https://www.nespresso.com/br/pt/myaccount/standing-orders" class="nespresso-assinatura-plp-cta">Faça sua Assinatura</a>
+            <a href="https://www.nespresso.com/br/pt/myaccount/standing-orders" class="nespresso-assinatura-plp-cta-secondary">Conheça todos os benefícios</a>
+          </div>
         </div>
         <div class="nespresso-assinatura-plp-right">
           <div class="nespresso-assinatura-plp-benefit">
@@ -253,7 +291,10 @@
           </div>
           <span class="nespresso-assinatura-plp-disclaimer">*Após o 3° mês sua assinatura terá 10% OFF em todos os pedidos acima de 30 cápsulas. Oferta válida para Novos Assinantes</span>
         </div>
-        <a href="https://www.nespresso.com/br/pt/myaccount/standing-orders" class="nespresso-assinatura-plp-cta nespresso-assinatura-plp-cta-mobile">Faça sua Assinatura</a>
+        <div class="nespresso-assinatura-plp-cta-group nespresso-assinatura-plp-cta-mobile">
+          <a href="https://www.nespresso.com/br/pt/myaccount/standing-orders" class="nespresso-assinatura-plp-cta">Faça sua Assinatura</a>
+          <a href="https://www.nespresso.com/br/pt/myaccount/standing-orders" class="nespresso-assinatura-plp-cta-secondary">Conheça todos os benefícios</a>
+        </div>
       </div>
     </div>
   `;
@@ -345,6 +386,14 @@
       .forEach(function (btn) {
         btn.addEventListener("click", function () {
           sendGAEvent("plp_faca_sua_assinatura");
+        });
+      });
+
+    section
+      .querySelectorAll(".nespresso-assinatura-plp-cta-secondary")
+      .forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          sendGAEvent("plp_conheca_todos_os_beneficios");
         });
       });
   }
