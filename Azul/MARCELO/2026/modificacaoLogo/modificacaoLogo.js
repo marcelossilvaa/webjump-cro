@@ -5,6 +5,14 @@
   const TARGET_URL = 'https://www.voeazul.com.br/br/pt/home';
   const LOGO_HREF_NOVO = 'https://www.voeazul.com.br/br/pt/azul-cbf';
 
+  function isStageEnvironment() {
+    return (window.location.hostname || '').toLowerCase().includes('stage');
+  }
+
+  if (isStageEnvironment()) {
+    return;
+  }
+
   function isTargetPage() {
     const currentUrl = window.location.origin + window.location.pathname;
     return currentUrl === TARGET_URL;
