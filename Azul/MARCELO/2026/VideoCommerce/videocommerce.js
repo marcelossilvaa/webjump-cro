@@ -32,11 +32,20 @@
   const COMPONENT_WRAPPER_VALUE = '1';
   const SDK_SCRIPT_ATTR = 'data-wj-streamshop-sdk';
 
-  const STREAMSHOP_SDKS = [
+  const STREAMSHOP_SDKS_V1_ONLY = [
     'https://assets.streamshop.com.br/sdk-ads/liveshop-ads-video.min.js',
     'https://assets.streamshop.com.br/sdk-ads/liveshop-ads-carousel.min.js',
-    'https://assets.streamshop.com.br/sdk-ads/liveshop-ads-carousel-v2.min.js',
   ];
+  const STREAMSHOP_SDKS = STREAMSHOP_SDKS_V1_ONLY.concat([
+    'https://assets.streamshop.com.br/sdk-ads/liveshop-ads-carousel-v2.min.js',
+  ]);
+
+  function getAdsSdkSrcsToLoad() {
+    if (DUAL_LAYOUT_DEMO) {
+      return STREAMSHOP_SDKS_V1_ONLY;
+    }
+    return USE_CAROUSEL_V2 ? STREAMSHOP_SDKS : STREAMSHOP_SDKS_V1_ONLY;
+  }
 
   function logDebug() {
     if (!DEBUG && !FORCE_LOGS) return;
@@ -117,7 +126,7 @@
 
   function isAllNeededCarouselsDefined() {
     if (DUAL_LAYOUT_DEMO) {
-      return isCarouselDefined() && isCarouselV2Defined();
+      return isCarouselDefined();
     }
     return USE_CAROUSEL_V2 ? isCarouselV2Defined() : isCarouselDefined();
   }
@@ -130,7 +139,8 @@
 
     let chain = loadOverlaySdkOnce();
 
-    for (let i = 0; i < STREAMSHOP_SDKS.length; i++) {
+    const sdkSrcs = getAdsSdkSrcsToLoad();
+    for (let i = 0; i < sdkSrcs.length; i++) {
       (function (src) {
         chain = chain.then(function () {
           if (isAllNeededCarouselsDefined()) return true;
@@ -165,14 +175,14 @@
             document.head.appendChild(script);
           });
         });
-      })(STREAMSHOP_SDKS[i]);
+      })(sdkSrcs[i]);
     }
 
     return chain.then(function () {
       logDebug(
         LOG_PREFIX,
         'aguardando custom element(s)...',
-        DUAL_LAYOUT_DEMO ? 'v1+v2 (demo)' : USE_CAROUSEL_V2 ? 'v2' : 'v1',
+        DUAL_LAYOUT_DEMO ? 'v1 (demo)' : USE_CAROUSEL_V2 ? 'v2' : 'v1',
         'customElements disponíveis?',
         !!(window.customElements && window.customElements.get),
       );
@@ -189,17 +199,6 @@
         return ok;
       });
     });
-  }
-
-  function buildCarouselHorizontalV1() {
-    const el = document.createElement('liveshop-ads-carousel');
-    el.setAttribute('height', '275px');
-    el.setAttribute('width', '100%');
-    el.setAttribute('videos-width', '400px');
-    el.setAttribute('border-radius', '25px');
-    el.setAttribute('use-active-videos-from', 'azullinhasaereas');
-    el.setAttribute('data-wj-videocommerce-variant', 'horizontal');
-    return el;
   }
 
   function buildCarouselHorizontalV2() {
@@ -225,26 +224,6 @@
     return el;
   }
 
-  function buildCarouselVerticalV2() {
-    const el = document.createElement('liveshop-ads-carousel-v2');
-    el.setAttribute('height', '412px');
-    el.setAttribute('width', '100%');
-    el.setAttribute('videos-width', '263px');
-    el.setAttribute('border-radius', '25px');
-    el.setAttribute('use-active-videos-from', 'azullinhasaereas');
-    el.setAttribute('opacity', '1');
-    el.setAttribute('data-wj-videocommerce-variant', 'vertical');
-    return el;
-  }
-
-  function buildCarouselV2Demo326() {
-    const el = document.createElement('liveshop-ads-carousel-v2');
-    el.setAttribute('height', '326px');
-    el.setAttribute('use-active-videos-from', 'azullinhasaereas');
-    el.setAttribute('data-wj-videocommerce-variant', 'v2-326');
-    return el;
-  }
-
   function injectDemoStylesOnce() {
     if (document.getElementById(DEMO_STYLE_ID)) return;
     const style = document.createElement('style');
@@ -258,11 +237,82 @@
     document.head.appendChild(style);
   }
 
+  function isMobileViewport() {
+    try {
+      if (window.matchMedia) {
+        return window.matchMedia('(max-width: 766px)').matches;
+      }
+    } catch (e) {}
+    return typeof window.innerWidth === 'number' && window.innerWidth <= 766;
+  }
+
+  const PDF_ANCHOR_HREF_SUB = 'Guia-de-Experiencias-WaltDisneyWorld.pdf';
+
+  function getMobileDisneyHeroCapsule() {
+    const capsules = document.querySelectorAll(
+      '.container-capsule.containerDefault.hide-on-desktop',
+    );
+    if (!capsules || !capsules.length) return null;
+    const pdfSel = 'a[href*="' + PDF_ANCHOR_HREF_SUB + '"]';
+    let i;
+    for (i = 0; i < capsules.length; i++) {
+      const c = capsules[i];
+      if (!c.querySelector(pdfSel)) continue;
+      if (
+        c.querySelector('source[srcset*="kv-personagens-mobile"]') ||
+        c.querySelector('img[src*="kv-personagens-mobile"]')
+      ) {
+        return c;
+      }
+    }
+    for (i = 0; i < capsules.length; i++) {
+      const c = capsules[i];
+      if (!c.querySelector(pdfSel)) continue;
+      if (c.querySelector('.BannerContainer.variation1')) {
+        return c;
+      }
+    }
+    return null;
+  }
+
+  function getInsertionPlacement(anchorEl) {
+    if (isMobileViewport()) {
+      let capsule = null;
+      if (anchorEl) {
+        capsule = anchorEl.closest('.container-capsule.containerDefault.hide-on-desktop');
+      }
+      if (!capsule) {
+        capsule = getMobileDisneyHeroCapsule();
+      }
+      if (capsule && capsule.parentNode) {
+        return { mode: 'before', parent: capsule.parentNode, ref: capsule };
+      }
+      return null;
+    }
+    if (!anchorEl) return null;
+    const deskCap = anchorEl.closest('.container-capsule.containerDefault.hide-on-mobile');
+    if (deskCap && deskCap.parentNode) {
+      return { mode: 'before', parent: deskCap.parentNode, ref: deskCap };
+    }
+    const block = getInsertionBlockAboveAnchor(anchorEl);
+    if (block && block.parentNode) {
+      return { mode: 'before', parent: block.parentNode, ref: block };
+    }
+    return null;
+  }
+
+  function insertWrapperForPlacement(outer, placement) {
+    placement.parent.insertBefore(outer, placement.ref);
+  }
+
   function createOuterWrapper() {
     const wrapper = document.createElement('div');
     wrapper.setAttribute(COMPONENT_WRAPPER_ATTR, COMPONENT_WRAPPER_VALUE);
     if (DUAL_LAYOUT_DEMO) {
       wrapper.setAttribute('data-wj-videocommerce-wrap', '1');
+    }
+    if (!isMobileViewport()) {
+      wrapper.style.setProperty('margin-bottom', '20px');
     }
     return wrapper;
   }
@@ -275,24 +325,40 @@
       slotV.setAttribute('data-wj-videocommerce-slot', 'vertical');
       slotV.appendChild(buildCarouselVerticalV1());
 
-      const slotH = document.createElement('div');
-      slotH.setAttribute('data-wj-videocommerce-slot', 'horizontal');
-      slotH.appendChild(buildCarouselHorizontalV1());
-
-      const slotV2 = document.createElement('div');
-      slotV2.setAttribute('data-wj-videocommerce-slot', 'carousel-v2');
-      slotV2.appendChild(buildCarouselV2Demo326());
-
       outer.appendChild(slotV);
-      outer.appendChild(slotH);
-      outer.appendChild(slotV2);
     } else {
       outer.appendChild(buildCarouselHorizontalV2());
     }
   }
 
   function getTargetAnchor() {
-    return document.querySelector('a[href*="Guia-de-Experiencias-WaltDisneyWorld.pdf"]');
+    const links = document.querySelectorAll('a[href*="' + PDF_ANCHOR_HREF_SUB + '"]');
+    if (!links || !links.length) return null;
+    let i;
+    if (isMobileViewport()) {
+      const heroCap = getMobileDisneyHeroCapsule();
+      if (heroCap) {
+        const inner = heroCap.querySelector('a[href*="' + PDF_ANCHOR_HREF_SUB + '"]');
+        if (inner) return inner;
+      }
+      for (i = 0; i < links.length; i++) {
+        if (links[i].closest('.container-capsule.containerDefault.hide-on-desktop')) {
+          return links[i];
+        }
+      }
+    } else {
+      for (i = 0; i < links.length; i++) {
+        if (links[i].closest('.container-capsule.containerDefault.hide-on-mobile')) {
+          return links[i];
+        }
+      }
+      for (i = 0; i < links.length; i++) {
+        if (!links[i].closest('.container-capsule.containerDefault.hide-on-desktop')) {
+          return links[i];
+        }
+      }
+    }
+    return links[0];
   }
 
   function getInsertionReferenceContainer(anchorEl) {
@@ -304,21 +370,35 @@
     return anchorEl.closest('.container-capsule.containerDefault');
   }
 
-  function injectAfter(referenceEl) {
-    if (!referenceEl || !referenceEl.parentNode) return false;
+  function getInsertionBlockAboveAnchor(anchorEl) {
+    if (!anchorEl) return null;
+    const putdhw = anchorEl.closest('.css-putdhw');
+    if (putdhw && putdhw.parentNode) {
+      return putdhw.parentNode;
+    }
+    return getInsertionReferenceContainer(anchorEl);
+  }
+
+  function injectAfter(anchorEl) {
+    if (!anchorEl) return false;
+
+    const placementStart = getInsertionPlacement(anchorEl);
+    if (!placementStart || !placementStart.parent) {
+      return false;
+    }
 
     if (window[INJECT_DONE_KEY]) {
       logDebug(LOG_PREFIX, 'injeção já concluída anteriormente. Ignorando.');
       return true;
     }
 
-    const next = referenceEl.nextElementSibling;
+    const prev = placementStart.ref.previousElementSibling;
     if (
-      next &&
-      next.getAttribute &&
-      next.getAttribute(COMPONENT_WRAPPER_ATTR) === COMPONENT_WRAPPER_VALUE
+      prev &&
+      prev.getAttribute &&
+      prev.getAttribute(COMPONENT_WRAPPER_ATTR) === COMPONENT_WRAPPER_VALUE
     ) {
-      logDebug(LOG_PREFIX, 'já existe wrapper logo após o bloco alvo. Nada a fazer.');
+      logDebug(LOG_PREFIX, 'já existe wrapper imediatamente acima da cápsula alvo. Nada a fazer.');
       window[INJECT_DONE_KEY] = true;
       return true;
     }
@@ -364,11 +444,11 @@
           warnDebug(LOG_PREFIX, 'âncora não encontrada após SDK ok; abortando inserção.');
           return;
         }
-        const refNow = getInsertionReferenceContainer(anchorNow);
-        if (!refNow || !refNow.parentNode) {
+        const placementNow = getInsertionPlacement(anchorNow);
+        if (!placementNow || !placementNow.parent) {
           warnDebug(
             LOG_PREFIX,
-            'container de referência não encontrado após SDK ok; abortando inserção.',
+            'ponto de inserção não encontrado após SDK ok (mobile/desktop); abortando inserção.',
           );
           return;
         }
@@ -382,11 +462,11 @@
           return;
         }
 
-        const nextNow = refNow.nextElementSibling;
+        const prevNow = placementNow.ref.previousElementSibling;
         if (
-          nextNow &&
-          nextNow.getAttribute &&
-          nextNow.getAttribute(COMPONENT_WRAPPER_ATTR) === COMPONENT_WRAPPER_VALUE
+          prevNow &&
+          prevNow.getAttribute &&
+          prevNow.getAttribute(COMPONENT_WRAPPER_ATTR) === COMPONENT_WRAPPER_VALUE
         ) {
           window[INJECT_DONE_KEY] = true;
           return;
@@ -394,7 +474,7 @@
 
         const outer = createOuterWrapper();
         mountCarouselsIntoWrapper(outer);
-        refNow.parentNode.insertBefore(outer, refNow.nextSibling);
+        insertWrapperForPlacement(outer, placementNow);
         window[INJECT_DONE_KEY] = true;
         logDebug(LOG_PREFIX, 'inserido. Wrapper:', outer, 'dual?', DUAL_LAYOUT_DEMO);
         window.setTimeout(function () {
@@ -440,14 +520,23 @@
       }
       logDebug(LOG_PREFIX, 'âncora encontrada:', anchor);
 
-      const reference = getInsertionReferenceContainer(anchor);
-      if (!reference) {
-        warnDebug(LOG_PREFIX, 'container de referência não encontrado a partir da âncora.');
+      const placement = getInsertionPlacement(anchor);
+      if (!placement) {
+        warnDebug(
+          LOG_PREFIX,
+          'ponto de inserção não encontrado a partir da âncora (mobile/desktop).',
+        );
         return;
       }
-      logDebug(LOG_PREFIX, 'container de referência encontrado:', reference);
+      logDebug(
+        LOG_PREFIX,
+        'inserção:',
+        isMobileViewport()
+          ? 'acima da cápsula hide-on-desktop (hero mobile)'
+          : 'acima da cápsula hide-on-mobile (kv Disney + guia, desktop)',
+      );
 
-      injectAfter(reference);
+      injectAfter(anchor);
     } finally {
       isProcessing = false;
     }
