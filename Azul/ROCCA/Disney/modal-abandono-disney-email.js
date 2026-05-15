@@ -33,6 +33,7 @@
 	let observer = null;
 	let observerDebounce = null;
 	let exitIntentBound = false;
+	let exitIntentTriggered = false;
 
 	function init() {
 		if (window[SCRIPT_KEY]) {
@@ -62,16 +63,40 @@
 			return;
 		}
 
-		document.addEventListener('mouseout', function (event) {
-			if (event.relatedTarget || event.toElement) {
+		function triggerExitIntent() {
+			if (exitIntentTriggered) {
 				return;
 			}
 
-			if (event.clientY > 8) {
+			const opened = openModal('exit_intent', null);
+			if (opened) {
+				exitIntentTriggered = true;
+			}
+		}
+
+		function onPointerLeavingViewport(event) {
+			const related = event.relatedTarget || event.toElement;
+			if (related) {
 				return;
 			}
 
-			openModal('exit_intent', null);
+			const leftTopEdge = event.clientY <= 0;
+			const leftLeftEdge = event.clientX <= 0;
+			const leftRightEdge = event.clientX >= window.innerWidth - 1;
+			if (!leftTopEdge && !leftLeftEdge && !leftRightEdge) {
+				return;
+			}
+
+			triggerExitIntent();
+		}
+
+		document.addEventListener('mouseleave', onPointerLeavingViewport, true);
+		document.addEventListener('mouseout', onPointerLeavingViewport, true);
+
+		window.addEventListener('blur', function () {
+			if (document.visibilityState === 'hidden') {
+				triggerExitIntent();
+			}
 		});
 
 		exitIntentBound = true;
