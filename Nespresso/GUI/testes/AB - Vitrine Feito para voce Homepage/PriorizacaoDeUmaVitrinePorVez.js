@@ -538,7 +538,7 @@
       const styleElement = document.createElement("style");
       styleElement.id = "recomendacoes-style";
       styleElement.textContent = `
-        .containerRecomendacoes {
+        #recomendationForYou.containerRecomendacoes {
           margin: auto;
           max-width: 72.5rem;
           padding: 0 1rem;
@@ -546,15 +546,15 @@
           margin-bottom: 3rem;
         }
         
-        .showcase-section {
+        #recomendationForYou .showcase-section {
           margin-bottom: 3rem;
         }
         
-        .showcase-header {
+        #recomendationForYou .showcase-header {
           margin-bottom: 1.5rem;
         }
         
-        .showcase-title {
+        #recomendationForYou .showcase-title {
           font-weight: 700;
           font-size: 2rem;
           margin: 0 0 0.5rem 0;
@@ -564,7 +564,7 @@
           text-transform: uppercase;
         }
         
-        .showcase-subtitle {
+        #recomendationForYou .showcase-subtitle {
           font-weight: 400;
           font-size: 1.1rem;
           margin: 0;
@@ -573,13 +573,13 @@
           color: rgb(133, 136, 135);
         }
         
-        .showcase-wrapper {
+        #recomendationForYou .showcase-wrapper {
           position: relative;
           display: flex;
           align-items: center;
         }
         
-        .showcase-arrow {
+        #recomendationForYou .showcase-arrow {
           position: absolute;
           top: 50%;
           transform: translateY(-50%);
@@ -599,55 +599,55 @@
           backdrop-filter: blur(10px);
         }
         
-        .showcase-arrow:hover {
+        #recomendationForYou .showcase-arrow:hover {
           background: rgba(255, 255, 255, 1);
           box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
           transform: translateY(-50%) scale(1.05);
         }
         
-        .showcase-arrow:active {
+        #recomendationForYou .showcase-arrow:active {
           transform: translateY(-50%) scale(0.95);
         }
         
-        .showcase-arrow-left {
+        #recomendationForYou .showcase-arrow-left {
           left: -24px;
         }
         
-        .showcase-arrow-right {
+        #recomendationForYou .showcase-arrow-right {
           right: -24px;
         }
         
         @media (max-width: 768px) {
-          .showcase-arrow {
+          #recomendationForYou .showcase-arrow {
             width: 40px;
             height: 40px;
           }
           
-          .showcase-arrow-left {
+          #recomendationForYou .showcase-arrow-left {
             left: -20px;
           }
           
-          .showcase-arrow-right {
+          #recomendationForYou .showcase-arrow-right {
             right: -20px;
           }
         }
         
         @media (max-width: 480px) {
-          .showcase-arrow {
+          #recomendationForYou .showcase-arrow {
             width: 36px;
             height: 36px;
           }
           
-          .showcase-arrow-left {
+          #recomendationForYou .showcase-arrow-left {
             left: -18px;
           }
           
-          .showcase-arrow-right {
+          #recomendationForYou .showcase-arrow-right {
             right: -18px;
           }
         }
         
-        .products-container {
+        #recomendationForYou .products-container {
           display: flex;
           flex-wrap: nowrap;
           overflow-x: auto;
@@ -656,30 +656,30 @@
           scrollbar-width: thin;
         }
         
-        .products-container::-webkit-scrollbar {
+        #recomendationForYou .products-container::-webkit-scrollbar {
           height: 6px;
         }
         
-        .products-container::-webkit-scrollbar-track {
+        #recomendationForYou .products-container::-webkit-scrollbar-track {
           background: #f1f1f1;
           border-radius: 10px;
         }
         
-        .products-container::-webkit-scrollbar-thumb {
+        #recomendationForYou .products-container::-webkit-scrollbar-thumb {
           background: #888;
           border-radius: 10px;
         }
         
-        .products-container::-webkit-scrollbar-thumb:hover {
+        #recomendationForYou .products-container::-webkit-scrollbar-thumb:hover {
           background: #555;
         }
         
-        .product-item {
+        #recomendationForYou .product-item {
           flex: 0 0 auto;
           width: 16rem;
         }
         
-        .coffee-card {
+        #recomendationForYou .coffee-card {
           width: 100%;
           border-radius: 30px;
           border: 1px solid rgb(231, 231, 231);
@@ -693,21 +693,21 @@
           overflow:visible;
         }
         
-        .coffee-card:hover {
+        #recomendationForYou .coffee-card:hover {
           overflow: visible !important;
         }
         
-        .coffee-card:hover .product-info {
+        #recomendationForYou .coffee-card:hover .product-info {
           background-color: #f3eee6;
         }
         
-        .card-link {
+        #recomendationForYou .card-link {
           text-decoration: none;
           color: inherit;
           display: block;
         }
         
-        .product-image {
+        #recomendationForYou .product-image {
           background-blend-mode: multiply;
           background-size: cover;
           background-repeat: no-repeat;
@@ -718,7 +718,7 @@
           border-radius: 30px 30px 0px 0px;
         }
         
-        .product-info {
+        #recomendationForYou .product-info {
           padding: 1.2rem 1rem;
           position: relative;
           flex: 1;
@@ -728,7 +728,7 @@
           border-radius: 0 0 30px 30px;
         }
         
-        .product-name {
+        #recomendationForYou .product-name {
           font-weight: 700;
           text-align: left;
           font-size: 1.2rem;
@@ -740,7 +740,7 @@
           margin-bottom: 0.5rem;
         }
         
-        .product-description {
+        #recomendationForYou .product-description {
           font-weight: 500;
           text-align: left;
           font-size: 0.875rem;
@@ -752,12 +752,12 @@
           margin-bottom: 0.5rem;
         }
         
-        .price-container {
+        #recomendationForYou .price-container {
           margin-top: auto;
           margin-bottom: 1rem;
         }
         
-        .price {
+        #recomendationForYou .price {
           font-weight: 700;
           text-align: left;
           font-size: 1.25rem;
@@ -767,7 +767,7 @@
           color: rgb(37, 122, 87);
         }
         
-        .price-details {
+        #recomendationForYou .price-details {
           font-weight: 500;
           text-align: start;
           font-size: 0.875rem;
@@ -777,17 +777,17 @@
           color: rgb(133, 136, 135);
         }
         
-        .add-to-bag {
+        #recomendationForYou .add-to-bag {
           position: absolute;
           right: 1rem;
           bottom: 1rem;
         }
         
-        .add-to-bag button {
+        #recomendationForYou .add-to-bag button {
           border-radius: 30px;
         }
         
-        .for-cold {
+        #recomendationForYou .for-cold {
           position: absolute;
           top: 1rem;
           right: 1rem;
@@ -801,34 +801,34 @@
         }
         
         @media (max-width: 768px) {
-          .product-item {
+          #recomendationForYou .product-item {
             width: 14rem;
           }
           
-          .product-image {
+          #recomendationForYou .product-image {
             height: 12rem;
           }
           
-          .showcase-title {
+          #recomendationForYou .showcase-title {
             font-size: 1.5rem;
           }
         }
         
         @media (max-width: 480px) {
-          .product-item {
+          #recomendationForYou .product-item {
             width: 12rem;
           }
           
-          .product-image {
+          #recomendationForYou .product-image {
             height: 10rem;
           }
           
-          .showcase-title {
+          #recomendationForYou .showcase-title {
             font-size: 1.2rem;
           }
         }
         @media (min-width: 768px) {
-          .showcase-section .products-container .product-item:last-child .QuantitySelector__container {
+          #recomendationForYou .showcase-section .products-container .product-item:last-child .QuantitySelector__container {
             left:-160px !important;
          }
         }

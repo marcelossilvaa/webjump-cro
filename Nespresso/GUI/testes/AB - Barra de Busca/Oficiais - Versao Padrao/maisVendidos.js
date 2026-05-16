@@ -210,16 +210,16 @@
     function ativarSugestoesBusca(inputBusca, containerAppendRecomendacoes) {
       if (
         !containerAppendRecomendacoes.querySelector(
-          ".containerRecomendacoesBusca"
+          ".containerRecomendacoesBusca",
         )
       ) {
         containerAppendRecomendacoes.insertAdjacentHTML(
           "beforeend",
-          recomendacoesHTMLDesktop
+          recomendacoesHTMLDesktop,
         );
 
         var containerSugestoes = containerAppendRecomendacoes.querySelector(
-          ".sugestoesRecomendacao"
+          ".sugestoesRecomendacao",
         );
         sugestoesRecomendacoes.forEach(function (sugestao) {
           let flag = sugestao.hasFlag
@@ -240,7 +240,7 @@
 
         var containerImagensSugestoes =
           containerAppendRecomendacoes.querySelector(
-            ".sugestoesResultadosImagens"
+            ".sugestoesResultadosImagens",
           );
         sugestoesImagens.forEach(function (sugestao) {
           let flag = sugestao.hasFlag
@@ -266,12 +266,12 @@
             "</div></a>";
           containerImagensSugestoes.insertAdjacentHTML(
             "beforeend",
-            sugestaoHTML
+            sugestaoHTML,
           );
         });
 
         var containerRecomendacoes = containerAppendRecomendacoes.querySelector(
-          ".containerRecomendacoesBusca"
+          ".containerRecomendacoesBusca",
         );
 
         inputBusca.addEventListener("focus", function () {
@@ -285,7 +285,7 @@
         document.addEventListener("click", function (event) {
           var isClickInsideInput = inputBusca.contains(event.target);
           var isClickInsideContainer = containerRecomendacoes.contains(
-            event.target
+            event.target,
           );
           if (!isClickInsideInput && !isClickInsideContainer) {
             containerRecomendacoes.classList.remove("ativo");
@@ -296,11 +296,11 @@
 
     esperarElemento("cv-search-bar", function (containerBusca) {
       var inputBusca = containerBusca.querySelector(
-        "input[class*='searchbox']"
+        "input[class*='searchbox']",
       );
       if (inputBusca) {
         var containerAppendRecomendacoes = containerBusca.querySelector(
-          "div[class*='container']"
+          "div[class*='container']",
         );
         ativarSugestoesBusca(inputBusca, containerAppendRecomendacoes);
       } else {
@@ -310,11 +310,11 @@
           botaoAtivarBusca.addEventListener("click", function () {
             setTimeout(function () {
               inputBusca = containerBusca.querySelector(
-                "input[class*='searchbox']"
+                "input[class*='searchbox']",
               );
               if (inputBusca) {
                 var containerAppend = containerBusca.querySelector(
-                  "div[class*='container']"
+                  "div[class*='container']",
                 );
                 ativarSugestoesBusca(inputBusca, containerAppend);
               }
@@ -400,7 +400,7 @@
         botaoMenuBusca.addEventListener("click", function () {
           setTimeout(function () {
             var divAppendSugestoes = containerBusca.querySelector(
-              "div[class*='container']"
+              "div[class*='container']",
             );
             if (
               divAppendSugestoes &&
@@ -408,7 +408,7 @@
             ) {
               divAppendSugestoes.insertAdjacentHTML(
                 "beforeend",
-                htmlSugestoesMobile
+                htmlSugestoesMobile,
               );
               var containerRecomendacoesMobile =
                 divAppendSugestoes.querySelector(".recomendacoesMobile");
@@ -428,7 +428,7 @@
                   "</a>";
                 containerRecomendacoesMobile.insertAdjacentHTML(
                   "beforeend",
-                  sugestaoHTML
+                  sugestaoHTML,
                 );
               });
             }

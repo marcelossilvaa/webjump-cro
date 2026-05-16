@@ -21,6 +21,7 @@ Módulos principais:
 - `.cursor/rules/05-inicializacao.md`
 - `.cursor/rules/06-tracking.md`
 - `.cursor/rules/99-checklist.md`
+- `.cursor/rules/azul-design-system.md` (apenas experimentos na pasta **`Azul/`**)
 
 ## Guia de Skills
 

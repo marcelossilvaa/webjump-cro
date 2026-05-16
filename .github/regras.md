@@ -15,6 +15,7 @@ Módulos principais:
 - `.github/rules/05-inicializacao.md`
 - `.github/rules/06-tracking.md`
 - `.github/rules/99-checklist.md`
+- `.github/rules/azul-design-system.md` (apenas experimentos na pasta **`Azul/`**)
 
 ## Cursor (cópia espelhada)
 
