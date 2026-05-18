@@ -1,7 +1,17 @@
 (function () {
-  'use strict';  const SCRIPT_ID = 'cro-modificacao-logo';
+  'use strict';
+  const SCRIPT_ID = 'cro-modificacao-logo';
   const STYLE_ID = 'cro-modificacao-logo-style';
   const TARGET_URL = 'https://www.voeazul.com.br/br/pt/home';
+  const LOGO_HREF_NOVO = 'https://www.voeazul.com.br/br/pt/azul-cbf';
+
+  function isStageEnvironment() {
+    return (window.location.hostname || '').toLowerCase().includes('stage');
+  }
+
+  if (isStageEnvironment()) {
+    return;
+  }
 
   function isTargetPage() {
     const currentUrl = window.location.origin + window.location.pathname;
@@ -26,6 +36,13 @@
     const logoContainer = document.querySelector('div[title="Logo Azul"]');
     if (!logoContainer) {
       return false;
+    }
+
+    const logoLink = logoContainer.closest('a');
+    if (logoLink && logoLink.getAttribute('href') !== LOGO_HREF_NOVO) {
+      logoLink.setAttribute('href', LOGO_HREF_NOVO);
+      logoLink.setAttribute('data-logo-href-modified', 'true');
+      console.log('[' + SCRIPT_ID + '] Link da logo atualizado com sucesso.');
     }
 
     if (logoContainer.getAttribute('data-logo-modified')) {
@@ -70,7 +87,7 @@
 
     observer.observe(document.documentElement, {
       childList: true,
-      subtree: true
+      subtree: true,
     });
   }
 

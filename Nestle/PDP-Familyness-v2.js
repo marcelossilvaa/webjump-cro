@@ -15,6 +15,7 @@
   const MAX_INIT_ATTEMPTS = 30;
   const INIT_INTERVAL_MS = 700;
   const APPLY_DEBOUNCE_MS = 180;
+  const UNIT_PROMO_TEXT_TARGET = 'nesta promocao, a unidade sai por';
   const PRODUCT_URL_SEARCH_QUERY = 'query FamilynessPdpUrlBySearch($search: String!) { products(search: $search, pageSize: 24) { items { sku name meta_title url_key url_suffix } } }';
   const KNOWN_URLS = {
     supremepro: {
@@ -26,12 +27,58 @@
     }
   };
 
-  const CHIP_OPTIONS = {
+  function getDynamicOptions(pageTitle) {
+    const title = normalizeText(pageTitle);
+
+    if (title.indexOf('ninho') !== -1) {
+      return {
+        types: [
+          {
+            key: 'fases1',
+            label: 'Fases 1+',
+            fallbackUrl: '/leite-ninho-fases-1-800g',
+            searchTerm: 'Ninho Fases 1+ 800g',
+            matchTerm: 'fases 1'
+          },
+          {
+            key: 'fases3',
+            label: 'Fases 3+',
+            fallbackUrl: '/leite-ninho-fases-3-800g',
+            searchTerm: 'Ninho Fases 3+ 800g',
+            matchTerm: 'fases 3'
+          }
+        ],
+        packages: ['800g', '1.2kg']
+      };
+    }
+
+    return {
+      types: [
+        {
+          key: 'comfor',
+          label: 'NAN Comfor',
+          fallbackUrl: '/formula-inf-nan-comfor-2-800g',
+          searchTerm: 'Formula Infantil NAN Comfor 2 800g',
+          matchTerm: 'comfor'
+        },
+        {
+          key: 'supremepro',
+          label: 'NAN SupremePro',
+          fallbackUrl: '/formula-inf-nan-supreme-pro-2-800g',
+          searchTerm: 'Formula Infantil NAN Supreme Pro 2 800g',
+          matchTerm: 'supreme'
+        }
+      ],
+      packages: ['400g', '800g']
+    };
+  }
+
+  let CHIP_OPTIONS = {
     package: ['800g', '400g'],
     combo: ['Leve 2', 'Leve 3']
   };
 
-  const TYPE_OPTIONS = [
+  let TYPE_OPTIONS = [
     {
       key: 'comfor',
       label: 'NAN Comfor',
@@ -417,29 +464,30 @@
       '#' + ROOT_ID + ' .fn-offer-link { font-family: Lato, sans-serif; font-size: 14px; line-height: 17px; font-weight: 700; color: #004E99; text-align: right; text-decoration: none; }',
       '#' + ROOT_ID + ' .fn-footer { display: flex; gap: 12px; align-items: center; }',
       '#' + ROOT_ID + ' .fn-qty { width: 245px; max-width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 15px; }',
-      '#' + ROOT_ID + ' .fn-qty-btn { width: 24px; height: 24px; border: 0px; border-radius: 999px; background: #E9EBF8; color: #173C56; font-size: 18px; line-height: 18px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }',
+      '#' + ROOT_ID + ' .fn-qty-btn { width: 40px; height: 40px; min-width: 40px; min-height: 40px; border: 0px; border-radius: 50%; background: #E9EBF8; color: #173C56; font-size: 18px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 0px; }',
       '#' + ROOT_ID + ' .fn-qty-box { height: 48px; flex: 1; border: 1px solid #173C56; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: Lato, sans-serif; color: #173C56; font-size: 16px; line-height: 20px; }',
       '#' + ROOT_ID + ' .fn-cta { height: 48px; flex: 1; border: 0px; border-radius: 100px; background: #173C56; color: #FFFFFF; font-family: Lato, sans-serif; font-size: 18px; line-height: 20px; font-weight: 700; cursor: pointer; padding: 0px 20px; }',
       '#' + ROOT_ID + ' .fn-loading { opacity: 0.65; pointer-events: none; }',
       '@media screen and (max-width: 1024px) { #' + ROOT_ID + ' { max-width: 100%; } #' + ROOT_ID + ' .fn-title { font-size: 32px; line-height: 40px; } }',
       '@media screen and (max-width: 640px) { #' + ROOT_ID + ' .fn-title { font-size: 26px; line-height: 32px; } #' + ROOT_ID + ' .fn-offer-top { flex-direction: column; align-items: flex-start; } #' + ROOT_ID + ' .fn-benefits { grid-template-columns: 1fr; } #' + ROOT_ID + ' .fn-footer { flex-direction: column; align-items: stretch; } #' + ROOT_ID + ' .fn-qty { width: 100%; } }',
-      '.fn-faq-section { width: 100%; max-width: 1360px; margin: 40px auto 0; padding: 40px; background: #F5F7F9; border-radius: 20px; }',
+      '.fn-faq-divider { width: 100%; max-width: 1360px; height: 14px; margin: 28px auto 0; background: #FFFFFF; border-radius: 999px; }',
+      '.fn-faq-section { width: 100%; max-width: 1360px; margin: 24px auto 0; padding: 40px; background: #F5F7F9; border-radius: 20px; scroll-margin-top: 24px; }',
       '.fn-faq-section * { box-sizing: border-box; }',
       '.fn-faq-inner { display: flex; flex-direction: column; align-items: center; gap: 32px; width: 100%; }',
       '.fn-faq-header { text-align: center; width: 100%; }',
-      '.fn-faq-header h2 { font-family: Fraunces, serif; font-size: 31px; line-height: 38px; font-weight: 700; color: #173C56; margin: 0; }',
+      '.fn-faq-header h2 { font-family: Fraunces, serif; font-size: 31px; line-height: 38px; font-weight: 700; color: #173C56; margin: 0; scroll-margin-top: 24px; }',
       '.fn-faq-list { display: flex; flex-direction: column; align-items: flex-start; gap: 17px; width: 100%; }',
       '.fn-faq-item { width: 100%; }',
       '.fn-faq-question { display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; padding: 0; background: none; border: 0; cursor: pointer; text-align: left; font-family: Lato, sans-serif; font-size: 16px; line-height: 19px; font-weight: 700; color: #173C56; }',
-      '.fn-faq-question:after { content: ""; display: inline-block; width: 14px; height: 9px; flex-shrink: 0; background: #173C56; clip-path: polygon(0 0, 100% 0, 50% 100%); transition: transform 0.2s ease; transform: matrix(-1, 0, 0, 1, 0, 0); }',
+      '.fn-faq-question:after { content: ""; display: inline-block; width: 14px; height: 9px; flex-shrink: 0; background-image: url("https://i.imgur.com/cTh6vVq.png"); background-size: contain; background-repeat: no-repeat; background-position: center; transition: transform 0.2s ease; transform: matrix(-1, 0, 0, 1, 0, 0); }',
       '.fn-faq-question.fn-faq-open:after { transform: rotate(180deg); }',
       '.fn-faq-separator { width: 100%; height: 0; border: 0; border-top: 1px solid #BDC2DC; margin: 0; }',
       '.fn-faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }',
       '.fn-faq-answer-inner { padding: 16px 0 0; font-family: Lato, sans-serif; font-size: 16px; line-height: 19px; font-weight: 400; color: #173C56; }',
       '.fn-faq-cta-row { text-align: center; }',
       '.fn-faq-cta { display: inline-flex; align-items: center; justify-content: center; width: 280px; height: 48px; background: #173C56; border: 0; border-radius: 99px; color: #FFFFFF !important; font-family: Lato, sans-serif; font-size: 18px; line-height: 20px; font-weight: 700; cursor: pointer; text-decoration: none; }',
-      '@media screen and (max-width: 1400px) { .fn-faq-section { margin-left: 20px; margin-right: 20px; max-width: calc(100% - 40px); } }',
-      '@media screen and (max-width: 640px) { .fn-faq-section { padding: 24px 16px; } .fn-faq-header h2 { font-size: 24px; line-height: 30px; } .fn-faq-cta { width: 100%; max-width: 280px; } }'
+      '@media screen and (max-width: 1400px) { .fn-faq-divider, .fn-faq-section { margin-left: 20px; margin-right: 20px; max-width: calc(100% - 40px); } }',
+      '@media screen and (max-width: 640px) { .fn-faq-divider { height: 10px; margin-top: 20px; } .fn-faq-section { padding: 24px 16px; margin-top: 16px; } .fn-faq-header h2 { font-size: 24px; line-height: 30px; } .fn-faq-cta { width: 100%; max-width: 280px; } }'
     ].join('\n');
 
     const styleElement = document.createElement('style');
@@ -497,6 +545,75 @@
 
     const text = (element.textContent || '').trim();
     return text || 'R$ 69,49';
+  }
+
+  function getUnitPromoMatches() {
+    const roots = [
+      document.querySelector('.product-info-main'),
+      document.querySelector('.product-add-form')
+    ];
+    const matches = [];
+
+    let i = 0;
+    while (i < roots.length) {
+      const base = roots[i];
+      i = i + 1;
+
+      if (!base) {
+        continue;
+      }
+
+      const elements = base.querySelectorAll('p, span, div, strong, small');
+      let j = 0;
+      while (j < elements.length) {
+        const element = elements[j];
+        j = j + 1;
+
+        if (!element || element.id === ROOT_ID || element.closest('#' + ROOT_ID)) {
+          continue;
+        }
+
+        const text = (element.textContent || '').trim();
+        const normalized = normalizeText(text);
+
+        if (!text || text.length > 180) {
+          continue;
+        }
+
+        if (normalized.indexOf(UNIT_PROMO_TEXT_TARGET) !== -1) {
+          matches.push(element);
+        }
+      }
+    }
+
+    return matches;
+  }
+
+  function syncUnitPromoText(root) {
+    const targetSlot = root.querySelector('[data-fn-unit-promo-slot="true"]');
+    if (!targetSlot) {
+      return;
+    }
+
+    const matches = getUnitPromoMatches();
+    let movedElement = null;
+    let i = 0;
+
+    while (i < matches.length) {
+      const element = matches[i];
+      i = i + 1;
+
+      if (!movedElement) {
+        movedElement = element;
+        targetSlot.appendChild(movedElement);
+        continue;
+      }
+
+      if (!element.getAttribute('data-fn-unit-promo-hidden')) {
+        element.setAttribute('data-fn-unit-promo-hidden', 'true');
+        element.style.display = 'none';
+      }
+    }
   }
 
   function normalizeText(value) {
@@ -575,6 +692,7 @@
       '</div>' +
       '<div class="fn-groups">' +
       '<div class="fn-offers">' +
+      '<div data-fn-unit-promo-slot="true"></div>' +
       '<article class="fn-offer active" data-fn-offer="single">' +
       '<div class="fn-offer-top">' +
       '<strong class="fn-offer-name">Compra Única</strong>' +
@@ -617,8 +735,10 @@
 
   function getTypeConfigByCurrentTitle(title) {
     const normalizedTitle = normalizeText(title);
+    const dynamicOptions = getDynamicOptions(title);
+    const typesList = dynamicOptions.types || TYPE_OPTIONS;
 
-    return TYPE_OPTIONS.map(function (option) {
+    return typesList.map(function (option) {
       const normalizedMatchTerm = normalizeText(option.matchTerm);
       return {
         key: option.key,
@@ -820,7 +940,9 @@
 
         var faqSection = document.getElementById(FAQ_ID);
         if (faqSection) {
-          faqSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          var faqHeading = faqSection.querySelector('.fn-faq-header h2');
+          var scrollTarget = faqHeading || faqSection;
+          scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
     }
@@ -991,7 +1113,6 @@
           if (subscribeRadio) {
             subscribeRadio.checked = true;
             subscribeRadio.dispatchEvent(new Event('change', { bubbles: true }));
-            subscribeRadio.dispatchEvent(new Event('click', { bubbles: true }));
           }
 
           const subscribeButton = document.querySelector('#product-addtocart-button-subscription');
@@ -1004,7 +1125,6 @@
           if (onetimeRadio) {
             onetimeRadio.checked = true;
             onetimeRadio.dispatchEvent(new Event('change', { bubbles: true }));
-            onetimeRadio.dispatchEvent(new Event('click', { bubbles: true }));
           }
 
           const subscribeRadio = document.querySelector('#radio_subscribe_product');
@@ -1086,20 +1206,38 @@
       return;
     }
 
-    var tabsContainer = document.querySelector('.product.info.detailed');
-    if (!tabsContainer) {
-      console.log('[Familyness PDP v2] Container de tabs nao encontrado para FAQ');
-      return;
-    }
-
     var faqSection = document.createElement('section');
     faqSection.id = FAQ_ID;
     faqSection.className = 'fn-faq-section';
     faqSection.setAttribute('data-fn-faq', 'true');
     faqSection.innerHTML = createFaqHtml();
 
-    tabsContainer.parentNode.insertBefore(faqSection, tabsContainer.nextSibling);
-    console.log('[Familyness PDP v2] FAQ inserido no DOM');
+    var faqDivider = document.createElement('div');
+    faqDivider.className = 'fn-faq-divider';
+    faqDivider.setAttribute('aria-hidden', 'true');
+
+    var tabsDisabled = document.querySelector('.product.data.items.nutricao-tabs-disabled');
+    if (tabsDisabled) {
+      var tabsContainer = document.querySelector('.product.info.detailed');
+      if (!tabsContainer) {
+        console.log('[Familyness PDP v2] Container de tabs nao encontrado para FAQ');
+        return;
+      }
+      tabsContainer.parentNode.insertBefore(faqDivider, tabsContainer.nextSibling);
+      faqDivider.parentNode.insertBefore(faqSection, faqDivider.nextSibling);
+      console.log('[Familyness PDP v2] FAQ inserido apos .product.info.detailed');
+    } else {
+      var insertAnchor = document.querySelector('.product-info-main') ||
+        document.querySelector('.product.info.detailed') ||
+        document.querySelector('.fotorama__nav.fotorama__nav--thumbs');
+      if (!insertAnchor) {
+        console.log('[Familyness PDP v2] Ancora para FAQ nao encontrada');
+        return;
+      }
+      insertAnchor.parentNode.insertBefore(faqDivider, insertAnchor.nextSibling);
+      faqDivider.parentNode.insertBefore(faqSection, faqDivider.nextSibling);
+      console.log('[Familyness PDP v2] FAQ inserido apos .product-info-main');
+    }
 
     var questions = faqSection.querySelectorAll('.fn-faq-question');
     var q = 0;
@@ -1206,6 +1344,10 @@
       selectedPackage = parsePackageFromContext(title);
       selectedCombo = parseComboFromContext(title);
 
+      var dynamicOpts = getDynamicOptions(title);
+      CHIP_OPTIONS.package = dynamicOpts.packages || ['800g', '400g'];
+      TYPE_OPTIONS = dynamicOpts.types || TYPE_OPTIONS;
+
       console.log('[Familyness PDP v2] Detectado - Package: ' + selectedPackage + ', Combo: ' + selectedCombo);
 
       if (shouldUseStoredState(storedState)) {
@@ -1237,6 +1379,7 @@
 
       hideNativeTopElements();
       root.innerHTML = createRootHtml(title, reviewText, priceText);
+      syncUnitPromoText(root);
       console.log('[Familyness PDP v2] HTML renderizado');
 
       const typeOptions = getTypeConfigByCurrentTitle(title);

@@ -204,7 +204,7 @@
 
     const title = document.createElement('div');
     title.className = 'wj-title';
-    title.textContent = 'Como foi criar sua assinatura de café?';
+    title.textContent = 'Como foi sua experiência ao criar sua Assinatura de Café?';
 
     const sub = document.createElement('div');
     sub.className = 'wj-sub';
