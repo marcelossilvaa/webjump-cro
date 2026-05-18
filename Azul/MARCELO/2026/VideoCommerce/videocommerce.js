@@ -247,6 +247,108 @@
   }
 
   const PDF_ANCHOR_HREF_SUB = 'Guia-de-Experiencias-WaltDisneyWorld.pdf';
+  const PARQUES_PATH_SEGMENT = '/disney/parques-disney';
+  const DISNEY_PATH_SEGMENT = '/disney';
+  const MICKEY_DESK_IMG_SUB = 'foto-mickey-desk';
+  const MICKEY_GROUP_IMG_SUB = 'Group 10773';
+
+  function isDisneySection() {
+    try {
+      return (window.location.pathname || '').toLowerCase().indexOf(DISNEY_PATH_SEGMENT) !== -1;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function isParquesDisneyPage() {
+    if (!isDisneySection()) return false;
+    const path = (window.location.pathname || '').toLowerCase();
+    return path.indexOf(PARQUES_PATH_SEGMENT) !== -1;
+  }
+
+  function removeInjectionIfNotParques() {
+    if (isParquesDisneyPage()) return;
+
+    const wrapper = document.querySelector(
+      '[' + COMPONENT_WRAPPER_ATTR + '="' + COMPONENT_WRAPPER_VALUE + '"]',
+    );
+    if (wrapper && wrapper.parentNode) {
+      wrapper.parentNode.removeChild(wrapper);
+      logDebug(LOG_PREFIX, 'carrossel removido (fora da aba Parques).');
+    }
+    window[INJECT_DONE_KEY] = false;
+    window[INJECT_PROMISE_KEY] = null;
+  }
+
+  function capsuleHasParquesMickeyAsset(capsule) {
+    if (!capsule) return false;
+    if (
+      capsule.querySelector('img[src*="' + MICKEY_DESK_IMG_SUB + '"]') ||
+      capsule.querySelector('img[src*="' + MICKEY_GROUP_IMG_SUB + '"]') ||
+      capsule.querySelector('img[src*="Group%2010773"]')
+    ) {
+      return true;
+    }
+    const btn = capsule.querySelector('button.css-gvybwp');
+    if (btn) {
+      if (btn.querySelector('.css-1n4qgef')) return true;
+      if ((btn.textContent || '').indexOf('Código copiado') !== -1) return true;
+    }
+    return false;
+  }
+
+  function findParquesMickeyCapsuleInDom() {
+    const typoCapsule = document.querySelector(
+      '.container-capsule.containerDefault.hide-on-mobil, .container-capsule.hide-on-mobil',
+    );
+    if (typoCapsule && capsuleHasParquesMickeyAsset(typoCapsule)) {
+      return typoCapsule;
+    }
+
+    const buttons = document.querySelectorAll('button.css-gvybwp');
+    let b;
+    for (b = 0; b < buttons.length; b++) {
+      const btn = buttons[b];
+      if (!btn.querySelector('.css-1n4qgef') && (btn.textContent || '').indexOf('Código copiado') === -1) {
+        continue;
+      }
+      const fromBtn = btn.closest('.container-capsule');
+      if (fromBtn) return fromBtn;
+    }
+
+    const capsules = document.querySelectorAll('.container-capsule.containerDefault, .container-capsule');
+    if (!capsules || !capsules.length) return null;
+    let i;
+    for (i = 0; i < capsules.length; i++) {
+      if (capsuleHasParquesMickeyAsset(capsules[i])) {
+        return capsules[i];
+      }
+    }
+    return null;
+  }
+
+  function getParquesMickeyCapsule() {
+    return findParquesMickeyCapsuleInDom();
+  }
+
+  function getParquesTargetAnchor() {
+    const capsule = getParquesMickeyCapsule();
+    if (!capsule) return null;
+    return (
+      capsule.querySelector('button.css-gvybwp') ||
+      capsule.querySelector('img[src*="' + MICKEY_DESK_IMG_SUB + '"]') ||
+      capsule.querySelector('img[src*="' + MICKEY_GROUP_IMG_SUB + '"]') ||
+      capsule
+    );
+  }
+
+  function getParquesInsertionPlacement() {
+    const capsule = getParquesMickeyCapsule();
+    if (capsule && capsule.parentNode) {
+      return { mode: 'before', parent: capsule.parentNode, ref: capsule };
+    }
+    return null;
+  }
 
   function getMobileDisneyHeroCapsule() {
     const capsules = document.querySelectorAll(
@@ -276,6 +378,9 @@
   }
 
   function getInsertionPlacement(anchorEl) {
+    if (isParquesDisneyPage()) {
+      return getParquesInsertionPlacement();
+    }
     if (isMobileViewport()) {
       let capsule = null;
       if (anchorEl) {
@@ -332,6 +437,9 @@
   }
 
   function getTargetAnchor() {
+    if (isParquesDisneyPage()) {
+      return getParquesTargetAnchor();
+    }
     const links = document.querySelectorAll('a[href*="' + PDF_ANCHOR_HREF_SUB + '"]');
     if (!links || !links.length) return null;
     let i;
@@ -439,16 +547,22 @@
           return;
         }
 
+        removeInjectionIfNotParques();
+        if (!isParquesDisneyPage()) {
+          warnDebug(LOG_PREFIX, 'saiu da aba Parques durante load do SDK; abortando inserção.');
+          return;
+        }
+
         const anchorNow = getTargetAnchor();
         if (!anchorNow) {
-          warnDebug(LOG_PREFIX, 'âncora não encontrada após SDK ok; abortando inserção.');
+          warnDebug(LOG_PREFIX, 'cápsula Mickey não encontrada após SDK ok; abortando inserção.');
           return;
         }
         const placementNow = getInsertionPlacement(anchorNow);
         if (!placementNow || !placementNow.parent) {
           warnDebug(
             LOG_PREFIX,
-            'ponto de inserção não encontrado após SDK ok (mobile/desktop); abortando inserção.',
+            'ponto de inserção Parques não encontrado após SDK ok; abortando inserção.',
           );
           return;
         }
@@ -506,35 +620,59 @@
     return true;
   }
 
+  function clearInjectDoneIfWrapperMissing() {
+    if (!window[INJECT_DONE_KEY]) return;
+    const wrapper = document.querySelector(
+      '[' + COMPONENT_WRAPPER_ATTR + '="' + COMPONENT_WRAPPER_VALUE + '"]',
+    );
+    const capsule = getParquesMickeyCapsule();
+    if (!wrapper) {
+      window[INJECT_DONE_KEY] = false;
+      return;
+    }
+    if (capsule && capsule.previousElementSibling !== wrapper) {
+      window[INJECT_DONE_KEY] = false;
+    }
+  }
+
   function run() {
+    if (!isDisneySection()) return;
+
+    removeInjectionIfNotParques();
+
+    if (!isParquesDisneyPage()) {
+      logDebug(LOG_PREFIX, 'fora da aba Parques; ignorando.');
+      return;
+    }
+
+    clearInjectDoneIfWrapperMissing();
+
     if (window[INJECT_DONE_KEY]) return;
     if (isProcessing) return;
     isProcessing = true;
 
     try {
       logDebug(LOG_PREFIX, 'run() acionado. URL:', window.location && window.location.href);
+
       const anchor = getTargetAnchor();
       if (!anchor) {
-        warnDebug(LOG_PREFIX, 'âncora do PDF não encontrada ainda.');
+        warnDebug(
+          LOG_PREFIX,
+          'cápsula Mickey (Parques) não encontrada ainda (foto-mickey-desk / Group 10773).',
+        );
         return;
       }
-      logDebug(LOG_PREFIX, 'âncora encontrada:', anchor);
+      logDebug(LOG_PREFIX, 'âncora Parques encontrada:', anchor);
 
       const placement = getInsertionPlacement(anchor);
       if (!placement) {
         warnDebug(
           LOG_PREFIX,
-          'ponto de inserção não encontrado a partir da âncora (mobile/desktop).',
+          'ponto de inserção não encontrado na aba Parques (cápsula Mickey).',
         );
         return;
       }
-      logDebug(
-        LOG_PREFIX,
-        'inserção:',
-        isMobileViewport()
-          ? 'acima da cápsula hide-on-desktop (hero mobile)'
-          : 'acima da cápsula hide-on-mobile (kv Disney + guia, desktop)',
-      );
+      logDebug(LOG_PREFIX, 'inserção: acima da cápsula Mickey (aba Parques).');
 
       injectAfter(anchor);
     } finally {
@@ -543,11 +681,50 @@
   }
 
   function scheduleRun() {
+    if (!isDisneySection()) return;
+    removeInjectionIfNotParques();
+    if (!isParquesDisneyPage()) return;
+    clearInjectDoneIfWrapperMissing();
     if (window[INJECT_DONE_KEY]) return;
     if (debounceTimer) window.clearTimeout(debounceTimer);
     debounceTimer = window.setTimeout(function () {
       run();
     }, 150);
+  }
+
+  function hookSpaNavigation() {
+    if (window.__wjVideoCommerceSpaHooked) return;
+    window.__wjVideoCommerceSpaHooked = true;
+
+    const fire = function () {
+      window[INJECT_DONE_KEY] = false;
+      window.setTimeout(function () {
+        removeInjectionIfNotParques();
+        scheduleRun();
+      }, 400);
+    };
+
+    const pushState = history.pushState;
+    history.pushState = function () {
+      pushState.apply(history, arguments);
+      fire();
+    };
+
+    const replaceState = history.replaceState;
+    history.replaceState = function () {
+      replaceState.apply(history, arguments);
+      fire();
+    };
+
+    document.addEventListener('click', function (e) {
+      const tab =
+        e.target &&
+        e.target.closest &&
+        e.target.closest('.container-tabs a[aria-label], nav a[aria-label]');
+      if (tab) {
+        fire();
+      }
+    });
   }
 
   function initObserver() {
@@ -616,19 +793,37 @@
       logDebug(LOG_PREFIX, 'listeners de erro do SDK ligados.');
     }
 
+    hookSpaNavigation();
     run();
     initObserver();
 
     let pollCount = 0;
-    const maxPolls = 40;
+    const maxPolls = 120;
     const pollInterval = window.setInterval(function () {
       pollCount++;
+      removeInjectionIfNotParques();
+      if (!isParquesDisneyPage()) {
+        return;
+      }
+      clearInjectDoneIfWrapperMissing();
       if (window[INJECT_DONE_KEY] || pollCount >= maxPolls) {
         window.clearInterval(pollInterval);
+        if (pollCount >= maxPolls && !window[INJECT_DONE_KEY] && isParquesDisneyPage()) {
+          warnDebug(
+            LOG_PREFIX,
+            'timeout 30s: carrossel não injetado. Cápsula Mickey?',
+            !!getParquesMickeyCapsule(),
+            'URL:',
+            window.location.href,
+          );
+        }
         return;
       }
       run();
     }, 250);
+
+    window.addEventListener('popstate', scheduleRun);
+    window.addEventListener('hashchange', scheduleRun);
   }
 
   if (document.readyState === 'loading') {
