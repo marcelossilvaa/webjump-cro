@@ -4,7 +4,7 @@
 // =============================================================
 (function () {
   var EXPERIMENT_NAME = 'AT_Disney_hoteis';
-  var BANNER_LINK = 'https://www.voeazul.com.br/br/pt/home/hotel?ds=JPD036691&stdi=01/07/2026&stdo=31/07/2026&r[0].adt=2&r[0].chd=0#hotelList';
+  var BANNER_LINK = 'https://www.voeazul.com.br/br/pt/home/tickets?ds=JPD036691&stdi=01/10/2026&stdo=31/10/2026&adt=2&chd=0';
   var STYLE_ID = 'at-disney-hoteis-style';
   var OVERLAY_ID = 'at-disney-hoteis-overlay';
   var BANNER_ID = 'at-disney-hoteis-banner';
@@ -157,83 +157,51 @@
 
       // ===== TITULO (txt) =====
       + '.at-dh-txt {'
-      + '  position:absolute; width:275px; height:55px;'
-      + '  left:calc(50% - 275px/2 - 165.5px); top:30.06px;'
+      + '  position:absolute; width:366px; height:99px;'
+      + '  left:57px; top:26px;'
       + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
-      + '  font-weight:300; font-size:22px; line-height:25px;'
-      + '  letter-spacing:-0.025em; color:#FFFFFF; z-index:5;'
+      + '  font-weight:300; font-size:20px; line-height:109%;'
+      + '  display:flex; align-items:center; color:#FFFFFF; z-index:5;'
+      + '  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;'
+      + '  text-rendering:optimizeLegibility;'
       + '}'
 
       // ===== FRAME OFERTA (Rectangle 6) =====
       + '.at-dh-offer-frame {'
       + '  position:absolute; box-sizing:border-box;'
-      + '  width:365.61px; height:112.66px;'
-      + '  left:57px; top:98.06px;'
+      + '  width:366px; height:121px;'
+      + '  left:57px; top:153px;'
       + '  border:1px solid #FFFFFF; border-radius:13px;'
       + '  z-index:5;'
       + '}'
 
-      // ===== TEXTOS DO FRAME - DESCONTO =====
-      + '.at-dh-desconto {'
-      + '  position:absolute;'
-      + '  left:calc(50% - 153.61px/2 - 211.44px); top:calc(50% - 39px/2 - 60.61px);'
-      + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
-      + '  font-weight:700; font-size:32.8671px; line-height:120%; color:#FFFFFF; z-index:5;'
-      + '}'
-      + '.at-dh-de {'
-      + '  position:absolute;'
-      + '  left:calc(50% - 26.67px/2 - 272.8px); top:calc(50% - 27px/2 - 33.14px);'
-      + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
-      + '  font-weight:300; font-size:22.1565px; line-height:120%; color:#FFFFFF; z-index:5;'
-      + '}'
-      + '.at-dh-rs {'
-      + '  position:absolute;'
-      + '  left:calc(50% - 28.57px/2 - 271.85px); top:calc(50% - 24px/2 - 14.35px);'
-      + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
-      + '  font-weight:700; font-size:20.2706px; line-height:120%; color:#FFFFFF; z-index:5;'
-      + '}'
-      + '.at-dh-preco {'
-      + '  position:absolute;'
-      + '  left:calc(50% - 121.16px/2 - 195.21px); top:calc(50% - 57px/2 - 24.2px);'
-      + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
-      + '  font-weight:700; font-size:47.3685px; line-height:120%; color:#FFFFFF; z-index:5;'
-      + '}'
-      + '.at-dh-asterisco {'
-      + '  position:absolute; left:223.34px; top:149.12px;'
-      + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
-      + '  font-weight:700; font-size:20.9438px; line-height:120%; color:#FFFFFF; z-index:5;'
-      + '}'
-      + '.at-dh-hoteis-txt {'
-      + '  position:absolute;'
-      + '  left:calc(50% - 159.28px/2 - 32.1px); top:calc(50% - 66px/2 - 40.47px);'
-      + '  width:159px; font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
-      + '  font-weight:300; font-size:19.7997px; line-height:109%; color:#FFFFFF; z-index:5;'
+      // ===== FAIXA DE PARQUES (Frame 15065) =====
+      + '.at-dh-park-strip {'
+      + '  position:absolute; display:flex; flex-direction:row;'
+      + '  align-items:center; justify-content:center; padding:0 4px;'
+      + '  width:241px; height:25.56px;'
+      + '  left:161px; top:140px;'
+      + '  background:linear-gradient(180deg,#1B62AD 0%,#1D66B0 100%);'
+      + '  z-index:6; box-sizing:border-box; overflow:hidden;'
       + '}'
 
-      // ===== CUPOM (Frame 9212) =====
-      + '.at-dh-coupon {'
-      + '  position:absolute; width:309px; height:33.97px;'
-      + '  left:calc(50% - 309px/2 - 144.5px); top:230.06px;'
-      + '  background:#FFFFFF; border-radius:7.90323px;'
-      + '  display:flex; align-items:center; justify-content:center; gap:8px;'
-      + '  cursor:pointer; z-index:5; transition:background 0.2s ease;'
+      // ===== BULLET ROWS =====
+      + '.at-dh-bullet-row {'
+      + '  position:absolute; display:flex; flex-direction:row; align-items:center;'
+      + '  padding:0; gap:12px; width:326px; height:28px; left:74px; z-index:6;'
       + '}'
-      + '.at-dh-coupon:hover { background:#f0f0f0; }'
-      + '.at-dh-coupon-code {'
-      + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
-      + '  font-weight:700; font-size:21.5467px; line-height:120%; color:#216FB7;'
+      + '.at-dh-bullet-icon-wrap {'
+      + '  display:flex; align-items:center; justify-content:center;'
+      + '  width:28px; height:28px; flex:none;'
+      + '  background:#5EDCFF; border-radius:50%;'
       + '}'
-      + '.at-dh-coupon-icon { display:flex; align-items:center; }'
-
-      // ===== TOAST COPIADO =====
-      + '.at-dh-toast {'
-      + '  position:absolute; left:calc(50% - 309px/2 - 144.5px); top:205px;'
-      + '  background:rgba(0,0,0,0.8); color:#5EDCFF; border-radius:8px;'
-      + '  padding:4px 14px; font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
-      + '  font-weight:600; font-size:13px; z-index:15; opacity:0;'
-      + '  transition:opacity 0.3s ease; pointer-events:none; white-space:nowrap;'
+      + '.at-dh-bullet-icon-img {'
+      + '  width:28px; height:28px; object-fit:contain; flex:none; display:block;'
       + '}'
-      + '.at-dh-toast.at-dh-toast-show { opacity:1; }'
+      + '.at-dh-bullet-text {'
+      + '  font-family:"Inter",Arial,sans-serif; font-weight:400; font-size:14px;'
+      + '  line-height:16px; color:#FFFFFF; flex:1;'
+      + '}'
 
       // ===== CTA PULSE =====
       + '@keyframes atDhCtaPulse {'
@@ -252,22 +220,21 @@
       + '  display:flex; align-items:center; justify-content:center;'
       + '  padding:0 30.2856px; gap:5.66px;'
       + '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;'
-      + '  font-weight:700; font-size:18.9285px; line-height:20px; color:#00043E;'
+      + '  font-weight:700; font-size:15px; line-height:20px; color:#00043E;'
       + '  transition:transform 0.2s ease, box-shadow 0.2s ease;'
       + '}'
       + '.at-dh-cta:hover {'
       + '  transform:translateY(-2px); box-shadow:0 4px 20px rgba(94,220,255,0.4);'
       + '}'
 
+      + '.at-dh-cta-logo {'
+      + '  position:absolute; left:272px; top:305px;'
+      + '  height:20px; width:auto; object-fit:contain; z-index:5;'
+      + '}'
+
       // ===== LOGOS =====
-      + '.at-dh-logos {'
-      + '  position:absolute; display:flex; align-items:center; gap:9px;'
-      + '  width:125.65px; height:18.17px;'
-      + '  left:calc(50% - 125.65px/2 - 13.09px); top:308.4px; z-index:5;'
-      + '}'
-      + '.at-dh-logos-divider {'
-      + '  width:0; height:18px; border-left:0.6px solid #FFFFFF; flex:none;'
-      + '}'
+      + '.at-dh-logos { display:none; }'
+      + '.at-dh-logos-divider { display:none; }'
 
       // ===== CONSULTE CONDICOES =====
       + '.at-dh-consult {'
@@ -316,7 +283,7 @@
       + '@media (max-width: 768px) {'
       // Container mobile 360x433
       + '  .at-dh-container {'
-      + '    width:360px; height:433px; border-radius:16px;'
+      + '    width:360px; height:388px; border-radius:16px;'
       + '    background:url("fundo disney.png"), #0150B5;'
       + '    background-size:cover; background-position:center;'
       + '    transform:none;'
@@ -339,46 +306,27 @@
       + '  }'
       // Frame oferta mobile
       + '  .at-dh-offer-frame {'
-      + '    width:328px; height:113px; left:16px; top:145.17px;'
+      + '    width:328px; height:121px; left:16px; top:153px;'
       + '    border-radius:13px;'
       + '  }'
-      // Textos oferta mobile
-      + '  .at-dh-desconto {'
-      + '    left:27px; top:154px; font-size:28px;'
+      + '  .at-dh-park-strip {'
+      + '    left:16px; width:328px; top:140px;'
       + '  }'
-      + '  .at-dh-de {'
-      + '    left:27px; top:188px; font-size:22px;'
-      + '  }'
-      + '  .at-dh-rs {'
-      + '    left:27px; top:209px; font-size:20px;'
-      + '  }'
-      + '  .at-dh-preco {'
-      + '    left:53px; top:197px; font-size:40px;'
-      + '  }'
-      + '  .at-dh-asterisco {'
-      + '    left:150px; top:197px; font-size:21px;'
-      + '  }'
-      + '  .at-dh-hoteis-txt {'
-      + '    left:185px; top:163px; width:149px; font-size:18px;'
-      + '  }'
-      // Cupom mobile
-      + '  .at-dh-coupon {'
-      + '    width:309px; height:33.97px; left:calc(50% - 309px/2); top:274.17px;'
-      + '  }'
-      + '  .at-dh-toast { left:calc(50% - 100px); top:249px; }'
+      + '  .at-dh-bullet-row { left:16px; width:324px; }'
       // CTA mobile
       + '  .at-dh-cta {'
       + '    width:206.95px; height:49.13px;'
-      + '    left:calc(50% - 206.95px/2); top:324.17px;'
+      + '    left:calc(50% - 206.95px/2); top:290px;'
       + '  }'
       // Consulte mobile - centralizado
       + '  .at-dh-consult {'
-      + '    width:328px; left:16px; top:389.17px;'
+      + '    width:328px; left:16px; top:349px;'
       + '    font-size:10px; text-align:center;'
       + '  }'
       // Foto oculta no mobile
       + '  .at-dh-photo-wrapper { display:none; }'
       + '  .at-dh-copyright { display:none; }'
+      + '  .at-dh-cta-logo { display:none; }'
       + '}';
 
     var style = document.createElement('style');
@@ -549,7 +497,7 @@
     // --- Titulo (txt) ---
     var txt = document.createElement('div');
     txt.className = 'at-dh-txt';
-    txt.textContent = 'Conhe\u00E7a os Hot\u00E9is Resort Disney';
+    txt.textContent = 'Complete sua experi\u00EAncia Disney! Garanta seus ingressos para Parques Tem\u00E1ticos Disney por condi\u00E7\u00F5es imperd\u00EDveis';
     container.appendChild(txt);
 
     // --- Frame oferta (Rectangle 6) ---
@@ -557,86 +505,61 @@
     offerFrame.className = 'at-dh-offer-frame';
     container.appendChild(offerFrame);
 
-    // --- Textos de preco ---
-    var desconto = document.createElement('div');
-    desconto.className = 'at-dh-desconto';
-    desconto.textContent = 'Desconto';
-    container.appendChild(desconto);
+    // --- Faixa de parques (Frame 15065) ---
+    var parkStrip = document.createElement('div');
+    parkStrip.className = 'at-dh-park-strip';
+    var parkImg = document.createElement('img');
+    parkImg.src = 'https://i.imgur.com/W3mUtjO.png';
+    parkImg.alt = 'Parques Disney';
+    parkImg.style.cssText = 'height:100%;width:auto;max-width:100%;object-fit:contain;display:block;';
+    parkStrip.appendChild(parkImg);
+    container.appendChild(parkStrip);
 
-    var de = document.createElement('div');
-    de.className = 'at-dh-de';
-    de.textContent = 'de';
-    container.appendChild(de);
+    // --- Bullet rows ---
+    var bulletItems = [
+      { type: 'check', text: '10% de desconto com cart\u00E3o Azul Ita\u00FA' },
+      { type: 'check', text: 'Ganhe pontos com Cart\u00E3o Azul' },
+      { type: 'check', text: 'Parcelamento em at\u00E9 10x sem juros' }
+    ];
+    var bulletTops = [166, 202, 238];
+    bulletItems.forEach(function (item, index) {
+      var row = document.createElement('div');
+      row.className = 'at-dh-bullet-row';
+      row.style.top = bulletTops[index] + 'px';
 
-    var rs = document.createElement('div');
-    rs.className = 'at-dh-rs';
-    rs.textContent = 'R$';
-    container.appendChild(rs);
+      var iconEl;
+      if (item.type === 'img') {
+        iconEl = document.createElement('img');
+        iconEl.className = 'at-dh-bullet-icon-img';
+        iconEl.src = item.src;
+        iconEl.alt = '';
+      } else {
+        iconEl = document.createElement('div');
+        iconEl.className = 'at-dh-bullet-icon-wrap';
+        iconEl.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7.5L5.5 11L12 3.5" stroke="#00043E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      }
+      row.appendChild(iconEl);
 
-    var preco = document.createElement('div');
-    preco.className = 'at-dh-preco';
-    preco.textContent = '2.300';
-    container.appendChild(preco);
+      var bulletTxt = document.createElement('span');
+      bulletTxt.className = 'at-dh-bullet-text';
+      bulletTxt.textContent = item.text;
+      row.appendChild(bulletTxt);
 
-    var asterisco = document.createElement('div');
-    asterisco.className = 'at-dh-asterisco';
-    asterisco.textContent = '*';
-    container.appendChild(asterisco);
-
-    var hoteisTxt = document.createElement('div');
-    hoteisTxt.className = 'at-dh-hoteis-txt';
-    hoteisTxt.textContent = 'em Hot\u00E9is Resort Disney a partir de 4 noites';
-    container.appendChild(hoteisTxt);
-
-    // --- Cupom (Frame 9212) ---
-    var coupon = document.createElement('div');
-    coupon.className = 'at-dh-coupon';
-
-    var couponIcon = document.createElement('div');
-    couponIcon.className = 'at-dh-coupon-icon';
-    couponIcon.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">'
-      + '<path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1Z" fill="#216FB7"/>'
-      + '<path d="M19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z" fill="#216FB7"/>'
-      + '</svg>';
-    coupon.appendChild(couponIcon);
-
-    var couponCode = document.createElement('span');
-    couponCode.className = 'at-dh-coupon-code';
-    couponCode.textContent = 'HOTELENCANTADO2026';
-    coupon.appendChild(couponCode);
-    container.appendChild(coupon);
-
-    // --- Toast "Cod copiado" ---
-    var toast = document.createElement('div');
-    toast.className = 'at-dh-toast';
-    toast.textContent = 'C\u00F3d. Copiado';
-    container.appendChild(toast);
+      container.appendChild(row);
+    });
 
     // --- CTA ---
     var cta = document.createElement('button');
     cta.className = 'at-dh-cta';
-    cta.textContent = 'Eu quero';
+    cta.textContent = 'Comprar Ingressos';
     container.appendChild(cta);
 
-    // --- Logos Azul Viagens | Disney Destinations ---
-    var logos = document.createElement('div');
-    logos.className = 'at-dh-logos';
-
-    var logoAzul = document.createElement('div');
-    logoAzul.innerHTML = '<svg width="40" height="18" viewBox="0 0 40 18" fill="none" xmlns="http://www.w3.org/2000/svg">'
-      + '<text x="0" y="12" font-family="Helvetica Neue,Arial,sans-serif" font-weight="700" font-size="8" fill="#FFFFFF">Azul</text>'
-      + '<text x="0" y="18" font-family="Helvetica Neue,Arial,sans-serif" font-weight="400" font-size="6" fill="#FFFFFF">Viagens</text>'
-      + '</svg>';
-    logos.appendChild(logoAzul);
-
-    var logoDivider = document.createElement('div');
-    logoDivider.className = 'at-dh-logos-divider';
-    logos.appendChild(logoDivider);
-
-    var logoDisney = document.createElement('div');
-    logoDisney.innerHTML = '<img src="https://i.imgur.com/1CwQhAX.png" alt="Disney Destinations" style="display:block;width:70px;height:12px;object-fit:contain;"/>';
-    logos.appendChild(logoDisney);
-    container.appendChild(logos);
+    // --- Logo Disney ao lado direito do CTA ---
+    var ctaLogo = document.createElement('img');
+    ctaLogo.className = 'at-dh-cta-logo';
+    ctaLogo.src = 'https://i.imgur.com/1CwQhAX.png';
+    ctaLogo.alt = 'Disney';
+    container.appendChild(ctaLogo);
 
     // --- Consulte condicoes ---
     var consult = document.createElement('div');
@@ -650,7 +573,7 @@
 
     var photoImg = document.createElement('img');
     photoImg.className = 'at-dh-photo-img';
-    photoImg.src = 'https://i.imgur.com/ztjVK2f.png';
+    photoImg.src = 'https://i.imgur.com/NwAJ44j.jpeg';
     photoImg.alt = 'Disney';
     photoWrap.appendChild(photoImg);
 
@@ -683,32 +606,9 @@
       window.location.href = BANNER_LINK;
     });
 
-    coupon.addEventListener('click', function (e) {
-      e.stopPropagation();
-      var code = 'HOTELENCANTADO2026';
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(code).catch(function () {});
-      } else {
-        var tmp = document.createElement('textarea');
-        tmp.value = code;
-        tmp.style.cssText = 'position:fixed;left:-9999px;';
-        document.body.appendChild(tmp);
-        tmp.select();
-        try { document.execCommand('copy'); } catch (err) {}
-        document.body.removeChild(tmp);
-      }
-      toast.classList.add('at-dh-toast-show');
-      setTimeout(function () { toast.classList.remove('at-dh-toast-show'); }, 2000);
-      cta.classList.remove('at-dh-cta-pulse');
-      void cta.offsetWidth;
-      cta.classList.add('at-dh-cta-pulse');
-      analyticsEvent('banner_disney_hoteis_cupom_copiado', 'click');
-    });
-
     container.addEventListener('click', function (e) {
       if (e.target === closeBtn || closeBtn.contains(e.target)) return;
       if (e.target === cta) return;
-      if (coupon.contains(e.target)) return;
       e.stopPropagation();
       analyticsEvent('banner_disney_hoteis_container', 'click');
       window.location.href = BANNER_LINK;
