@@ -2,10 +2,10 @@
     'use strict';
 
     // Guard contra execucao duplicada
-    if (window.modalFlashSaleVertuo) {
+    if (window.modalFlashSaleAberto) {
         return;
     }
-    window.modalFlashSaleVertuo = true;
+    window.modalFlashSaleAberto = true;
 
     // Tracking GA
     function sendGAEvent(label) {
@@ -31,25 +31,13 @@
         experiment_variant: '${campaign.recipe.name}'
     });
 
-    // Carregar fonte DM Sans
-    function loadFont() {
-        if (document.getElementById('flash-modal-dm-sans-font')) {
-            return;
-        }
-        var link = document.createElement('link');
-        link.id = 'flash-modal-dm-sans-font';
-        link.rel = 'stylesheet';
-        link.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,700;0,800;1,400;1,700&display=swap';
-        document.head.appendChild(link);
-    }
-
     // Injetar estilos
     function injectStyles() {
-        if (document.getElementById('flash-modal-vertuo-styles')) {
+        if (document.getElementById('flash-modal-aberto-styles')) {
             return;
         }
         var style = document.createElement('style');
-        style.id = 'flash-modal-vertuo-styles';
+        style.id = 'flash-modal-aberto-styles';
         style.textContent =
             '.flash-modal-overlay {' +
             '  position: fixed; top: 0; left: 0; width: 100%; height: 100%;' +
@@ -180,7 +168,7 @@
             '    <div class="flash-coupon-card flash-coupon-card--primary">' +
             '      <div class="flash-coupon-info">' +
             '        <div class="flash-coupon-discount">15% OFF</div>' +
-            '        <div class="flash-coupon-description">Na compra de 170 caf\u00e9s</div>' +
+            '        <div class="flash-coupon-description">Na compra de 170 c\u00e1psulas</div>' +
             '      </div>' +
             '      <div class="flash-coupon-action">' +
             '        <div class="flash-coupon-badge">' +
@@ -199,13 +187,13 @@
             '    <div class="flash-coupon-card flash-coupon-card--secondary">' +
             '      <div class="flash-coupon-info">' +
             '        <div class="flash-coupon-discount">10% OFF</div>' +
-            '        <div class="flash-coupon-description">Na compra de 70 caf\u00e9s Vertuo</div>' +
+            '        <div class="flash-coupon-description">Na compra de 120 c\u00e1psulas</div>' +
             '      </div>' +
             '      <div class="flash-coupon-action">' +
             '        <div class="flash-coupon-badge">' +
-            '          <span>CUPOM:</span> <strong>VERTUO10</strong>' +
+            '          <span>CUPOM:</span> <strong>CAFEOFF10</strong>' +
             '        </div>' +
-            '        <button class="flash-coupon-copy-btn" data-coupon="VERTUO10">' +
+            '        <button class="flash-coupon-copy-btn" data-coupon="CAFEOFF10">' +
             '          <span>Copiar c\u00f3digo</span>' +
             '          <svg class="flash-coupon-copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
             '            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>' +
@@ -247,7 +235,7 @@
                 tooltip.classList.remove('show');
             }, 2000);
         } catch (err) {
-            console.log('[Flash Modal Vertuo] Erro ao copiar cupom:', err);
+            console.log('[Flash Modal Aberto] Erro ao copiar cupom:', err);
         }
 
         document.body.removeChild(tempInput);
@@ -322,12 +310,11 @@
 
         addEventListeners();
         sendGAEvent('flash_sale_modal_exibido');
-        console.log('[Flash Modal Vertuo] Modal inserido com sucesso');
+        console.log('[Flash Modal Aberto] Modal inserido com sucesso');
     }
 
     // Inicializacao
     function init() {
-        loadFont();
         injectStyles();
         insertModal();
     }
