@@ -1,0 +1,311 @@
+<style>
+  /* Espaçamentos globais do banner */
+  .pb10 { padding-bottom: 2.5rem }
+  .pt10 { padding-top: 2.5rem }
+
+  .promo-codigos {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+    
+    /* AJUSTE DE LARGURA PARA ALINHAMENTO FINO COM A IMAGEM */
+    width: 95vw; 
+    max-width: 1450px; 
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    /* Ajuste vertical para sobrepor exatamente a área do cupom na imagem */
+    margin-top: 165px; 
+    padding: 0 40px; 
+    box-sizing: border-box;
+    font-family: "NespressoLucas", Arial, sans-serif;
+  }
+
+  .codigo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px; /* Espaço entre o cupom e o botão de copiar */
+    width: 320px; 
+  }
+
+  /* Escondendo o texto original para não sobrepor o texto da imagem */
+  .codigo p {
+    visibility: hidden;
+    height: 0;
+    margin: 0;
+  }
+
+  .promo-codigo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #961b2f; /* Fundo bordô conforme solicitado */
+    font-weight: 700;
+    padding: 6px 20px;
+    border-radius: 30px;
+    font-size: 1.4rem; /* Texto maior */
+    color: #ffe8e0; /* Letras bege claro conforme solicitado */
+    letter-spacing: 1px;
+    width: 280px; /* Largura ajustada para bater com o elemento da imagem */
+    text-align: center;
+    box-sizing: border-box;
+    border: 2px solid #8B1A2F; 
+    text-transform: uppercase;
+  }
+
+  .promo-copy-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    color: #8B1A2F;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: "NespressoLucas", Arial, sans-serif;
+    font-weight: 700;
+    width: 280px; /* Mesma largura do cupom para alinhar verticalmente */
+    text-transform: uppercase;
+    transition: all 0.2s;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+
+  .promo-copy-btn:hover { 
+    background: #f8f8f8;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  }
+  
+  .promo-copy-btn:disabled {
+    background: #8B1A2F;
+    color: #fff;
+    cursor: default;
+    transform: none;
+  }
+
+  /* Ajustes para Mobile */
+  @media (max-width: 600px) {
+    .promo-codigos {
+      flex-direction: column;
+      align-items: center;
+      gap: 120px; 
+      margin-top: 80px;
+      left: auto;
+      transform: none;
+      width: 100%;
+      padding: 0 20px;
+    }
+    .codigo { 
+      width: 100%;
+    }
+    .promo-codigo, .promo-copy-btn {
+      width: 85%;
+      max-width: 320px;
+    }
+  }
+</style>
+
+<div id="page-builder-7358a429-9af8-f1e4-ecfa-c8a8139d48ea" class="page-builder-7358a429-9af8-f1e4-ecfa-c8a8139d48ea"></div>
+<style type="text/css">.page-builder-7358a429-9af8-f1e4-ecfa-c8a8139d48ea:not(:empty) {min-height: 447px} @media(min-width:768px){.page-builder-7358a429-9af8-f1e4-ecfa-c8a8139d48ea:not(:empty){min-height: 503px}}</style>
+
+<script id="page-builder-data-7358a429-9af8-f1e4-ecfa-c8a8139d48ea" type="application/json">
+    {
+        "id": "page-builder-7358a429-9af8-f1e4-ecfa-c8a8139d48ea",
+        "version": "latest",
+        "created": "",
+        "name": "Flash Sales Setembro 2025 Cupom",
+        "preload": {
+            "nb-hero-banner": {
+                "style": "/shared_res/agility/next-components/hero-banner/v1.1/css/hero-banner.css?1.2.2",
+                "modern": "/shared_res/agility/next-components/hero-banner/v1.1/index.es.min.js?1.2.2",
+                "deps": ["nb-foundations", "nb-cta"]
+            },
+            "nb-foundations": {
+                "style": "/shared_res/agility/next-components/foundations/v1.1/css/foundations.css?1.1.1",
+                "modern": "/shared_res/agility/next-components/foundations/v1.1/index.es.min.js?1.1.1"
+            },
+            "nb-cta": {
+                "style": "/shared_res/agility/next-components/cta/v1.1/css/cta.css?1.1.2",
+                "modern": "/shared_res/agility/next-components/cta/v1.1/index.es.min.js?1.1.2"
+            }
+        },
+        "options": {
+            "pdpMode": false,
+            "sliderContainerMode": false,
+            "onlyVertuo": false,
+            "onlyOriginal": false,
+            "onlyPro": false,
+            "onlyXFCards": false,
+            "useStandaloneLoader": false,
+            "exportId": "",
+            "exportIdVL": "",
+            "exportIdOL": "",
+            "exportIdPro": "",
+            "exportIdXFCards": ""
+        },
+        "components": [
+            {
+                "uuid": "nb-hero-banner-96e8fb08-eec8-0cd8-3758-d884ccb843ae",
+                "module": "nb-hero-banner",
+                "tag": "nb-hero-banner",
+                "folder": "/shared_res/agility/next-components/hero-banner/",
+                "version": "1.2.2",
+                "minHeight": "503",
+                "minHeightMobile": "447",
+                "variations": [
+                    {
+                        "index": 0,
+                        "properties": {
+                            "copywriting": {
+                                "overline": "",
+                                "heading": "<br><br><br>",
+                                "heading_countdown": {
+                                    "date": "",
+                                    "time": "",
+                                    "locale": { "days": "d", "hours": "h", "minutes": "m", "seconds": "s" },
+                                    "heading": "",
+                                    "cta_link": ""
+                                },
+                                "text": "<div class=\"promo-codigos\"><div class=\"codigo\"><p>Cupom 10% OFF</p><span class=\"promo-codigo\">CAFEOFF10<\/span><button class=\"promo-copy-btn\" data-campaign=\"flash-sales-10\" data-code=\"CAFEOFF10\">Copiar cupom<\/button><\/div><div class=\"codigo\"><p>Cupom 15% OFF</p><span class=\"promo-codigo\">CAFEOFF15<\/span><button class=\"promo-copy-btn\" data-campaign=\"flash-sales-15\" data-code=\"CAFEOFF15\">Copiar cupom<\/button><\/div><\/div>",
+                                "text_countdown": {
+                                    "date": "",
+                                    "time": "",
+                                    "locale": { "days": "d", "hours": "h", "minutes": "m", "seconds": "s" },
+                                    "text": "",
+                                    "cta_link": ""
+                                },
+                                "cta": {
+                                    "contrast": "light",
+                                    "variation": "primary",
+                                    "link": "https://www.nespresso.com/br/pt/order/capsules/original",
+                                    "label": "COMPRE AGORA",
+                                    "seo_label": "Compre cápsulas de café Nespresso",
+                                    "icon_left": ""
+                                },
+                                "cta_secondary": {
+                                    "contrast": "dark",
+                                    "variation": "secondary",
+                                    "link": "#cta",
+                                    "label": "",
+                                    "seo_label": "",
+                                    "icon_left": ""
+                                },
+                                "video": {
+                                    "video_service": "youtube",
+                                    "video_id": "",
+                                    "video_mobile": "",
+                                    "a11y_play_video": "Play video",
+                                    "auto_play": false,
+                                    "display_ui_controls": "1",
+                                    "cc_policy_language": "",
+                                    "a11y_video_description": ""
+                                },
+                                "popin": {
+                                    "id": "",
+                                    "text": "",
+                                    "image": "",
+                                    "image_alt": "",
+                                    "heading": "",
+                                    "description": "",
+                                    "close": ""
+                                },
+                                "image": "",
+                                "image_alt": "",
+                                "image_logo": "",
+                                "image_logo_max_width": "",
+                                "image_logo_alt": ""
+                            },
+                            "layout": {
+                                "textAlign": "center",
+                                "contrast": "light",
+                                "contrast_mobile": "light",
+                                "background_color": "highlight_040",
+                                "padding_top": "pt10",
+                                "padding_bottom": "pb10",
+                                "background": {
+                                    "background_image_alt": "Banner Flash Sales",
+                                    "mobile": "https://www.nespresso.com/ecom/medias/sys_master/public/51019251089438/Main-Banner-Mobile-Aberto-sem-Cupom.jpg",
+                                    "desktop": "https://www.nespresso.com/ecom/medias/sys_master/public/51019250958366/Main-Banner-Desk-Aberto-sem-Cupom.jpg"
+                                },
+                                "background_video": {
+                                    "fullHeight": false,
+                                    "labelPlay": "",
+                                    "labelPause": "",
+                                    "mobile": "",
+                                    "desktop": "",
+                                    "mobilePoster": "",
+                                    "desktopPoster": ""
+                                }
+                            },
+                            "campaign": {
+                                "id": "br-b2c-mainbanner-cupom-copiavel-homepage-flash-sales-setembro-2025-anonymous",
+                                "name": "br-b2c-mainbanner-cupom-copiavel-homepage-flash-sales-setembro-2025-anonymous",
+                                "creative": "before_hero_banner",
+                                "position": "before_hero_banner"
+                            }
+                        },
+                        "personalisation": null
+                    }
+                ]
+            }
+        ]
+    }
+</script>
+
+<script type="text/javascript">
+  window.nwc = window.nwc || {};
+  window.nwc.projects = window.nwc.projects || [];
+  window.nwc.projects.push(JSON.parse(document.getElementById('page-builder-data-7358a429-9af8-f1e4-ecfa-c8a8139d48ea').innerHTML));
+</script>
+<script type="text/javascript">(function (p, a, g, e, b, u, i, l, d, r) {p[b] = p[b] || {};if (p[b].loading) {return;} else if (p[b].loaded) {p[b].ready();return;};p[b].loading = 1;p[b].ready = function () {p[b].loading = 0;p[b].loaded = 1;p[b].load();};u = a.createElement(g);i = a.getElementsByTagName(g)[0];u.src = e;u.onload = p[b].ready;i.parentNode.insertBefore(u, i);})(window, document, 'script', '/shared_res/agility/page-builder/assets/js/nwc.min.js', 'nwc')</script>
+
+<script>
+  function initPromoCopyButtonsSafe() {
+    document.querySelectorAll(".promo-copy-btn").forEach(function(btn) {
+      if (btn.dataset.listenerAttached === "true") return;
+      btn.addEventListener("click", function() {
+        var code = btn.getAttribute("data-code");
+        var campaign = btn.getAttribute("data-campaign") || "flash_sale";
+        
+        const el = document.createElement('textarea');
+        el.value = code;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+
+        var original = btn.textContent;
+        btn.textContent = "Copiado!";
+        btn.disabled = true;
+        
+        setTimeout(function() {
+          btn.textContent = original;
+          btn.disabled = false;
+        }, 2500);
+
+        window.gtmDataObject = window.gtmDataObject || [];
+        window.gtmDataObject.push({
+          event: "local_event",
+          local_event_category: campaign,
+          local_event_action: "click",
+          local_event_label: "promo_code_" + code
+        });
+      });
+      btn.dataset.listenerAttached = "true";
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    new MutationObserver(function() {
+      if (document.querySelectorAll(".promo-copy-btn").length > 0) {
+        initPromoCopyButtonsSafe();
+      }
+    }).observe(document.body, { childList: true, subtree: true });
+    initPromoCopyButtonsSafe();
+  });
+</script>
