@@ -247,9 +247,23 @@
       '  display: none !important;',
       '}',
 
-      // Comodidades (Restaurante, Piscina, etc.)
+      // Comodidades (Restaurante, Piscina, etc.) — exibir em coluna vertical
+      '[' + DATA_APLICADO + '] [class*="AmenitiesWrapper-sc"] {',
+      '  display: flex !important;',
+      '  flex-direction: column !important;',
+      '  align-items: flex-start !important;',
+      '  gap: 2px;',
+      '}',
       '[' + DATA_APLICADO + '] [class*="Amenitie-sc"] {',
-      '  margin-bottom: 4px !important;',
+      '  margin-bottom: 0 !important;',
+      '}',
+
+      // Badges de beneficio (Quartos com Ofertas, Ultimos quartos, etc.)
+      '[' + DATA_APLICADO + '] [class*="TagWrapper-sc-1ft5opc"] {',
+      '  display: flex !important;',
+      '  flex-wrap: wrap !important;',
+      '  gap: 4px;',
+      '  overflow: visible !important;',
       '}',
 
       // Tags (cancelamento, refeicao)
@@ -289,7 +303,7 @@
       '[' + DATA_APLICADO + '] [class*="PriceWrapper-sc-10ygdxz"] {',
       '  width: 45% !important;',
       '  flex: 0 0 45% !important;',
-      '  padding: 10px 14px 16px !important;',
+      '  padding: 10px 14px !important;',
       '  box-sizing: border-box !important;',
       '  background: #fff;',
       '  display: flex !important;',
@@ -325,7 +339,7 @@
 
       // Acumule pontos: flag com imagem de fundo
       '[' + DATA_APLICADO + '] [class*="AccrualWrapper-sc"] {',
-      '  padding: 6px 12px !important;',
+      '  padding: 8px 8px !important;',
       '  background: url(https://www.voeazul.com.br/etc.clientlibs/azul/clientlibs/clientlib-react/resources/static/media/bg_noAccrual.ebb1c94c.svg) no-repeat center center !important;',
       '  background-size: cover !important;',
       '  border-radius: 4px;',
@@ -342,7 +356,7 @@
       '  gap: 4px;',
       '}',
       '[' + DATA_APLICADO + '] [class*="AccrualTitle-sc"] {',
-      '  font-size: 9px !important;',
+      '  font-size: 11px !important;',
       '  font-weight: 700 !important;',
       '  color: #fff !important;',
       '  white-space: nowrap;',
@@ -351,7 +365,7 @@
       '  display: none !important;',
       '}',
       '[' + DATA_APLICADO + '] [class*="AccrualText-sc"] {',
-      '  font-size: 11px !important;',
+      '  font-size: 10px !important;',
       '  color: #fff !important;',
       '}',
       '[' + DATA_APLICADO + '] [class*="BackgroundAccrual-sc"] {',
@@ -380,7 +394,6 @@
       '}',
       '[' + DATA_APLICADO + '] [class*="Price-sc-10ygdxz"] {',
       '  white-space: nowrap;',
-      '  padding: 0 0 10px 0 !important;',
       '}',
       '[' + DATA_APLICADO + '] [class*="Currency-sc"] {',
       '  font-size: 14px !important;',
