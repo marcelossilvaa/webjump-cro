@@ -1,6 +1,13 @@
 (function () {
   'use strict';
 
+  // ===================== GUARDS =====================
+  // Somente desktop (largura minima 1024px)
+  if (window.innerWidth < 1024) return;
+
+  // Somente na pagina de hoteis
+  if (window.location.href.indexOf('https://www.voeazul.com.br/br/pt/home/hotel?') === -1) return;
+
   // ===================== CONSTANTES =====================
   const STYLE_ID = 'at-mapa-lista-integrada-style';
   const MAP_ID = 'at-mapa-integrado';
@@ -18,6 +25,10 @@
   let isProcessing = false;
   let debounceTimer = null;
   let observerRef = null;
+  let observerGlobalRef = null;
+  let dadosCache = [];
+  let mapsAPICarregada = false;
+  let aguardandoPaginacao = false;
 
   // ===================== CSS =====================
   function injetarEstilos() {
@@ -52,7 +63,6 @@
       '    flex: 0 0 50%;',
       '    order: 2;',
       '    position: sticky;',
-      '    top: 120px;',
       '    align-self: flex-start;',
       '    border-radius: 12px;',
       '    margin: 0 0 0 8px;',
@@ -80,30 +90,226 @@
       '  transition: outline .2s ease;',
       '}',
 
-      // InfoWindow customizada
-      '.at-iw-container { max-width: 260px; font-family: inherit; }',
-      '.at-iw-img { width: 100%; height: 100px; object-fit: cover; border-radius: 6px 6px 0 0; }',
-      '.at-iw-body { padding: 10px; }',
-      '.at-iw-title { font-size: 13px; font-weight: 700; color: #041E42; margin: 0 0 4px; }',
-      '.at-iw-loc { font-size: 11px; color: #666; margin: 0 0 6px; }',
-      '.at-iw-price { font-size: 16px; font-weight: 700; color: #026CB6; margin: 0 0 6px; }',
-      '.at-iw-stars { display: flex; gap: 1px; margin-bottom: 6px; }',
-      '.at-iw-stars svg { width: 12px; height: 12px; fill: #F5A623; }',
-      '.at-iw-btn {',
-      '  display: block; width: 100%; padding: 8px;',
-      '  background: #026CB6; color: #fff; border: none;',
-      '  border-radius: 6px; font-size: 12px; font-weight: 600;',
-      '  cursor: pointer; text-align: center;',
+      // Card reestruturado para o split 50/50
+      '[' + DATA_APLICADO + '] [class*="HotelCardWrapper-sc"] {',
+      '  margin-bottom: 12px;',
       '}',
-      '.at-iw-btn:hover { background: #01588f; }',
+      '[' + DATA_APLICADO + '] [class*="CardContainer-sc"] {',
+      '  border-radius: 10px;',
+      '  overflow: hidden;',
+      '  box-shadow: 0 1px 4px rgba(0,0,0,.1);',
+      '  background: #fff;',
+      '}',
 
-      // Thumbnail de imagem no card
-      '.at-card-thumb {',
-      '  width: 100%; height: 160px; object-fit: cover;',
-      '  display: block; border-radius: 10px 10px 0 0;',
+      // Wrapper interno: empilhar verticalmente
+      '[' + DATA_APLICADO + '] [class*="WrapperSlidesDesktop-sc"] {',
+      '  display: flex !important;',
+      '  flex-direction: column !important;',
+      '  height: auto !important;',
+      '  min-height: unset !important;',
       '}',
-      '[class*="HotelCardWrapper-sc-16a2dz4"] [class*="CardContainer-sc"] {',
-      '  display: flex !important; flex-direction: column !important;',
+
+      // Slider de imagem: largura total, altura controlada
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] {',
+      '  width: 100% !important;',
+      '  height: 160px !important;',
+      '  max-height: 160px !important;',
+      '  overflow: hidden;',
+      '  flex-shrink: 0;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-slider,',
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-list,',
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-track,',
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-slide,',
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-slide > div {',
+      '  height: 160px !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-slide {',
+      '  width: 100% !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] img {',
+      '  width: 100% !important;',
+      '  height: 160px !important;',
+      '  object-fit: cover !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="StyledSlider-sc-o70g43"] {',
+      '  height: 160px !important;',
+      '}',
+
+      // PromoTag: reposicionar dentro do slider
+      '[' + DATA_APLICADO + '] [class*="PromoTagContainer-sc"] {',
+      '  height: 160px !important;',
+      '}',
+
+      // Conteudo: padding e layout
+      '[' + DATA_APLICADO + '] [class*="ContentWrapper-sc-1ft5opc"] {',
+      '  width: 100% !important;',
+      '  padding: 12px 14px !important;',
+      '  box-sizing: border-box !important;',
+      '}',
+
+      // InfosWrapper: garantir que nao sobreponha
+      '[' + DATA_APLICADO + '] [class*="InfosWrapper-sc-1ft5opc"] {',
+      '  width: 100% !important;',
+      '  overflow: hidden;',
+      '}',
+
+      // Nome do hotel
+      '[' + DATA_APLICADO + '] [class*="HotelName-sc"] {',
+      '  font-size: 15px !important;',
+      '  font-weight: 700 !important;',
+      '  color: rgb(1, 78, 132) !important;',
+      '  white-space: nowrap;',
+      '  overflow: hidden;',
+      '  text-overflow: ellipsis;',
+      '  max-width: 100%;',
+      '  font-family: "Helvetica Neue", Arial, sans-serif !important;',
+      '}',
+
+      // Wrapper do nome + estrelas
+      '[' + DATA_APLICADO + '] [class*="HotelNameWrapper-sc"] {',
+      '  display: flex !important;',
+      '  align-items: center !important;',
+      '  gap: 6px;',
+      '  margin-bottom: 4px;',
+      '  max-width: 100%;',
+      '  overflow: hidden;',
+      '}',
+
+      // Localizacao
+      '[' + DATA_APLICADO + '] [class*="NeighboorhoodDistance-sc"] {',
+      '  font-size: 12px !important;',
+      '  color: #555 !important;',
+      '  display: block !important;',
+      '  white-space: nowrap;',
+      '  overflow: hidden;',
+      '  text-overflow: ellipsis;',
+      '  margin-bottom: 8px;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="MapButton-sc"] {',
+      '  display: none !important;',
+      '}',
+
+      // Carousel de tags (cancelamento, refeicao)
+      '[' + DATA_APLICADO + '] [class*="InfosCarouselWrapper-sc"] {',
+      '  overflow: hidden;',
+      '  max-width: 100%;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="CarouselWrapper-sc-3qprdy"] {',
+      '  overflow: hidden;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Carousel-sc-3qprdy"] {',
+      '  display: flex !important;',
+      '  flex-wrap: wrap !important;',
+      '  gap: 4px;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="InfoTagContainer-sc"] {',
+      '  flex-shrink: 0;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="InfoTagWrapper-sc"] span {',
+      '  font-size: 11px !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="ButtonWrapperBase-sc-3qprdy"] {',
+      '  display: none !important;',
+      '}',
+
+      // Preco: layout compacto
+      '[' + DATA_APLICADO + '] [class*="PriceWrapper-sc-10ygdxz"] {',
+      '  width: 100% !important;',
+      '  padding: 10px 14px 14px !important;',
+      '  box-sizing: border-box !important;',
+      '  border-top: 1px solid #eee;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="ContentPrice-sc"] {',
+      '  width: 100% !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="BorderContainer-sc"] {',
+      '  display: flex !important;',
+      '  flex-direction: column !important;',
+      '  width: 100% !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="BorderContentPrice-sc"] {',
+      '  width: 100% !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="PriceContentWrapper-sc"] {',
+      '  display: flex !important;',
+      '  flex-wrap: wrap !important;',
+      '  align-items: baseline !important;',
+      '  gap: 4px 8px;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="ContainerDaily-sc"] {',
+      '  font-size: 12px !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="DailyText-sc"] {',
+      '  font-size: 12px !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Price-sc-10ygdxz"] {',
+      '  white-space: nowrap;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Currency-sc"] {',
+      '  font-size: 13px !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Integer-sc"] {',
+      '  font-size: 20px !important;',
+      '  color: rgb(1, 78, 132) !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Cents-sc"] {',
+      '  font-size: 12px !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="PriceInstallments-sc"] {',
+      '  font-size: 11px !important;',
+      '  width: 100%;',
+      '}',
+
+      // Acumule pontos: compacto
+      '[' + DATA_APLICADO + '] [class*="AccrualWrapper-sc"] {',
+      '  padding: 6px 0 !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="AccrualTitle-sc"] {',
+      '  font-size: 11px !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="AccrualText-sc"] {',
+      '  font-size: 11px !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="BackgroundAccrual-sc"] {',
+      '  display: none !important;',
+      '}',
+
+      // Botao Ver detalhes
+      '[' + DATA_APLICADO + '] [class*="PriceWrapper-sc"] button[data-testid="search-box-hotel-date-picker-primary-button"] {',
+      '  width: 100% !important;',
+      '  margin-top: 8px;',
+      '  padding: 8px 12px !important;',
+      '  font-size: 13px !important;',
+      '  border-radius: 6px;',
+      '}',
+
+
+      // InfoWindow estilizada
+      '.at-iw-container {',
+      '  padding: 10px 14px;',
+      '  font-family: "Helvetica Neue", Arial, sans-serif;',
+      '  min-width: 180px;',
+      '  max-width: 260px;',
+      '}',
+      '.at-iw-nome {',
+      '  font-size: 14px;',
+      '  font-weight: 700;',
+      '  color: rgb(1, 78, 132);',
+      '  margin: 0 0 4px 0;',
+      '  line-height: 1.3;',
+      '}',
+      '.at-iw-endereco {',
+      '  font-size: 12px;',
+      '  color: #555;',
+      '  margin: 0 0 8px 0;',
+      '  line-height: 1.3;',
+      '}',
+      '.at-iw-preco {',
+      '  font-size: 15px;',
+      '  font-weight: 700;',
+      '  color: rgb(1, 78, 132);',
+      '  margin: 0;',
       '}'
     ].join('\n');
     document.head.appendChild(style);
@@ -147,10 +353,18 @@
       if (matchImg) return matchImg[1];
     }
 
-    // Procurar no __NEXT_DATA__
+    // Procurar no __NEXT_DATA__ (acesso direto ao env para evitar stringify de objeto grande)
     try {
-      const ndStr = JSON.stringify(window.__NEXT_DATA__ || {});
-      const matchNd = ndStr.match(/AIzaSy[\w\-]{30,40}/);
+      const nd = window.__NEXT_DATA__;
+      if (nd && nd.runtimeConfig && nd.runtimeConfig.googleMapsKey) {
+        return nd.runtimeConfig.googleMapsKey;
+      }
+      if (nd && nd.props && nd.props.pageProps && nd.props.pageProps.googleMapsKey) {
+        return nd.props.pageProps.googleMapsKey;
+      }
+      // Fallback: stringify limitado
+      var ndStr = JSON.stringify(nd || {}).slice(0, 200000);
+      var matchNd = ndStr.match(/AIzaSy[\w\-]{30,40}/);
       if (matchNd) return matchNd[0];
     } catch (e) {
       // silenciar erro
@@ -208,6 +422,50 @@
     document.head.appendChild(script);
   }
 
+  // ===================== LOADING NATIVO COMO CAMADA =====================
+  function exibirLoadingNativo() {
+    // Clonar o loading nativo existente na pagina para usar como overlay
+    var loadingOriginal = document.querySelector('[class*="LoadingWrapper-sc"]');
+    var searchWrapper = document.querySelector('[class*="SearchListWrapper-sc"]');
+    if (!searchWrapper) return null;
+
+    var overlay = document.createElement('div');
+    overlay.id = 'at-loading-overlay';
+    overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;' +
+      'background:#fff;z-index:9999;display:flex;align-items:center;justify-content:center;';
+
+    if (loadingOriginal) {
+      // Clonar o loading nativo para manter a mesma aparencia
+      var clone = loadingOriginal.cloneNode(true);
+      clone.style.setProperty('display', 'block', 'important');
+      overlay.appendChild(clone);
+    } else {
+      // Fallback minimo com texto caso o loading nativo nao exista
+      var msg = document.createElement('span');
+      msg.textContent = 'Carregando mapa interativo...';
+      msg.style.cssText = 'font-size:14px;color:#026CB6;font-family:Helvetica Neue,sans-serif;';
+      overlay.appendChild(msg);
+    }
+
+    // Garantir que o wrapper tem position relativa para o overlay absoluto funcionar
+    var posAtual = window.getComputedStyle(searchWrapper).position;
+    if (posAtual === 'static') {
+      searchWrapper.style.setProperty('position', 'relative');
+    }
+
+    searchWrapper.appendChild(overlay);
+    console.log(LOG_PREFIX + ' Loading nativo exibido como camada.');
+    return overlay;
+  }
+
+  function removerLoadingNativo() {
+    var overlay = document.getElementById('at-loading-overlay');
+    if (overlay && overlay.parentNode) {
+      overlay.parentNode.removeChild(overlay);
+      console.log(LOG_PREFIX + ' Loading nativo removido.');
+    }
+  }
+
   function carregarAPIViaToggle(callback) {
     const toggleBtn = document.querySelector('[class*="AnimatedButton-sc-1oit4q5"]');
     if (!toggleBtn) {
@@ -215,11 +473,14 @@
       return;
     }
 
-    // Esconder a area de conteudo temporariamente para evitar flickering visual
+    // Exibir loading nativo como camada visual enquanto prepara o mapa
+    exibirLoadingNativo();
+
+    // Esconder o conteudo real por baixo para evitar flickering
     const searchWrapper = document.querySelector('[class*="SearchListWrapper-sc"]');
-    if (searchWrapper) {
-      searchWrapper.style.setProperty('opacity', '0', 'important');
-      searchWrapper.style.setProperty('pointer-events', 'none', 'important');
+    var conteudoFilhos = searchWrapper ? searchWrapper.querySelectorAll(':scope > *:not(#at-loading-overlay)') : [];
+    for (var i = 0; i < conteudoFilhos.length; i++) {
+      conteudoFilhos[i].style.setProperty('visibility', 'hidden', 'important');
     }
 
     // Clicar para ativar a view de mapa (isso forca o carregamento do Google Maps API)
@@ -249,11 +510,14 @@
             if (cards.length >= 2 || tentativasLista > 30) {
               clearInterval(pollingLista);
 
-              // Restaurar visibilidade
-              if (searchWrapper) {
-                searchWrapper.style.removeProperty('opacity');
-                searchWrapper.style.removeProperty('pointer-events');
+              // Restaurar visibilidade dos filhos
+              var filhos = searchWrapper ? searchWrapper.querySelectorAll(':scope > *:not(#at-loading-overlay)') : [];
+              for (var f = 0; f < filhos.length; f++) {
+                filhos[f].style.removeProperty('visibility');
               }
+
+              // Remover overlay de loading nativo
+              removerLoadingNativo();
 
               if (cards.length >= 2) {
                 console.log(LOG_PREFIX + ' Lista re-renderizada apos toggle.');
@@ -266,11 +530,14 @@
       } else if (tentativasAPI > 40) {
         clearInterval(pollingAPI);
 
-        // Restaurar visibilidade
-        if (searchWrapper) {
-          searchWrapper.style.removeProperty('opacity');
-          searchWrapper.style.removeProperty('pointer-events');
+        // Restaurar visibilidade dos filhos
+        var filhosFallback = searchWrapper ? searchWrapper.querySelectorAll(':scope > *:not(#at-loading-overlay)') : [];
+        for (var fb = 0; fb < filhosFallback.length; fb++) {
+          filhosFallback[fb].style.removeProperty('visibility');
         }
+
+        // Remover overlay de loading nativo
+        removerLoadingNativo();
 
         // Tentar voltar para lista
         const voltarBtnFallback = document.querySelector('[class*="AnimatedButton-sc-1oit4q5"]');
@@ -283,26 +550,43 @@
     }, 500);
   }
 
-  // ===================== ICONE SVG PARA MARCADORES DO MAPA =====================
-  function criarIconePin(textoPreco, ativo) {
-    const largura = Math.max(80, textoPreco.length * 8 + 24);
-    const bg = ativo ? '#026CB6' : '#ffffff';
-    const cor = ativo ? '#ffffff' : '#026CB6';
-    const borda = '#026CB6';
-    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + largura + '" height="42">' +
-      '<rect x="1" y="1" width="' + (largura - 2) + '" height="32" rx="16" ' +
-      'fill="' + bg + '" stroke="' + borda + '" stroke-width="2"/>' +
-      '<text x="' + (largura / 2) + '" y="22" font-family="Arial,sans-serif" ' +
-      'font-size="12" font-weight="bold" fill="' + cor + '" text-anchor="middle">' +
-      textoPreco + '</text>' +
-      '<polygon points="' + (largura / 2 - 6) + ',33 ' + (largura / 2) + ',41 ' +
-      (largura / 2 + 6) + ',33" fill="' + borda + '"/>' +
+  // ===================== PIN CUSTOMIZADO =====================
+  function criarPinSVG(texto, ativo) {
+    // Calcula largura baseada no comprimento do texto
+    var charWidth = 7;
+    var padding = 24;
+    var largura = Math.max(60, texto.length * charWidth + padding);
+    var altura = 36;
+    var alturaRect = 28;
+    var raio = 14;
+    var centroX = largura / 2;
+    var corFundo = ativo ? '#003A6B' : '#014E84';
+    var borda = ativo ? ' stroke="#fff" stroke-width="2"' : '';
+
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + largura + '" height="' + altura + '">' +
+      '<rect x="' + (ativo ? 1 : 0) + '" y="' + (ativo ? 1 : 0) + '" width="' + (largura - (ativo ? 2 : 0)) + '" height="' + alturaRect + '" rx="' + raio + '" fill="' + corFundo + '"' + borda + '/>' +
+      '<polygon points="' + (centroX - 5) + ',' + alturaRect + ' ' + (centroX + 5) + ',' + alturaRect + ' ' + centroX + ',' + altura + '" fill="' + corFundo + '"/>' +
+      '<text x="' + centroX + '" y="' + 18 + '" font-family="Helvetica Neue,Arial,sans-serif" font-size="11" fill="#fff" text-anchor="middle" font-weight="bold">' + texto + '</text>' +
       '</svg>';
+
     return {
-      url: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg),
-      scaledSize: new google.maps.Size(largura, 42),
-      anchor: new google.maps.Point(largura / 2, 41)
+      url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+      scaledSize: new google.maps.Size(largura, altura),
+      anchor: new google.maps.Point(centroX, altura)
     };
+  }
+
+  function criarConteudoInfoWindow(hotel) {
+    var html = '<div class="at-iw-container">';
+    html += '<p class="at-iw-nome">' + hotel.nome + '</p>';
+    if (hotel.localizacao) {
+      html += '<p class="at-iw-endereco">' + hotel.localizacao + '</p>';
+    }
+    if (hotel.preco) {
+      html += '<p class="at-iw-preco">' + hotel.preco + '</p>';
+    }
+    html += '</div>';
+    return html;
   }
 
   // ===================== EXTRACAO DE DADOS DOS CARDS =====================
@@ -663,11 +947,7 @@
       zoomControl: true,
       mapTypeControl: false,
       streetViewControl: false,
-      fullscreenControl: false,
-      styles: [
-        { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-        { featureType: 'transit', stylers: [{ visibility: 'simplified' }] }
-      ]
+      fullscreenControl: false
     });
 
     // Ajustar bounds
@@ -687,68 +967,35 @@
   function adicionarMarcador(hotel, indice) {
     if (!hotel.coordenada || !mapInstance) return;
 
+    var textoPin = hotel.precoCurto || hotel.preco || hotel.nome;
+    var icone = criarPinSVG(textoPin, false);
+
     const marker = new google.maps.Marker({
       position: hotel.coordenada,
       map: mapInstance,
-      icon: criarIconePin(hotel.precoCurto || 'Hotel', false),
       title: hotel.nome,
-      zIndex: 1,
-      optimized: false
+      icon: icone,
+      zIndex: 1
     });
 
-    // InfoWindow com detalhes do hotel
-    const iwConteudo = criarConteudoInfoWindow(hotel);
-
     marker.addListener('click', function () {
-      abrirInfoWindow(marker, iwConteudo, indice);
+      abrirInfoWindow(marker, criarConteudoInfoWindow(hotel), indice);
       destacarCard(indice);
       rolarParaCard(indice);
       analyticsEvent(hotel.nome, 'mapa_pin_clique');
     });
 
     marker.addListener('mouseover', function () {
-      marker.setIcon(criarIconePin(hotel.precoCurto || 'Hotel', true));
-      marker.setZIndex(100);
       destacarCard(indice);
     });
 
     marker.addListener('mouseout', function () {
       if (cardAtivoIdx !== indice) {
-        marker.setIcon(criarIconePin(hotel.precoCurto || 'Hotel', false));
-        marker.setZIndex(1);
         resetarCard(indice);
       }
     });
 
     marcadores.push(marker);
-  }
-
-  function criarConteudoInfoWindow(hotel) {
-    let html = '<div class="at-iw-container">';
-    if (hotel.imagem) {
-      html += '<img class="at-iw-img" src="' + hotel.imagem + '" alt="' + hotel.nome + '"/>';
-    }
-    html += '<div class="at-iw-body">';
-    html += '<p class="at-iw-title">' + hotel.nome + '</p>';
-
-    // Estrelas
-    if (hotel.estrelas > 0) {
-      html += '<div class="at-iw-stars">';
-      for (let s = 0; s < hotel.estrelas; s++) {
-        html += '<svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>';
-      }
-      html += '</div>';
-    }
-
-    if (hotel.localizacao) {
-      html += '<p class="at-iw-loc">' + hotel.localizacao + '</p>';
-    }
-    if (hotel.preco) {
-      html += '<p class="at-iw-price">' + hotel.preco + '</p>';
-    }
-    html += '<button class="at-iw-btn" data-at-iw-index="' + hotel.index + '">Ver detalhes do hotel</button>';
-    html += '</div></div>';
-    return html;
   }
 
   function abrirInfoWindow(marker, conteudo, indice) {
@@ -757,35 +1004,19 @@
     }
 
     infoWindowAtiva = new google.maps.InfoWindow({
-      content: conteudo,
-      maxWidth: 280
+      content: conteudo
     });
 
     infoWindowAtiva.open(mapInstance, marker);
-
-    // Listener para o botao dentro da InfoWindow
-    google.maps.event.addListenerOnce(infoWindowAtiva, 'domready', function () {
-      const btn = document.querySelector('[data-at-iw-index="' + indice + '"]');
-      if (btn) {
-        btn.addEventListener('click', function () {
-          const dados = extrairDadosCards();
-          if (dados[indice] && dados[indice].btnDetalhes) {
-            dados[indice].btnDetalhes.click();
-            analyticsEvent(dados[indice].nome, 'mapa_ver_detalhes');
-          }
-        });
-      }
-    });
   }
 
   function destacarMarcador(indice) {
-    if (!marcadores[indice]) return;
-    // Resetar todos
-    for (let i = 0; i < marcadores.length; i++) {
-      const dados = extrairDadosCards();
-      const precoCurto = (dados[i] && dados[i].precoCurto) ? dados[i].precoCurto : 'Hotel';
-      marcadores[i].setIcon(criarIconePin(precoCurto, i === indice));
-      marcadores[i].setZIndex(i === indice ? 100 : 1);
+    for (var i = 0; i < marcadores.length; i++) {
+      if (!marcadores[i] || !dadosCache[i]) continue;
+      var textoPin = dadosCache[i].precoCurto || dadosCache[i].preco || dadosCache[i].nome;
+      var ativo = (i === indice);
+      marcadores[i].setIcon(criarPinSVG(textoPin, ativo));
+      marcadores[i].setZIndex(ativo ? 999 : 1);
     }
   }
 
@@ -942,10 +1173,10 @@
           console.log(LOG_PREFIX + ' Layout removido, reaplicando...');
           aplicar();
         } else {
-          // Verificar novos cards sem hover listener e sem imagem
+          // Verificar novos cards sem hover listener
           const dados = extrairDadosCards();
+          dadosCache = dados;
           configurarInteracaoCards(dados);
-          injetarImagensCards(dados);
         }
 
         isProcessing = false;
@@ -953,6 +1184,95 @@
     });
 
     observerRef.observe(listWrapper, { childList: true, subtree: true });
+  }
+
+  // Observer global para detectar re-criacao do ListWrapper (paginacao SPA)
+  function monitorarPaginacao() {
+    if (observerGlobalRef) return;
+
+    // Observar container pai ou body para detectar recriacao
+    const alvo = document.querySelector('[class*="SearchListWrapper-sc"]') || document.body;
+
+    observerGlobalRef = new MutationObserver(function () {
+      if (aguardandoPaginacao) return;
+
+      // Verificar se loading apareceu (paginacao em andamento)
+      var loading = document.querySelector('[class*="LoadingContent-sc"]');
+      if (loading) {
+        aguardandoPaginacao = true;
+        console.log(LOG_PREFIX + ' Paginacao detectada (loading visivel). Aguardando novos cards...');
+        aguardarFimDoPaginacao();
+        return;
+      }
+
+      // Verificar se ListWrapper perdeu o atributo (React recriou)
+      var listWrapper = document.querySelector('[class*="ListWrapper-sc-1oit4q5"]');
+      if (listWrapper && !listWrapper.getAttribute(DATA_APLICADO)) {
+        var cards = document.querySelectorAll('[class*="HotelCardWrapper-sc-16a2dz4"]');
+        if (cards.length >= 2) {
+          console.log(LOG_PREFIX + ' ListWrapper recriada sem mapa. Reaplicando...');
+          limparMapaAntigo();
+          aplicar();
+        }
+      }
+    });
+
+    observerGlobalRef.observe(alvo, { childList: true, subtree: true });
+  }
+
+  function aguardarFimDoPaginacao() {
+    var tentativas = 0;
+    var pollingPag = setInterval(function () {
+      tentativas++;
+
+      // Verificar se o loading sumiu e os cards apareceram
+      var loading = document.querySelector('[class*="LoadingContent-sc"]');
+      var cards = document.querySelectorAll('[class*="HotelCardWrapper-sc-16a2dz4"]');
+
+      if (!loading && cards.length >= 2) {
+        clearInterval(pollingPag);
+        aguardandoPaginacao = false;
+        console.log(LOG_PREFIX + ' Paginacao concluida. Reaplicando mapa com ' + cards.length + ' cards.');
+        limparMapaAntigo();
+        aplicar();
+      } else if (tentativas > 40) {
+        clearInterval(pollingPag);
+        aguardandoPaginacao = false;
+        console.log(LOG_PREFIX + ' Timeout aguardando paginacao.');
+      }
+    }, 500);
+  }
+
+  function limparMapaAntigo() {
+    // Remover marcadores antigos
+    for (var i = 0; i < marcadores.length; i++) {
+      if (marcadores[i]) {
+        marcadores[i].setMap(null);
+      }
+    }
+    marcadores = [];
+
+    // Fechar InfoWindow
+    if (infoWindowAtiva) {
+      infoWindowAtiva.close();
+      infoWindowAtiva = null;
+    }
+
+    // Destruir instancia do mapa
+    mapInstance = null;
+    cardAtivoIdx = -1;
+
+    // Remover container do mapa do DOM
+    var mapDiv = document.getElementById(MAP_ID);
+    if (mapDiv && mapDiv.parentNode) {
+      mapDiv.parentNode.removeChild(mapDiv);
+    }
+
+    // Desconectar observer antigo do ListWrapper
+    if (observerRef) {
+      observerRef.disconnect();
+      observerRef = null;
+    }
   }
 
   // ===================== APLICACAO PRINCIPAL =====================
@@ -963,15 +1283,17 @@
       return false;
     }
 
+    // Atualizar cache para uso em destacarMarcador e outros
+    dadosCache = dados;
+
     // Inserir mapa no layout
     const layoutOk = inserirMapaNoLayout(dados);
     if (!layoutOk && !document.getElementById(MAP_ID)) {
       return false;
     }
 
-    // Configurar interacao dos cards e injetar imagens
+    // Configurar interacao dos cards
     configurarInteracaoCards(dados);
-    injetarImagensCards(dados);
 
     // Resolver coordenadas e criar mapa
     resolverCoordenadas(dados, function () {
@@ -1004,6 +1326,9 @@
   function init() {
     injetarEstilos();
 
+    // Iniciar observer global de paginacao desde o inicio
+    monitorarPaginacao();
+
     let tentativas = 0;
     const polling = setInterval(function () {
       tentativas++;
@@ -1014,6 +1339,10 @@
         return;
       }
 
+      // Verificar se ainda esta em loading
+      var loading = document.querySelector('[class*="LoadingContent-sc"]');
+      if (loading) return;
+
       // Verificar se a lista de hoteis esta renderizada
       const cardList = document.querySelector('[data-testid="hotel-list-wrapper-contains-cards"]');
       const cards = document.querySelectorAll('[class*="HotelCardWrapper-sc-16a2dz4"]');
@@ -1023,7 +1352,20 @@
         console.log(LOG_PREFIX + ' Cards encontrados (' + cards.length + '). Garantindo Google Maps API...');
 
         // Garantir que a API do Google Maps esteja carregada
+        if (mapsAPICarregada) {
+          // API ja foi carregada antes (ex: segunda pagina)
+          setTimeout(function () {
+            let sucesso = aplicar();
+            if (sucesso) {
+              console.log(LOG_PREFIX + ' Inicializado com sucesso (API ja disponivel).');
+            }
+          }, 300);
+          return;
+        }
+
         garantirGoogleMapsAPI(function () {
+          mapsAPICarregada = true;
+
           // Aguardar React estabilizar apos possiveis re-renders
           setTimeout(function () {
             // Re-verificar se os cards ainda existem
