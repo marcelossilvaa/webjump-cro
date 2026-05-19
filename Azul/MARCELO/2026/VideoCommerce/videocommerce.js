@@ -156,7 +156,7 @@
 
   function isMinimumReadyForInject() {
     if (DUAL_LAYOUT_DEMO) {
-      return isCarouselV3Defined();
+      return isCarouselV3Defined() && isCarouselDefined();
     }
     return isCarouselDefined();
   }
@@ -273,20 +273,19 @@
     return el;
   }
 
-  function appendV3CarouselsLikeIndexHtml(parent) {
+  function appendV3CarouselSlot(parent, noBlur) {
     const slot = document.createElement('div');
-    slot.setAttribute('data-wj-videocommerce-slot', 'v3');
-    slot.innerHTML =
-      '<liveshop-ads-carousel-v3 height="' +
-      CAROUSEL_V3_HEIGHT +
-      '" use-active-videos-from="' +
-      STORE_SLUG +
-      '"></liveshop-ads-carousel-v3>' +
-      '<liveshop-ads-carousel-v3 height="' +
-      CAROUSEL_V3_HEIGHT +
-      '" use-active-videos-from="' +
-      STORE_SLUG +
-      '" non-active-videos-blur-ratio="0px"></liveshop-ads-carousel-v3>';
+    slot.setAttribute('data-wj-videocommerce-slot', noBlur ? 'v3-no-blur' : 'v3-default');
+    const baseAttrs =
+      ' height="' + CAROUSEL_V3_HEIGHT + '" use-active-videos-from="' + STORE_SLUG + '"';
+    if (noBlur) {
+      slot.innerHTML =
+        '<liveshop-ads-carousel-v3' +
+        baseAttrs +
+        ' non-active-videos-blur-ratio="0px"></liveshop-ads-carousel-v3>';
+    } else {
+      slot.innerHTML = '<liveshop-ads-carousel-v3' + baseAttrs + '></liveshop-ads-carousel-v3>';
+    }
     parent.appendChild(slot);
   }
 
@@ -534,18 +533,13 @@
     if (DUAL_LAYOUT_DEMO) {
       injectDemoStylesOnce();
 
-      if (isCarouselDefined()) {
-        const slotV = document.createElement('div');
-        slotV.setAttribute('data-wj-videocommerce-slot', 'vertical');
-        slotV.appendChild(buildCarouselVerticalV1());
-        outer.appendChild(slotV);
-      }
+      const slotV = document.createElement('div');
+      slotV.setAttribute('data-wj-videocommerce-slot', 'vertical-v1');
+      slotV.appendChild(buildCarouselVerticalV1());
+      outer.appendChild(slotV);
 
-      if (isCarouselV3Defined()) {
-        appendV3CarouselsLikeIndexHtml(outer);
-      } else {
-        warnFailure(LOG_PREFIX, 'liveshop-ads-carousel-v3 não registrado; v3 não montado.');
-      }
+      appendV3CarouselSlot(outer, false);
+      appendV3CarouselSlot(outer, true);
     } else {
       outer.appendChild(buildCarouselHorizontalV2());
     }
