@@ -29,6 +29,7 @@
   let dadosCache = [];
   let mapsAPICarregada = false;
   let aguardandoPaginacao = false;
+  let debounceGlobalTimer = null;
 
   // ===================== CSS =====================
   function injetarEstilos() {
@@ -333,7 +334,7 @@
       '}',
       '[' + DATA_APLICADO + '] [class*="BorderContentPrice-sc"] {',
       '  width: 100% !important;',
-      '  padding: 0 !important;',
+      '  padding: 0 0 10px 0 !important;',
       '  order: 2;',
       '}',
 
@@ -635,6 +636,9 @@
       return;
     }
 
+    // Bloquear monitorarPaginacao durante o fluxo do toggle para evitar dupla execucao
+    aguardandoPaginacao = true;
+
     // Exibir loading nativo como camada visual enquanto prepara o mapa
     exibirLoadingNativo();
 
@@ -681,6 +685,9 @@
               // Remover overlay de loading nativo
               removerLoadingNativo();
 
+              // Liberar monitorarPaginacao apos fluxo de toggle concluido
+              aguardandoPaginacao = false;
+
               if (cards.length >= 2) {
                 console.log(LOG_PREFIX + ' Lista re-renderizada apos toggle.');
               }
@@ -700,6 +707,9 @@
 
         // Remover overlay de loading nativo
         removerLoadingNativo();
+
+        // Liberar monitorarPaginacao apos timeout do toggle
+        aguardandoPaginacao = false;
 
         // Tentar voltar para lista
         const voltarBtnFallback = document.querySelector('[class*="AnimatedButton-sc-1oit4q5"]');
@@ -1117,6 +1127,12 @@
       mapInstance.fitBounds(bounds, { top: 30, right: 30, bottom: 30, left: 30 });
     }
 
+    // Disparar resize garante renderizacao correta em containers dinamicos (flex, sticky)
+    google.maps.event.trigger(mapInstance, 'resize');
+    if (dados.length > 1) {
+      mapInstance.fitBounds(bounds, { top: 30, right: 30, bottom: 30, left: 30 });
+    }
+
     // Adicionar marcadores
     marcadores = [];
     for (let i = 0; i < dados.length; i++) {
@@ -1331,8 +1347,9 @@
         // Verificar se os cards mudaram (re-render do React)
         const mapDiv = document.getElementById(MAP_ID);
         if (!mapDiv) {
-          // Layout foi removido pelo React, reaplicar
+          // Layout foi removido pelo React; limpar estado antes de reaplicar
           console.log(LOG_PREFIX + ' Layout removido, reaplicando...');
+          limparMapaAntigo();
           aplicar();
         } else {
           // Verificar novos cards sem hover listener
@@ -1352,34 +1369,34 @@
   function monitorarPaginacao() {
     if (observerGlobalRef) return;
 
-    // Observar container pai ou body para detectar recriacao
-    const alvo = document.querySelector('[class*="SearchListWrapper-sc"]') || document.body;
-
     observerGlobalRef = new MutationObserver(function () {
       if (aguardandoPaginacao) return;
-
-      // Verificar se loading apareceu (paginacao em andamento)
-      var loading = document.querySelector('[class*="LoadingContent-sc"]');
-      if (loading) {
-        aguardandoPaginacao = true;
-        console.log(LOG_PREFIX + ' Paginacao detectada (loading visivel). Aguardando novos cards...');
-        aguardarFimDoPaginacao();
-        return;
-      }
-
-      // Verificar se ListWrapper perdeu o atributo (React recriou)
-      var listWrapper = document.querySelector('[class*="ListWrapper-sc-1oit4q5"]');
-      if (listWrapper && !listWrapper.getAttribute(DATA_APLICADO)) {
-        var cards = document.querySelectorAll('[class*="HotelCardWrapper-sc-16a2dz4"]');
-        if (cards.length >= 2) {
-          console.log(LOG_PREFIX + ' ListWrapper recriada sem mapa. Reaplicando...');
-          limparMapaAntigo();
-          aplicar();
+      clearTimeout(debounceGlobalTimer);
+      debounceGlobalTimer = setTimeout(function () {
+        // Verificar se loading apareceu (paginacao em andamento)
+        var loading = document.querySelector('[class*="LoadingContent-sc"]');
+        if (loading) {
+          aguardandoPaginacao = true;
+          console.log(LOG_PREFIX + ' Paginacao detectada (loading visivel). Aguardando novos cards...');
+          aguardarFimDoPaginacao();
+          return;
         }
-      }
+
+        // Verificar se ListWrapper perdeu o atributo (React recriou)
+        var listWrapper = document.querySelector('[class*="ListWrapper-sc-1oit4q5"]');
+        if (listWrapper && !listWrapper.getAttribute(DATA_APLICADO)) {
+          var cards = document.querySelectorAll('[class*="HotelCardWrapper-sc-16a2dz4"]');
+          if (cards.length >= 2) {
+            console.log(LOG_PREFIX + ' ListWrapper recriada sem mapa. Reaplicando...');
+            limparMapaAntigo();
+            aplicar();
+          }
+        }
+      }, 300);
     });
 
-    observerGlobalRef.observe(alvo, { childList: true, subtree: true });
+    // Sempre observar document.body para nao perder referencia caso SearchListWrapper seja substituido
+    observerGlobalRef.observe(document.body, { childList: true, subtree: true });
   }
 
   function aguardarFimDoPaginacao() {
@@ -1403,6 +1420,60 @@
         console.log(LOG_PREFIX + ' Timeout aguardando paginacao.');
       }
     }, 500);
+  }
+
+  function aguardarCardsEAplicar() {
+    var tentativas = 0;
+    var poll = setInterval(function () {
+      tentativas++;
+      var loading = document.querySelector('[class*="LoadingContent-sc"]');
+      var cards = document.querySelectorAll('[class*="HotelCardWrapper-sc-16a2dz4"]');
+
+      if (!loading && cards.length >= 2) {
+        clearInterval(poll);
+        console.log(LOG_PREFIX + ' Cards prontos apos navegacao. Aplicando...');
+        if (mapsAPICarregada) {
+          aplicar();
+        } else {
+          garantirGoogleMapsAPI(function () {
+            mapsAPICarregada = true;
+            aplicar();
+          });
+        }
+      } else if (tentativas > 40) {
+        clearInterval(poll);
+        console.log(LOG_PREFIX + ' Timeout aguardando cards apos navegacao.');
+      }
+    }, 500);
+  }
+
+  // Detecta retorno do usuario a partir da pagina de detalhe do hotel (navegacao SPA Next.js)
+  function monitorarNavegacaoSPA() {
+    function onUrlChange() {
+      if (window.location.href.indexOf('https://www.voeazul.com.br/br/pt/home/hotel?') === -1) return;
+      // Verificar se o mapa ja esta presente e funcional (atributo + div no DOM)
+      var listWrapper = document.querySelector('[class*="ListWrapper-sc-1oit4q5"]');
+      if (listWrapper && listWrapper.getAttribute(DATA_APLICADO) && document.getElementById(MAP_ID)) return;
+      console.log(LOG_PREFIX + ' Retorno para lista de hoteis detectado via SPA. Aguardando cards...');
+      limparMapaAntigo();
+      aguardarCardsEAplicar();
+    }
+
+    window.addEventListener('popstate', function () {
+      setTimeout(onUrlChange, 200);
+    });
+
+    var pushOrig = history.pushState.bind(history);
+    history.pushState = function () {
+      pushOrig.apply(history, arguments);
+      setTimeout(onUrlChange, 200);
+    };
+
+    var replaceOrig = history.replaceState.bind(history);
+    history.replaceState = function () {
+      replaceOrig.apply(history, arguments);
+      setTimeout(onUrlChange, 200);
+    };
   }
 
   function limparMapaAntigo() {
@@ -1435,6 +1506,12 @@
       observerRef.disconnect();
       observerRef = null;
     }
+
+    // Remover atributo de layout aplicado para permitir reaplicacao
+    var lw = document.querySelector('[class*="ListWrapper-sc-1oit4q5"]');
+    if (lw) {
+      lw.removeAttribute(DATA_APLICADO);
+    }
   }
 
   // ===================== APLICACAO PRINCIPAL =====================
@@ -1459,6 +1536,21 @@
 
     // Resolver coordenadas e criar mapa
     resolverCoordenadas(dados, function () {
+      // React pode ter re-renderizado e removido o container durante a geocodificacao
+      var mapDivAtual = document.getElementById(MAP_ID);
+      if (!mapDivAtual) {
+        var lwAtual = document.querySelector('[class*="ListWrapper-sc-1oit4q5"]');
+        var clAtual = lwAtual ? lwAtual.querySelector('[data-testid="hotel-list-wrapper-contains-cards"]') : null;
+        if (!lwAtual || !clAtual) {
+          console.log(LOG_PREFIX + ' Layout indisponivel apos resolucao de coordenadas. Abortando.');
+          return;
+        }
+        console.log(LOG_PREFIX + ' Container do mapa reinserido apos resolucao de coordenadas.');
+        var novDiv = document.createElement('div');
+        novDiv.id = MAP_ID;
+        lwAtual.insertBefore(novDiv, clAtual);
+        lwAtual.setAttribute(DATA_APLICADO, 'true');
+      }
       criarMapa(dados);
       // Re-configurar interacao apos mapa criado (marcadores agora existem)
       configurarInteracaoCards(dados);
@@ -1490,6 +1582,9 @@
 
     // Iniciar observer global de paginacao desde o inicio
     monitorarPaginacao();
+
+    // Detectar navegacao SPA (retorno da pagina de detalhe do hotel)
+    monitorarNavegacaoSPA();
 
     let tentativas = 0;
     const polling = setInterval(function () {
