@@ -169,9 +169,9 @@
                 '}' +
                 '.small-text-nao-acumulativo { font-size: 11px; }' +
                 '.nespresso-coupon-code:hover {' +
-                '  background-color: #000;' +
-                '  border: 1px solid #000;' +
-                '  color: #FFF;' +
+                '  background-color: #971B2F;' +
+                '  border: 1px solid #971B2F;' +
+                '  color: #fff;' +
                 '  transform: translateY(-2px);' +
                 '  box-shadow: 0 4px 8px rgba(0,0,0,0.15);' +
                 '}' +
