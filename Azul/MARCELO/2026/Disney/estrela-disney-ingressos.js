@@ -101,9 +101,9 @@
       '#' +
       BANNER_ID +
       '.at-disney-banner-fade-out { opacity:0; pointer-events:none; }' +
-      // ===== CONTAINER PRINCIPAL 720x386 =====
+      // ===== CONTAINER PRINCIPAL 800x400 (desktop - foto inteira) =====
       '.at-dh-container {' +
-      '  position:relative; width:720px; height:386px;' +
+      '  position:relative; width:800px; height:400px;' +
       '  background:url("fundo disney.png"), #0150B5; border-radius:16px; overflow:hidden;' +
       '  box-shadow:0 20px 80px rgba(0,0,0,0.5);' +
       '  animation:atDhBannerIn 0.6s ease-out forwards;' +
@@ -248,26 +248,25 @@
       '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;' +
       '  font-weight:400; font-size:12px; line-height:120%; color:#FFFFFF; z-index:5;' +
       '}' +
-      // ===== FOTO PERSONAGEM (circulo grande) =====
+      // ===== FOTO PERSONAGEM =====
       '.at-dh-photo-wrapper {' +
-      '  position:absolute; width:350.12px; height:350.12px;' +
-      '  left:443.99px; top:14.59px; z-index:3;' +
-      '  border-radius:50%; overflow:hidden; background:#0150B5;' +
+      '  position:absolute; width:360px; height:360px;' +
+      '  right:12px; top:18px; left:auto; z-index:3;' +
+      '  border-radius:40% 40% 0; overflow:hidden; background:#0150B5;' +
       '}' +
       '.at-dh-photo-img {' +
-      '  position:absolute; width:auto; height:100%; min-width:100%;' +
+      '  position:absolute; width:100%; height:100%;' +
       '  left:50%; top:50%; transform:translate(-50%,-50%);' +
-      '  object-fit:cover; object-position:center center;' +
+      '  object-fit:cover; object-position:68% center;' +
       '}' +
       '.at-dh-photo-gradient {' +
       '  position:absolute; bottom:0; left:0; width:100%; height:40%;' +
       '  background:linear-gradient(180deg, transparent 20%, rgba(0,0,0,0.35) 100%);' +
-      '  border-radius:0 0 175px 175px; z-index:4;' +
+      '  border-radius:0; z-index:4; pointer-events:none;' +
       '}' +
       // ===== COPYRIGHT =====
       '.at-dh-copyright {' +
-      '  position:absolute;' +
-      '  left:calc(50% - 59px/2 + 259.05px); top:343.11px;' +
+      '  position:absolute; right:28px; left:auto; top:368px;' +
       '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;' +
       '  font-weight:400; font-size:8.88603px; line-height:7px;' +
       '  color:#FFFFFF; z-index:5; text-align:center;' +
@@ -664,7 +663,7 @@
 
     var photoImg = document.createElement('img');
     photoImg.className = 'at-dh-photo-img';
-    photoImg.src = 'https://i.imgur.com/ev1EyFF.png';
+    photoImg.src = 'https://i.imgur.com/7dXE65l.png';
     photoImg.alt = 'Disney';
     photoWrap.appendChild(photoImg);
 

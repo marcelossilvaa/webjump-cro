@@ -44,7 +44,7 @@
     justify-content: center;
     background: #961b2f; /* Fundo bordô conforme solicitado */
     font-weight: 700;
-    padding: 6px 20px;
+    padding: 0px 20px;
     border-radius: 30px;
     font-size: 1.4rem; /* Texto maior */
     color: #ffe8e0; /* Letras bege claro conforme solicitado */
@@ -134,6 +134,7 @@
       
     }
     .promo-codigo{
+      padding-top: 8px;
       border-radius: 20px 20px 0px 0px;
     }
     .promo-copy-btn {
@@ -196,7 +197,7 @@
                         "properties": {
                             "copywriting": {
                                 "overline": "",
-                                "heading": "<br><br><br>",
+                                "heading": "",
                                 "heading_countdown": {
                                     "date": "",
                                     "time": "",
@@ -298,36 +299,43 @@
 <script type="text/javascript">(function (p, a, g, e, b, u, i, l, d, r) {p[b] = p[b] || {};if (p[b].loading) {return;} else if (p[b].loaded) {p[b].ready();return;};p[b].loading = 1;p[b].ready = function () {p[b].loading = 0;p[b].loaded = 1;p[b].load();};u = a.createElement(g);i = a.getElementsByTagName(g)[0];u.src = e;u.onload = p[b].ready;i.parentNode.insertBefore(u, i);})(window, document, 'script', '/shared_res/agility/page-builder/assets/js/nwc.min.js', 'nwc')</script>
 
 <script>
+  var BANNER_TRACKING_REF = "mainbanner_flash_sales_homepage";
+
+  function sendGAEvent(label) {
+    window.gtmDataObject = window.gtmDataObject || [];
+    window.gtmDataObject.push({
+      event: "local_event",
+      event_raised_by: "br",
+      local_event_category: "user engagement",
+      local_event_action: "click",
+      local_event_label: label
+    });
+  }
+
   function initPromoCopyButtonsSafe() {
     document.querySelectorAll(".promo-copy-btn").forEach(function(btn) {
       if (btn.dataset.listenerAttached === "true") return;
       btn.addEventListener("click", function() {
         var code = btn.getAttribute("data-code");
-        var campaign = btn.getAttribute("data-campaign") || "flash_sale";
-        
-        const el = document.createElement('textarea');
+        if (!code) return;
+
+        var el = document.createElement("textarea");
         el.value = code;
         document.body.appendChild(el);
         el.select();
-        document.execCommand('copy');
+        document.execCommand("copy");
         document.body.removeChild(el);
 
         var original = btn.textContent;
         btn.textContent = "Copiado!";
         btn.disabled = true;
-        
+
         setTimeout(function() {
           btn.textContent = original;
           btn.disabled = false;
         }, 2500);
 
-        window.gtmDataObject = window.gtmDataObject || [];
-        window.gtmDataObject.push({
-          event: "local_event",
-          local_event_category: campaign,
-          local_event_action: "click",
-          local_event_label: "promo_code_" + code
-        });
+        sendGAEvent(BANNER_TRACKING_REF + "_copiou_cupom_" + code.toLowerCase());
       });
       btn.dataset.listenerAttached = "true";
     });
