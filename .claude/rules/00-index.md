@@ -1,4 +1,4 @@
-<!-- mirror: .github/rules/00-index.md -->
+<!-- source: .cursor/rules/00-index.md -->
 ## Regras Webjump CRO (Índice)
 
 Este diretório contém as regras do projeto modularizadas por tema.

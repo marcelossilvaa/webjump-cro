@@ -1,4 +1,4 @@
-<!-- mirror: .github/rules/04-eventos-e-observers.md -->
+<!-- source: .cursor/rules/04-eventos-e-observers.md -->
 ## 4. Event listeners e observers
 
 ### 4.1. Event listeners

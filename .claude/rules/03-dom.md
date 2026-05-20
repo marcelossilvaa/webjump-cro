@@ -1,4 +1,4 @@
-<!-- mirror: .github/rules/03-dom.md -->
+<!-- source: .cursor/rules/03-dom.md -->
 ## 3. Manipulação do DOM
 
 ### 3.1. Seletores

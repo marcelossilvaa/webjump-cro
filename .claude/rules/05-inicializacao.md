@@ -1,4 +1,4 @@
-<!-- mirror: .github/rules/05-inicializacao.md -->
+<!-- source: .cursor/rules/05-inicializacao.md -->
 ## 5. Inicialização
 
 ### 5.1. DOM ready

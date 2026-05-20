@@ -1,4 +1,4 @@
-<!-- mirror: .github/rules/99-checklist.md -->
+<!-- source: .cursor/rules/99-checklist.md -->
 ## Checklist de finalização
 
 - [ ] Script encapsulado em IIFE

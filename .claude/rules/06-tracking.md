@@ -1,4 +1,4 @@
-<!-- mirror: .github/rules/06-tracking.md -->
+<!-- source: .cursor/rules/06-tracking.md -->
 
 ## 6. Tracking (Adobe Analytics)
 

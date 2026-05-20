@@ -1,32 +1,27 @@
 # Regras de Código - Webjump CRO (Índice)
 
-Este arquivo virou um **índice**. As regras foram modularizadas para facilitar manutenção e leitura.
+Este arquivo é o índice das regras modulares em `.claude/rules/`.
 
-## Espelho (Copilot / GitHub)
+## Onde estão as regras
 
-O mesmo conteúdo está em **`.github/rules/`** (e índice em **`.github/regras.md`**). Manter os dois lados **idênticos** via automação de sync.
-
-## Onde estão as regras agora
-
-Leia o índice:
-
-- `.cursor/rules/00-index.md`
+- `.claude/rules/00-index.md` — índice geral
 
 Módulos principais:
 
-- `.cursor/rules/01-estrutura.md`
-- `.cursor/rules/02-convencoes.md`
-- `.cursor/rules/03-dom.md`
-- `.cursor/rules/04-eventos-e-observers.md`
-- `.cursor/rules/05-inicializacao.md`
-- `.cursor/rules/06-tracking.md`
-- `.cursor/rules/99-checklist.md`
-- `.cursor/rules/azul-design-system.md` (apenas experimentos na pasta **`Azul/`**)
+- `.claude/rules/01-estrutura.md`
+- `.claude/rules/02-convencoes.md`
+- `.claude/rules/03-dom.md`
+- `.claude/rules/04-eventos-e-observers.md`
+- `.claude/rules/05-inicializacao.md`
+- `.claude/rules/06-tracking.md`
+- `.claude/rules/99-checklist.md`
+- `.claude/rules/azul-design-system.md` (apenas experimentos na pasta **`Azul/`**)
 
-## Guia de Skills
+## Instruções por cliente
 
-- `.cursor/docs/skills.md`
+- `.claude/instructions/nespresso.md` — API e padrões Nespresso
+- `.claude/instructions/cro-javascript.instructions.md` — padrões gerais para arquivos `.js`
 
 ---
 
-**Última atualização**: 2026-03-25
+**Última atualização**: 2026-05-20
