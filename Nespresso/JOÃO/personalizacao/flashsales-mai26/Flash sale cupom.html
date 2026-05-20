@@ -45,7 +45,7 @@
     background: #961b2f; /* Fundo bordô conforme solicitado */
     font-weight: 700;
     padding: 6px 20px;
-    border-radius: 20px 20px 0px 0px;
+    border-radius: 30px;
     font-size: 1.4rem; /* Texto maior */
     color: #ffe8e0; /* Letras bege claro conforme solicitado */
     letter-spacing: 1px;
@@ -62,9 +62,9 @@
     justify-content: center;
     background: #ffffff;
     color: #8B1A2F;
-    border: 1px solid;
+    border: none;
     padding: 12px 20px;
-    border-radius: 0px 0px 20px 20px;
+    border-radius: 30px;
     cursor: pointer;
     font-size: 0.9rem;
     font-family: "NespressoLucas", Arial, sans-serif;
@@ -93,17 +93,22 @@
 
     nb-container[campaign_id="br-b2c-mainbanner-cupom-copiavel-homepage-flash-sales-setembro-2025-anonymous"]
       .nb-hero-banner{
-      margin-bottom: 54px;
+        height: 755px;
     }
 
     nb-container[campaign_id="br-b2c-mainbanner-cupom-copiavel-homepage-flash-sales-setembro-2025-anonymous"] .nb-hero-banner__content__bottom{
       bottom: -40px;
       position: relative;
     }
-    
-    .nb-hero-bannecr.pt10 .cb-bg-img {
-      height: 75% !important;
+
+    nb-container[campaign_id="br-b2c-mainbanner-cupom-copiavel-homepage-flash-sales-setembro-2025-anonymous"] .cb-bg-img{
+      height: 75%;
     }
+
+    nb-container[campaign_id="br-b2c-mainbanner-cupom-copiavel-homepage-flash-sales-setembro-2025-anonymous"] .cb-inner{
+      bottom: -110px;
+    }
+    
     nb-hero-banner .ng-hero-banner__content_bottom {
       bottom: -40px;
       position: relative;
@@ -116,14 +121,24 @@
       width: 100%;
       padding: 0 20px;
       bottom: -55px;
+      border-radius: 20px 20px 0px 0px;
     }
     .codigo { 
       width: 100%;
       gap: 0px;
+      gap:0px;
     }
     .promo-codigo, .promo-copy-btn {
       width: 90%;
       max-width: 320px;
+      
+    }
+    .promo-codigo{
+      border-radius: 20px 20px 0px 0px;
+    }
+    .promo-copy-btn {
+      border: 1px solid;
+      border-radius: 0px 0px 20px 20px;
     }
   }
 </style>
