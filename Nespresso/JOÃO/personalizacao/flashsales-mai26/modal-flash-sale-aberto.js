@@ -47,7 +47,7 @@
             '}' +
             '.flash-modal {' +
             '  background-color: #971B2F; border-radius: 20px;' +
-            '  padding: 50px 40px 40px; max-width: 540px; width: 90%;' +
+            '  padding: 50px 40px 40px; max-width: 500px; width: 90%;' +
             '  text-align: center; position: relative;' +
             '  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);' +
             '}' +
@@ -73,10 +73,10 @@
             '}' +
             '.flash-modal-subtitle strong { font-weight: 700; }' +
             '.flash-modal-cards {' +
-            '  display: flex; flex-direction: column; gap: 16px;' +
+            '  display: flex; flex-direction: column; gap: 10px;' +
             '}' +
             '.flash-coupon-card {' +
-            '  border-radius: 16px; padding: 24px 28px;' +
+            '  border-radius: 50px; padding: 24px 34px;' +
             '  display: flex; align-items: center;' +
             '  justify-content: space-between; gap: 30px;' +
             '}' +
@@ -296,6 +296,44 @@
         });
     }
 
+    // Controle de exibicao: maximo 3 vezes por dia (sessionStorage)
+    var STORAGE_KEY = 'flash_modal_aberto_views';
+    var MAX_VIEWS_PER_DAY = 3;
+
+    function getTodayKey() {
+        var now = new Date();
+        return now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate();
+    }
+
+    function getViewCount() {
+        try {
+            var data = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '{}');
+            var today = getTodayKey();
+            return data[today] || 0;
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    function incrementViewCount() {
+        try {
+            var today = getTodayKey();
+            var data = {};
+            data[today] = getViewCount() + 1;
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } catch (e) {
+            // silencioso
+        }
+    }
+
+    function canShowModal() {
+        return getViewCount() < MAX_VIEWS_PER_DAY;
+    }
+
+    function isMobileDevice() {
+        return window.innerWidth <= 767;
+    }
+
     // Inserir modal no DOM
     function insertModal() {
         if (document.getElementById('flashModalOverlay')) {
@@ -309,14 +347,42 @@
         document.body.style.overflow = 'hidden';
 
         addEventListeners();
+        incrementViewCount();
         sendGAEvent('flash_sale_modal_exibido');
         console.log('[Flash Modal Aberto] Modal inserido com sucesso');
     }
 
-    // Inicializacao
+    // Inicializacao com delay baseado no dispositivo + exit intent
     function init() {
+        if (!canShowModal()) {
+            return;
+        }
+
         injectStyles();
-        insertModal();
+
+        var modalTriggered = false;
+
+        function triggerModal() {
+            if (modalTriggered) return;
+            if (!canShowModal()) return;
+            modalTriggered = true;
+            insertModal();
+        }
+
+        // Trigger por tempo
+        var delay = isMobileDevice() ? 20000 : 30000;
+        setTimeout(function () {
+            triggerModal();
+        }, delay);
+
+        // Trigger por exit intent (desktop apenas)
+        if (!isMobileDevice()) {
+            document.addEventListener('mouseout', function (e) {
+                if (e.clientY <= 0 && !modalTriggered) {
+                    triggerModal();
+                }
+            });
+        }
     }
 
     if (document.readyState === 'loading') {
