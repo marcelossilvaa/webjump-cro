@@ -16,6 +16,7 @@
   const DATA_DONE = 'data-at-sort-pills-done';
   const DATA_LISTENER = 'data-at-sort-pill-listener';
 
+  const MOBILE_MAX_WIDTH = 1023;
   const OPEN_DELAY_MS = 350;
   const AFTER_SELECT_MS = 450;
 
@@ -169,6 +170,29 @@
       '  background-color: #026cb6;' +
       '  border-color: #026cb6;' +
       '  color: #fff;' +
+      '}' +
+      '@media (max-width: ' +
+      MOBILE_MAX_WIDTH +
+      'px) {' +
+      '[class*="FilterRow-sc-1oit4q5"].at-sort-pills-ready {' +
+      '  margin-top: 40px !important;' +
+      '  gap: 6px;' +
+      '}' +
+      '[class*="FilterWrapper-sc-1oit4q5"].at-sort-pills-ready {' +
+      '  gap: 4px;' +
+      '}' +
+      '.' +
+      PILL_BAR_CLASS +
+      ' {' +
+      '  gap: 4px;' +
+      '}' +
+      '.' +
+      PILL_BTN_CLASS +
+      ' {' +
+      '  font-size: 11px;' +
+      '  min-height: 28px;' +
+      '  padding: 0 10px;' +
+      '}' +
       '}'
     );
   }
