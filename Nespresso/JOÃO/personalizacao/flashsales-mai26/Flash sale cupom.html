@@ -101,13 +101,14 @@
       position: relative;
     }
 
-    nb-container [campaign_id="br-b2c-mainbanner-cupom-copiavel-homepage-flash-sales-setembro-2025-anonymous"] .cb-bg-img{
+    nb-container[campaign_id="br-b2c-mainbanner-cupom-copiavel-homepage-flash-sales-setembro-2025-anonymous"] .cb-bg-img{
       height: 75%;
     }
-    
-    .nb-hero-bannecr.pt10 .cb-bg-img {
-      height: 75% !important;
+
+    nb-container[campaign_id="br-b2c-mainbanner-cupom-copiavel-homepage-flash-sales-setembro-2025-anonymous"] .cb-inner{
+      bottom: -110px;
     }
+    
     nb-hero-banner .ng-hero-banner__content_bottom {
       bottom: -40px;
       position: relative;
@@ -130,8 +131,14 @@
     .promo-codigo, .promo-copy-btn {
       width: 90%;
       max-width: 320px;
+      
+    }
+    .promo-codigo{
       border-radius: 20px 20px 0px 0px;
+    }
+    .promo-copy-btn {
       border: 1px solid;
+      border-radius: 0px 0px 20px 20px;
     }
   }
 </style>
