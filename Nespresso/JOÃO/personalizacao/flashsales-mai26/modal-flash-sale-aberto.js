@@ -296,9 +296,11 @@
         });
     }
 
-    // Controle de exibicao: maximo 3 vezes por dia (sessionStorage)
+    // Controle de exibicao: maximo 3 vezes por dia com cooldown de 30 min entre exibicoes
     var STORAGE_KEY = 'flash_modal_aberto_views';
+    var LAST_SHOWN_KEY = 'flash_modal_aberto_last_shown';
     var MAX_VIEWS_PER_DAY = 3;
+    var COOLDOWN_MS = 30 * 60 * 1000;
 
     function getTodayKey() {
         var now = new Date();
@@ -307,7 +309,7 @@
 
     function getViewCount() {
         try {
-            var data = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '{}');
+            var data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
             var today = getTodayKey();
             return data[today] || 0;
         } catch (e) {
@@ -320,14 +322,32 @@
             var today = getTodayKey();
             var data = {};
             data[today] = getViewCount() + 1;
-            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         } catch (e) {
             // silencioso
         }
     }
 
+    function getLastShownTs() {
+        try {
+            return parseInt(localStorage.getItem(LAST_SHOWN_KEY) || '0', 10);
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    function saveLastShownTs() {
+        try {
+            localStorage.setItem(LAST_SHOWN_KEY, String(Date.now()));
+        } catch (e) { }
+    }
+
+    function isCooldownActive() {
+        return Date.now() - getLastShownTs() < COOLDOWN_MS;
+    }
+
     function canShowModal() {
-        return getViewCount() < MAX_VIEWS_PER_DAY;
+        return getViewCount() < MAX_VIEWS_PER_DAY && !isCooldownActive();
     }
 
     function isMobileDevice() {
@@ -348,6 +368,7 @@
 
         addEventListeners();
         incrementViewCount();
+        saveLastShownTs();
         sendGAEvent('flash_sale_modal_exibido');
         console.log('[Flash Modal Aberto] Modal inserido com sucesso');
     }

@@ -128,9 +128,10 @@
       '  height: 160px !important;',
       '  max-height: 160px !important;',
       '  min-height: 160px !important;',
-      '  overflow: hidden;',
-      '  flex-shrink: 0;',
-      '  position: relative;',
+      '  overflow: hidden !important;',
+      '  flex-shrink: 0 !important;',
+      '  position: relative !important;',
+      '  border-radius: 12px 12px 0 0 !important;',
       '}',
       '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-slider,',
       '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-list,',
@@ -138,6 +139,10 @@
       '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-slide,',
       '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-slide > div {',
       '  height: 160px !important;',
+      '  max-height: 160px !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-list {',
+      '  overflow: hidden !important;',
       '}',
       '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-slide {',
       '  width: 100% !important;',
@@ -145,31 +150,41 @@
       '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] img {',
       '  width: 100% !important;',
       '  height: 160px !important;',
+      '  max-height: 160px !important;',
       '  object-fit: cover !important;',
       '  display: block !important;',
       '}',
       '[' + DATA_APLICADO + '] [class*="StyledSlider-sc-o70g43"] {',
       '  height: 160px !important;',
+      '  max-height: 160px !important;',
       '  width: 100% !important;',
+      '  overflow: hidden !important;',
       '}',
       '[' + DATA_APLICADO + '] [class*="BlurImageBackground-sc"] {',
       '  display: none !important;',
       '}',
       '[' + DATA_APLICADO + '] [class*="PromoTagContainer-sc"] {',
       '  height: 160px !important;',
+      '  max-height: 160px !important;',
       '  width: 100% !important;',
+      '  overflow: hidden !important;',
       '}',
       '[' + DATA_APLICADO + '] [class*="PromoTagChildren-sc"] {',
       '  height: 160px !important;',
+      '  max-height: 160px !important;',
+      '  overflow: hidden !important;',
       '}',
       '[' + DATA_APLICADO + '] [class*="SliderContainer-sc-o70g43"] {',
       '  height: 160px !important;',
+      '  max-height: 160px !important;',
+      '  overflow: hidden !important;',
       '}',
       '[' + DATA_APLICADO + '] [class*="DotsWrapper-sc-o70g43"] {',
-      '  position: absolute;',
-      '  bottom: 8px;',
-      '  left: 50%;',
-      '  transform: translateX(-50%);',
+      '  position: absolute !important;',
+      '  bottom: 8px !important;',
+      '  left: 50% !important;',
+      '  transform: translateX(-50%) !important;',
+      '  z-index: 10;',
       '}',
       '[' + DATA_APLICADO + '] [class*="Arrow-sc-o70g43"] {',
       '  width: 24px !important;',
@@ -185,7 +200,7 @@
       '  box-sizing: border-box !important;',
       '  display: flex !important;',
       '  flex-direction: column !important;',
-      '  justify-content: center !important;',
+      '  justify-content: flex-start !important;',
       '  overflow: visible !important;',
       '  border-right: 1px solid #eee;',
       '}',
@@ -196,14 +211,16 @@
 
       // Nome do hotel
       '[' + DATA_APLICADO + '] [class*="HotelName-sc"] {',
-      '  font-size: 15px !important;',
+      '  font-size: 14px !important;',
       '  font-weight: 700 !important;',
       '  color: rgb(1, 78, 132) !important;',
-      '  white-space: nowrap !important;',
+      '  white-space: normal !important;',
       '  overflow: hidden !important;',
-      '  text-overflow: ellipsis !important;',
-      '  display: block !important;',
-      '  line-height: 1.4 !important;',
+      '  display: -webkit-box !important;',
+      '  -webkit-line-clamp: 2;',
+      '  -webkit-box-orient: vertical;',
+      '  line-height: 1.35 !important;',
+      '  max-height: 2.7em !important;',
       '  margin: 0 0 2px 0 !important;',
       '  font-family: "Helvetica Neue", Arial, sans-serif !important;',
       '}',
@@ -212,10 +229,10 @@
       '[' + DATA_APLICADO + '] [class*="HotelNameWrapper-sc"] {',
       '  display: flex !important;',
       '  flex-direction: row !important;',
-      '  align-items: center !important;',
+      '  align-items: flex-start !important;',
       '  gap: 6px;',
       '  margin-bottom: 2px;',
-      '  overflow: hidden;',
+      '  overflow: visible !important;',
       '}',
       // H3 nao pode encolher o wrapper
       '[' + DATA_APLICADO + '] [class*="HotelNameWrapper-sc"] > h3 {',
@@ -235,12 +252,14 @@
 
       // Localizacao
       '[' + DATA_APLICADO + '] [class*="NeighboorhoodDistance-sc"] {',
-      '  font-size: 13px !important;',
+      '  font-size: 12px !important;',
       '  color: #444 !important;',
       '  display: block !important;',
-      '  white-space: nowrap;',
-      '  overflow: hidden;',
-      '  text-overflow: ellipsis;',
+      '  white-space: normal !important;',
+      '  overflow: hidden !important;',
+      '  display: -webkit-box !important;',
+      '  -webkit-line-clamp: 2;',
+      '  -webkit-box-orient: vertical;',
       '  margin-bottom: 6px;',
       '  line-height: 1.3 !important;',
       '}',
@@ -285,16 +304,24 @@
       '  flex-shrink: 0;',
       '}',
       '[' + DATA_APLICADO + '] [class*="InfoTagWrapper-sc"] {',
-      '  padding: 4px 8px !important;',
+      '  padding: 2px 4px !important;',
       '  border-radius: 4px;',
+      '  display: inline-flex !important;',
+      '  align-items: center !important;',
       '}',
       '[' + DATA_APLICADO + '] [class*="InfoTagWrapper-sc"] span {',
       '  font-size: 12px !important;',
       '  white-space: nowrap;',
       '}',
+      '[' + DATA_APLICADO + '] [class*="LeftSideWrapper-sc"] {',
+      '  display: flex !important;',
+      '  align-items: center !important;',
+      '  padding: 0 !important;',
+      '  margin: 0 !important;',
+      '}',
       '[' + DATA_APLICADO + '] [class*="LeftSideWrapper-sc"] svg {',
-      '  width: 18px !important;',
-      '  height: 18px !important;',
+      '  width: 16px !important;',
+      '  height: 16px !important;',
       '}',
       '[' + DATA_APLICADO + '] [class*="ButtonWrapperBase-sc-3qprdy"] {',
       '  display: none !important;',
@@ -450,29 +477,39 @@
 
       // InfoWindow estilizada
       '.at-iw-container {',
-      '  padding: 10px 14px;',
+      '  padding: 0 10px 15px 10px;',
       '  font-family: "Helvetica Neue", Arial, sans-serif;',
       '  min-width: 180px;',
       '  max-width: 260px;',
       '}',
+      '.at-iw-container p {',
+      '  margin: 0 !important;',
+      '  padding: 0 !important;',
+      '}',
       '.at-iw-nome {',
-      '  font-size: 14px;',
-      '  font-weight: 700;',
-      '  color: rgb(1, 78, 132);',
-      '  margin: 0 0 4px 0;',
-      '  line-height: 1.3;',
+      '  font-size: 14px !important;',
+      '  font-weight: 700 !important;',
+      '  color: rgb(1, 78, 132) !important;',
+      '  margin: 0 0 3px 0 !important;',
+      '  line-height: 1.3 !important;',
       '}',
       '.at-iw-endereco {',
-      '  font-size: 12px;',
-      '  color: #555;',
-      '  margin: 0 0 8px 0;',
-      '  line-height: 1.3;',
+      '  font-size: 12px !important;',
+      '  color: #555 !important;',
+      '  margin: 0 0 6px 0 !important;',
+      '  line-height: 1.3 !important;',
+      '}',
+      '.at-iw-diarias {',
+      '  font-size: 11px !important;',
+      '  color: #777 !important;',
+      '  margin: 0 0 2px 0 !important;',
+      '  font-weight: 400 !important;',
       '}',
       '.at-iw-preco {',
-      '  font-size: 15px;',
-      '  font-weight: 700;',
-      '  color: rgb(1, 78, 132);',
-      '  margin: 0;',
+      '  font-size: 15px !important;',
+      '  font-weight: 700 !important;',
+      '  color: rgb(1, 78, 132) !important;',
+      '  margin: 0 !important;',
       '}'
     ].join('\n');
     document.head.appendChild(style);
@@ -724,27 +761,66 @@
 
   // ===================== PIN CUSTOMIZADO =====================
   function criarPinSVG(texto, ativo) {
-    // Calcula largura baseada no comprimento do texto
     var charWidth = 7;
     var padding = 24;
     var largura = Math.max(60, texto.length * charWidth + padding);
-    var altura = 36;
     var alturaRect = 28;
+    var alturaCauda = 8;
     var raio = 14;
-    var centroX = largura / 2;
-    var corFundo = ativo ? '#003A6B' : '#014E84';
-    var borda = ativo ? ' stroke="#fff" stroke-width="2"' : '';
+    var svgW, svgH, cx, d, fillColor, strokeAttr, textY, tipY;
 
-    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + largura + '" height="' + altura + '">' +
-      '<rect x="' + (ativo ? 1 : 0) + '" y="' + (ativo ? 1 : 0) + '" width="' + (largura - (ativo ? 2 : 0)) + '" height="' + alturaRect + '" rx="' + raio + '" fill="' + corFundo + '"' + borda + '/>' +
-      '<polygon points="' + (centroX - 5) + ',' + alturaRect + ' ' + (centroX + 5) + ',' + alturaRect + ' ' + centroX + ',' + altura + '" fill="' + corFundo + '"/>' +
-      '<text x="' + centroX + '" y="' + 18 + '" font-family="Helvetica Neue,Arial,sans-serif" font-size="11" fill="#fff" text-anchor="middle" font-weight="bold">' + texto + '</text>' +
+    if (ativo) {
+      // Canvas expandido 4px (2px por lado) para o stroke nao ser cortado
+      svgW = largura + 4;
+      svgH = alturaRect + alturaCauda + 4;
+      cx = svgW / 2;
+      tipY = svgH - 2;
+      fillColor = '#002a57';
+      strokeAttr = ' stroke="white" stroke-width="3" stroke-linejoin="round"';
+      textY = 20;
+      d = 'M ' + (2 + raio) + ' 2' +
+        ' H ' + (svgW - 2 - raio) +
+        ' Q ' + (svgW - 2) + ' 2 ' + (svgW - 2) + ' ' + (2 + raio) +
+        ' V ' + (2 + alturaRect - raio) +
+        ' Q ' + (svgW - 2) + ' ' + (2 + alturaRect) + ' ' + (svgW - 2 - raio) + ' ' + (2 + alturaRect) +
+        ' H ' + (cx + 5) +
+        ' L ' + cx + ' ' + tipY +
+        ' L ' + (cx - 5) + ' ' + (2 + alturaRect) +
+        ' H ' + (2 + raio) +
+        ' Q 2 ' + (2 + alturaRect) + ' 2 ' + (2 + alturaRect - raio) +
+        ' V ' + (2 + raio) +
+        ' Q 2 2 ' + (2 + raio) + ' 2 Z';
+    } else {
+      svgW = largura;
+      svgH = alturaRect + alturaCauda;
+      cx = svgW / 2;
+      tipY = svgH;
+      fillColor = '#014E84';
+      strokeAttr = '';
+      textY = 18;
+      d = 'M ' + raio + ' 0' +
+        ' H ' + (svgW - raio) +
+        ' Q ' + svgW + ' 0 ' + svgW + ' ' + raio +
+        ' V ' + (alturaRect - raio) +
+        ' Q ' + svgW + ' ' + alturaRect + ' ' + (svgW - raio) + ' ' + alturaRect +
+        ' H ' + (cx + 5) +
+        ' L ' + cx + ' ' + tipY +
+        ' L ' + (cx - 5) + ' ' + alturaRect +
+        ' H ' + raio +
+        ' Q 0 ' + alturaRect + ' 0 ' + (alturaRect - raio) +
+        ' V ' + raio +
+        ' Q 0 0 ' + raio + ' 0 Z';
+    }
+
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + svgW + '" height="' + svgH + '">' +
+      '<path d="' + d + '" fill="' + fillColor + '"' + strokeAttr + '/>' +
+      '<text x="' + cx + '" y="' + textY + '" font-family="Helvetica Neue,Arial,sans-serif" font-size="11" fill="#fff" text-anchor="middle" font-weight="bold">' + texto + '</text>' +
       '</svg>';
 
     return {
       url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
-      scaledSize: new google.maps.Size(largura, altura),
-      anchor: new google.maps.Point(centroX, altura)
+      scaledSize: new google.maps.Size(svgW, svgH),
+      anchor: new google.maps.Point(cx, tipY)
     };
   }
 
@@ -755,6 +831,9 @@
       html += '<p class="at-iw-endereco">' + hotel.localizacao + '</p>';
     }
     if (hotel.preco) {
+      if (hotel.diarias) {
+        html += '<p class="at-iw-diarias">' + hotel.diarias + '</p>';
+      }
       html += '<p class="at-iw-preco">' + hotel.preco + '</p>';
     }
     html += '</div>';
