@@ -13,6 +13,7 @@
   let sortObserver = null;
   let listWasLoading = false;
   let headerWaitFrames = 0;
+  let lastAppliedSortLabel = '';
 
   const STYLE_ID = 'at-filtros-voo-mobile-sort-style';
   const DATA_DONE = 'data-at-voo-sort-pills-done';
@@ -301,10 +302,18 @@
     return '';
   }
 
-  function resolveActiveSortLabel() {
-    const current = getCurrentSortLabel();
-    if (current) {
-      return current;
+  function getAppliedSortLabel() {
+    const fromDom = getCurrentSortLabel();
+    if (fromDom) {
+      return fromDom;
+    }
+    return lastAppliedSortLabel;
+  }
+
+  function getDisplaySortLabel() {
+    const applied = getAppliedSortLabel();
+    if (applied) {
+      return applied;
     }
     return DEFAULT_SORT_OPTION;
   }
@@ -532,7 +541,8 @@
       clickApplyFiltersButton();
       setTimeout(function () {
         closeFiltersModal();
-        syncActivePill(optionLabel || resolveActiveSortLabel());
+        lastAppliedSortLabel = optionLabel;
+        syncActivePill(optionLabel);
         clearPillLoading();
         if (!skipAnalytics) {
           analyticsEvent(optionLabel);
@@ -555,8 +565,8 @@
       return;
     }
 
-    const current = resolveActiveSortLabel();
-    if (normalizeText(current) === normalizeText(optionLabel)) {
+    const current = getAppliedSortLabel();
+    if (current && normalizeText(current) === normalizeText(optionLabel)) {
       syncActivePill(optionLabel);
       return;
     }
@@ -594,7 +604,7 @@
       return;
     }
     const pills = header.querySelectorAll('.' + PILL_BTN_CLASS);
-    const activeNorm = normalizeText(activeLabel || resolveActiveSortLabel());
+    const activeNorm = normalizeText(activeLabel || getDisplaySortLabel());
     let i;
     let btn;
 
@@ -700,7 +710,7 @@
 
     header.classList.add(PILL_WRAP_CLASS + '-ready');
     hideNativeFilterButton();
-    syncActivePill(resolveActiveSortLabel());
+    syncActivePill(getDisplaySortLabel());
 
     isMounting = false;
 
@@ -716,7 +726,7 @@
 
     if (!forceRemount && document.body.getAttribute(DATA_DONE) === '1' && !shouldRemountPills()) {
       hideNativeFilterButton();
-      syncActivePill(resolveActiveSortLabel());
+      syncActivePill(getDisplaySortLabel());
       return;
     }
 

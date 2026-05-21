@@ -46,6 +46,8 @@
   const PILL_BAR_CLASS = 'at-hotel-sort-pills';
   const PILL_BTN_CLASS = 'at-hotel-sort-pill';
   const PILL_ACTIVE_CLASS = 'at-hotel-sort-pill--active';
+  const PILL_LOADING_CLASS = 'at-hotel-sort-pill--loading';
+  const PILL_BAR_BUSY_CLASS = 'at-hotel-sort-pills--busy';
   const CLASS_SILENT_DROPDOWN = 'at-sort-dropdown-silent';
 
   function isHotelPage() {
@@ -127,11 +129,13 @@
       '.' +
       PILL_BAR_CLASS +
       ' {' +
-      '  display: inline-flex;' +
+      '  display: flex;' +
       '  flex-wrap: nowrap;' +
       '  gap: 6px;' +
       '  max-width: 100%;' +
+      '  min-width: 0;' +
       '  overflow-x: auto;' +
+      '  overflow-y: hidden;' +
       '  -webkit-overflow-scrolling: touch;' +
       '  scrollbar-width: none;' +
       '}' +
@@ -171,20 +175,101 @@
       '  border-color: #026cb6;' +
       '  color: #fff;' +
       '}' +
+      '.' +
+      PILL_BTN_CLASS +
+      ':disabled {' +
+      '  opacity: 0.55;' +
+      '  cursor: default;' +
+      '}' +
+      '.' +
+      PILL_BTN_CLASS +
+      '.' +
+      PILL_LOADING_CLASS +
+      ' {' +
+      '  position: relative;' +
+      '  color: transparent !important;' +
+      '  font-size: 0;' +
+      '  line-height: 0;' +
+      '  min-width: 72px;' +
+      '  cursor: wait;' +
+      '}' +
+      '.' +
+      PILL_BTN_CLASS +
+      '.' +
+      PILL_LOADING_CLASS +
+      '::after {' +
+      '  content: "";' +
+      '  position: absolute;' +
+      '  left: 50%;' +
+      '  top: 50%;' +
+      '  width: 14px;' +
+      '  height: 14px;' +
+      '  margin: 0;' +
+      '  border: 2px solid #026cb6;' +
+      '  border-top-color: transparent;' +
+      '  border-radius: 50%;' +
+      '  box-sizing: border-box;' +
+      '  transform: translate(-50%, -50%);' +
+      '  animation: at-hotel-sort-spin 0.65s linear infinite;' +
+      '}' +
+      '.' +
+      PILL_BTN_CLASS +
+      '.' +
+      PILL_ACTIVE_CLASS +
+      '.' +
+      PILL_LOADING_CLASS +
+      '::after {' +
+      '  border-color: #fff;' +
+      '  border-top-color: transparent;' +
+      '}' +
+      '@keyframes at-hotel-sort-spin {' +
+      '  to { transform: translate(-50%, -50%) rotate(360deg); }' +
+      '}' +
       '@media (max-width: ' +
       MOBILE_MAX_WIDTH +
       'px) {' +
       '[class*="FilterRow-sc-1oit4q5"].at-sort-pills-ready {' +
       '  margin-top: 40px !important;' +
       '  gap: 6px;' +
+      '  width: 100% !important;' +
+      '  max-width: 100% !important;' +
+      '  box-sizing: border-box;' +
       '}' +
       '[class*="FilterWrapper-sc-1oit4q5"].at-sort-pills-ready {' +
-      '  gap: 4px;' +
+      '  flex-direction: column !important;' +
+      '  flex-wrap: nowrap !important;' +
+      '  align-items: flex-start !important;' +
+      '  gap: 6px;' +
+      '  width: 100% !important;' +
+      '  max-width: 100% !important;' +
+      '  min-width: 0 !important;' +
+      '  box-sizing: border-box;' +
+      '  overflow: visible;' +
+      '}' +
+      '[class*="FilterWrapper-sc-1oit4q5"].at-sort-pills-ready [class*="FilterTitleText-sc-1oit4q5"] {' +
+      '  display: block;' +
+      '  width: 100%;' +
+      '  flex-shrink: 0;' +
       '}' +
       '.' +
       PILL_BAR_CLASS +
       ' {' +
+      '  display: flex !important;' +
+      '  flex: none;' +
+      '  width: 100% !important;' +
+      '  min-width: 0 !important;' +
+      '  max-width: 100%;' +
       '  gap: 4px;' +
+      '  overflow-x: auto !important;' +
+      '  overflow-y: hidden;' +
+      '  -webkit-overflow-scrolling: touch;' +
+      '  touch-action: pan-x;' +
+      '  overscroll-behavior-x: contain;' +
+      '  padding-bottom: 4px;' +
+      '}' +
+      '[data-testid="hotel-list-wrapper-contains-cards"],' +
+      '.hotel-list-wrapper-contains-cards {' +
+      '  padding-top: 5px !important;' +
       '}' +
       '.' +
       PILL_BTN_CLASS +
@@ -384,7 +469,44 @@
     return '';
   }
 
-  function applySort(optionLabel, skipAnalytics) {
+  function setPillLoading(wrapper, pill, loading) {
+    const bar = wrapper ? wrapper.querySelector('.' + PILL_BAR_CLASS) : null;
+    if (!bar) {
+      return;
+    }
+
+    const pills = bar.querySelectorAll('.' + PILL_BTN_CLASS);
+    let i;
+
+    for (i = 0; i < pills.length; i++) {
+      pills[i].classList.remove(PILL_LOADING_CLASS);
+      pills[i].disabled = false;
+      pills[i].removeAttribute('aria-busy');
+    }
+    bar.classList.remove(PILL_BAR_BUSY_CLASS);
+
+    if (!loading || !pill) {
+      return;
+    }
+
+    bar.classList.add(PILL_BAR_BUSY_CLASS);
+    pill.classList.add(PILL_LOADING_CLASS);
+    pill.setAttribute('aria-busy', 'true');
+
+    for (i = 0; i < pills.length; i++) {
+      if (pills[i] !== pill) {
+        pills[i].disabled = true;
+      }
+    }
+  }
+
+  function clearPillLoading(wrapper) {
+    if (wrapper) {
+      setPillLoading(wrapper, null, false);
+    }
+  }
+
+  function applySort(optionLabel, skipAnalytics, loadingPill) {
     const wrapper = findSortFilterWrapper();
     if (!wrapper || isApplyingSort) {
       return;
@@ -402,12 +524,14 @@
     }
 
     isApplyingSort = true;
+    setPillLoading(wrapper, loadingPill, true);
     setSilentDropdown(wrapper, true);
     openDropdown(wrapper);
 
     setTimeout(function () {
       const liveWrapper = findSortFilterWrapper();
       if (!liveWrapper) {
+        clearPillLoading(wrapper);
         isApplyingSort = false;
         setSilentDropdown(wrapper, false);
         return;
@@ -418,6 +542,7 @@
       if (!radio) {
         console.log('[AT Filtros Hoteis] Opcao nao encontrada:', optionLabel);
         ensureDropdownClosed(liveWrapper);
+        clearPillLoading(liveWrapper);
         isApplyingSort = false;
         setSilentDropdown(liveWrapper, false);
         return;
@@ -435,7 +560,8 @@
 
         setTimeout(function () {
           ensureDropdownClosed(liveWrapper);
-          syncActivePill(liveWrapper, getCurrentSortLabel(liveWrapper));
+          clearPillLoading(liveWrapper);
+          syncActivePill(liveWrapper, getCurrentSortLabel(liveWrapper) || optionLabel);
           if (!skipAnalytics) {
             analyticsEvent(optionLabel);
           }
@@ -488,7 +614,7 @@
       if (!optionLabel) {
         return;
       }
-      applySort(optionLabel);
+      applySort(optionLabel, false, pill);
     });
   }
 
