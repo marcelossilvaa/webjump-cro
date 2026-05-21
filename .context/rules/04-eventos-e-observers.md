@@ -1,4 +1,4 @@
-<!-- source: .cursor/rules/04-eventos-e-observers.md -->
+<!-- canonical: .context/rules/04-eventos-e-observers.md -->
 ## 4. Event listeners e observers
 
 ### 4.1. Event listeners

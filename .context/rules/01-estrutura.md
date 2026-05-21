@@ -1,4 +1,4 @@
-<!-- mirror: .github/rules/01-estrutura.md -->
+<!-- canonical: .context/rules/01-estrutura.md -->
 
 ## 1. Estrutura básica
 
@@ -62,24 +62,11 @@ Use `const` dentro da IIFE ao acessar `s` (nao usar `var`).
 })();
 ```
 
-### Nespresso (GTM / dataLayer)
+### Nespresso (GTM / dataLayer — `gtmDataObject`)
 
-Push de experimento (uma vez no inicio do script):
+**Push de experimento AB/XT**: aplicado **separadamente** via Adobe Target (arquivo `GA4.js`/`GA4.html` dedicado). **NAO incluir nos scripts de funcionalidade/CRO.**
 
-```javascript
-gtmDataObject = window.gtmDataObject || [];
-gtmDataObject.push({
-  event: 'adobe_target',
-  event_raised_by: 'adobe target',
-  experiment_id: '${campaign.id}',
-  experiment_type: 'AB',
-  experiment_name: '${campaign.name}',
-  experiment_variant_id: '${campaign.recipe.id}',
-  experiment_variant: '${campaign.recipe.name}',
-});
-```
-
-Funcao de evento:
+**Funcao de evento (OBRIGATORIA em todo script com interacoes)**:
 
 ```javascript
 function sendGAEvent(label) {
@@ -96,7 +83,7 @@ function sendGAEvent(label) {
 
 ## Checklist rapido antes de considerar pronto
 
-<!-- mirror: .github/rules/06-tracking.md -->
+<!-- canonical: .context/rules/06-tracking.md -->
 
 ## 6. Tracking
 
@@ -151,11 +138,12 @@ function analyticsEvent(eventLabel, eventType) {
 
 ### 6.4. Nespresso (GTM / dataLayer — `gtmDataObject`)
 
-#### 6.4.1. Push de identificacao do experimento
+#### 6.4.1. Push de identificacao do experimento (Adobe Target)
 
-Incluir **uma vez** no inicio do script, logo apos guards e configuracao:
+O push `adobe_target` e aplicado **separadamente** pelo Adobe Target, em uma atividade/arquivo dedicado (`GA4.js` ou `GA4.html`). **NAO inclua este trecho nos scripts de funcionalidade/CRO.** Referencia:
 
 ```javascript
+// REFERENCIA — aplicado separadamente via Adobe Target, NAO incluir nos scripts
 gtmDataObject = window.gtmDataObject || [];
 gtmDataObject.push({
   event: 'adobe_target',
@@ -168,7 +156,9 @@ gtmDataObject.push({
 });
 ```
 
-#### 6.4.2. Funcao padrao (modelo Nespresso)
+#### 6.4.2. Funcao padrao de evento (OBRIGATORIA nos scripts)
+
+Todo script Nespresso que tenha acoes do usuario **deve obrigatoriamente** incluir a funcao `sendGAEvent` e chama-la nos eventos relevantes (cliques, visualizacoes, interacoes).
 
 ```javascript
 function sendGAEvent(label) {
@@ -183,15 +173,37 @@ function sendGAEvent(label) {
 }
 ```
 
+Variacao com action dinamico (quando a categoria e fixa e a acao varia):
+
+```javascript
+function sendGAEvent(action, label) {
+  window.gtmDataObject = window.gtmDataObject || [];
+  gtmDataObject.push({
+    event: 'local_event',
+    event_raised_by: 'br',
+    local_event_category: 'nome-da-campanha',
+    local_event_action: action,
+    local_event_label: label,
+  });
+}
+```
+
 #### 6.4.3. Campos do dataLayer (Nespresso)
 
 | Campo                  | Descricao                                                                     |
 | ---------------------- | ----------------------------------------------------------------------------- |
-| `event`                | Sempre `'local_event'` para interacoes do usuario                             |
-| `event_raised_by`      | Codigo do pais (ex: `'br'`)                                                   |
-| `local_event_category` | Categoria livre em lowercase (ex: `'user engagement'`, `'editar-assinatura'`) |
-| `local_event_action`   | Acao livre em lowercase (ex: `'click'`, `'click1'`, `'click2'`)               |
-| `local_event_label`    | Label descritivo do elemento clicado                                          |
+| `event`                | Sempre `'local_event'` — NAO alterar                                          |
+| `event_raised_by`      | Codigo do pais (`'br'`)                                                       |
+| `local_event_category` | Categoria livre em lowercase (ex: `'user engagement'`, `'pop-in-app-day'`)    |
+| `local_event_action`   | Acao livre em lowercase (ex: `'click'`, `'view'`, `'Display push'`)           |
+| `local_event_label`    | Label descritivo do elemento (lowercase, separado por `_`)                    |
+
+#### 6.4.4. Convencoes de nomenclatura para labels
+
+- Pop-ins: `visualizou_comunicacao_*`, `clicou_comunicacao_*`, `fechou_comunicacao_*`
+- Accordions: `abriu_accordion`, `fechou_accordion`
+- Menus/botoes: usar o `id` do elemento ou nome descritivo
+- Tudo em **lowercase** separado por `_`
 
 ---
 

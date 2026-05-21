@@ -1,21 +1,10 @@
-# `.claude` — Instruções para o Claude Code
+# `.claude` — ponteiros para `.context`
 
-Esta pasta configura o comportamento do **Claude Code** neste repositório.
+Esta pasta **não contém** regras duplicadas. O Claude Code lê os `.md` daqui como entrada do projeto; o conteúdo real está em `.context/`.
 
-## Estrutura
+| Arquivo | Aponta para |
+|---------|-------------|
+| `regras.md` | `.context/regras.md` |
+| `copilot-instructions.md` | `.context/copilot-instructions.md` |
 
-| Arquivo / Pasta | Função |
-|-----------------|--------|
-| `regras.md` | Índice das regras modulares |
-| `rules/*.md` | Regras por tema (carregadas automaticamente pelo Claude Code) |
-| `instructions/*.md` | Contexto adicional por cliente/tipo de arquivo |
-| `copilot-instructions.md` | Resumo das regras (também carregado pelo Claude Code) |
-| `settings.json` | Permissões, hooks e variáveis de ambiente do Claude Code |
-
-## Como o Claude Code carrega estas instruções
-
-O Claude Code lê todos os arquivos `.md` dentro de `.claude/` como instruções de projeto. Não é necessário importar ou referenciar manualmente — todos os arquivos desta pasta são aplicados automaticamente.
-
-## Manutenção
-
-Editar os arquivos em `.claude/rules/` é a fonte da verdade para este repositório. O arquivo `regras.md` serve como índice para localização rápida.
+**Manutenção:** edite somente `.context/`.

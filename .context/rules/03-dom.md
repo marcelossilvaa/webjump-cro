@@ -1,4 +1,4 @@
-<!-- source: .cursor/rules/03-dom.md -->
+<!-- canonical: .context/rules/03-dom.md -->
 ## 3. Manipulação do DOM
 
 ### 3.1. Seletores

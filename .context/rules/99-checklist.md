@@ -1,4 +1,4 @@
-<!-- source: .cursor/rules/99-checklist.md -->
+<!-- canonical: .context/rules/99-checklist.md -->
 ## Checklist de finalização
 
 - [ ] Script encapsulado em IIFE

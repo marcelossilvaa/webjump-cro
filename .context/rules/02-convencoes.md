@@ -1,4 +1,4 @@
-<!-- mirror: .github/rules/02-convencoes.md -->
+<!-- canonical: .context/rules/02-convencoes.md -->
 ## 2. Convenções de código
 
 ### 2.1. Template literals (backticks)

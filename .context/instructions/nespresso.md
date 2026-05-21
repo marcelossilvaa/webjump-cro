@@ -1,46 +1,73 @@
-# Analytics
+# Analytics Nespresso
 
-## Envio de evento da atividade ao GA4
+## Identificacao do experimento AB/XT (Adobe Target)
 
-```
-<script>
-(function () {
-  "use strict";
-  if (window.GA4NomeDaAtividade) {
-    return;
-  }
-  window.GA4NomeDaAtividade = true;
-  gtmDataObject = window.gtmDataObject || [];
-  gtmDataObject.push({
-    event: "adobe_target",
-    event_raised_by: "adobe target",
-    experiment_id: "${campaign.id}",
-    experiment_type: "AB",
-    experiment_name: "${campaign.name}",
-    experiment_variant_id: "${campaign.recipe.id}",
-    experiment_variant: "${campaign.recipe.name}",
-  });
-})();
-</script>
+O push de identificacao do teste AB/XT e configurado e aplicado **separadamente** pelo Adobe Target, em uma atividade propria (normalmente um arquivo `GA4.js` ou `GA4.html` dedicado). **NAO inclua este trecho nos scripts de funcionalidade/CRO**. Ele e apenas referencia:
+
+```javascript
+// REFERENCIA — aplicado separadamente via Adobe Target, NAO incluir nos scripts
+gtmDataObject = window.gtmDataObject || [];
+gtmDataObject.push({
+  event: "adobe_target",
+  event_raised_by: "adobe target",
+  experiment_id: "${campaign.id}",
+  experiment_type: "AB",
+  experiment_name: "${campaign.name}",
+  experiment_variant_id: "${campaign.recipe.id}",
+  experiment_variant: "${campaign.recipe.name}",
+});
 ```
 
-## Local Event (Evento de interação personalizado)
+## Evento de interacao personalizado (OBRIGATORIO nos scripts)
 
-```
-<script>
+Todo script Nespresso que contenha acoes do usuario (cliques, visualizacoes, interacoes) **deve obrigatoriamente** incluir a funcao `sendGAEvent` e chama-la nos eventos relevantes. Esta e a unica forma padrao de enviar eventos para o GA4 via GTM no projeto Nespresso.
+
+```javascript
 function sendGAEvent(label) {
-    window.gtmDataObject = window.gtmDataObject || [];
-    gtmDataObject.push({
-      event: "local_event", //as is, do not change!!
-      event_raised_by: "br", //please put the country code ex: us, ch, it
-      local_event_category: "user engagement", //free to fill field, please use lower case
-      local_event_action: "click", //free to fill field, please use lower case
-      local_event_label: label, //free to fill field, please use lower case
-    });
-  }
-  sendGAEvent("nome-do-evento");
-  </script>
+  window.gtmDataObject = window.gtmDataObject || [];
+  gtmDataObject.push({
+    event: "local_event",
+    event_raised_by: "br",
+    local_event_category: "user engagement",
+    local_event_action: "click",
+    local_event_label: label,
+  });
+}
 ```
+
+### Campos
+
+| Campo                  | Regra                                                                         |
+| ---------------------- | ----------------------------------------------------------------------------- |
+| `event`                | Sempre `"local_event"` — NAO alterar                                          |
+| `event_raised_by`      | Codigo do pais (`"br"`)                                                       |
+| `local_event_category` | Categoria livre em lowercase (ex: `"user engagement"`, `"pop-in-app-day"`)    |
+| `local_event_action`   | Acao livre em lowercase (ex: `"click"`, `"view"`, `"Display push"`)           |
+| `local_event_label`    | Label descritivo do elemento (ex: `"clicou_cta_banner"`, SKU, id do botao)    |
+
+### Variacao com action dinamico
+
+Quando a categoria e fixa da campanha e a acao varia, use dois parametros:
+
+```javascript
+function sendGAEvent(action, label) {
+  window.gtmDataObject = window.gtmDataObject || [];
+  gtmDataObject.push({
+    event: "local_event",
+    event_raised_by: "br",
+    local_event_category: "nome-da-campanha",
+    local_event_action: action,
+    local_event_label: label,
+  });
+}
+```
+
+### Convencoes de nomenclatura para labels
+
+- Pop-ins: `visualizou_comunicacao_*`, `clicou_comunicacao_*`, `fechou_comunicacao_*`
+- Accordions: `abriu_accordion`, `fechou_accordion`
+- Menus/botoes: usar o `id` do elemento ou nome descritivo
+- Tudo em **lowercase** separado por `_`
 
 # Nespresso API
 

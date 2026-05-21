@@ -1,4 +1,4 @@
-<!-- mirror: .github/rules/06-tracking.md -->
+<!-- canonical: .context/rules/06-tracking.md -->
 
 ## 6. Tracking (Adobe Analytics)
 
@@ -47,6 +47,37 @@ function analyticsEvent(eventLabel, eventType) {
 
 Sempre use um `data-*` (ex: `data-analytics-added`) para evitar duplicação.
 
-### 6.5. Outros projetos
+### 6.5. Nespresso (GTM / dataLayer — `gtmDataObject`)
+
+#### Push de experimento AB/XT (Adobe Target)
+
+O push `adobe_target` e aplicado **separadamente** pelo Adobe Target (arquivo `GA4.js`/`GA4.html` dedicado). **NAO inclua este trecho nos scripts de funcionalidade/CRO.**
+
+#### Funcao de evento (OBRIGATORIA nos scripts)
+
+Todo script Nespresso com acoes do usuario **deve obrigatoriamente** incluir `sendGAEvent`:
+
+```javascript
+function sendGAEvent(label) {
+  window.gtmDataObject = window.gtmDataObject || [];
+  gtmDataObject.push({
+    event: 'local_event',
+    event_raised_by: 'br',
+    local_event_category: 'user engagement',
+    local_event_action: 'click',
+    local_event_label: label,
+  });
+}
+```
+
+| Campo                  | Regra                                                                      |
+| ---------------------- | -------------------------------------------------------------------------- |
+| `event`                | Sempre `'local_event'` — NAO alterar                                       |
+| `event_raised_by`      | Codigo do pais (`'br'`)                                                    |
+| `local_event_category` | Categoria livre em lowercase (ex: `'user engagement'`)                     |
+| `local_event_action`   | Acao livre em lowercase (ex: `'click'`, `'view'`)                          |
+| `local_event_label`    | Label descritivo do elemento (lowercase, separado por `_`)                 |
+
+### 6.6. Outros projetos
 
 Para projetos como **Gerdau**, **GerdauMais**, **Nestle**, **NestleDemo** e **FTD**, verifique o padrao ja usado nos scripts existentes da pasta antes de criar a funcao de tracking. Na duvida, siga o modelo Nespresso (GTM / dataLayer) como fallback, pois a maioria dos projetos utiliza GA4.

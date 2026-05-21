@@ -1,10 +1,14 @@
+---
+applyTo: "**/*.js"
+---
+
 # Scripts CRO (JavaScript)
 
-Estas instruções complementam `copilot-instructions.md` para arquivos `*.js` do repositório.
+Estas instruções complementam `.context/copilot-instructions.md` para **todos** os arquivos `*.js` do repositório.
 
 ## Autoridade
 
-Regras detalhadas e exemplos: **`.claude/rules/`** — começar por `01-estrutura.md` e `02-convencoes.md`.
+Regras detalhadas e exemplos: **`.context/rules/`** (começar por `01-estrutura.md` e `02-convencoes.md`). Padronização de experimentos: **`.context/skills/cro-script-padronizacao/SKILL.md`**.
 
 ## Obrigatório neste tipo de arquivo
 
@@ -14,7 +18,7 @@ Regras detalhadas e exemplos: **`.claude/rules/`** — começar por `01-estrutur
 - Listeners e processamento DOM idempotentes (`data-*`).
 - `MutationObserver` com debounce e proteção contra loop; um observer global por feature quando fizer sentido (`window._nomeObserver` ou guard).
 - Inicialização com `DOMContentLoaded` ou `readyState`; retry/polling com teto de tentativas.
-- Tracking Adobe quando alterar UI (ver `.github/rules/06-tracking.md`).
+- Tracking quando alterar UI (ver `.context/rules/06-tracking.md`).
 
 ## Anti-padrões
 

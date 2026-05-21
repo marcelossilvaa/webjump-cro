@@ -1,7 +1,7 @@
-<!-- source: .cursor/rules/00-index.md -->
+<!-- canonical: .context/rules/00-index.md -->
 ## Regras Webjump CRO (Índice)
 
-Este diretório contém as regras do projeto modularizadas por tema.
+Fonte canônica: **`.context/rules/`**. As pastas `.cursor/rules/`, `.github/rules/` e `.claude/rules/` apontam para aqui.
 
 ### Como usar
 

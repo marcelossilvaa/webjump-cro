@@ -1,4 +1,4 @@
-<!-- mirror: .github/rules/azul-design-system.md -->
+<!-- canonical: .context/rules/azul-design-system.md -->
 
 ## Azul — guia visual (pasta `Azul/`)
 

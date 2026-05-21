@@ -1,15 +1,15 @@
-## Espelho para GitHub Copilot
-
-O mesmo contexto de regras para o **GitHub Copilot** está em:
-
-- `/.github/copilot-instructions.md` — instruções do repositório
-- `/.github/instructions/cro-javascript.instructions.md` — reforço para `**/*.js`
-- `/.github/README.md` — como isso se relaciona com `/.cursor/`
-- `/.github/rules/*.md` — cópia espelhada de `/.cursor/rules/*.md` (manter idênticos via automação)
-
-Os módulos de regra existem em **dois lugares iguais** (`/.cursor/rules/` e `/.github/rules/`). Cada arquivo tem comentário `<!-- mirror:` / `<!-- source:` para scripts de sync.
-
 ## Como usar Skills no nosso fluxo
+
+### Fonte canônica
+
+Todo o contexto do repositório está em **`.context/`**. Skills e regras:
+
+- `.context/copilot-instructions.md` — instruções do repositório
+- `.context/instructions/cro-javascript.instructions.md` — reforço para `**/*.js`
+- `.context/rules/*.md` — regras modulares por tema
+- `.context/regras.md` — índice geral
+
+As pastas `.cursor/`, `.github/` e `.claude/` apenas **apontam** para `.context/` — não duplicar conteúdo nelas.
 
 ### O que é um Skill
 
@@ -34,13 +34,13 @@ No chat, peça explicitamente algo como:
 
 - “Use o Skill X para fazer Y”
 - “Crie um Skill para o nosso padrão de script Azul”
-- “Atualize o Skill X com as regras da `/.cursor/regras.md`”
+- “Atualize o Skill X com as regras da `.context/regras.md`”
 
 O assistente lê o arquivo do Skill e segue as instruções dele.
 
 ### Skill criado no repositório
 
-- `/.cursor/skills/cro-script-padronizacao/SKILL.md` — padronização de scripts CRO (IIFE, CSS, observers, tracking).
+- `.context/skills/cro-script-padronizacao/SKILL.md` — padronização de scripts CRO (IIFE, CSS, observers, tracking).
 
 No chat, use por exemplo: *“Aplica o skill cro-script-padronizacao neste arquivo”* ou *“Refatora seguindo cro-script-padronizacao”*.
 
@@ -60,4 +60,3 @@ No chat, use por exemplo: *“Aplica o skill cro-script-padronizacao neste arqui
 - Ter checklists objetivos
 - Ter exemplos de antes/depois
 - Incluir anti-loop e guards como padrão
-
