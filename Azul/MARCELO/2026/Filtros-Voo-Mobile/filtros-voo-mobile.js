@@ -11,9 +11,14 @@
   let isMounting = false;
   let debounceTimer = null;
   let sortObserver = null;
-  let listWasLoading = false;
+  let headerObserver = null;
+  let observedHeaderEl = null;
+  let tripsLifecycleTimer = null;
+  let observedTripsRootEl = null;
+  let lastHeaderSignature = '';
   let headerWaitFrames = 0;
   let lastAppliedSortLabel = '';
+  let forceDefaultOnNextMount = false;
 
   const STYLE_ID = 'at-filtros-voo-mobile-sort-style';
   const DATA_DONE = 'data-at-voo-sort-pills-done';
@@ -28,7 +33,7 @@
   const AFTER_APPLY_MS = 160;
   const AFTER_CLOSE_MS = 120;
 
-  const DEFAULT_SORT_OPTION = 'Mais cedo';
+  const DEFAULT_SORT_OPTION = 'Menor preço';
 
   const SORT_OPTIONS = [
     'Mais cedo',
@@ -64,7 +69,11 @@
     sortMenuOption: '[class*="1ox2bcj-option"]',
     applyFiltersBtn: '#modal-filters .modal-content__footer button',
     tripsRoot: '.AzulPage .availability .trips',
+    bookingDateBtn:
+      '.booking-calendar__cards button, [class*="booking-calendar"] button, [class*="BookingCalendar"] button',
   };
+
+  const DATA_HEADER_OBS = 'data-at-voo-header-observed';
 
   const PILL_WRAP_CLASS = 'at-voo-sort-wrap';
   const PILL_BAR_CLASS = 'at-voo-sort-pills';
@@ -97,9 +106,7 @@
       return;
     }
     const labelEvent = 'AT_filtros_voo_mobile_ordenacao_clique ' + optionLabel;
-    const s =
-      window.s ||
-      (typeof window.s_gi === 'function' && window.s_gi('azul-novo-prod'));
+    const s = window.s || (typeof window.s_gi === 'function' && window.s_gi('azul-novo-prod'));
     if (!s || typeof s.tl !== 'function') {
       return;
     }
@@ -268,7 +275,193 @@
   }
 
   function findTripsHeader() {
-    return document.querySelector(SELECTORS.tripsHeader);
+    const headers = document.querySelectorAll(SELECTORS.tripsHeader);
+    let i;
+    let header;
+    let fallback = null;
+
+    for (i = 0; i < headers.length; i++) {
+      header = headers[i];
+      if (!header.isConnected) {
+        continue;
+      }
+      if (!fallback) {
+        fallback = header;
+      }
+      if (header.offsetParent !== null) {
+        return header;
+      }
+    }
+
+    return fallback;
+  }
+
+  function isMountHealthy() {
+    const header = findTripsHeader();
+    let bar;
+
+    if (!header || !header.isConnected) {
+      return false;
+    }
+
+    bar = header.querySelector('.' + PILL_BAR_CLASS);
+    if (!bar || !header.contains(bar)) {
+      return false;
+    }
+
+    return bar.querySelectorAll('.' + PILL_BTN_CLASS).length === SORT_OPTIONS.length;
+  }
+
+  function disconnectHeaderObserver() {
+    if (headerObserver) {
+      headerObserver.disconnect();
+      headerObserver = null;
+    }
+    if (observedHeaderEl) {
+      observedHeaderEl.removeAttribute(DATA_HEADER_OBS);
+      observedHeaderEl = null;
+    }
+  }
+
+  function bindHeaderObserver(header) {
+    if (!header) {
+      return;
+    }
+
+    if (
+      observedHeaderEl === header &&
+      header.getAttribute(DATA_HEADER_OBS) === '1' &&
+      header.querySelector('.' + PILL_WRAP_CLASS)
+    ) {
+      return;
+    }
+
+    disconnectHeaderObserver();
+    observedHeaderEl = header;
+    header.setAttribute(DATA_HEADER_OBS, '1');
+
+    headerObserver = new MutationObserver(function () {
+      if (isApplyingSort || isMounting || isProcessing) {
+        return;
+      }
+      if (!header.isConnected) {
+        disconnectHeaderObserver();
+        lastHeaderSignature = '';
+        ensurePillsPresent();
+        return;
+      }
+      if (!header.querySelector('.' + PILL_WRAP_CLASS) || shouldRemountPills()) {
+        ensurePillsPresent();
+      } else {
+        hideNativeFilterButton();
+      }
+    });
+
+    headerObserver.observe(header, { childList: true, subtree: true });
+  }
+
+  function bindBookingDateListeners() {
+    if (window.__atVooBookingDateBound) {
+      return;
+    }
+    window.__atVooBookingDateBound = true;
+
+    document.addEventListener(
+      'click',
+      function (event) {
+        if (!isTargetPage() || !isMobileViewport()) {
+          return;
+        }
+        const btn = event.target.closest(SELECTORS.bookingDateBtn);
+        if (!btn) {
+          return;
+        }
+        ensurePillsPresent();
+        setTimeout(ensurePillsPresent, 400);
+        setTimeout(ensurePillsPresent, 900);
+      },
+      true,
+    );
+  }
+
+  function getHeaderSignature(header) {
+    const tripInfo = header.querySelector(SELECTORS.tripInfo);
+    if (!tripInfo) {
+      return '';
+    }
+    return (tripInfo.textContent || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function ensurePillsPresent() {
+    if (!isTargetPage() || !isMobileViewport() || isApplyingSort || isMounting || isProcessing) {
+      return;
+    }
+
+    const header = findTripsHeader();
+    if (!header) {
+      return;
+    }
+
+    const signature = getHeaderSignature(header);
+    const headerReplaced = signature !== lastHeaderSignature;
+
+    if (headerReplaced) {
+      lastAppliedSortLabel = '';
+      lastHeaderSignature = signature;
+      disconnectHeaderObserver();
+    }
+
+    hideNativeFilterButton();
+
+    if (!isMountHealthy() || headerReplaced) {
+      forceDefaultOnNextMount = true;
+      lastAppliedSortLabel = '';
+      document.body.setAttribute(DATA_DONE, '1');
+      mountSortPills();
+      return;
+    }
+
+    bindHeaderObserver(header);
+    syncActivePill(getDisplaySortLabel());
+  }
+
+  function ensureSortObserverConnected() {
+    const tripsRoot = document.querySelector(SELECTORS.tripsRoot);
+    const target = tripsRoot && tripsRoot.isConnected ? tripsRoot : document.body;
+
+    if (sortObserver && observedTripsRootEl === target) {
+      return;
+    }
+
+    if (sortObserver) {
+      sortObserver.disconnect();
+      sortObserver = null;
+    }
+
+    observedTripsRootEl = target;
+
+    sortObserver = new MutationObserver(function () {
+      if (isApplyingSort || isMounting || isProcessing || !isMobileViewport() || !isTargetPage()) {
+        return;
+      }
+      ensurePillsPresent();
+    });
+
+    sortObserver.observe(target, { childList: true, subtree: true });
+  }
+
+  function startTripsLifecycleWatch() {
+    if (tripsLifecycleTimer) {
+      return;
+    }
+
+    tripsLifecycleTimer = setInterval(function () {
+      if (!isTargetPage() || !isMobileViewport()) {
+        return;
+      }
+      ensureSortObserverConnected();
+      ensurePillsPresent();
+    }, 250);
   }
 
   function getModal() {
@@ -302,21 +495,56 @@
     return '';
   }
 
-  function getAppliedSortLabel() {
+  function getDisplaySortLabel() {
+    if (forceDefaultOnNextMount) {
+      return DEFAULT_SORT_OPTION;
+    }
+    if (lastAppliedSortLabel) {
+      return lastAppliedSortLabel;
+    }
     const fromDom = getCurrentSortLabel();
     if (fromDom) {
       return fromDom;
     }
-    return lastAppliedSortLabel;
-  }
-
-  function getDisplaySortLabel() {
-    const applied = getAppliedSortLabel();
-    if (applied) {
-      return applied;
-    }
     return DEFAULT_SORT_OPTION;
   }
+
+  function isSortAppliedInDom(optionLabel) {
+    const fromDom = getCurrentSortLabel();
+    if (!fromDom) {
+      return false;
+    }
+    return normalizeText(fromDom) === normalizeText(optionLabel);
+  }
+
+  function scheduleDefaultSortApply() {
+    let attempts = 0;
+    const maxAttempts = 20;
+
+    function attempt() {
+      attempts += 1;
+      if (attempts > maxAttempts) {
+        return;
+      }
+      if (!isTargetPage() || !isMobileViewport() || isApplyingSort || isMounting) {
+        setTimeout(attempt, 300);
+        return;
+      }
+      const header = findTripsHeader();
+      if (!header) {
+        setTimeout(attempt, 300);
+        return;
+      }
+      if (!document.querySelectorAll('.flight-card').length) {
+        setTimeout(attempt, 300);
+        return;
+      }
+      applySort(DEFAULT_SORT_OPTION, true, null, true);
+    }
+
+    setTimeout(attempt, 700);
+  }
+
 
   function hideNativeFilterButton() {
     const tripFilter = document.querySelector(SELECTORS.tripFilter);
@@ -560,13 +788,13 @@
     setSilentModal(false);
   }
 
-  function applySort(optionLabel, skipAnalytics, loadingPill) {
+  function applySort(optionLabel, skipAnalytics, loadingPill, forceApply) {
     if (isApplyingSort) {
       return;
     }
 
-    const current = getAppliedSortLabel();
-    if (current && normalizeText(current) === normalizeText(optionLabel)) {
+    if (!forceApply && isSortAppliedInDom(optionLabel)) {
+      lastAppliedSortLabel = optionLabel;
       syncActivePill(optionLabel);
       return;
     }
@@ -598,25 +826,46 @@
     );
   }
 
+  function moveActivePillToFirst(bar, activeBtn) {
+    if (!bar || !activeBtn || bar.firstChild === activeBtn) {
+      if (bar) {
+        bar.scrollLeft = 0;
+      }
+      return;
+    }
+    bar.insertBefore(activeBtn, bar.firstChild);
+    bar.scrollLeft = 0;
+  }
+
   function syncActivePill(activeLabel) {
     const header = findTripsHeader();
     if (!header) {
       return;
     }
-    const pills = header.querySelectorAll('.' + PILL_BTN_CLASS);
+    const bar = header.querySelector('.' + PILL_BAR_CLASS);
+    if (!bar) {
+      return;
+    }
+    const pills = bar.querySelectorAll('.' + PILL_BTN_CLASS);
     const activeNorm = normalizeText(activeLabel || getDisplaySortLabel());
     let i;
     let btn;
+    let activeBtn = null;
 
     for (i = 0; i < pills.length; i++) {
       btn = pills[i];
       if (normalizeText(btn.getAttribute('data-sort-value')) === activeNorm) {
         btn.classList.add(PILL_ACTIVE_CLASS);
         btn.setAttribute('aria-pressed', 'true');
+        activeBtn = btn;
       } else {
         btn.classList.remove(PILL_ACTIVE_CLASS);
         btn.setAttribute('aria-pressed', 'false');
       }
+    }
+
+    if (activeBtn) {
+      moveActivePillToFirst(bar, activeBtn);
     }
   }
 
@@ -646,15 +895,7 @@
   }
 
   function shouldRemountPills() {
-    const header = findTripsHeader();
-    if (!header) {
-      return false;
-    }
-    const bar = header.querySelector('.' + PILL_BAR_CLASS);
-    if (!bar) {
-      return true;
-    }
-    return bar.querySelectorAll('.' + PILL_BTN_CLASS).length !== SORT_OPTIONS.length;
+    return !isMountHealthy();
   }
 
   function mountSortPills() {
@@ -710,22 +951,40 @@
 
     header.classList.add(PILL_WRAP_CLASS + '-ready');
     hideNativeFilterButton();
-    syncActivePill(getDisplaySortLabel());
+    bindHeaderObserver(header);
+
+    const applyDefaultAfterMount = forceDefaultOnNextMount;
+    const labelToShow = applyDefaultAfterMount
+      ? DEFAULT_SORT_OPTION
+      : getDisplaySortLabel();
+    forceDefaultOnNextMount = false;
+    syncActivePill(labelToShow);
+
+    if (applyDefaultAfterMount) {
+      scheduleDefaultSortApply();
+    }
 
     isMounting = false;
 
-    console.log(
-      '[AT Filtros Voo Mobile] Pills injetadas (' + SORT_OPTIONS.length + ' opcoes).',
-    );
+    console.log('[AT Filtros Voo Mobile] Pills injetadas (' + SORT_OPTIONS.length + ' opcoes).');
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        ensurePillsPresent();
+      });
+    });
   }
 
   function injectSortPills(forceRemount) {
-    if (!findTripsHeader()) {
+    const header = findTripsHeader();
+
+    if (!header) {
       return;
     }
 
-    if (!forceRemount && document.body.getAttribute(DATA_DONE) === '1' && !shouldRemountPills()) {
+    if (!forceRemount && document.body.getAttribute(DATA_DONE) === '1' && isMountHealthy()) {
       hideNativeFilterButton();
+      bindHeaderObserver(header);
       syncActivePill(getDisplaySortLabel());
       return;
     }
@@ -754,6 +1013,8 @@
       injectStyles();
       hideNativeFilterButton();
       bindGlobalPillClick();
+      bindBookingDateListeners();
+      startTripsLifecycleWatch();
       injectSortPills(!!forceRemount);
     } finally {
       isProcessing = false;
@@ -783,63 +1044,15 @@
     });
   }
 
-  function startObserver() {
-    if (sortObserver) {
-      return;
-    }
-
-    const root = document.querySelector(SELECTORS.tripsRoot) || document.body;
-
-    sortObserver = new MutationObserver(function (mutations) {
-      if (isApplyingSort || isMounting || isProcessing || !isMobileViewport() || !isTargetPage()) {
-        return;
-      }
-
-      let headerChanged = false;
-      let i;
-      let m;
-      for (i = 0; i < mutations.length; i++) {
-        m = mutations[i];
-        if (m.type === 'childList') {
-          headerChanged = true;
-          break;
-        }
-      }
-
-      if (!headerChanged) {
-        return;
-      }
-
-      const loading = isListLoading();
-
-      if (loading) {
-        listWasLoading = true;
-        return;
-      }
-
-      if (listWasLoading) {
-        listWasLoading = false;
-        scheduleRun(true);
-        return;
-      }
-
-      if (shouldRemountPills()) {
-        scheduleRun(true);
-      } else {
-        hideNativeFilterButton();
-      }
-    });
-
-    sortObserver.observe(root, { childList: true, subtree: true });
-  }
-
   function init() {
     if (!isTargetPage() || !isMobileViewport()) {
       return;
     }
+    startTripsLifecycleWatch();
     waitForHeader(function () {
       run();
-      startObserver();
+      ensureSortObserverConnected();
+      ensurePillsPresent();
     });
   }
 

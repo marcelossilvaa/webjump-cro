@@ -572,6 +572,17 @@
     }, OPEN_DELAY_MS);
   }
 
+  function moveActivePillToFirst(bar, activeBtn) {
+    if (!bar || !activeBtn || bar.firstChild === activeBtn) {
+      if (bar) {
+        bar.scrollLeft = 0;
+      }
+      return;
+    }
+    bar.insertBefore(activeBtn, bar.firstChild);
+    bar.scrollLeft = 0;
+  }
+
   function syncActivePill(wrapper, activeLabel) {
     const bar = wrapper.querySelector('.' + PILL_BAR_CLASS);
     if (!bar) {
@@ -582,16 +593,22 @@
     const pills = bar.querySelectorAll('.' + PILL_BTN_CLASS);
     let i;
     let btn;
+    let activeBtn = null;
 
     for (i = 0; i < pills.length; i++) {
       btn = pills[i];
       if (normalizeText(btn.getAttribute('data-sort-value')) === activeNorm) {
         btn.classList.add(PILL_ACTIVE_CLASS);
         btn.setAttribute('aria-pressed', 'true');
+        activeBtn = btn;
       } else {
         btn.classList.remove(PILL_ACTIVE_CLASS);
         btn.setAttribute('aria-pressed', 'false');
       }
+    }
+
+    if (activeBtn) {
+      moveActivePillToFirst(bar, activeBtn);
     }
   }
 
