@@ -304,7 +304,6 @@
       '  flex-shrink: 0;',
       '}',
       '[' + DATA_APLICADO + '] [class*="InfoTagWrapper-sc"] {',
-      '  padding: 2px 4px !important;',
       '  border-radius: 4px;',
       '  display: inline-flex !important;',
       '  align-items: center !important;',
@@ -477,14 +476,15 @@
 
       // InfoWindow estilizada
       '.at-iw-container {',
-      '  padding: 0 10px 15px 10px;',
+      '  padding: 0 0px 8px 1px;',
       '  font-family: "Helvetica Neue", Arial, sans-serif;',
       '  min-width: 180px;',
-      '  max-width: 260px;',
+      '  max-width: 230px;',
       '}',
       '.at-iw-container p {',
       '  margin: 0 !important;',
       '  padding: 0 !important;',
+      '  max-width: 155px;',
       '}',
       '.at-iw-nome {',
       '  font-size: 14px !important;',
@@ -510,6 +510,25 @@
       '  font-weight: 700 !important;',
       '  color: rgb(1, 78, 132) !important;',
       '  margin: 0 !important;',
+      '}',
+
+      // Remove o espaço vazio do gm-style-iw-ch mas mantém o botão X absolutamente posicionado
+      '.gm-style-iw-ch {',
+      '  display: none !important;',
+      '}',
+      '.gm-style-iw-chr {',
+      '  position: absolute !important;',
+      '  top: 0 !important;',
+      '  right: 0 !important;',
+      '  height: 0 !important;',
+      '  overflow: visible !important;',
+      '}',
+      '.gm-style-iw-chr button.gm-ui-hover-effect {',
+      '  position: relative !important;',
+      '  z-index: 1 !important;',
+      '}',
+      '.gm-style-iw.gm-style-iw-c {',
+      '  padding-top: 15px !important;',
       '}'
     ].join('\n');
     document.head.appendChild(style);

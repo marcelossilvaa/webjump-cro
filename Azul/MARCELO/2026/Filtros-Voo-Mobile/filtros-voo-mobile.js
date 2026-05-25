@@ -2,6 +2,9 @@
   'use strict';
 
   if (window.__atFiltrosVooMobileSortPills) {
+    if (typeof window.__atFiltrosVooMobileRefresh === 'function') {
+      window.__atFiltrosVooMobileRefresh();
+    }
     return;
   }
   window.__atFiltrosVooMobileSortPills = true;
@@ -172,17 +175,16 @@
       '  border: 1px solid #ccc;' +
       '  border-radius: 32px;' +
       '  box-sizing: border-box;' +
-      '  color: #026cb6;' +
+      '  color: rgb(96, 96, 96);' +
       '  cursor: pointer;' +
       '  display: inline-flex;' +
       '  flex-shrink: 0;' +
       '  font-family: inherit;' +
-      '  font-size: 11px;' +
-      '  font-weight: 600;' +
+      '  font-size: 14px;' +
       '  justify-content: center;' +
       '  min-height: 28px;' +
       '  outline: none;' +
-      '  padding: 0 10px;' +
+      '  padding: 0 8px;' +
       '  white-space: nowrap;' +
       '}' +
       '.' +
@@ -264,13 +266,27 @@
     );
   }
 
-  function injectStyles() {
-    if (document.getElementById(STYLE_ID)) {
+  function ensureStylesInjected() {
+    let style = document.getElementById(STYLE_ID);
+    const css = getSortCss();
+
+    if (
+      style &&
+      style.isConnected &&
+      style.parentNode === document.head &&
+      style.textContent === css
+    ) {
       return;
     }
-    const style = document.createElement('style');
+
+    if (style) {
+      style.remove();
+    }
+
+    style = document.createElement('style');
     style.id = STYLE_ID;
-    style.textContent = getSortCss();
+    style.setAttribute('data-at-voo-sort-style', '1');
+    style.textContent = css;
     document.head.appendChild(style);
   }
 
@@ -396,6 +412,8 @@
     if (!isTargetPage() || !isMobileViewport() || isApplyingSort || isMounting || isProcessing) {
       return;
     }
+
+    ensureStylesInjected();
 
     const header = findTripsHeader();
     if (!header) {
@@ -544,7 +562,6 @@
 
     setTimeout(attempt, 700);
   }
-
 
   function hideNativeFilterButton() {
     const tripFilter = document.querySelector(SELECTORS.tripFilter);
@@ -911,6 +928,7 @@
       return;
     }
 
+    ensureStylesInjected();
     isMounting = true;
 
     if (wrap) {
@@ -954,9 +972,7 @@
     bindHeaderObserver(header);
 
     const applyDefaultAfterMount = forceDefaultOnNextMount;
-    const labelToShow = applyDefaultAfterMount
-      ? DEFAULT_SORT_OPTION
-      : getDisplaySortLabel();
+    const labelToShow = applyDefaultAfterMount ? DEFAULT_SORT_OPTION : getDisplaySortLabel();
     forceDefaultOnNextMount = false;
     syncActivePill(labelToShow);
 
@@ -1010,7 +1026,7 @@
     }
     isProcessing = true;
     try {
-      injectStyles();
+      ensureStylesInjected();
       hideNativeFilterButton();
       bindGlobalPillClick();
       bindBookingDateListeners();
@@ -1066,6 +1082,29 @@
     if (!isMobileViewport()) {
       return;
     }
+    ensureStylesInjected();
     scheduleRun(false);
   });
+
+  window.__atFiltrosVooMobileRefresh = function () {
+    if (!isTargetPage() || !isMobileViewport()) {
+      return;
+    }
+    ensureStylesInjected();
+    ensureSortObserverConnected();
+    ensurePillsPresent();
+  };
+
+  const headStyleGuard = new MutationObserver(function () {
+    if (!isTargetPage() || !isMobileViewport()) {
+      return;
+    }
+    if (!document.getElementById(STYLE_ID)) {
+      ensureStylesInjected();
+    }
+  });
+
+  if (document.head) {
+    headStyleGuard.observe(document.head, { childList: true });
+  }
 })();
