@@ -10,41 +10,29 @@
   const MAX_TENTATIVAS = 40;
   const INTERVAL_MS = 250;
 
+  // Seletores conhecidos do SDK AppsFlyer Web Banners
+  const SELETORES_BANNER = [
+    '#af-smart-banner',
+    '#af-smart-banner-container',
+    '#AF_SMART_BANNER',
+    'af-smart-banner',
+    '[id^="af-smart"]',
+    '[id^="AF_SMART"]'
+  ];
+
   // Inicializa o SDK da AppsFlyer
   !function(t,e,n,s,a,c,i,o,p){t.AppsFlyerSdkObject=a,t.AF=t.AF||function(){(t.AF.q=t.AF.q||[]).push([Date.now()].concat(Array.prototype.slice.call(arguments)))},t.AF.id=t.AF.id||i,t.AF.plugins={},o=e.createElement(n),p=e.getElementsByTagName(n)[0],o.async=1,o.src='https://websdk.appsflyersdk.com?'+(c.length>0?'st='+c.split(',').sort().join(',')+'&':'')+(i.length>0?'af_id='+i:''),p.parentNode.insertBefore(o,p)}(window,document,'script',0,'AF','banners',{banners:{key:'6ded0e2a-b4b7-4df7-9c7e-c957f46f9194'}});
 
   AF('banners', 'showBanner');
 
   function encontrarBanner() {
-    // Tenta pelos seletores conhecidos do SDK AppsFlyer
-    const seletores = [
-      '#af-smart-banner',
-      '#af-smart-banner-container',
-      '#AF_SMART_BANNER',
-      '[id^="af-smart"]',
-      '[id^="AF_SMART"]',
-      '[id^="af-banner"]',
-      '[class*="af-smart-banner"]',
-      '[class*="af-banner"]'
-    ];
-
-    for (let i = 0; i < seletores.length; i++) {
-      const el = document.querySelector(seletores[i]);
-      if (el && el.offsetHeight > 0) return el;
+    for (let i = 0; i < SELETORES_BANNER.length; i++) {
+      const el = document.querySelector(SELETORES_BANNER[i]);
+      if (!el) continue;
+      const h = el.offsetHeight;
+      // Sanidade: banner real tem entre 40px e 250px de altura
+      if (h >= 40 && h <= 250) return el;
     }
-
-    // Fallback: qualquer filho direto do body (exceto #__next) com position fixed/absolute no topo
-    const filhos = Array.prototype.slice.call(document.body.children);
-    for (let i = 0; i < filhos.length; i++) {
-      const el = filhos[i];
-      if (el.id === '__next') continue;
-      if (el.offsetHeight === 0) continue;
-      const st = window.getComputedStyle(el);
-      if ((st.position === 'fixed' || st.position === 'absolute') && parseFloat(st.top) <= 0) {
-        return el;
-      }
-    }
-
     return null;
   }
 
@@ -57,16 +45,12 @@
       if (!banner) return;
 
       const alturaBanner = banner.offsetHeight;
-      if (alturaBanner === 0) return;
 
-      // Empurra o wrapper principal (#__next) para abaixo do banner
-      const wrapperPagina = document.getElementById('__next');
-      if (wrapperPagina) {
-        const marginAtual = parseInt(window.getComputedStyle(wrapperPagina).marginTop) || 0;
-        wrapperPagina.style.setProperty('margin-top', (marginAtual + alturaBanner) + 'px', 'important');
-      }
+      // Adiciona padding-top ao body para o conteudo scrollavel nao ficar atras do banner
+      const paddingAtual = parseInt(window.getComputedStyle(document.body).paddingTop) || 0;
+      document.body.style.setProperty('padding-top', (paddingAtual + alturaBanner) + 'px', 'important');
 
-      // Se o header for fixed ou sticky, ajusta o top dele tambem
+      // Empurra o header para baixo do banner se for fixed ou sticky
       const header = document.querySelector('header');
       if (header) {
         const posicao = window.getComputedStyle(header).position;
