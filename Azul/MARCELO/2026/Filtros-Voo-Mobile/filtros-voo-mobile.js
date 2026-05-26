@@ -66,7 +66,8 @@
     sortDropdown: '.css-2b097c-container',
     sortSingleValue: '[class*="singleValue"]',
     sortMenu: '[class*="menu"]',
-    sortMenuOption: '[class*="1ox2bcj-option"]',
+    sortMenuOption:
+      '[class*="1ox2bcj-option"], [role="option"], [class*="-option"], [id*="react-select"][id*="option"]',
     applyFiltersBtn: '#modal-filters .modal-content__footer button',
     tripsRoot: '.AzulPage .availability .trips',
     bookingDateBtn:
@@ -124,11 +125,27 @@
       SELECTORS.tripFilter.replace('.', '') +
       ' {' +
       '  position: fixed !important;' +
-      '  left: -9999px !important;' +
+      '  left: 0 !important;' +
       '  top: 0 !important;' +
       '  width: 1px !important;' +
       '  height: 1px !important;' +
       '  overflow: hidden !important;' +
+      '  opacity: 0 !important;' +
+      '  clip: rect(0, 0, 0, 0) !important;' +
+      '  clip-path: inset(50%) !important;' +
+      '  pointer-events: none !important;' +
+      '}' +
+      '.trips_header .' +
+      SELECTORS.tripFilter.replace('.', '') +
+      ' button {' +
+      '  position: fixed !important;' +
+      '  left: 0 !important;' +
+      '  top: 0 !important;' +
+      '  width: 44px !important;' +
+      '  height: 44px !important;' +
+      '  opacity: 0 !important;' +
+      '  pointer-events: auto !important;' +
+      '  z-index: 1 !important;' +
       '}' +
       '.trips_header.' +
       PILL_WRAP_CLASS +
@@ -149,8 +166,7 @@
       '.' +
       PILL_WRAP_CLASS +
       '__label {' +
-      '  font-size: 12px;' +
-      '  font-weight: 600;' +
+      '  font-size: 14px;' +
       '  color: #fff;' +
       '  margin: 0;' +
       '}' +
@@ -255,16 +271,15 @@
       CLASS_SILENT_MODAL +
       ' .ReactModal__Overlay.hide-on-desktop.ReactModal__Overlay--after-open {' +
       '  position: fixed !important;' +
-      '  left: -9999px !important;' +
-      '  top: 0 !important;' +
-      '  right: auto !important;' +
-      '  bottom: auto !important;' +
-      '  width: 100vw !important;' +
-      '  height: 100vh !important;' +
+      '  inset: 0 !important;' +
+      '  width: 100% !important;' +
+      '  height: 100% !important;' +
       '  opacity: 0 !important;' +
+      '  background: transparent !important;' +
       '  pointer-events: auto !important;' +
       '  visibility: visible !important;' +
       '  transform: none !important;' +
+      '  z-index: 99999 !important;' +
       '}' +
       'body.' +
       CLASS_SILENT_MODAL +
@@ -273,18 +288,16 @@
       CLASS_SILENT_MODAL +
       ' #modal-filters.modal--center {' +
       '  position: fixed !important;' +
-      '  left: -9999px !important;' +
-      '  top: 0 !important;' +
-      '  right: auto !important;' +
-      '  bottom: auto !important;' +
-      '  width: 100vw !important;' +
-      '  max-width: 100vw !important;' +
-      '  min-height: 100vh !important;' +
+      '  inset: 0 !important;' +
+      '  width: 100% !important;' +
+      '  max-width: 100% !important;' +
+      '  min-height: 100% !important;' +
       '  margin: 0 !important;' +
       '  opacity: 0 !important;' +
       '  pointer-events: auto !important;' +
       '  visibility: visible !important;' +
       '  transform: none !important;' +
+      '  z-index: 100000 !important;' +
       '}'
     );
   }
@@ -663,11 +676,15 @@
     const props = enabled
       ? [
           ['position', 'fixed', 'important'],
-          ['left', '-9999px', 'important'],
+          ['inset', '0', 'important'],
+          ['left', '0', 'important'],
           ['top', '0', 'important'],
+          ['width', '100%', 'important'],
+          ['height', '100%', 'important'],
           ['opacity', '0', 'important'],
           ['visibility', 'visible', 'important'],
           ['pointer-events', 'auto', 'important'],
+          ['background', 'transparent', 'important'],
         ]
       : null;
     let i;
@@ -683,11 +700,15 @@
           el.style.setProperty(item[0], item[1], item[2]);
         });
       } else {
+        el.style.removeProperty('inset');
         el.style.removeProperty('left');
         el.style.removeProperty('top');
+        el.style.removeProperty('width');
+        el.style.removeProperty('height');
         el.style.removeProperty('opacity');
         el.style.removeProperty('visibility');
         el.style.removeProperty('pointer-events');
+        el.style.removeProperty('background');
       }
     }
   }
@@ -737,68 +758,252 @@
     }
     const closeBtn = modal.querySelector('.modal-content__header button');
     if (closeBtn) {
-      closeBtn.click();
+      simulatePointerClick(closeBtn);
     }
   }
 
   function clickApplyFiltersButton() {
-    const modal = getModal();
+    var modal = getModal();
     if (!modal) {
       return;
     }
-    const buttons = modal.querySelectorAll(SELECTORS.applyFiltersBtn);
-    let i;
-    let btn;
-    let text;
+    var buttons = modal.querySelectorAll(SELECTORS.applyFiltersBtn);
+    var i;
+    var btn;
+    var text;
+    var textNorm;
+    var acceptLabels = ['aplicar filtros', 'aplicar', 'ver voos', 'confirmar'];
+
     for (i = 0; i < buttons.length; i++) {
       btn = buttons[i];
       text = (btn.textContent || '').trim();
-      if (text.indexOf('Aplicar filtros') > -1) {
-        simulatePointerClick(btn);
-        return;
+      textNorm = normalizeText(text);
+      for (var j = 0; j < acceptLabels.length; j++) {
+        if (textNorm.indexOf(acceptLabels[j]) > -1) {
+          simulatePointerClick(btn);
+          return;
+        }
       }
+    }
+
+    if (buttons.length > 0) {
+      console.log('[AT Filtros Voo Mobile] Botao Aplicar nao encontrado por texto. Textos encontrados:',
+        Array.prototype.map.call(buttons, function (b) { return (b.textContent || '').trim(); }));
+      simulatePointerClick(buttons[buttons.length - 1]);
     }
   }
 
   function findModalSortOption(optionLabel) {
-    const modal = getModal();
-    if (!modal) {
-      return null;
-    }
     const target = normalizeText(optionLabel);
-    const menu = modal.querySelector(SELECTORS.sortMenu);
-    const scope = menu || modal;
-    const options = scope.querySelectorAll(SELECTORS.sortMenuOption);
+    const input = getSortInput();
+    const scopes = [];
+    let sortListbox = null;
     let i;
+    let s;
     let opt;
     let text;
-    for (i = 0; i < options.length; i++) {
-      opt = options[i];
-      text = normalizeText(opt.textContent);
-      if (text === target) {
-        return opt;
+    let controlsId;
+    let menu;
+    let modal;
+    let options;
+
+    if (input) {
+      controlsId = input.getAttribute('aria-controls');
+      if (controlsId) {
+        sortListbox = document.getElementById(controlsId);
+        if (sortListbox) {
+          scopes.push(sortListbox);
+        }
+      }
+    }
+
+    modal = getModal();
+    if (modal) {
+      menu = modal.querySelector(SELECTORS.sortMenu);
+      if (menu) {
+        scopes.push(menu);
+      }
+      scopes.push(modal);
+    }
+
+    scopes.push(document.body);
+
+    function isSortFilterOption(node) {
+      if (!node) {
+        return false;
+      }
+      if (sortListbox && sortListbox.contains(node)) {
+        return true;
+      }
+      if (modal && modal.contains(node)) {
+        return true;
+      }
+      const optionMenu = node.closest('[class*="menu"]');
+      if (optionMenu && optionMenu.id && optionMenu.id.indexOf('react-select') > -1) {
+        return true;
+      }
+      return false;
+    }
+
+    for (s = 0; s < scopes.length; s++) {
+      options = scopes[s].querySelectorAll(SELECTORS.sortMenuOption);
+      for (i = 0; i < options.length; i++) {
+        opt = options[i];
+        if (scopes[s] === document.body && !isSortFilterOption(opt)) {
+          continue;
+        }
+        text = normalizeText(opt.textContent);
+        if (text === target) {
+          return opt;
+        }
       }
     }
     return null;
+  }
+
+  function isTouchDevice() {
+    return (
+      'ontouchstart' in window ||
+      navigator.maxTouchPoints > 0 ||
+      window.matchMedia('(pointer: coarse)').matches
+    );
+  }
+
+  function getClickPoint(el) {
+    const rect = el.getBoundingClientRect();
+    return {
+      x: rect.left + Math.max(rect.width / 2, 1),
+      y: rect.top + Math.max(rect.height / 2, 1),
+    };
+  }
+
+  function createSyntheticTouch(el, point) {
+    if (typeof window.Touch === 'function') {
+      try {
+        return new Touch({
+          identifier: Date.now(),
+          target: el,
+          clientX: point.x,
+          clientY: point.y,
+          pageX: point.x + window.scrollX,
+          pageY: point.y + window.scrollY,
+          screenX: point.x,
+          screenY: point.y,
+          radiusX: 11.5,
+          radiusY: 11.5,
+          force: 1,
+        });
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  function isReactSelectOption(el) {
+    if (!el) {
+      return false;
+    }
+    var id = el.id || '';
+    var cls = el.className || '';
+    return (
+      el.getAttribute('role') === 'option' ||
+      id.indexOf('react-select') > -1 ||
+      cls.indexOf('-option') > -1
+    );
   }
 
   function simulatePointerClick(el) {
     if (!el) {
       return;
     }
+    var point = getClickPoint(el);
+    var base = {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+      clientX: point.x,
+      clientY: point.y,
+    };
+
+    var isTouch = isTouchDevice();
+    var isRsOption = isReactSelectOption(el);
+
+    if (isTouch && isRsOption) {
+      try {
+        el.dispatchEvent(new MouseEvent('mousedown', base));
+        el.dispatchEvent(new MouseEvent('mouseup', base));
+      } catch (e) {}
+      if (typeof el.click === 'function') {
+        el.click();
+      }
+      return;
+    }
+
     try {
-      el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+      el.dispatchEvent(
+        new PointerEvent('pointerdown', Object.assign({}, base, {
+          pointerId: 1,
+          pointerType: isTouch ? 'touch' : 'mouse',
+          isPrimary: true,
+        })),
+      );
     } catch (e) {}
+
+    if (isTouch) {
+      var touchObj = createSyntheticTouch(el, point);
+      var touchList = touchObj ? [touchObj] : [];
+      try {
+        el.dispatchEvent(
+          new TouchEvent('touchstart', {
+            bubbles: true,
+            cancelable: true,
+            touches: touchList,
+            targetTouches: touchList,
+            changedTouches: touchList,
+          }),
+        );
+      } catch (e) {}
+    }
+
     try {
-      el.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
+      el.dispatchEvent(
+        new PointerEvent('pointerup', Object.assign({}, base, {
+          pointerId: 1,
+          pointerType: isTouch ? 'touch' : 'mouse',
+          isPrimary: true,
+        })),
+      );
     } catch (e) {}
-    el.click();
+
+    if (isTouch) {
+      var touchObjEnd = createSyntheticTouch(el, point);
+      var touchListEnd = touchObjEnd ? [touchObjEnd] : [];
+      try {
+        el.dispatchEvent(
+          new TouchEvent('touchend', {
+            bubbles: true,
+            cancelable: true,
+            touches: [],
+            targetTouches: [],
+            changedTouches: touchListEnd,
+          }),
+        );
+      } catch (e) {}
+    }
+
+    try {
+      el.dispatchEvent(new MouseEvent('mousedown', base));
+      el.dispatchEvent(new MouseEvent('mouseup', base));
+    } catch (e) {}
+
+    if (typeof el.click === 'function') {
+      el.click();
+    }
   }
 
   function openSortMenu(input) {
-    const root = input.closest(SELECTORS.sortDropdown);
+    var root = input.closest(SELECTORS.sortDropdown);
     if (root) {
-      const control = root.querySelector(SELECTORS.sortControl);
+      var control = root.querySelector(SELECTORS.sortControl);
       if (control) {
         simulatePointerClick(control);
       }
@@ -812,6 +1017,9 @@
     const tgtIdx = SORT_OPTIONS.indexOf(optionLabel);
     let i;
     let dir;
+
+    input.focus();
+    simulateKey(input, 'ArrowDown');
 
     if (tgtIdx >= 0 && curIdx >= 0) {
       const delta = tgtIdx - curIdx;
@@ -833,6 +1041,34 @@
   }
 
   function selectSortOption(input, optionLabel, onDone) {
+    if (isTouchDevice()) {
+      applySortWithKeyboard(input, optionLabel, function () {
+        if (isSortAppliedInDom(optionLabel)) {
+          if (typeof onDone === 'function') {
+            onDone();
+          }
+          return;
+        }
+        console.log('[AT Filtros Voo Mobile] Keyboard nao aplicou, tentando click na option...');
+        openSortMenu(input);
+        waitUntil(
+          function () {
+            return findModalSortOption(optionLabel);
+          },
+          WAIT_MENU_MS + 500,
+          function (menuOpt) {
+            if (menuOpt) {
+              simulatePointerClick(menuOpt);
+            }
+            if (typeof onDone === 'function') {
+              setTimeout(onDone, AFTER_APPLY_MS);
+            }
+          },
+        );
+      });
+      return;
+    }
+
     openSortMenu(input);
 
     waitUntil(
@@ -900,7 +1136,7 @@
         }
         return getSortInput();
       },
-      WAIT_MODAL_MS,
+      WAIT_MODAL_MS + (isTouchDevice() ? 400 : 0),
       function (input) {
         if (!input) {
           console.log('[AT Filtros Voo Mobile] #sort-filter indisponivel no modal.');
@@ -949,6 +1185,60 @@
     }
     window.__atVooMobilePillClickBound = true;
 
+    var touchStartX = 0;
+    var touchStartY = 0;
+    var SCROLL_THRESHOLD = 10;
+
+    function handlePillActivate(event, pill) {
+      if (!pill || pill.disabled) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      const optionLabel = pill.getAttribute('data-sort-value');
+      if (!optionLabel) {
+        return;
+      }
+      applySort(optionLabel, false, pill);
+    }
+
+    document.addEventListener(
+      'touchstart',
+      function (event) {
+        var pill = event.target.closest('.' + PILL_BTN_CLASS);
+        if (!pill) {
+          return;
+        }
+        var touch = event.touches[0];
+        if (touch) {
+          touchStartX = touch.clientX;
+          touchStartY = touch.clientY;
+        }
+      },
+      true,
+    );
+
+    document.addEventListener(
+      'touchend',
+      function (event) {
+        const pill = event.target.closest('.' + PILL_BTN_CLASS);
+        if (!pill) {
+          return;
+        }
+        var touch = event.changedTouches[0];
+        if (touch) {
+          var dx = Math.abs(touch.clientX - touchStartX);
+          var dy = Math.abs(touch.clientY - touchStartY);
+          if (dx > SCROLL_THRESHOLD || dy > SCROLL_THRESHOLD) {
+            return;
+          }
+        }
+        window.__atVooMobileLastTouch = Date.now();
+        handlePillActivate(event, pill);
+      },
+      true,
+    );
+
     document.addEventListener(
       'click',
       function (event) {
@@ -956,13 +1246,13 @@
         if (!pill) {
           return;
         }
-        event.preventDefault();
-        event.stopPropagation();
-        const optionLabel = pill.getAttribute('data-sort-value');
-        if (!optionLabel) {
+        if (
+          window.__atVooMobileLastTouch &&
+          Date.now() - window.__atVooMobileLastTouch < 500
+        ) {
           return;
         }
-        applySort(optionLabel, false, pill);
+        handlePillActivate(event, pill);
       },
       true,
     );
