@@ -2,9 +2,6 @@
   'use strict';
 
   if (window.__atFiltrosVooMobileSortPills) {
-    if (typeof window.__atFiltrosVooMobileRefresh === 'function') {
-      window.__atFiltrosVooMobileRefresh();
-    }
     return;
   }
   window.__atFiltrosVooMobileSortPills = true;
@@ -30,11 +27,11 @@
   const MOBILE_MAX_WIDTH = 1023;
   const HEADER_WAIT_MAX_FRAMES = 300;
 
-  const POLL_INTERVAL_MS = 35;
-  const WAIT_MODAL_MS = 550;
-  const WAIT_MENU_MS = 320;
-  const AFTER_APPLY_MS = 160;
-  const AFTER_CLOSE_MS = 120;
+  const POLL_INTERVAL_MS = 50;
+  const WAIT_MODAL_MS = 800;
+  const WAIT_MENU_MS = 500;
+  const AFTER_APPLY_MS = 250;
+  const AFTER_CLOSE_MS = 200;
 
   const DEFAULT_SORT_OPTION = 'Menor preço';
 
@@ -126,7 +123,12 @@
       '.trips_header .' +
       SELECTORS.tripFilter.replace('.', '') +
       ' {' +
-      '  display: none !important;' +
+      '  position: fixed !important;' +
+      '  left: -9999px !important;' +
+      '  top: 0 !important;' +
+      '  width: 1px !important;' +
+      '  height: 1px !important;' +
+      '  overflow: hidden !important;' +
       '}' +
       '.trips_header.' +
       PILL_WRAP_CLASS +
@@ -142,7 +144,7 @@
       '  display: flex;' +
       '  flex-direction: column;' +
       '  gap: 6px;' +
-      '  margin-top: 4px;' +
+      '  margin-top: 20px;' +
       '}' +
       '.' +
       PILL_WRAP_CLASS +
@@ -248,45 +250,56 @@
       '}' +
       'body.' +
       CLASS_SILENT_MODAL +
-      ' #modal-filters,' +
+      ' .ReactModal__Overlay--after-open,' +
       'body.' +
       CLASS_SILENT_MODAL +
-      ' .ReactModal__Overlay--after-open {' +
-      '  visibility: hidden !important;' +
+      ' .ReactModal__Overlay.hide-on-desktop.ReactModal__Overlay--after-open {' +
+      '  position: fixed !important;' +
+      '  left: -9999px !important;' +
+      '  top: 0 !important;' +
+      '  right: auto !important;' +
+      '  bottom: auto !important;' +
+      '  width: 100vw !important;' +
+      '  height: 100vh !important;' +
       '  opacity: 0 !important;' +
+      '  pointer-events: auto !important;' +
+      '  visibility: visible !important;' +
+      '  transform: none !important;' +
       '}' +
       'body.' +
       CLASS_SILENT_MODAL +
-      ' #modal-filters {' +
+      ' #modal-filters,' +
+      'body.' +
+      CLASS_SILENT_MODAL +
+      ' #modal-filters.modal--center {' +
       '  position: fixed !important;' +
-      '  left: 0 !important;' +
+      '  left: -9999px !important;' +
       '  top: 0 !important;' +
+      '  right: auto !important;' +
+      '  bottom: auto !important;' +
+      '  width: 100vw !important;' +
+      '  max-width: 100vw !important;' +
+      '  min-height: 100vh !important;' +
+      '  margin: 0 !important;' +
+      '  opacity: 0 !important;' +
       '  pointer-events: auto !important;' +
+      '  visibility: visible !important;' +
+      '  transform: none !important;' +
       '}'
     );
   }
 
-  function ensureStylesInjected() {
-    let style = document.getElementById(STYLE_ID);
-    const css = getSortCss();
-
-    if (
-      style &&
-      style.isConnected &&
-      style.parentNode === document.head &&
-      style.textContent === css
-    ) {
+  function injectStyles() {
+    const existing = document.getElementById(STYLE_ID);
+    if (existing && existing.isConnected && existing.sheet) {
       return;
     }
-
-    if (style) {
-      style.remove();
+    if (existing) {
+      existing.remove();
     }
-
-    style = document.createElement('style');
+    const style = document.createElement('style');
     style.id = STYLE_ID;
-    style.setAttribute('data-at-voo-sort-style', '1');
-    style.textContent = css;
+    style.textContent = getSortCss();
     document.head.appendChild(style);
   }
 
@@ -413,7 +426,7 @@
       return;
     }
 
-    ensureStylesInjected();
+    injectStyles();
 
     const header = findTripsHeader();
     if (!header) {
@@ -565,9 +578,8 @@
 
   function hideNativeFilterButton() {
     const tripFilter = document.querySelector(SELECTORS.tripFilter);
-    if (tripFilter) {
+    if (tripFilter && tripFilter.getAttribute('data-at-voo-filter-hidden') !== '1') {
       tripFilter.setAttribute('data-at-voo-filter-hidden', '1');
-      tripFilter.style.setProperty('display', 'none', 'important');
     }
   }
 
@@ -645,11 +657,51 @@
     );
   }
 
+  function applySilentModalStyles(enabled) {
+    const overlay = document.querySelector('.ReactModal__Overlay--after-open');
+    const modal = getModal();
+    const props = enabled
+      ? [
+          ['position', 'fixed', 'important'],
+          ['left', '-9999px', 'important'],
+          ['top', '0', 'important'],
+          ['opacity', '0', 'important'],
+          ['visibility', 'visible', 'important'],
+          ['pointer-events', 'auto', 'important'],
+        ]
+      : null;
+    let i;
+    let el;
+
+    for (i = 0; i < 2; i++) {
+      el = i === 0 ? overlay : modal;
+      if (!el) {
+        continue;
+      }
+      if (props) {
+        props.forEach(function (item) {
+          el.style.setProperty(item[0], item[1], item[2]);
+        });
+      } else {
+        el.style.removeProperty('left');
+        el.style.removeProperty('top');
+        el.style.removeProperty('opacity');
+        el.style.removeProperty('visibility');
+        el.style.removeProperty('pointer-events');
+      }
+    }
+  }
+
   function setSilentModal(enabled) {
     if (enabled) {
       document.body.classList.add(CLASS_SILENT_MODAL);
+      applySilentModalStyles(true);
+      requestAnimationFrame(function () {
+        applySilentModalStyles(true);
+      });
     } else {
       document.body.classList.remove(CLASS_SILENT_MODAL);
+      applySilentModalStyles(false);
     }
   }
 
@@ -660,12 +712,19 @@
 
   function openFiltersModal() {
     if (isModalOpen()) {
+      applySilentModalStyles(true);
       return;
     }
     const btn = document.querySelector(SELECTORS.tripFilterBtn);
     if (btn) {
-      btn.click();
+      simulatePointerClick(btn);
     }
+    setTimeout(function () {
+      applySilentModalStyles(true);
+    }, 50);
+    setTimeout(function () {
+      applySilentModalStyles(true);
+    }, 200);
   }
 
   function closeFiltersModal() {
@@ -695,7 +754,7 @@
       btn = buttons[i];
       text = (btn.textContent || '').trim();
       if (text.indexOf('Aplicar filtros') > -1) {
-        btn.click();
+        simulatePointerClick(btn);
         return;
       }
     }
@@ -723,12 +782,25 @@
     return null;
   }
 
+  function simulatePointerClick(el) {
+    if (!el) {
+      return;
+    }
+    try {
+      el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+    } catch (e) {}
+    try {
+      el.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
+    } catch (e) {}
+    el.click();
+  }
+
   function openSortMenu(input) {
     const root = input.closest(SELECTORS.sortDropdown);
     if (root) {
       const control = root.querySelector(SELECTORS.sortControl);
       if (control) {
-        control.click();
+        simulatePointerClick(control);
       }
     }
     input.focus();
@@ -770,9 +842,9 @@
       WAIT_MENU_MS,
       function (menuOpt) {
         if (menuOpt) {
-          menuOpt.click();
+          simulatePointerClick(menuOpt);
           if (typeof onDone === 'function') {
-            onDone();
+            setTimeout(onDone, AFTER_APPLY_MS);
           }
           return;
         }
@@ -836,22 +908,13 @@
           return;
         }
 
+        applySilentModalStyles(true);
+
         selectSortOption(input, optionLabel, function () {
           finishApplySort(optionLabel, skipAnalytics);
         });
       },
     );
-  }
-
-  function moveActivePillToFirst(bar, activeBtn) {
-    if (!bar || !activeBtn || bar.firstChild === activeBtn) {
-      if (bar) {
-        bar.scrollLeft = 0;
-      }
-      return;
-    }
-    bar.insertBefore(activeBtn, bar.firstChild);
-    bar.scrollLeft = 0;
   }
 
   function syncActivePill(activeLabel) {
@@ -867,22 +930,16 @@
     const activeNorm = normalizeText(activeLabel || getDisplaySortLabel());
     let i;
     let btn;
-    let activeBtn = null;
 
     for (i = 0; i < pills.length; i++) {
       btn = pills[i];
       if (normalizeText(btn.getAttribute('data-sort-value')) === activeNorm) {
         btn.classList.add(PILL_ACTIVE_CLASS);
         btn.setAttribute('aria-pressed', 'true');
-        activeBtn = btn;
       } else {
         btn.classList.remove(PILL_ACTIVE_CLASS);
         btn.setAttribute('aria-pressed', 'false');
       }
-    }
-
-    if (activeBtn) {
-      moveActivePillToFirst(bar, activeBtn);
     }
   }
 
@@ -928,7 +985,6 @@
       return;
     }
 
-    ensureStylesInjected();
     isMounting = true;
 
     if (wrap) {
@@ -1026,7 +1082,7 @@
     }
     isProcessing = true;
     try {
-      ensureStylesInjected();
+      injectStyles();
       hideNativeFilterButton();
       bindGlobalPillClick();
       bindBookingDateListeners();
@@ -1082,29 +1138,6 @@
     if (!isMobileViewport()) {
       return;
     }
-    ensureStylesInjected();
     scheduleRun(false);
   });
-
-  window.__atFiltrosVooMobileRefresh = function () {
-    if (!isTargetPage() || !isMobileViewport()) {
-      return;
-    }
-    ensureStylesInjected();
-    ensureSortObserverConnected();
-    ensurePillsPresent();
-  };
-
-  const headStyleGuard = new MutationObserver(function () {
-    if (!isTargetPage() || !isMobileViewport()) {
-      return;
-    }
-    if (!document.getElementById(STYLE_ID)) {
-      ensureStylesInjected();
-    }
-  });
-
-  if (document.head) {
-    headStyleGuard.observe(document.head, { childList: true });
-  }
 })();
