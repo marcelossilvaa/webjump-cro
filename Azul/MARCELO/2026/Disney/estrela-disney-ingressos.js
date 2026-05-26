@@ -1,7 +1,3 @@
-// =============================================================
-// TESTE CONSOLE - Banner Disney Hoteis Resort
-// Colar no DevTools (F12) do site voeazul.com.br
-// =============================================================
 (function () {
   var EXPERIMENT_NAME = 'AT_Disney_hoteis';
   var BANNER_LINK =
@@ -10,6 +6,18 @@
   var OVERLAY_ID = 'at-disney-hoteis-overlay';
   var BANNER_ID = 'at-disney-hoteis-banner';
   var EVAR84 = 'AT_Disney_campaign';
+  var UTM_SOURCE_REQUIRED =
+    'pmweb_azv_e-mail_banner_lf_azv_202603-azv-b2c-emm-168h-viagem-hospedagemdisney-d20_hotel';
+  var BANNER_ASSET_URLS = [
+    'https://i.imgur.com/7dXE65l.png',
+    'https://i.imgur.com/ydjrslV.png',
+    'https://i.imgur.com/12lQ5lp.png',
+    'https://i.imgur.com/nLG5yvC.png',
+    'https://i.imgur.com/PhHNRqr.png',
+    'https://i.imgur.com/ZPcL8R3.png',
+    'https://i.imgur.com/jSNMMjB.png',
+    'https://i.imgur.com/noLA829.png',
+  ];
 
   // Limpa execucoes anteriores
   var oldStyle = document.getElementById(STYLE_ID);
@@ -18,6 +26,39 @@
   if (oldOverlay) oldOverlay.parentNode.removeChild(oldOverlay);
   var oldBanner = document.getElementById(BANNER_ID);
   if (oldBanner) oldBanner.parentNode.removeChild(oldBanner);
+
+  function hasRequiredUtm() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var source = (params.get('utm_source') || '').toLowerCase();
+      return source === UTM_SOURCE_REQUIRED.toLowerCase();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function preloadBannerAssets(callback) {
+    var urls = BANNER_ASSET_URLS;
+    var loaded = 0;
+    var total = urls.length;
+
+    if (!total) {
+      if (typeof callback === 'function') callback();
+      return;
+    }
+
+    function onAssetDone() {
+      loaded++;
+      if (loaded >= total && typeof callback === 'function') callback();
+    }
+
+    urls.forEach(function (url) {
+      var img = new Image();
+      img.onload = onAssetDone;
+      img.onerror = onAssetDone;
+      img.src = url;
+    });
+  }
 
   function analyticsEvent(eventLabel, eventType) {
     if (!eventLabel) return;
@@ -248,11 +289,11 @@
       '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;' +
       '  font-weight:400; font-size:12px; line-height:120%; color:#FFFFFF; z-index:5;' +
       '}' +
-      // ===== FOTO PERSONAGEM =====
+      // ===== FOTO PERSONAGEM (arredondado) =====
       '.at-dh-photo-wrapper {' +
       '  position:absolute; width:360px; height:360px;' +
       '  right:12px; top:18px; left:auto; z-index:3;' +
-      '  border-radius:40% 40% 0; overflow:hidden; background:#0150B5;' +
+      '  border-radius:50%; overflow:hidden; background:#0150B5;' +
       '}' +
       '.at-dh-photo-img {' +
       '  position:absolute; width:100%; height:100%;' +
@@ -262,7 +303,7 @@
       '.at-dh-photo-gradient {' +
       '  position:absolute; bottom:0; left:0; width:100%; height:40%;' +
       '  background:linear-gradient(180deg, transparent 20%, rgba(0,0,0,0.35) 100%);' +
-      '  border-radius:0; z-index:4; pointer-events:none;' +
+      '  border-radius:0 0 175px 175px; z-index:4; pointer-events:none;' +
       '}' +
       // ===== COPYRIGHT =====
       '.at-dh-copyright {' +
@@ -559,7 +600,7 @@
     var mobileLogoWrap = document.createElement('div');
     mobileLogoWrap.className = 'at-dh-mobile-logo';
     var mobileLogoImg = document.createElement('img');
-    mobileLogoImg.src = 'https://imgur.com/ydjrslV.png';
+    mobileLogoImg.src = 'https://i.imgur.com/ydjrslV.png';
     mobileLogoImg.alt = 'Walt Disney World';
     mobileLogoWrap.appendChild(mobileLogoImg);
     container.appendChild(mobileLogoWrap);
@@ -646,7 +687,7 @@
     var ctaLogoWrap = document.createElement('div');
     ctaLogoWrap.className = 'at-dh-cta-logo';
     var logoDisney = document.createElement('img');
-    logoDisney.src = 'https://imgur.com/ydjrslV.png';
+    logoDisney.src = 'https://i.imgur.com/ydjrslV.png';
     logoDisney.alt = 'Walt Disney World';
     ctaLogoWrap.appendChild(logoDisney);
     container.appendChild(ctaLogoWrap);
@@ -728,10 +769,20 @@
     }, 600);
   }
 
-  // Executa direto
-  console.log('[Disney Hoteis] Iniciando animacao Disney (modo teste console).');
-  injectStyles();
-  createShootingStarAnimation(function () {
-    createBanner();
-  });
+  function init() {
+    if (!hasRequiredUtm()) {
+      console.log('[Disney Hoteis] UTM invalida ou ausente. Modal nao sera exibido.');
+      return;
+    }
+
+    console.log('[Disney Hoteis] UTM valida. Pre-carregando assets e iniciando animacao.');
+    injectStyles();
+    preloadBannerAssets(function () {
+      createShootingStarAnimation(function () {
+        createBanner();
+      });
+    });
+  }
+
+  init();
 })();
