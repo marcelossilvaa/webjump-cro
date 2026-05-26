@@ -264,6 +264,7 @@
       '  position:absolute; width:206.95px; height:49.13px;' +
       '  left:56.95px; top:290.42px;' +
       '  background:#5EDCFF; border-radius:45.2779px; border:none;' +
+      '  text-decoration:none; box-sizing:border-box;' +
       '  cursor:pointer; z-index:5;' +
       '  display:flex; align-items:center; justify-content:center;' +
       '  padding:0 30.2856px; gap:5.66px;' +
@@ -678,8 +679,11 @@
     });
 
     // --- CTA ---
-    var cta = document.createElement('button');
+    var cta = document.createElement('a');
     cta.className = 'at-dh-cta';
+    cta.href = BANNER_LINK;
+    cta.target = '_blank';
+    cta.rel = 'noopener noreferrer';
     cta.textContent = 'Comprar Ingressos';
     container.appendChild(cta);
 
@@ -732,10 +736,8 @@
 
     // Eventos
     cta.addEventListener('click', function (e) {
-      e.preventDefault();
       e.stopPropagation();
       analyticsEvent('banner_disney_hoteis_cta', 'click');
-      window.location.href = BANNER_LINK;
     });
 
     closeBtn.addEventListener('click', function (e) {

@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  var INIT_ATTR = 'data-af-wj-smartbanner-fix-init';
 
   function adjustHeaderPosition() {
     var smartBanner = document.getElementById('smart-banner');
@@ -15,10 +16,22 @@
     }
 
     if (smartBanner && header) {
+      // Trava dimensões do banner para evitar variação
+      smartBanner.style.setProperty('height', '84px', 'important');
+      smartBanner.style.setProperty('min-height', '84px', 'important');
+      smartBanner.style.setProperty('max-height', '84px', 'important');
+      smartBanner.style.setProperty('z-index', '10', 'important');
+
       // 1. Aplica o novo padding ajustado
       var bannerInner = smartBanner.firstElementChild;
       if (bannerInner) {
         bannerInner.style.setProperty('padding', '1em 0.8em 1em 0em', 'important');
+      }
+
+      // 1.1. Padroniza font-size dos headings do banner
+      var bannerHeadings = smartBanner.querySelectorAll('span[data-af-custom-fonts="af-creatives-text"][role="heading"][aria-level="2"]');
+      for (var i = 0; i < bannerHeadings.length; i++) {
+        bannerHeadings[i].style.setProperty('font-size', '1em', 'important');
       }
 
       // 2. Garante que o "espaçador" tenha a MESMA altura do banner
@@ -66,22 +79,34 @@
       adjustHeaderPosition();
     }, 100);
 
-    var closeBtn = smartBanner.querySelector('[data-af-close-button="true"]');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', resetHeaderPosition);
+    if (!smartBanner.getAttribute(INIT_ATTR)) {
+      smartBanner.setAttribute(INIT_ATTR, '1');
+      var closeBtn = smartBanner.querySelector('[data-af-close-button="true"]');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', resetHeaderPosition);
+      }
     }
 
     return true;
   }
 
-  var observer = new MutationObserver(function (mutations, obs) {
-    if (document.getElementById('smart-banner')) {
+  // Observa mudanças no DOM (ex.: aceite de cookies remontando componentes)
+  // e reaplica o ajuste de forma segura (debounce).
+  var scheduled = false;
+  function scheduleInit() {
+    if (scheduled) return;
+    scheduled = true;
+    setTimeout(function () {
+      scheduled = false;
       initSmartBannerFix();
-      obs.disconnect();
-    }
-  });
-
-  if (!initSmartBannerFix()) {
-    observer.observe(document.body, { childList: true, subtree: true });
+    }, 50);
   }
+
+  // Tenta inicializar já; se o banner ainda não existe, o observer cuidará.
+  initSmartBannerFix();
+
+  var observer = new MutationObserver(function () {
+    scheduleInit();
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
 })();
