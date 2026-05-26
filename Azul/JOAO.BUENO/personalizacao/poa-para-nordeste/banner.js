@@ -36,7 +36,7 @@
         title: 'Troque o frio de Porto Alegre pelo calor do Nordeste',
         description: 'Encante-se com as belezas do Nordeste Brasileiro e dos + 130 destinos da Azul.',
         cta: 'Ver voos para o Nordeste',
-        ctaUrl: 'https://passagens.voeazul.com.br/pt/voos-de-porto-alegre',
+        ctaUrl: 'https://passagens.voeazul.com.br/pt/voos-de-porto-alegre-para-nordeste',
         imgDesktop: 'https://i.imgur.com/D0jEf3L.png',
         imgMobile: 'https://i.imgur.com/SXjkXwm.png',
         imgPreview: 'https://i.imgur.com/VaDxJp8.png',
