@@ -80,9 +80,7 @@
       return;
     }
     const labelEvent = 'AT_filtros_hoteis_ordenacao_clique ' + optionLabel;
-    const s =
-      window.s ||
-      (typeof window.s_gi === 'function' && window.s_gi('azul-novo-prod'));
+    const s = window.s || (typeof window.s_gi === 'function' && window.s_gi('azul-novo-prod'));
     if (!s || typeof s.tl !== 'function') {
       return;
     }
@@ -341,7 +339,10 @@
   function isDropdownOpen(wrapper) {
     const trigger = getNativeTrigger(wrapper);
     const content = getDropdownContent(wrapper);
-    if (trigger && (trigger.hasAttribute('open') || trigger.getAttribute('aria-expanded') === 'true')) {
+    if (
+      trigger &&
+      (trigger.hasAttribute('open') || trigger.getAttribute('aria-expanded') === 'true')
+    ) {
       return true;
     }
     if (content && content.hasAttribute('open')) {
@@ -714,10 +715,7 @@
     syncActivePill(wrapper, getCurrentSortLabel(wrapper));
 
     console.log(
-      '[AT Filtros Hoteis] Pills injetadas (' +
-        sortOptions.length +
-        '): ' +
-        sortOptions.join(', '),
+      '[AT Filtros Hoteis] Pills injetadas (' + sortOptions.length + '): ' + sortOptions.join(', '),
     );
   }
 
