@@ -306,9 +306,6 @@
       '[' + DATA_APLICADO + '] [class*="InfoTagWrapper-sc"] {',
       '  width: fit-content !important;',
       '  flex: 0 0 auto !important;',
-      '  border-radius: 4px;',
-      '  display: inline-flex !important;',
-      '  align-items: center !important;',
       '}',
       '[' + DATA_APLICADO + '] [class*="RightSideWrapper-sc"] {',
       '  flex: 0 0 auto !important;',
@@ -455,7 +452,9 @@
       '}',
 
       // CTA: Botao Ver detalhes
-      '[' + DATA_APLICADO + '] [class*="PriceWrapper-sc"] button[data-testid="search-box-hotel-date-picker-primary-button"] {',
+      '[' +
+        DATA_APLICADO +
+        '] [class*="PriceWrapper-sc"] button[data-testid="search-box-hotel-date-picker-primary-button"] {',
       '  width: 90% !important;',
       '  height: 40px;',
       '  margin: 10px auto 0 !important;',
@@ -478,18 +477,16 @@
       '  position: relative;',
       '}',
 
-
       // InfoWindow estilizada
       '.at-iw-container {',
-      '  padding: 0 0px 8px 1px;',
+      '  padding: 0 10px 15px 10px;',
       '  font-family: "Helvetica Neue", Arial, sans-serif;',
       '  min-width: 180px;',
-      '  max-width: 230px;',
+      '  max-width: 260px;',
       '}',
       '.at-iw-container p {',
       '  margin: 0 !important;',
       '  padding: 0 !important;',
-      '  max-width: 155px;',
       '}',
       '.at-iw-nome {',
       '  font-size: 14px !important;',
@@ -516,25 +513,6 @@
       '  color: rgb(1, 78, 132) !important;',
       '  margin: 0 !important;',
       '}',
-
-      // Remove o espaço vazio do gm-style-iw-ch mas mantém o botão X absolutamente posicionado
-      '.gm-style-iw-ch {',
-      '  display: none !important;',
-      '}',
-      '.gm-style-iw-chr {',
-      '  position: absolute !important;',
-      '  top: 0 !important;',
-      '  right: 0 !important;',
-      '  height: 0 !important;',
-      '  overflow: visible !important;',
-      '}',
-      '.gm-style-iw-chr button.gm-ui-hover-effect {',
-      '  position: relative !important;',
-      '  z-index: 1 !important;',
-      '}',
-      '.gm-style-iw.gm-style-iw-c {',
-      '  padding-top: 15px !important;',
-      '}'
     ].join('\n');
     document.head.appendChild(style);
   }
@@ -655,7 +633,8 @@
 
     var overlay = document.createElement('div');
     overlay.id = 'at-loading-overlay';
-    overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;' +
+    overlay.style.cssText =
+      'position:absolute;top:0;left:0;width:100%;height:100%;' +
       'background:#fff;z-index:9999;display:flex;align-items:center;justify-content:center;';
 
     if (loadingOriginal) {
@@ -705,7 +684,9 @@
 
     // Esconder o conteudo real por baixo para evitar flickering
     const searchWrapper = document.querySelector('[class*="SearchListWrapper-sc"]');
-    var conteudoFilhos = searchWrapper ? searchWrapper.querySelectorAll(':scope > *:not(#at-loading-overlay)') : [];
+    var conteudoFilhos = searchWrapper
+      ? searchWrapper.querySelectorAll(':scope > *:not(#at-loading-overlay)')
+      : [];
     for (var i = 0; i < conteudoFilhos.length; i++) {
       conteudoFilhos[i].style.setProperty('visibility', 'hidden', 'important');
     }
@@ -738,7 +719,9 @@
               clearInterval(pollingLista);
 
               // Restaurar visibilidade dos filhos
-              var filhos = searchWrapper ? searchWrapper.querySelectorAll(':scope > *:not(#at-loading-overlay)') : [];
+              var filhos = searchWrapper
+                ? searchWrapper.querySelectorAll(':scope > *:not(#at-loading-overlay)')
+                : [];
               for (var f = 0; f < filhos.length; f++) {
                 filhos[f].style.removeProperty('visibility');
               }
@@ -761,7 +744,9 @@
         clearInterval(pollingAPI);
 
         // Restaurar visibilidade dos filhos
-        var filhosFallback = searchWrapper ? searchWrapper.querySelectorAll(':scope > *:not(#at-loading-overlay)') : [];
+        var filhosFallback = searchWrapper
+          ? searchWrapper.querySelectorAll(':scope > *:not(#at-loading-overlay)')
+          : [];
         for (var fb = 0; fb < filhosFallback.length; fb++) {
           filhosFallback[fb].style.removeProperty('visibility');
         }
@@ -802,18 +787,49 @@
       fillColor = '#002a57';
       strokeAttr = ' stroke="white" stroke-width="3" stroke-linejoin="round"';
       textY = 20;
-      d = 'M ' + (2 + raio) + ' 2' +
-        ' H ' + (svgW - 2 - raio) +
-        ' Q ' + (svgW - 2) + ' 2 ' + (svgW - 2) + ' ' + (2 + raio) +
-        ' V ' + (2 + alturaRect - raio) +
-        ' Q ' + (svgW - 2) + ' ' + (2 + alturaRect) + ' ' + (svgW - 2 - raio) + ' ' + (2 + alturaRect) +
-        ' H ' + (cx + 5) +
-        ' L ' + cx + ' ' + tipY +
-        ' L ' + (cx - 5) + ' ' + (2 + alturaRect) +
-        ' H ' + (2 + raio) +
-        ' Q 2 ' + (2 + alturaRect) + ' 2 ' + (2 + alturaRect - raio) +
-        ' V ' + (2 + raio) +
-        ' Q 2 2 ' + (2 + raio) + ' 2 Z';
+      d =
+        'M ' +
+        (2 + raio) +
+        ' 2' +
+        ' H ' +
+        (svgW - 2 - raio) +
+        ' Q ' +
+        (svgW - 2) +
+        ' 2 ' +
+        (svgW - 2) +
+        ' ' +
+        (2 + raio) +
+        ' V ' +
+        (2 + alturaRect - raio) +
+        ' Q ' +
+        (svgW - 2) +
+        ' ' +
+        (2 + alturaRect) +
+        ' ' +
+        (svgW - 2 - raio) +
+        ' ' +
+        (2 + alturaRect) +
+        ' H ' +
+        (cx + 5) +
+        ' L ' +
+        cx +
+        ' ' +
+        tipY +
+        ' L ' +
+        (cx - 5) +
+        ' ' +
+        (2 + alturaRect) +
+        ' H ' +
+        (2 + raio) +
+        ' Q 2 ' +
+        (2 + alturaRect) +
+        ' 2 ' +
+        (2 + alturaRect - raio) +
+        ' V ' +
+        (2 + raio) +
+        ' Q 2 2 ' +
+        (2 + raio) +
+        ' 2 Z';
     } else {
       svgW = largura;
       svgH = alturaRect + alturaCauda;
@@ -822,29 +838,77 @@
       fillColor = '#014E84';
       strokeAttr = '';
       textY = 18;
-      d = 'M ' + raio + ' 0' +
-        ' H ' + (svgW - raio) +
-        ' Q ' + svgW + ' 0 ' + svgW + ' ' + raio +
-        ' V ' + (alturaRect - raio) +
-        ' Q ' + svgW + ' ' + alturaRect + ' ' + (svgW - raio) + ' ' + alturaRect +
-        ' H ' + (cx + 5) +
-        ' L ' + cx + ' ' + tipY +
-        ' L ' + (cx - 5) + ' ' + alturaRect +
-        ' H ' + raio +
-        ' Q 0 ' + alturaRect + ' 0 ' + (alturaRect - raio) +
-        ' V ' + raio +
-        ' Q 0 0 ' + raio + ' 0 Z';
+      d =
+        'M ' +
+        raio +
+        ' 0' +
+        ' H ' +
+        (svgW - raio) +
+        ' Q ' +
+        svgW +
+        ' 0 ' +
+        svgW +
+        ' ' +
+        raio +
+        ' V ' +
+        (alturaRect - raio) +
+        ' Q ' +
+        svgW +
+        ' ' +
+        alturaRect +
+        ' ' +
+        (svgW - raio) +
+        ' ' +
+        alturaRect +
+        ' H ' +
+        (cx + 5) +
+        ' L ' +
+        cx +
+        ' ' +
+        tipY +
+        ' L ' +
+        (cx - 5) +
+        ' ' +
+        alturaRect +
+        ' H ' +
+        raio +
+        ' Q 0 ' +
+        alturaRect +
+        ' 0 ' +
+        (alturaRect - raio) +
+        ' V ' +
+        raio +
+        ' Q 0 0 ' +
+        raio +
+        ' 0 Z';
     }
 
-    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + svgW + '" height="' + svgH + '">' +
-      '<path d="' + d + '" fill="' + fillColor + '"' + strokeAttr + '/>' +
-      '<text x="' + cx + '" y="' + textY + '" font-family="Helvetica Neue,Arial,sans-serif" font-size="11" fill="#fff" text-anchor="middle" font-weight="bold">' + texto + '</text>' +
+    var svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="' +
+      svgW +
+      '" height="' +
+      svgH +
+      '">' +
+      '<path d="' +
+      d +
+      '" fill="' +
+      fillColor +
+      '"' +
+      strokeAttr +
+      '/>' +
+      '<text x="' +
+      cx +
+      '" y="' +
+      textY +
+      '" font-family="Helvetica Neue,Arial,sans-serif" font-size="11" fill="#fff" text-anchor="middle" font-weight="bold">' +
+      texto +
+      '</text>' +
       '</svg>';
 
     return {
       url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
       scaledSize: new google.maps.Size(svgW, svgH),
-      anchor: new google.maps.Point(cx, tipY)
+      anchor: new google.maps.Point(cx, tipY),
     };
   }
 
@@ -880,11 +944,12 @@
       const estrelas = card.querySelectorAll('[data-testid="StarIcon"]').length;
 
       // Imagem (tentar varias estrategias)
-      const imgEl = card.querySelector('.slick-slide.slick-active img') ||
+      const imgEl =
+        card.querySelector('.slick-slide.slick-active img') ||
         card.querySelector('.slick-slide img') ||
         card.querySelector('[class*="WrapperSlides"] img') ||
         card.querySelector('img[alt]:not([width="1"])');
-      const imagem = imgEl ? (imgEl.getAttribute('src') || imgEl.getAttribute('data-src') || '') : '';
+      const imagem = imgEl ? imgEl.getAttribute('src') || imgEl.getAttribute('data-src') || '' : '';
 
       // Localizacao
       const locEl = card.querySelector('[class*="NeighboorhoodDistance-sc"]');
@@ -920,7 +985,9 @@
 
       // Comodidades
       const comodidades = [];
-      const itensCom = card.querySelectorAll('[class*="Amenitie-sc"] [class*="TextWrapper-sc"] span');
+      const itensCom = card.querySelectorAll(
+        '[class*="Amenitie-sc"] [class*="TextWrapper-sc"] span',
+      );
       for (let j = 0; j < itensCom.length; j++) {
         const t = itensCom[j].textContent.trim();
         if (t && t.indexOf('+ ') !== 0) comodidades.push(t);
@@ -928,15 +995,22 @@
 
       // Tags
       const tags = [];
-      const tagEls = card.querySelectorAll('[class*="InfoTagWrapper-sc"] [class*="RightSideWrapper-sc"] span');
+      const tagEls = card.querySelectorAll(
+        '[class*="InfoTagWrapper-sc"] [class*="RightSideWrapper-sc"] span',
+      );
       for (let k = 0; k < tagEls.length; k++) {
         const tagTexto = tagEls[k].textContent.trim();
         if (tagTexto) tags.push(tagTexto);
       }
 
       // Botao de detalhes (dentro do PriceWrapper ou FooterCard, nao o toggle geral)
-      const btnDetalhes = card.querySelector('[class*="PriceWrapper"] button[data-testid="search-box-hotel-date-picker-primary-button"]') ||
-        card.querySelector('[class*="FooterCard"] button[data-testid="search-box-hotel-date-picker-primary-button"]') ||
+      const btnDetalhes =
+        card.querySelector(
+          '[class*="PriceWrapper"] button[data-testid="search-box-hotel-date-picker-primary-button"]',
+        ) ||
+        card.querySelector(
+          '[class*="FooterCard"] button[data-testid="search-box-hotel-date-picker-primary-button"]',
+        ) ||
         card.querySelector('[class*="StyledButton-sc"] ') ||
         card.querySelector('button[data-testid="search-box-hotel-date-picker-primary-button"]');
 
@@ -953,7 +1027,7 @@
         tags: tags,
         elemento: card,
         btnDetalhes: btnDetalhes,
-        coordenada: null
+        coordenada: null,
       });
     }
 
@@ -985,18 +1059,29 @@
       const fontes = [pp.hotels, pp.hotelList, pp.searchResults, pp.data];
       for (let f = 0; f < fontes.length; f++) {
         if (!fontes[f]) continue;
-        const lista = Array.isArray(fontes[f]) ? fontes[f] : (fontes[f].items || fontes[f].hotels || []);
+        const lista = Array.isArray(fontes[f])
+          ? fontes[f]
+          : fontes[f].items || fontes[f].hotels || [];
         if (!Array.isArray(lista) || lista.length === 0) continue;
 
         // Verificar se tem lat/lng
         const primeiro = lista[0];
-        if (primeiro && (primeiro.latitude || primeiro.lat || (primeiro.location && primeiro.location.lat))) {
+        if (
+          primeiro &&
+          (primeiro.latitude || primeiro.lat || (primeiro.location && primeiro.location.lat))
+        ) {
           console.log(LOG_PREFIX + ' Coordenadas encontradas em __NEXT_DATA__.');
           for (let i = 0; i < dados.length; i++) {
             if (i < lista.length) {
               const h = lista[i];
-              const lat = h.latitude || h.lat || (h.location && h.location.lat) || (h.geo && h.geo.lat);
-              const lng = h.longitude || h.lng || h.lon || (h.location && h.location.lng) || (h.geo && h.geo.lng);
+              const lat =
+                h.latitude || h.lat || (h.location && h.location.lat) || (h.geo && h.geo.lat);
+              const lng =
+                h.longitude ||
+                h.lng ||
+                h.lon ||
+                (h.location && h.location.lng) ||
+                (h.geo && h.geo.lng);
               if (lat && lng) {
                 dados[i].coordenada = { lat: parseFloat(lat), lng: parseFloat(lng) };
               }
@@ -1013,7 +1098,9 @@
 
   function tentarExtrairCoordenadasDoReactFiber(dados) {
     try {
-      const listWrapper = document.querySelector('[data-testid="hotel-list-wrapper-contains-cards"]');
+      const listWrapper = document.querySelector(
+        '[data-testid="hotel-list-wrapper-contains-cards"]',
+      );
       if (!listWrapper) return false;
 
       const fiberKey = Object.keys(listWrapper).find(function (k) {
@@ -1082,7 +1169,7 @@
         if (status === 'OK' && results[0]) {
           dados[indice].coordenada = {
             lat: results[0].geometry.location.lat(),
-            lng: results[0].geometry.location.lng()
+            lng: results[0].geometry.location.lng(),
           };
         }
         // Pequeno atraso para evitar rate limiting
@@ -1143,10 +1230,10 @@
             for (let idx = 0; idx < dados.length; idx++) {
               if (!dados[idx].coordenada) {
                 const ang = (idx * 2 * Math.PI) / dados.length;
-                const r = 0.008 + (Math.random() * 0.004);
+                const r = 0.008 + Math.random() * 0.004;
                 dados[idx].coordenada = {
                   lat: centroGeo.lat() + r * Math.sin(ang),
-                  lng: centroGeo.lng() + r * Math.cos(ang)
+                  lng: centroGeo.lng() + r * Math.cos(ang),
                 };
               }
             }
@@ -1167,10 +1254,10 @@
     for (let i = 0; i < dados.length; i++) {
       if (!dados[i].coordenada) {
         const angulo = (i * 2 * Math.PI) / dados.length;
-        const raio = 0.008 + (Math.random() * 0.004);
+        const raio = 0.008 + Math.random() * 0.004;
         dados[i].coordenada = {
           lat: centroLat + raio * Math.sin(angulo),
-          lng: centroLng + raio * Math.cos(angulo)
+          lng: centroLng + raio * Math.cos(angulo),
         };
       }
     }
@@ -1181,13 +1268,17 @@
   function resolverCoordenadas(dados, callback) {
     // Estrategia 1: __NEXT_DATA__
     if (tentarExtrairCoordenadasDoNextData(dados)) {
-      distribuirCoordenadasFallback(dados, '', function () { callback(); });
+      distribuirCoordenadasFallback(dados, '', function () {
+        callback();
+      });
       return;
     }
 
     // Estrategia 2: React Fiber
     if (tentarExtrairCoordenadasDoReactFiber(dados)) {
-      distribuirCoordenadasFallback(dados, '', function () { callback(); });
+      distribuirCoordenadasFallback(dados, '', function () {
+        callback();
+      });
       return;
     }
 
@@ -1222,7 +1313,7 @@
       zoomControl: true,
       mapTypeControl: false,
       streetViewControl: false,
-      fullscreenControl: false
+      fullscreenControl: false,
     });
 
     // Ajustar bounds
@@ -1256,7 +1347,7 @@
       map: mapInstance,
       title: hotel.nome,
       icon: icone,
-      zIndex: 1
+      zIndex: 1,
     });
 
     marker.addListener('click', function () {
@@ -1285,7 +1376,7 @@
     }
 
     infoWindowAtiva = new google.maps.InfoWindow({
-      content: conteudo
+      content: conteudo,
     });
 
     infoWindowAtiva.open(mapInstance, marker);
@@ -1295,7 +1386,7 @@
     for (var i = 0; i < marcadores.length; i++) {
       if (!marcadores[i] || !dadosCache[i]) continue;
       var textoPin = dadosCache[i].precoCurto || dadosCache[i].preco || dadosCache[i].nome;
-      var ativo = (i === indice);
+      var ativo = i === indice;
       marcadores[i].setIcon(criarPinSVG(textoPin, ativo));
       marcadores[i].setZIndex(ativo ? 999 : 1);
     }
@@ -1349,11 +1440,7 @@
         cardAtivoIdx = indice;
         destacarMarcador(indice);
         if (mapInstance && marcadores[indice]) {
-          abrirInfoWindow(
-            marcadores[indice],
-            criarConteudoInfoWindow(dados[indice]),
-            indice
-          );
+          abrirInfoWindow(marcadores[indice], criarConteudoInfoWindow(dados[indice]), indice);
         }
         analyticsEvent(dados[indice].nome, 'lista_card_clique');
       });
@@ -1369,7 +1456,8 @@
       let imgUrl = dados[i].imagem;
       if (!imgUrl) {
         // Fallback: buscar qualquer imagem de hotel no card
-        const anyImg = card.querySelector('.slick-slide img') ||
+        const anyImg =
+          card.querySelector('.slick-slide img') ||
           card.querySelector('[class*="WrapperSlides"] img') ||
           card.querySelector('img[alt]:not([width="1"])');
         if (anyImg) imgUrl = anyImg.getAttribute('src') || anyImg.getAttribute('data-src') || '';
@@ -1480,7 +1568,9 @@
         var loading = document.querySelector('[class*="LoadingContent-sc"]');
         if (loading) {
           aguardandoPaginacao = true;
-          console.log(LOG_PREFIX + ' Paginacao detectada (loading visivel). Aguardando novos cards...');
+          console.log(
+            LOG_PREFIX + ' Paginacao detectada (loading visivel). Aguardando novos cards...',
+          );
           aguardarFimDoPaginacao();
           return;
         }
@@ -1514,7 +1604,9 @@
       if (!loading && cards.length >= 2) {
         clearInterval(pollingPag);
         aguardandoPaginacao = false;
-        console.log(LOG_PREFIX + ' Paginacao concluida. Reaplicando mapa com ' + cards.length + ' cards.');
+        console.log(
+          LOG_PREFIX + ' Paginacao concluida. Reaplicando mapa com ' + cards.length + ' cards.',
+        );
         limparMapaAntigo();
         aplicar();
       } else if (tentativas > 40) {
@@ -1553,11 +1645,15 @@
   // Detecta retorno do usuario a partir da pagina de detalhe do hotel (navegacao SPA Next.js)
   function monitorarNavegacaoSPA() {
     function onUrlChange() {
-      if (window.location.href.indexOf('https://www.voeazul.com.br/br/pt/home/hotel?') === -1) return;
+      if (window.location.href.indexOf('https://www.voeazul.com.br/br/pt/home/hotel?') === -1)
+        return;
       // Verificar se o mapa ja esta presente e funcional (atributo + div no DOM)
       var listWrapper = document.querySelector('[class*="ListWrapper-sc-1oit4q5"]');
-      if (listWrapper && listWrapper.getAttribute(DATA_APLICADO) && document.getElementById(MAP_ID)) return;
-      console.log(LOG_PREFIX + ' Retorno para lista de hoteis detectado via SPA. Aguardando cards...');
+      if (listWrapper && listWrapper.getAttribute(DATA_APLICADO) && document.getElementById(MAP_ID))
+        return;
+      console.log(
+        LOG_PREFIX + ' Retorno para lista de hoteis detectado via SPA. Aguardando cards...',
+      );
       limparMapaAntigo();
       aguardarCardsEAplicar();
     }
@@ -1643,9 +1739,13 @@
       var mapDivAtual = document.getElementById(MAP_ID);
       if (!mapDivAtual) {
         var lwAtual = document.querySelector('[class*="ListWrapper-sc-1oit4q5"]');
-        var clAtual = lwAtual ? lwAtual.querySelector('[data-testid="hotel-list-wrapper-contains-cards"]') : null;
+        var clAtual = lwAtual
+          ? lwAtual.querySelector('[data-testid="hotel-list-wrapper-contains-cards"]')
+          : null;
         if (!lwAtual || !clAtual) {
-          console.log(LOG_PREFIX + ' Layout indisponivel apos resolucao de coordenadas. Abortando.');
+          console.log(
+            LOG_PREFIX + ' Layout indisponivel apos resolucao de coordenadas. Abortando.',
+          );
           return;
         }
         console.log(LOG_PREFIX + ' Container do mapa reinserido apos resolucao de coordenadas.');
@@ -1695,7 +1795,9 @@
 
       if (tentativas > MAX_TENTATIVAS) {
         clearInterval(polling);
-        console.log(LOG_PREFIX + ' Cards de hotel nao encontrados apos ' + MAX_TENTATIVAS + ' tentativas.');
+        console.log(
+          LOG_PREFIX + ' Cards de hotel nao encontrados apos ' + MAX_TENTATIVAS + ' tentativas.',
+        );
         return;
       }
 
@@ -1709,7 +1811,9 @@
 
       if (cardList && cards.length >= 2) {
         clearInterval(polling);
-        console.log(LOG_PREFIX + ' Cards encontrados (' + cards.length + '). Garantindo Google Maps API...');
+        console.log(
+          LOG_PREFIX + ' Cards encontrados (' + cards.length + '). Garantindo Google Maps API...',
+        );
 
         // Garantir que a API do Google Maps esteja carregada
         if (mapsAPICarregada) {
@@ -1731,11 +1835,15 @@
             // Re-verificar se os cards ainda existem
             const reCards = document.querySelectorAll('[class*="HotelCardWrapper-sc-16a2dz4"]');
             if (reCards.length < 2) {
-              console.log(LOG_PREFIX + ' Cards sumiram durante carregamento da API. Aguardando re-render...');
+              console.log(
+                LOG_PREFIX + ' Cards sumiram durante carregamento da API. Aguardando re-render...',
+              );
               let tentativasReRender = 0;
               const pollingReRender = setInterval(function () {
                 tentativasReRender++;
-                const novosCards = document.querySelectorAll('[class*="HotelCardWrapper-sc-16a2dz4"]');
+                const novosCards = document.querySelectorAll(
+                  '[class*="HotelCardWrapper-sc-16a2dz4"]',
+                );
                 if (novosCards.length >= 2) {
                   clearInterval(pollingReRender);
                   let sucesso = aplicar();
