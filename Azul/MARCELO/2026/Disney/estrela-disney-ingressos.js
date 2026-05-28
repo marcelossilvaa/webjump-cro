@@ -1,13 +1,17 @@
 (function () {
   var EXPERIMENT_NAME = 'AT_Disney_hoteis';
-  var BANNER_LINK =
-    'https://www.voeazul.com.br/br/pt/home/tickets?ds=JPD036691&stdi=01/10/2026&stdo=31/10/2026&adt=2&chd=0';
+  var BANNER_LINK = 'https://www.voeazul.com.br/br/pt/disney/promocoes-disney';
   var STYLE_ID = 'at-disney-hoteis-style';
   var OVERLAY_ID = 'at-disney-hoteis-overlay';
   var BANNER_ID = 'at-disney-hoteis-banner';
   var EVAR84 = 'AT_Disney_campaign';
-  var UTM_SOURCE_REQUIRED =
-    'pmweb_azv_e-mail_banner_lf_azv_202603-azv-b2c-emm-168h-viagem-hospedagemdisney-d20_hotel';
+  var UTM_SOURCE_ALLOWED = [
+    'pmweb_azv_e-mail_banner_mf_azv_202510-azv-b2c-emm-168h-viagem-produtosdisneya-d2_n',
+    'pmweb_azv_e-mail_banner_mf_azv_202510-azv-b2c-emm-168h-viagem-produtosdisneyb-d2_n',
+    '202512-AZV-B2C-EMM-168H-VIAGEM-INGRESSOSDISNEY-D16',
+    '202604-azv-b2c-psh-168h-inter-previagemhospedagemdisney-d0_tickets',
+    '202603-AZV-B2C-EMM-168H-VIAGEM-INCENTIVOINGRESSOSDISNEY-D5',
+  ];
   var BANNER_ASSET_URLS = [
     'https://i.imgur.com/7dXE65l.png',
     'https://i.imgur.com/ydjrslV.png',
@@ -18,6 +22,16 @@
     'https://i.imgur.com/jSNMMjB.png',
     'https://i.imgur.com/noLA829.png',
   ];
+  // ============================================
+  // REGRAS DE EXIBIÇÃO DO MODAL
+  // ============================================
+  // 1. Apenas 1 exibição por sessão (usa sessionStorage)
+  // 2. Máximo de 3 sessões por dia com exibição (usa localStorage)
+  // 3. Uma vez exibido na sessão, não exibe mais
+  var SESSION_KEY_SHOWN = 'at_disney_ingressos_shown_session';
+  var DAILY_KEY = 'at_disney_ingressos_shown_daily';
+  // Flag para automação na LP de promoções
+  var PROMO_AUTOCLOCK_KEY = 'at_disney_promocoes_autoclick_ingressos';
 
   // Limpa execucoes anteriores
   var oldStyle = document.getElementById(STYLE_ID);
@@ -27,11 +41,23 @@
   var oldBanner = document.getElementById(BANNER_ID);
   if (oldBanner) oldBanner.parentNode.removeChild(oldBanner);
 
+  function utmSourceMatches(source) {
+    if (!source) return false;
+    var s = String(source).toLowerCase();
+    for (var i = 0; i < UTM_SOURCE_ALLOWED.length; i++) {
+      var allowed = String(UTM_SOURCE_ALLOWED[i] || '').toLowerCase();
+      if (!allowed) continue;
+      if (s === allowed) return true;
+      if (s.indexOf(allowed) !== -1) return true;
+    }
+    return false;
+  }
+
   function hasRequiredUtm() {
     try {
       var params = new URLSearchParams(window.location.search);
-      var source = (params.get('utm_source') || '').toLowerCase();
-      return source === UTM_SOURCE_REQUIRED.toLowerCase();
+      var source = params.get('utm_source') || '';
+      return utmSourceMatches(source);
     } catch (e) {
       return false;
     }
@@ -58,6 +84,57 @@
       img.onerror = onAssetDone;
       img.src = url;
     });
+  }
+
+  function getTodayKey() {
+    try {
+      return new Date().toISOString().slice(0, 10);
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function getDailyData() {
+    var today = getTodayKey();
+    var data = null;
+    try {
+      data = JSON.parse(localStorage.getItem(DAILY_KEY));
+    } catch (e) {
+      data = null;
+    }
+
+    if (!data || data.date !== today) {
+      return { date: today, count: 0 };
+    }
+    if (typeof data.count !== 'number') data.count = 0;
+    return data;
+  }
+
+  function isShownThisSession() {
+    try {
+      return sessionStorage.getItem(SESSION_KEY_SHOWN) === '1';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function canShowByRules() {
+    if (isShownThisSession()) return false;
+    var daily = getDailyData();
+    return daily.count < 3;
+  }
+
+  function markShown() {
+    if (isShownThisSession()) return;
+    try {
+      sessionStorage.setItem(SESSION_KEY_SHOWN, '1');
+    } catch (e) {}
+
+    var daily = getDailyData();
+    daily.count += 1;
+    try {
+      localStorage.setItem(DAILY_KEY, JSON.stringify(daily));
+    } catch (e) {}
   }
 
   function analyticsEvent(eventLabel, eventType) {
@@ -539,6 +616,9 @@
   // === BANNER HOTEIS DISNEY ===
 
   function createBanner() {
+    // Marca exibicao antes de qualquer tracking para garantir regra de 1x/sessao
+    markShown();
+
     var existing = document.getElementById(BANNER_ID);
     if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
 
@@ -737,6 +817,9 @@
     // Eventos
     cta.addEventListener('click', function (e) {
       e.stopPropagation();
+      try {
+        localStorage.setItem(PROMO_AUTOCLOCK_KEY, String(Date.now()));
+      } catch (err) {}
       analyticsEvent('banner_disney_hoteis_cta', 'click');
     });
 
@@ -774,6 +857,13 @@
   function init() {
     if (!hasRequiredUtm()) {
       console.log('[Disney Hoteis] UTM invalida ou ausente. Modal nao sera exibido.');
+      return;
+    }
+
+    if (!canShowByRules()) {
+      console.log(
+        '[Disney Hoteis] Regra de exibicao bloqueou (sessao/dia). Modal nao sera exibido.',
+      );
       return;
     }
 
