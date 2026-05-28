@@ -32,6 +32,7 @@
   var DAILY_KEY = 'at_disney_ingressos_shown_daily';
   // Flag para automação na LP de promoções
   var PROMO_AUTOCLOCK_KEY = 'at_disney_promocoes_autoclick_ingressos';
+  var HOME_BLOCKED_URL = 'https://www.voeazul.com.br/br/pt/home';
 
   // Limpa execucoes anteriores
   var oldStyle = document.getElementById(STYLE_ID);
@@ -58,6 +59,20 @@
       var params = new URLSearchParams(window.location.search);
       var source = params.get('utm_source') || '';
       return utmSourceMatches(source);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function isBlockedHomePage() {
+    try {
+      var url = String(window.location.href || '')
+        .split('?')[0]
+        .split('#')[0];
+      if (url.charAt(url.length - 1) === '/') {
+        url = url.slice(0, -1);
+      }
+      return url === HOME_BLOCKED_URL;
     } catch (e) {
       return false;
     }
@@ -855,6 +870,11 @@
   }
 
   function init() {
+    if (isBlockedHomePage()) {
+      console.log('[Disney Hoteis] Pagina home bloqueada. Modal nao sera exibido.');
+      return;
+    }
+
     if (!hasRequiredUtm()) {
       console.log('[Disney Hoteis] UTM invalida ou ausente. Modal nao sera exibido.');
       return;

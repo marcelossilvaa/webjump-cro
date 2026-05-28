@@ -28,13 +28,14 @@
   // ============================================
   // 1. Apenas 1 exibição por sessão (usa sessionStorage)
   // 2. Máximo de 3 sessões por dia com exibição (usa localStorage)
-  // 3. Gatilhos: exit intent (sair da página), scroll 50% ou inatividade (30s)
+  // 3. Gatilhos: exit intent (sair da página) ou inatividade (30s)
   // 4. Uma vez exibido na sessão, não exibe mais
   var SESSION_KEY_SHOWN = 'at_disney_ingressos_saida_shown_session';
   var DAILY_KEY = 'at_disney_ingressos_saida_shown_daily';
   var INACTIVITY_MS = 30000;
   // Flag para automação na LP de promoções
   var PROMO_AUTOCLOCK_KEY = 'at_disney_promocoes_autoclick_ingressos';
+  var HOME_BLOCKED_URL = 'https://www.voeazul.com.br/br/pt/home';
 
   // Limpa execucoes anteriores
   var oldStyle = document.getElementById(STYLE_ID);
@@ -61,6 +62,20 @@
       var params = new URLSearchParams(window.location.search);
       var source = params.get('utm_source') || '';
       return utmSourceMatches(source);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function isBlockedHomePage() {
+    try {
+      var url = String(window.location.href || '')
+        .split('?')[0]
+        .split('#')[0];
+      if (url.charAt(url.length - 1) === '/') {
+        url = url.slice(0, -1);
+      }
+      return url === HOME_BLOCKED_URL;
     } catch (e) {
       return false;
     }
@@ -874,43 +889,6 @@
     };
   }
 
-  function setupScroll50Trigger(onTrigger) {
-    var done = false;
-    var ticking = false;
-
-    function check() {
-      if (done) return;
-      try {
-        var doc = document.documentElement;
-        var body = document.body;
-        var scrollTop = window.pageYOffset || doc.scrollTop || body.scrollTop || 0;
-        var viewport = window.innerHeight || doc.clientHeight || 0;
-        var scrollHeight = doc.scrollHeight || body.scrollHeight || 0;
-        var max = Math.max(scrollHeight - viewport, 1);
-        if (scrollTop / max >= 0.5) {
-          done = true;
-          window.removeEventListener('scroll', onScroll, { passive: true });
-          onTrigger('scroll_50');
-        }
-      } catch (e) {}
-    }
-
-    function onScroll() {
-      if (done || ticking) return;
-      ticking = true;
-      setTimeout(function () {
-        ticking = false;
-        check();
-      }, 200);
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    check();
-    return function cleanup() {
-      window.removeEventListener('scroll', onScroll, { passive: true });
-    };
-  }
-
   function setupInactivityTrigger(onTrigger) {
     var done = false;
     var timer = null;
@@ -946,6 +924,11 @@
   }
 
   function init() {
+    if (isBlockedHomePage()) {
+      console.log('[Disney Hoteis Saida] Pagina home bloqueada. Modal nao sera exibido.');
+      return;
+    }
+
     if (!hasRequiredUtm()) {
       console.log('[Disney Hoteis Saida] UTM invalida ou ausente. Modal nao sera exibido.');
       return;
@@ -982,7 +965,6 @@
     }
 
     cleanups.push(setupExitIntentTrigger(fire));
-    cleanups.push(setupScroll50Trigger(fire));
     cleanups.push(setupInactivityTrigger(fire));
   }
 
