@@ -94,6 +94,8 @@
 
   const FAQ_HEADER = 'Principais dúvidas sobre assinatura';
   const FULL_FAQ_LINK_LABEL = 'Quer saber mais? Confira o conteúdo completo';
+  const MODAL_ACCORDION_PREFIX = 'wj-faq-modal';
+  const MODAL_ACCORDION_MS = 320;
 
   let nativeFaqButton = null;
   let faqInsertAnchor = null;
@@ -218,6 +220,88 @@
     );
   }
 
+  function getModalAccordionCss() {
+    var p = MODAL_ACCORDION_PREFIX;
+
+    return (
+      '[class*="_Modal__content"][data-wj-faq-modal-accordion="true"] { gap: .5rem !important; }' +
+      '[class*="_Modal__content"][data-wj-faq-modal-accordion="true"] [class*="_Modal__section"] { margin: 0; padding: 0; border: 0; background: none; }' +
+      '[class*="_Modal__content"][data-wj-faq-modal-accordion="true"] [class*="_Modal__title"] { display: none !important; }' +
+      '.' +
+      p +
+      '__group { margin: 20px 0 8px; padding: 0; }' +
+      '.' +
+      p +
+      '__group:first-child { margin-top: 0; }' +
+      '.' +
+      p +
+      '__group-title { font-family: NespressoLucas, Helvetica, Arial, sans-serif; font-size: 13px; line-height: 18px; font-weight: 700; letter-spacing: 0.04em; color: #1A1A1A; margin: 0; text-transform: uppercase; }' +
+      '.' +
+      p +
+      '__item { border-top: 1px solid #CFCFCF; margin: 0; padding: 10px 0; contain: layout style; }' +
+      '.' +
+      p +
+      '__item:first-child { border-top: 0; }' +
+      '.' +
+      p +
+      '__button { width: 100%; display: flex; align-items: flex-start; gap: 10px; border: 0; background: none; padding: 0; margin: 0; font-family: NespressoLucas, Helvetica, Arial, sans-serif; font-size: 15px; line-height: 20px; font-weight: 400; color: #1A1A1A; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }' +
+      '.' +
+      p +
+      '__button:hover { color: #000000; }' +
+      '.' +
+      p +
+      '__item--open .' +
+      p +
+      '__button { font-weight: 500; }' +
+      '.' +
+      p +
+      '__arrow { flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 16px; height: 20px; color: #1A1A1A; }' +
+      '.' +
+      p +
+      '__arrow-icon { display: block; transform: rotate(0deg); transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1); }' +
+      '.' +
+      p +
+      '__item--open .' +
+      p +
+      '__arrow-icon { transform: rotate(90deg); }' +
+      '.' +
+      p +
+      '__text { display: inline-block; flex: 1; }' +
+      '.' +
+      p +
+      '__answer { display: grid; grid-template-rows: 0fr; margin: 0; padding: 0; transition: grid-template-rows 0.32s cubic-bezier(0.4, 0, 0.2, 1); }' +
+      '.' +
+      p +
+      '__item--open .' +
+      p +
+      '__answer { grid-template-rows: 1fr; }' +
+      '.' +
+      p +
+      '__answer-inner { overflow: hidden; min-height: 0; font-family: NespressoLucas, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 20px; font-weight: 400; color: #555555; opacity: 0; padding-top: 0; transition: opacity 0.22s ease; }' +
+      '.' +
+      p +
+      '__item--open .' +
+      p +
+      '__answer-inner { opacity: 1; padding-top: 10px; transition-delay: 0.06s; }' +
+      '.' +
+      p +
+      '__answer-inner p { margin: 0 0 10px; }' +
+      '.' +
+      p +
+      '__answer-inner p:last-child { margin-bottom: 0; }' +
+      '.' +
+      p +
+      '__answer-inner strong { color: #1A1A1A; font-weight: 600; }' +
+      '@media (prefers-reduced-motion: reduce) { .' +
+      p +
+      '__arrow-icon, .' +
+      p +
+      '__answer, .' +
+      p +
+      '__answer-inner { transition: none !important; } }'
+    );
+  }
+
   function createStyle() {
     if (document.getElementById(STYLE_ID)) {
       return;
@@ -233,6 +317,7 @@
       '.wj-faq-sidebar__full-link, .wj-faq-mobile__full-link { align-items: center; appearance: none; -webkit-appearance: none; background: none; border: none; color: #876c43; cursor: pointer; display: inline-flex; flex-direction: row-reverse; font-family: inherit; font-size: 1rem; font-weight: 400; gap: .25rem; letter-spacing: .015625rem; line-height: 1.2; margin: 0; padding: 0; text-align: start; text-decoration-line: underline; transition: box-shadow .08s ease-in-out; }' +
       '.wj-faq-sidebar__full-link:hover, .wj-faq-mobile__full-link:hover { color: #876c43; }' +
       'button[data-wj-faq-native-trigger-hidden="true"] { position: absolute !important; width: 1px !important; height: 1px !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; clip-path: inset(50%) !important; white-space: nowrap !important; border: 0 !important; padding: 0 !important; margin: -1px !important; opacity: 0 !important; pointer-events: none !important; }' +
+      getModalAccordionCss() +
       '@media (prefers-reduced-motion: reduce) { .wj-faq-sidebar__arrow, .wj-faq-sidebar__arrow-icon, .wj-faq-sidebar__answer, .wj-faq-sidebar__answer-inner, .wj-faq-sidebar__text, .wj-faq-sidebar__item, .wj-faq-mobile__arrow, .wj-faq-mobile__arrow-icon, .wj-faq-mobile__answer, .wj-faq-mobile__answer-inner, .wj-faq-mobile__text, .wj-faq-mobile__item { transition: none !important; } }';
 
     document.head.appendChild(style);
@@ -531,7 +616,291 @@
       dispatchNativeClick(btn);
     }
 
+    scheduleModalAccordionTransform();
     return true;
+  }
+
+  function isEmptySectionContent(contentEl) {
+    if (!contentEl) {
+      return true;
+    }
+
+    return !contentEl.textContent.replace(/\s+/g, '').trim();
+  }
+
+  function isSectionDivider(titleText, contentEl) {
+    var normalized;
+    var letters;
+
+    normalized = titleText.replace(/\s+/g, ' ').trim();
+    if (!normalized) {
+      return true;
+    }
+
+    letters = normalized.replace(/[^A-Za-zÀ-ÿ]/g, '');
+    if (!letters) {
+      return true;
+    }
+
+    return normalized === normalized.toUpperCase() && isEmptySectionContent(contentEl);
+  }
+
+  function getModalSectionContentEl(section, titleEl) {
+    var child;
+    var i;
+
+    if (!section || !titleEl) {
+      return null;
+    }
+
+    child = titleEl.nextElementSibling;
+    if (child && !child.matches('[class*="_Modal__title"]')) {
+      return child;
+    }
+
+    for (i = 0; i < section.children.length; i += 1) {
+      child = section.children[i];
+      if (child !== titleEl && !child.matches('[class*="_Modal__title"]')) {
+        return child;
+      }
+    }
+
+    return null;
+  }
+
+  function setModalItemOpen(item, isOpen) {
+    var button = item.querySelector('.' + MODAL_ACCORDION_PREFIX + '__button');
+    var openClass = MODAL_ACCORDION_PREFIX + '__item--open';
+    var openingClass = MODAL_ACCORDION_PREFIX + '__item--opening';
+    var closingClass = MODAL_ACCORDION_PREFIX + '__item--closing';
+
+    if (isOpen) {
+      item.classList.remove(closingClass);
+      item.classList.add(openingClass);
+      item.classList.add(openClass);
+      if (button) {
+        button.setAttribute('aria-expanded', 'true');
+      }
+      window.setTimeout(function () {
+        item.classList.remove(openingClass);
+      }, MODAL_ACCORDION_MS);
+      return;
+    }
+
+    if (!item.classList.contains(openClass)) {
+      return;
+    }
+
+    item.classList.add(closingClass);
+    item.classList.remove(openClass);
+    item.classList.remove(openingClass);
+    if (button) {
+      button.setAttribute('aria-expanded', 'false');
+    }
+
+    window.setTimeout(function () {
+      item.classList.remove(closingClass);
+    }, MODAL_ACCORDION_MS);
+  }
+
+  function closeOtherModalItems(currentItem) {
+    var items = document.querySelectorAll('.' + MODAL_ACCORDION_PREFIX + '__item--open');
+    var i;
+
+    for (i = 0; i < items.length; i += 1) {
+      if (items[i] !== currentItem) {
+        setModalItemOpen(items[i], false);
+      }
+    }
+  }
+
+  function toggleModalAccordion(event) {
+    var button = event.currentTarget;
+    var item = button.closest('.' + MODAL_ACCORDION_PREFIX + '__item');
+    var openClass = MODAL_ACCORDION_PREFIX + '__item--open';
+    var isOpen;
+    var labelEl;
+    var trackingSlug;
+
+    if (!item) {
+      return;
+    }
+
+    isOpen = item.classList.contains(openClass);
+    labelEl = button.querySelector('.' + MODAL_ACCORDION_PREFIX + '__text');
+    trackingSlug = slugifyTrackingLabel(labelEl ? labelEl.textContent : 'modal_faq');
+
+    if (!isOpen) {
+      closeOtherModalItems(item);
+      sendGAEvent('abriu_accordion_modal_' + trackingSlug);
+      window.requestAnimationFrame(function () {
+        setModalItemOpen(item, true);
+      });
+      return;
+    }
+
+    sendGAEvent('fechou_accordion_modal_' + trackingSlug);
+    setModalItemOpen(item, false);
+  }
+
+  function transformModalSection(section) {
+    var titleEl;
+    var titleText;
+    var contentEl;
+    var button;
+    var textSpan;
+    var answer;
+    var answerInner;
+    var p = MODAL_ACCORDION_PREFIX;
+
+    if (!section || section.getAttribute('data-wj-faq-modal-processed') === 'true') {
+      return;
+    }
+
+    titleEl = section.querySelector('[class*="_Modal__title"]');
+    if (!titleEl) {
+      section.setAttribute('data-wj-faq-modal-processed', 'true');
+      return;
+    }
+
+    titleText = titleEl.textContent.replace(/\s+/g, ' ').trim();
+    contentEl = getModalSectionContentEl(section, titleEl);
+
+    if (isSectionDivider(titleText, contentEl)) {
+      section.classList.add(p + '__group');
+      titleEl.classList.add(p + '__group-title');
+      if (contentEl) {
+        contentEl.setAttribute('data-wj-faq-modal-empty', 'true');
+        contentEl.style.display = 'none';
+      }
+      section.setAttribute('data-wj-faq-modal-processed', 'true');
+      return;
+    }
+
+    section.classList.add(p + '__item');
+
+    button = document.createElement('button');
+    button.type = 'button';
+    button.className = p + '__button';
+    button.setAttribute('aria-expanded', 'false');
+    button.innerHTML =
+      '<span class="' +
+      p +
+      '__arrow">' +
+      getArrowSvg(p) +
+      '</span><span class="' +
+      p +
+      '__text"></span>';
+    textSpan = button.querySelector('.' + p + '__text');
+    textSpan.textContent = titleText;
+
+    answer = document.createElement('div');
+    answer.className = p + '__answer';
+    answerInner = document.createElement('div');
+    answerInner.className = p + '__answer-inner';
+
+    if (contentEl) {
+      while (contentEl.firstChild) {
+        answerInner.appendChild(contentEl.firstChild);
+      }
+      contentEl.parentNode.removeChild(contentEl);
+    }
+
+    titleEl.parentNode.removeChild(titleEl);
+    button.addEventListener('click', toggleModalAccordion);
+    section.appendChild(button);
+    answer.appendChild(answerInner);
+    section.appendChild(answer);
+    section.setAttribute('data-wj-faq-modal-processed', 'true');
+  }
+
+  function findVisibleModalContent() {
+    var dialogs = document.querySelectorAll('[role="dialog"], [aria-modal="true"]');
+    var contents = document.querySelectorAll('[class*="_Modal__content"]');
+    var nodes = [];
+    var seen = [];
+    var i;
+    var node;
+    var rect;
+
+    for (i = 0; i < dialogs.length; i += 1) {
+      if (dialogs[i].getAttribute('aria-hidden') === 'true') {
+        continue;
+      }
+      node = dialogs[i].querySelector('[class*="_Modal__content"]');
+      if (node && seen.indexOf(node) === -1) {
+        seen.push(node);
+        nodes.push(node);
+      }
+    }
+
+    for (i = 0; i < contents.length; i += 1) {
+      if (seen.indexOf(contents[i]) !== -1) {
+        continue;
+      }
+      rect = contents[i].getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        nodes.push(contents[i]);
+      }
+    }
+
+    return nodes.length ? nodes[0] : null;
+  }
+
+  function transformModalToAccordions() {
+    var modalContent = findVisibleModalContent();
+    var sections;
+    var i;
+
+    if (!modalContent) {
+      return false;
+    }
+
+    if (!modalContent.querySelector('[class*="_Modal__section"]')) {
+      return false;
+    }
+
+    sections = modalContent.querySelectorAll('[class*="_Modal__section"]');
+    for (i = 0; i < sections.length; i += 1) {
+      transformModalSection(sections[i]);
+    }
+
+    modalContent.setAttribute('data-wj-faq-modal-accordion', 'true');
+    return true;
+  }
+
+  function scheduleModalAccordionTransform() {
+    window.setTimeout(transformModalToAccordions, 0);
+    window.setTimeout(transformModalToAccordions, 100);
+    window.setTimeout(transformModalToAccordions, 300);
+    window.setTimeout(transformModalToAccordions, 600);
+  }
+
+  function watchModalAccordion() {
+    var timer;
+
+    if (window._wjFaqModalAccordionObserver) {
+      return;
+    }
+
+    window._wjFaqModalAccordionObserver = new MutationObserver(function () {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(function () {
+        if (
+          document.documentElement.style.overflow === 'hidden' ||
+          document.body.style.overflow === 'hidden'
+        ) {
+          transformModalToAccordions();
+        }
+      }, 150);
+    });
+
+    window._wjFaqModalAccordionObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['aria-hidden', 'class', 'style'],
+    });
   }
 
   function hideNativeFaqLink() {
@@ -955,6 +1324,7 @@
     findNativeFaqButton();
     hideNativeFaqLink();
     watchNativeFaqButton();
+    watchModalAccordion();
 
     window.addEventListener('resize', function () {
       mountMissingPlacements();
