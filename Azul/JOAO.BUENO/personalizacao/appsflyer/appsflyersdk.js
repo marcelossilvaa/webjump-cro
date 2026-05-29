@@ -1,4 +1,3 @@
-<script>
 (function () {
   'use strict';
 
@@ -21,7 +20,7 @@
   ];
 
   // Inicializa o SDK da AppsFlyer
-  !function(t,e,n,s,a,c,i,o,p){t.AppsFlyerSdkObject=a,t.AF=t.AF||function(){(t.AF.q=t.AF.q||[]).push([Date.now()].concat(Array.prototype.slice.call(arguments)))},t.AF.id=t.AF.id||i,t.AF.plugins={},o=e.createElement(n),p=e.getElementsByTagName(n)[0],o.async=1,o.src='https://websdk.appsflyersdk.com?'+(c.length>0?'st='+c.split(',').sort().join(',')+'&':'')+(i.length>0?'af_id='+i:''),p.parentNode.insertBefore(o,p)}(window,document,'script',0,'AF','banners',{banners:{key:'6ded0e2a-b4b7-4df7-9c7e-c957f46f9194'}});
+  !function (t, e, n, s, a, c, i, o, p) { t.AppsFlyerSdkObject = a, t.AF = t.AF || function () { (t.AF.q = t.AF.q || []).push([Date.now()].concat(Array.prototype.slice.call(arguments))) }, t.AF.id = t.AF.id || i, t.AF.plugins = {}, o = e.createElement(n), p = e.getElementsByTagName(n)[0], o.async = 1, o.src = 'https://websdk.appsflyersdk.com?' + (c.length > 0 ? 'st=' + c.split(',').sort().join(',') + '&' : '') + (i.length > 0 ? 'af_id=' + i : ''), p.parentNode.insertBefore(o, p) }(window, document, 'script', 0, 'AF', 'banners', { banners: { key: '6ded0e2a-b4b7-4df7-9c7e-c957f46f9194' } });
 
   AF('banners', 'showBanner');
 
@@ -100,4 +99,3 @@
     init();
   }
 })();
-</script>
