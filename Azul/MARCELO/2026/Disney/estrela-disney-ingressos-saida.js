@@ -6,11 +6,11 @@
   var BANNER_ID = 'at-disney-hoteis-banner';
   var EVAR84 = 'AT_Disney_campaign';
   var UTM_SOURCE_ALLOWED = [
-    'pmweb_azv_e-mail_banner_mf_azv_202510-azv-b2c-emm-168h-viagem-produtosdisneya-d2_n',
-    'pmweb_azv_e-mail_banner_mf_azv_202510-azv-b2c-emm-168h-viagem-produtosdisneyb-d2_n',
-    '202512-AZV-B2C-EMM-168H-VIAGEM-INGRESSOSDISNEY-D16',
-    '202604-azv-b2c-psh-168h-inter-previagemhospedagemdisney-d0_tickets',
-    '202603-AZV-B2C-EMM-168H-VIAGEM-INCENTIVOINGRESSOSDISNEY-D5',
+    '202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOPESQUISAINGRESSOSDISNEY-D0',
+    '202604-azv-b2c-emm-168h-viagem-abandonopesquisaingressosdisneyAZ-d2_tickets',
+    '202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOCARRINHODISNEY-D0',
+    '202603-azv-b2c-psh-168h-inter-abandonocarrinhoingressosdisney-d2_pac',
+    'pmweb_azv_e-mail_banner_lf_azv_202603-azv-b2c-emm-168h-viagem-incentivohospedagemdisney-d7_hotel',
   ];
   var BANNER_ASSET_URLS = [
     'https://i.imgur.com/7dXE65l.png',
@@ -22,14 +22,17 @@
     'https://i.imgur.com/jSNMMjB.png',
     'https://i.imgur.com/noLA829.png',
   ];
+
   // ============================================
   // REGRAS DE EXIBIÇÃO DO MODAL
   // ============================================
   // 1. Apenas 1 exibição por sessão (usa sessionStorage)
   // 2. Máximo de 3 sessões por dia com exibição (usa localStorage)
-  // 3. Uma vez exibido na sessão, não exibe mais
-  var SESSION_KEY_SHOWN = 'at_disney_ingressos_shown_session';
-  var DAILY_KEY = 'at_disney_ingressos_shown_daily';
+  // 3. Gatilhos: exit intent (sair da página) ou inatividade (30s)
+  // 4. Uma vez exibido na sessão, não exibe mais
+  var SESSION_KEY_SHOWN = 'at_disney_ingressos_saida_shown_session';
+  var DAILY_KEY = 'at_disney_ingressos_saida_shown_daily';
+  var INACTIVITY_MS = 30000;
   // Flag para automação na LP de promoções
   var PROMO_AUTOCLOCK_KEY = 'at_disney_promocoes_autoclick_ingressos';
   var HOME_BLOCKED_URL = 'https://www.voeazul.com.br/br/pt/home';
@@ -832,9 +835,9 @@
     // Eventos
     cta.addEventListener('click', function (e) {
       e.stopPropagation();
-      try {
-        localStorage.setItem(PROMO_AUTOCLOCK_KEY, String(Date.now()));
-      } catch (err) {}
+        try {
+          localStorage.setItem(PROMO_AUTOCLOCK_KEY, String(Date.now()));
+        } catch (err) {}
       analyticsEvent('banner_disney_hoteis_cta', 'click');
     });
 
@@ -869,31 +872,100 @@
     }, 600);
   }
 
+  function setupExitIntentTrigger(onTrigger) {
+    var done = false;
+    function handler(e) {
+      if (done) return;
+      if (!e) return;
+      // Exit intent: cursor sai pelo topo
+      if (e.clientY > 0) return;
+      done = true;
+      document.removeEventListener('mouseout', handler);
+      onTrigger('exit_intent');
+    }
+    document.addEventListener('mouseout', handler);
+    return function cleanup() {
+      document.removeEventListener('mouseout', handler);
+    };
+  }
+
+  function setupInactivityTrigger(onTrigger) {
+    var done = false;
+    var timer = null;
+
+    function arm() {
+      if (done) return;
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        if (done) return;
+        done = true;
+        cleanup();
+        onTrigger('inactivity');
+      }, INACTIVITY_MS);
+    }
+
+    function cleanup() {
+      clearTimeout(timer);
+      document.removeEventListener('mousemove', arm);
+      document.removeEventListener('keydown', arm);
+      document.removeEventListener('scroll', arm);
+      document.removeEventListener('click', arm);
+      document.removeEventListener('touchstart', arm);
+    }
+
+    document.addEventListener('mousemove', arm);
+    document.addEventListener('keydown', arm);
+    document.addEventListener('scroll', arm);
+    document.addEventListener('click', arm);
+    document.addEventListener('touchstart', arm);
+
+    arm();
+    return cleanup;
+  }
+
   function init() {
     if (isBlockedHomePage()) {
-      console.log('[Disney Hoteis] Pagina home bloqueada. Modal nao sera exibido.');
+      console.log('[Disney Hoteis Saida] Pagina home bloqueada. Modal nao sera exibido.');
       return;
     }
 
     if (!hasRequiredUtm()) {
-      console.log('[Disney Hoteis] UTM invalida ou ausente. Modal nao sera exibido.');
+      console.log('[Disney Hoteis Saida] UTM invalida ou ausente. Modal nao sera exibido.');
       return;
     }
 
     if (!canShowByRules()) {
       console.log(
-        '[Disney Hoteis] Regra de exibicao bloqueou (sessao/dia). Modal nao sera exibido.',
+        '[Disney Hoteis Saida] Regra de exibicao bloqueou (sessao/dia). Modal nao sera exibido.',
       );
       return;
     }
 
-    console.log('[Disney Hoteis] UTM valida. Pre-carregando assets e iniciando animacao.');
     injectStyles();
-    preloadBannerAssets(function () {
+    // Preload comecando ja no inicio, antes do gatilho disparar
+    preloadBannerAssets(function () {});
+
+    var cleanups = [];
+    var triggered = false;
+
+    function fire(triggerSource) {
+      if (triggered) return;
+      triggered = true;
+      cleanups.forEach(function (fn) {
+        try {
+          fn();
+        } catch (e) {}
+      });
+      cleanups = [];
+
+      console.log('[Disney Hoteis Saida] Gatilho disparado: ' + triggerSource);
       createShootingStarAnimation(function () {
         createBanner();
       });
-    });
+    }
+
+    cleanups.push(setupExitIntentTrigger(fire));
+    cleanups.push(setupInactivityTrigger(fire));
   }
 
   init();

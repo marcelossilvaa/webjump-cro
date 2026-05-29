@@ -787,8 +787,12 @@
     }
 
     if (buttons.length > 0) {
-      console.log('[AT Filtros Voo Mobile] Botao Aplicar nao encontrado por texto. Textos encontrados:',
-        Array.prototype.map.call(buttons, function (b) { return (b.textContent || '').trim(); }));
+      console.log(
+        '[AT Filtros Voo Mobile] Botao Aplicar nao encontrado por texto. Textos encontrados:',
+        Array.prototype.map.call(buttons, function (b) {
+          return (b.textContent || '').trim();
+        }),
+      );
       simulatePointerClick(buttons[buttons.length - 1]);
     }
   }
@@ -940,11 +944,14 @@
 
     try {
       el.dispatchEvent(
-        new PointerEvent('pointerdown', Object.assign({}, base, {
-          pointerId: 1,
-          pointerType: isTouch ? 'touch' : 'mouse',
-          isPrimary: true,
-        })),
+        new PointerEvent(
+          'pointerdown',
+          Object.assign({}, base, {
+            pointerId: 1,
+            pointerType: isTouch ? 'touch' : 'mouse',
+            isPrimary: true,
+          }),
+        ),
       );
     } catch (e) {}
 
@@ -966,11 +973,14 @@
 
     try {
       el.dispatchEvent(
-        new PointerEvent('pointerup', Object.assign({}, base, {
-          pointerId: 1,
-          pointerType: isTouch ? 'touch' : 'mouse',
-          isPrimary: true,
-        })),
+        new PointerEvent(
+          'pointerup',
+          Object.assign({}, base, {
+            pointerId: 1,
+            pointerType: isTouch ? 'touch' : 'mouse',
+            isPrimary: true,
+          }),
+        ),
       );
     } catch (e) {}
 
@@ -1246,10 +1256,7 @@
         if (!pill) {
           return;
         }
-        if (
-          window.__atVooMobileLastTouch &&
-          Date.now() - window.__atVooMobileLastTouch < 500
-        ) {
+        if (window.__atVooMobileLastTouch && Date.now() - window.__atVooMobileLastTouch < 500) {
           return;
         }
         handlePillActivate(event, pill);

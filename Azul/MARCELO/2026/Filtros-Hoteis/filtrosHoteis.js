@@ -8,8 +8,9 @@
 
   let isProcessing = false;
   let isApplyingSort = false;
-  let debounceTimer = null;
+  let mountDebounceTimer = null;
   let sortObserver = null;
+  let pillsWatchTimer = null;
   let listWasLoading = false;
 
   const STYLE_ID = 'at-filtros-hoteis-sort-pills-style';
@@ -19,6 +20,9 @@
   const MOBILE_MAX_WIDTH = 1023;
   const OPEN_DELAY_MS = 350;
   const AFTER_SELECT_MS = 450;
+  const MOUNT_DEBOUNCE_MS = 50;
+  const PILLS_WATCH_INTERVAL_MS = 200;
+  const MOUNT_RETRY_DELAYS_MS = [80, 200, 450];
 
   const SORT_OPTIONS = [
     { label: 'Melhor avaliado', value: 'ratingdesc' },
@@ -228,7 +232,7 @@
       'px) {' +
       '[class*="FilterRow-sc-1oit4q5"].at-sort-pills-ready {' +
       '  margin-top: 40px !important;' +
-      '  gap: 6px;' +
+      '  gap: 0px;' +
       '  width: 100% !important;' +
       '  max-width: 100% !important;' +
       '  box-sizing: border-box;' +
@@ -746,27 +750,89 @@
     return !!document.querySelector(SELECTORS.loadingWrapper);
   }
 
+  function ensureSortPillsPresent(forceRemount) {
+    if (!isHotelPage() || isLoading() || isApplyingSort) {
+      return;
+    }
+
+    const wrapper = findSortFilterWrapper();
+    if (!wrapper || !getNativeTrigger(wrapper)) {
+      return;
+    }
+
+    injectStyles();
+    bindGlobalPillClick();
+
+    if (!forceRemount && wrapper.getAttribute(DATA_DONE) === '1' && isMountHealthy(wrapper)) {
+      syncActivePill(wrapper, getCurrentSortLabel(wrapper));
+      return;
+    }
+
+    injectSortPills(!!forceRemount);
+  }
+
   function run(forceRemount) {
-    if (!isHotelPage() || isLoading() || isProcessing) {
+    if (!isHotelPage() || isApplyingSort || isProcessing) {
+      return;
+    }
+    if (isLoading() && !forceRemount) {
       return;
     }
     isProcessing = true;
     try {
-      injectStyles();
-      bindGlobalPillClick();
-      injectSortPills(!!forceRemount);
+      ensureSortPillsPresent(!!forceRemount);
     } finally {
       isProcessing = false;
     }
   }
 
-  function scheduleRun(forceRemount) {
-    if (debounceTimer) {
-      clearTimeout(debounceTimer);
+  function scheduleMountRetries() {
+    let i;
+    for (i = 0; i < MOUNT_RETRY_DELAYS_MS.length; i++) {
+      setTimeout(function () {
+        ensureSortPillsPresent(true);
+      }, MOUNT_RETRY_DELAYS_MS[i]);
     }
-    debounceTimer = setTimeout(function () {
-      run(forceRemount);
-    }, 250);
+  }
+
+  function scheduleEnsure(forceRemount) {
+    if (mountDebounceTimer) {
+      clearTimeout(mountDebounceTimer);
+    }
+    mountDebounceTimer = setTimeout(function () {
+      ensureSortPillsPresent(!!forceRemount);
+    }, MOUNT_DEBOUNCE_MS);
+  }
+
+  function onListReady() {
+    run(true);
+    scheduleMountRetries();
+  }
+
+  function startPillsWatch() {
+    if (pillsWatchTimer) {
+      return;
+    }
+
+    pillsWatchTimer = setInterval(function () {
+      if (!isHotelPage() || isApplyingSort) {
+        return;
+      }
+
+      if (isLoading()) {
+        listWasLoading = true;
+        return;
+      }
+
+      const wrapper = findSortFilterWrapper();
+      if (!wrapper || !getNativeTrigger(wrapper)) {
+        return;
+      }
+
+      if (!isMountHealthy(wrapper) || wrapper.getAttribute(DATA_DONE) !== '1') {
+        ensureSortPillsPresent(true);
+      }
+    }, PILLS_WATCH_INTERVAL_MS);
   }
 
   function waitForContentReady(callback) {
@@ -798,7 +864,7 @@
 
       if (listWasLoading) {
         listWasLoading = false;
-        scheduleRun(true);
+        onListReady();
         return;
       }
 
@@ -808,7 +874,7 @@
       }
 
       if (!isMountHealthy(wrapper) || wrapper.getAttribute(DATA_DONE) !== '1') {
-        scheduleRun(true);
+        scheduleEnsure(true);
       }
     });
 
@@ -819,8 +885,9 @@
     if (!isHotelPage()) {
       return;
     }
+    startPillsWatch();
     waitForContentReady(function () {
-      run();
+      onListReady();
       startObserver();
     });
   }
