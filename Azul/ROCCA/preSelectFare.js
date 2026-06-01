@@ -1,0 +1,1036 @@
+// Pre Seleção de Tarifa (mobile-ready)
+
+(function () {
+  // Variáveis de estado
+  let lastVisibilityState = null;
+  let isInitialized = false;
+  let currentFareContext = null;
+  let isProcessingChange = false;
+  let isSecondStep = false;
+  let calendarObserver = null;
+  let lastApplyAttempt = null;
+  let lastCTAState = null;
+  let consecutiveFailedAttempts = 0;
+
+  // Detecta mobile (toque disponível e largura reduzida)
+  function isMobile() {
+    return window.innerWidth <= 768 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  }
+
+  // Dispara clique compatível com React + mobile
+  // Em dispositivos touch, o .click() nativo pode ser ignorado pelo React;
+  // despachar MouseEvent com bubbles garante que o synthetic event do React seja ativado.
+  function simulateClick(el) {
+    if (!el) return;
+    var event = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
+    el.dispatchEvent(event);
+  }
+
+  // Função global para resetar e testar novamente
+  window.resetPreSelectFare = function () {
+    currentFareContext = null;
+    lastVisibilityState = null;
+    isInitialized = false;
+    isProcessingChange = false;
+    isSecondStep = false;
+    consecutiveFailedAttempts = 0;
+    lastApplyAttempt = null;
+    lastCTAState = null;
+
+    const floatingCTA = document.querySelector('.pre-select-floating-cta');
+    if (floatingCTA) floatingCTA.remove();
+
+    const modifiedButtons = document.querySelectorAll('[data-pre-select-modified]');
+    modifiedButtons.forEach(function (btn) {
+      btn.removeAttribute('data-pre-select-modified');
+      btn.classList.remove('fare-selected-disabled');
+      btn.removeAttribute('disabled');
+      btn.style.pointerEvents = '';
+      const texts = btn.querySelectorAll('.button__text, .button__text--mobile');
+      texts.forEach(function (t) { t.textContent = 'Selecionar tarifa'; });
+      btn.removeAttribute('data-original-text');
+    });
+
+    const highlightedItems = document.querySelectorAll('.fare-item-highlighted');
+    highlightedItems.forEach(function (item) { item.classList.remove('fare-item-highlighted'); });
+
+    document.body.classList.remove('pre-select-fare-active');
+
+    if (window._preSelectFareObserver) {
+      window._preSelectFareObserver.disconnect();
+      window._preSelectFareObserver = null;
+    }
+
+    console.log('[PreSelectFare] Reset completo');
+  };
+
+  // Função de analytics
+  function analyticsEvent(eventLabel) {
+    if (!eventLabel) return;
+    const labelEvent = 'AT_pre_select_fare ' + eventLabel;
+    (function () {
+      const s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+      if (!s || typeof s.tl !== 'function') return;
+      s.linkTrackVars = 'events,eVar82';
+      s.linkTrackEvents = 'event90';
+      s.events = 'event90';
+      s.eVar82 = labelEvent;
+      s.tl(true, 'o', 'target_activity_action');
+    })();
+  }
+
+  // Injeção de estilos
+  function injectStyles() {
+    if (document.getElementById('pre-select-fare-styles')) return;
+    const styles = document.createElement('style');
+    styles.id = 'pre-select-fare-styles';
+    styles.textContent = '\
+      .pre-select-floating-cta {\
+        position: fixed;\
+        bottom: 0;\
+        left: 0;\
+        right: 0;\
+        background: #FFFFFF;\
+        padding: 20px;\
+        padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));\
+        z-index: 9999;\
+        display: flex;\
+        justify-content: center;\
+        align-items: center;\
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);\
+        -webkit-tap-highlight-color: transparent;\
+      }\
+      .pre-select-floating-cta .floating-continue-btn {\
+        background: #008058;\
+        color: #FFFFFF;\
+        border: none;\
+        border-radius: 4px;\
+        padding: 14px 48px;\
+        font-size: 16px;\
+        font-weight: 600;\
+        cursor: pointer;\
+        transition: all 0.3s ease;\
+        min-width: 280px;\
+        letter-spacing: 0.5px;\
+        font-family: "Helvetica Neue Medium", Arial;\
+        -webkit-tap-highlight-color: transparent;\
+        touch-action: manipulation;\
+      }\
+      .pre-select-floating-cta .floating-continue-btn:hover:not(:disabled) {\
+        opacity: 0.9;\
+      }\
+      .pre-select-floating-cta .floating-continue-btn:disabled,\
+      .pre-select-floating-cta .floating-continue-btn.disabled {\
+        background: #FFF !important;\
+        color: #999999 !important;\
+        cursor: not-allowed !important;\
+        opacity: 0.7;\
+      }\
+      body .fare-selected-disabled {\
+        background: #163B70 !important;\
+        color: #FFF !important;\
+        cursor: not-allowed !important;\
+        pointer-events: none !important;\
+        opacity: 0.8 !important;\
+      }\
+      body .fare-selected-disabled .button__text,\
+      body .fare-selected-disabled .button__text--mobile {\
+        color: #FFF !important;\
+      }\
+      .fare-item-highlighted {\
+        position: relative;\
+        border: 1px solid #026CB6 !important;\
+        background-color: #EBF4FA !important;\
+      }\
+      footer.pre-select-footer-adjusted {\
+        position: unset !important;\
+      }\
+      .css-guj3i2 {\
+        background-color: #FFF !important;\
+        color: #026CB6 !important;\
+        border: 1px solid #026CB6 !important;\
+      }\
+      .css-guj3i2:hover {\
+        background-color: #EBF4FA !important;\
+      }\
+      .css-ist1h5 {\
+        background-color: #EBF4FA !important;\
+      }\
+      .css-ou6pmp {\
+        background: #163B70 !important;\
+        color: #FFF !important;\
+        cursor: not-allowed !important;\
+        pointer-events: none !important;\
+        opacity: 0.8 !important;\
+        border-radius: 4px !important;\
+      }\
+      @media (max-width: 768px) {\
+        .pre-select-floating-cta {\
+          padding: 15px;\
+          padding-top: 30px;\
+          padding-bottom: calc(15px + env(safe-area-inset-bottom, 0px));\
+        }\
+        .pre-select-floating-cta .floating-continue-btn {\
+          width: 100%;\
+          padding: 14px 24px;\
+          font-size: 14px;\
+          min-height: 48px;\
+        }\
+      }\
+    ';
+    document.head.appendChild(styles);
+  }
+
+  injectStyles();
+
+  // FUNÇÃO: Detecta se estamos na PRIMEIRA etapa
+  function isInFirstStep() {
+    const priceCalendar = document.querySelector('[aria-label="Calendário de preços. Veja os preços próximos aos dias de sua busca. Selecionar"]');
+    const fareItems = document.querySelectorAll('.fare-item');
+    const bookingCalendar = document.querySelector('.booking-calendar__cards');
+    return !!(priceCalendar || (fareItems.length > 0 && bookingCalendar));
+  }
+
+  // FUNÇÃO: Identifica a qual trecho um fare-item pertence
+  function identifyFareItemTrip(fareItem) {
+    let current = fareItem;
+    let depth = 0;
+
+    while (current && current !== document.body && depth < 50) {
+      depth++;
+      const className = current.className || '';
+      const classStr = typeof className === 'string' ? className : (className.baseVal || '');
+
+      if (classStr.indexOf('trip-index-0') !== -1) return 'ida';
+      if (classStr.indexOf('trip-index-1') !== -1) return 'volta';
+
+      current = current.parentElement;
+    }
+
+    return 'desconhecido';
+  }
+
+  // Obtém fare-items visíveis separados por trecho
+  function getVisibleFareItemsByTrip(enableLog) {
+    const allFareItems = document.querySelectorAll('.fare-item');
+    const result = { ida: [], volta: [], desconhecido: [] };
+
+    allFareItems.forEach(function (fareItem) {
+      const rect = fareItem.getBoundingClientRect();
+      const style = window.getComputedStyle(fareItem);
+      const isVisible = rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+
+      if (!isVisible) return;
+
+      const trip = identifyFareItemTrip(fareItem);
+      result[trip].push(fareItem);
+    });
+
+    if (enableLog) {
+      console.log('[PreSelectFare] Fare-items: IDA=' + result.ida.length + ' VOLTA=' + result.volta.length);
+    }
+
+    return result;
+  }
+
+  // Encontra a tarifa mais cara em uma lista
+  function findMostExpensiveFromList(fareItems, tripName) {
+    if (!fareItems || fareItems.length === 0) return null;
+
+    let maxPrice = -1;
+    let mostExpensiveFare = null;
+
+    fareItems.forEach(function (fareItem) {
+      if (fareItem.classList.contains('fare-item-highlighted')) return;
+
+      const fareName = fareItem.querySelector('.promotional, .fare-price p');
+      if (fareName && fareName.textContent.toLowerCase().includes('business')) return;
+
+      const selectButton = fareItem.querySelector('[data-test-id="select-fare"]');
+      if (!selectButton) return;
+      if (selectButton.textContent.toLowerCase().includes('esgotada')) return;
+
+      const priceElement = fareItem.querySelector('[data-test-id="fare-price"]');
+      if (!priceElement) return;
+
+      const rawText = priceElement.textContent;
+      const priceText = rawText.replace(/[^\d.,]/g, '').replace(/\.(?=\d{3})/g, '').replace(',', '.');
+      const price = parseFloat(priceText);
+
+      if (!isNaN(price) && price > maxPrice) {
+        maxPrice = price;
+        mostExpensiveFare = fareItem;
+      }
+    });
+
+    if (mostExpensiveFare) {
+      console.log('[PreSelectFare] Tarifa mais cara ' + tripName + ': R$' + maxPrice.toFixed(2));
+    }
+
+    return mostExpensiveFare;
+  }
+
+  // Verifica se já há tarifa selecionada no container
+  function checkIfFareAlreadySelected(tripContainer) {
+    const searchScope = tripContainer || document;
+
+    if (searchScope.querySelector('[aria-label*="Alterar esta tarifa"]')) return true;
+    if (searchScope.querySelector('.css-ou6pmp')) return true;
+
+    const selectedIndicators = ['.fare-item.selected', '.fare-item.active', '.fare-item [aria-selected="true"]'];
+    for (let i = 0; i < selectedIndicators.length; i++) {
+      const selected = searchScope.querySelector(selectedIndicators[i]);
+      if (selected && !selected.hasAttribute('data-pre-select-modified')) return true;
+    }
+
+    const disabledButtons = searchScope.querySelectorAll('[data-test-id="select-fare"][disabled]');
+    for (let i = 0; i < disabledButtons.length; i++) {
+      const btn = disabledButtons[i];
+      if (btn.hasAttribute('data-pre-select-modified')) continue;
+      if (!btn.textContent.toLowerCase().includes('esgotada')) return true;
+    }
+
+    return false;
+  }
+
+  // Modifica o botão da tarifa mais cara
+  function modifyExpensiveFareButton(fareItem) {
+    if (!fareItem) return null;
+    const selectButton = fareItem.querySelector('[data-test-id="select-fare"]');
+    if (!selectButton) return null;
+    if (selectButton.hasAttribute('data-pre-select-modified')) return selectButton;
+
+    selectButton.setAttribute('data-pre-select-modified', 'true');
+    if (!selectButton.hasAttribute('data-original-text')) {
+      const buttonTexts = selectButton.querySelectorAll('.button__text, .button__text--mobile');
+      if (buttonTexts.length > 0) selectButton.setAttribute('data-original-text', buttonTexts[0].textContent);
+    }
+
+    const buttonTexts = selectButton.querySelectorAll('.button__text, .button__text--mobile');
+    buttonTexts.forEach(function (textEl) {
+      textEl.textContent = 'Tarifa selecionada';
+    });
+    selectButton.classList.add('fare-selected-disabled');
+    selectButton.setAttribute('disabled', 'true');
+    fareItem.classList.add('fare-item-highlighted');
+
+    return selectButton;
+  }
+
+  // Conta tarifas selecionadas
+  function countSelectedFares() {
+    let count = 0;
+    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
+
+    if (tripContainers.length > 0) {
+      tripContainers.forEach(function (container) {
+        if (checkIfFareAlreadySelected(container)) count++;
+      });
+    } else {
+      if (checkIfFareAlreadySelected()) count = 1;
+    }
+
+    return count;
+  }
+
+  // Verifica se há botão pré-selecionado visível
+  function hasVisiblePreSelectedButton() {
+    const btn = document.querySelector('[data-pre-select-modified]');
+    if (!btn) return false;
+    const rect = btn.getBoundingClientRect();
+    return rect.height > 0;
+  }
+
+  // Identifica qual trecho está faltando
+  function getMissingTripSelection() {
+    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
+    if (tripContainers.length === 0) return { missing: 'tarifa', idaSelected: false, voltaSelected: false };
+
+    let idaSelected = false;
+    let voltaSelected = false;
+
+    tripContainers.forEach(function (container) {
+      const isIda = container.className.indexOf('trip-index-0') !== -1;
+      const isVolta = container.className.indexOf('trip-index-1') !== -1;
+      const hasSelection = checkIfFareAlreadySelected(container);
+
+      if (isIda && hasSelection) idaSelected = true;
+      if (isVolta && hasSelection) voltaSelected = true;
+    });
+
+    let missing = null;
+    if (!idaSelected && !voltaSelected) missing = 'ambas';
+    else if (!idaSelected) missing = 'ida';
+    else if (!voltaSelected) missing = 'volta';
+
+    return { missing: missing, idaSelected: idaSelected, voltaSelected: voltaSelected };
+  }
+
+  // Gera hash do contexto atual
+  function getFareContextHash() {
+    const fareItems = getVisibleFareItemsByTrip(false);
+    const idaPrices = fareItems.ida.map(function (item) {
+      const el = item.querySelector('[data-test-id="fare-price"]');
+      return el ? el.textContent.trim() : '';
+    }).filter(function (p) { return p; }).sort().join(',');
+
+    const voltaPrices = fareItems.volta.map(function (item) {
+      const el = item.querySelector('[data-test-id="fare-price"]');
+      return el ? el.textContent.trim() : '';
+    }).filter(function (p) { return p; }).sort().join(',');
+
+    return 'ida:' + fareItems.ida.length + ':' + idaPrices + '|volta:' + fareItems.volta.length + ':' + voltaPrices;
+  }
+
+  // Adiciona classe ao footer quando a barra está visível
+  function updateFooterStyle(isBarVisible) {
+    const footer = document.querySelector('footer');
+    if (!footer) return;
+
+    if (isBarVisible) {
+      footer.classList.add('pre-select-footer-adjusted');
+    } else {
+      footer.classList.remove('pre-select-footer-adjusted');
+    }
+  }
+
+  // Registra listener de clique/touch no botão, sem duplicar (data-touch-bound)
+  function bindCTAButton(btn, handler) {
+    if (!btn || btn.hasAttribute('data-touch-bound')) return;
+    btn.setAttribute('data-touch-bound', 'true');
+
+    // touch: evita delay de 300ms no iOS/Android
+    btn.addEventListener('touchstart', function (e) {
+      e.preventDefault();
+      handler(e);
+    }, { passive: false });
+
+    btn.addEventListener('click', handler);
+  }
+
+  // Rola até elemento de forma compatível com mobile
+  function scrollToElement(el) {
+    if (!el) return;
+    // behavior:'smooth' pode travar em alguns browsers mobile; usa 'auto' no mobile
+    el.scrollIntoView({ behavior: isMobile() ? 'auto' : 'smooth', block: 'center' });
+  }
+
+  // Fecha detalhes expandidos dos voos
+  function closeExpandedDetails() {
+    const recolherButtons = document.querySelectorAll('button');
+
+    recolherButtons.forEach(function (btn) {
+      const text = btn.textContent.toLowerCase().trim();
+      if (text === 'recolher') {
+        const flightCard = btn.closest('.flight-card');
+        if (flightCard && flightCard.classList.contains('flight-card--opened')) {
+          simulateClick(btn);
+        }
+      }
+    });
+
+    const expandedButtons = document.querySelectorAll('.btn-fare[aria-pressed="true"]');
+    expandedButtons.forEach(function (btn) {
+      const text = btn.textContent.toLowerCase().trim();
+      if (text === 'recolher') {
+        simulateClick(btn);
+      }
+    });
+  }
+
+  // Atualiza estado do CTA flutuante
+  function updateFloatingCTAState(floatingCTA, originalButton) {
+    if (!floatingCTA) return;
+
+    const continueButton = floatingCTA.querySelector('.floating-continue-btn');
+    if (!continueButton) return;
+
+    // Clona para remover listeners antigos
+    const newBtn = continueButton.cloneNode(true);
+    newBtn.removeAttribute('data-touch-bound');
+    continueButton.parentNode.replaceChild(newBtn, continueButton);
+
+    floatingCTA.style.display = 'flex';
+    document.body.classList.add('pre-select-fare-active');
+    updateFooterStyle(true);
+
+    const selectedCount = countSelectedFares();
+    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
+    const totalTrips = tripContainers.length || 1;
+    const hasPreSelectedVisible = hasVisiblePreSelectedButton();
+    const tripStatus = getMissingTripSelection();
+
+    // Todas selecionadas
+    if (selectedCount >= totalTrips) {
+      newBtn.disabled = false;
+      newBtn.classList.remove('disabled');
+      newBtn.textContent = 'Continuar';
+
+      bindCTAButton(newBtn, function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        analyticsEvent('Continuar - Todas tarifas selecionadas');
+
+        const modifiedBtn = document.querySelector('[data-pre-select-modified]');
+        if (modifiedBtn) {
+          modifiedBtn.classList.remove('fare-selected-disabled');
+          modifiedBtn.removeAttribute('disabled');
+          modifiedBtn.style.pointerEvents = 'auto';
+          simulateClick(modifiedBtn);
+
+          setTimeout(function () { closeExpandedDetails(); }, 150);
+        }
+
+        setTimeout(function () {
+          floatingCTA.style.display = 'none';
+          document.body.classList.remove('pre-select-fare-active');
+          updateFooterStyle(false);
+        }, 100);
+      });
+      return;
+    }
+
+    // Seleção parcial com botão visível
+    if (selectedCount > 0 && selectedCount < totalTrips && totalTrips > 1 && hasPreSelectedVisible) {
+      newBtn.disabled = false;
+      newBtn.classList.remove('disabled');
+      newBtn.textContent = 'Continuar';
+
+      bindCTAButton(newBtn, function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        analyticsEvent('Continuar - Confirmar tarifa');
+
+        const preSelectedBtn = document.querySelector('[data-pre-select-modified]');
+        if (preSelectedBtn) {
+          preSelectedBtn.classList.remove('fare-selected-disabled');
+          preSelectedBtn.removeAttribute('disabled');
+          preSelectedBtn.style.pointerEvents = 'auto';
+          simulateClick(preSelectedBtn);
+
+          setTimeout(function () { closeExpandedDetails(); }, 150);
+        }
+      });
+      return;
+    }
+
+    // Seleção parcial sem botão visível
+    if (selectedCount > 0 && selectedCount < totalTrips && totalTrips > 1) {
+      newBtn.disabled = true;
+      newBtn.classList.add('disabled');
+
+      if (tripStatus.missing === 'ida') newBtn.textContent = 'Selecione a tarifa de ida';
+      else if (tripStatus.missing === 'volta') newBtn.textContent = 'Selecione a tarifa da volta';
+      else newBtn.textContent = 'Selecione uma tarifa';
+      return;
+    }
+
+    // Pré-seleção ativa
+    if (originalButton && !originalButton.userSelected) {
+      newBtn.disabled = false;
+      newBtn.classList.remove('disabled');
+      newBtn.textContent = 'Continuar';
+
+      bindCTAButton(newBtn, function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        analyticsEvent('Continuar - Floating CTA');
+
+        originalButton.classList.remove('fare-selected-disabled');
+        originalButton.removeAttribute('disabled');
+        originalButton.style.pointerEvents = 'auto';
+        simulateClick(originalButton);
+
+        setTimeout(function () { closeExpandedDetails(); }, 150);
+
+        setTimeout(function () {
+          floatingCTA.style.display = 'none';
+          document.body.classList.remove('pre-select-fare-active');
+          updateFooterStyle(false);
+        }, 50);
+      });
+      return;
+    }
+
+    // Nenhuma tarifa selecionada
+    newBtn.disabled = true;
+    newBtn.classList.add('disabled');
+    newBtn.textContent = 'Selecione uma tarifa';
+  }
+
+  // Cria o CTA flutuante
+  function createFloatingCTA(originalButton) {
+    let existingCTA = document.querySelector('.pre-select-floating-cta');
+
+    if (existingCTA) {
+      updateFloatingCTAState(existingCTA, originalButton);
+      return existingCTA;
+    }
+
+    const floatingDiv = document.createElement('div');
+    floatingDiv.className = 'pre-select-floating-cta';
+
+    const wrapperDiv = document.createElement('div');
+    wrapperDiv.style.cssText = 'max-width: 920px; width: 100%; display: flex; justify-content: end;';
+
+    const continueButton = document.createElement('button');
+    continueButton.className = 'floating-continue-btn';
+    continueButton.textContent = 'Continuar';
+    continueButton.setAttribute('data-test-id', 'pre-select-continue-btn');
+
+    wrapperDiv.appendChild(continueButton);
+    floatingDiv.appendChild(wrapperDiv);
+    document.body.appendChild(floatingDiv);
+
+    updateFloatingCTAState(floatingDiv, originalButton);
+    return floatingDiv;
+  }
+
+  // Aplica pré-seleção
+  function applySelection() {
+    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
+
+    // Voo simples
+    if (tripContainers.length === 0) {
+      if (checkIfFareAlreadySelected()) return false;
+
+      const fareItems = getVisibleFareItemsByTrip(true);
+      const allFares = fareItems.ida.concat(fareItems.volta).concat(fareItems.desconhecido);
+      const mostExpensive = findMostExpensiveFromList(allFares, 'SIMPLES');
+      if (!mostExpensive) return false;
+
+      const btn = modifyExpensiveFareButton(mostExpensive);
+      if (!btn) return false;
+
+      // Mobile: rola até a tarifa destacada para que o usuário veja o feedback visual
+      if (isMobile()) scrollToElement(mostExpensive);
+
+      createFloatingCTA(btn);
+      return true;
+    }
+
+    // Ida e volta
+    const fareItems = getVisibleFareItemsByTrip(true);
+
+    let idaSelected = false;
+    let voltaSelected = false;
+
+    tripContainers.forEach(function (container) {
+      const isIda = container.className.indexOf('trip-index-0') !== -1;
+      const isVolta = container.className.indexOf('trip-index-1') !== -1;
+
+      if (isIda && checkIfFareAlreadySelected(container)) idaSelected = true;
+      if (isVolta && checkIfFareAlreadySelected(container)) voltaSelected = true;
+    });
+
+    const appliedSelections = [];
+
+    // Processa IDA
+    if (!idaSelected && fareItems.ida.length > 0) {
+      const existing = fareItems.ida.find(function (item) { return item.classList.contains('fare-item-highlighted'); });
+      if (existing) {
+        const btn = existing.querySelector('[data-pre-select-modified]');
+        if (btn) appliedSelections.push(btn);
+      } else {
+        const mostExpensive = findMostExpensiveFromList(fareItems.ida, 'IDA');
+        if (mostExpensive) {
+          const btn = modifyExpensiveFareButton(mostExpensive);
+          if (btn) {
+            console.log('[PreSelectFare] Pre-selecao aplicada na IDA');
+            if (isMobile()) scrollToElement(mostExpensive);
+            appliedSelections.push(btn);
+          }
+        }
+      }
+    }
+
+    // Processa VOLTA
+    if (!voltaSelected && fareItems.volta.length > 0) {
+      const existing = fareItems.volta.find(function (item) { return item.classList.contains('fare-item-highlighted'); });
+      if (existing) {
+        const btn = existing.querySelector('[data-pre-select-modified]');
+        if (btn) appliedSelections.push(btn);
+      } else {
+        const mostExpensive = findMostExpensiveFromList(fareItems.volta, 'VOLTA');
+        if (mostExpensive) {
+          const btn = modifyExpensiveFareButton(mostExpensive);
+          if (btn) {
+            console.log('[PreSelectFare] Pre-selecao aplicada na VOLTA');
+            appliedSelections.push(btn);
+          }
+        }
+      }
+    }
+
+    if (appliedSelections.length > 0) {
+      createFloatingCTA(appliedSelections[0]);
+      return true;
+    }
+
+    return false;
+  }
+
+  // Reseta seleção atual
+  function resetCurrentSelection() {
+    const modifiedButtons = document.querySelectorAll('[data-pre-select-modified]');
+    modifiedButtons.forEach(function (btn) {
+      btn.removeAttribute('data-pre-select-modified');
+      btn.classList.remove('fare-selected-disabled');
+      btn.removeAttribute('disabled');
+      btn.style.pointerEvents = '';
+      const originalText = btn.getAttribute('data-original-text');
+      const texts = btn.querySelectorAll('.button__text, .button__text--mobile');
+      texts.forEach(function (t) { t.textContent = originalText || 'Selecionar tarifa'; });
+      btn.removeAttribute('data-original-text');
+      btn.removeAttribute('data-touch-bound');
+    });
+
+    document.querySelectorAll('.fare-item-highlighted').forEach(function (item) { item.classList.remove('fare-item-highlighted'); });
+
+    const floatingCTA = document.querySelector('.pre-select-floating-cta');
+    if (floatingCTA) floatingCTA.style.display = 'none';
+
+    document.body.classList.remove('pre-select-fare-active');
+    updateFooterStyle(false);
+    lastApplyAttempt = null;
+    lastCTAState = null;
+    consecutiveFailedAttempts = 0;
+  }
+
+  // Verifica visibilidade das tarifas
+  function checkFaresVisibility() {
+    if (isProcessingChange) return;
+
+    if (!isInFirstStep()) {
+      const floatingCTA = document.querySelector('.pre-select-floating-cta');
+      if (floatingCTA) {
+        floatingCTA.style.display = 'none';
+        document.body.classList.remove('pre-select-fare-active');
+        updateFooterStyle(false);
+      }
+      return;
+    }
+
+    const fareItems = getVisibleFareItemsByTrip(false);
+    const totalVisible = fareItems.ida.length + fareItems.volta.length + fareItems.desconhecido.length;
+
+    if (totalVisible === 0) {
+      if (lastVisibilityState !== false) {
+        lastVisibilityState = false;
+        currentFareContext = null;
+        lastApplyAttempt = null;
+        lastCTAState = null;
+        consecutiveFailedAttempts = 0;
+        const floatingCTA = document.querySelector('.pre-select-floating-cta');
+        if (floatingCTA) updateFloatingCTAState(floatingCTA, null);
+      }
+      return;
+    }
+
+    const modifiedButton = document.querySelector('[data-pre-select-modified]');
+    const isModifiedVisible = modifiedButton ? modifiedButton.getBoundingClientRect().height > 0 : false;
+
+    let floatingCTA = document.querySelector('.pre-select-floating-cta');
+    if (!floatingCTA) floatingCTA = createFloatingCTA(null);
+
+    const selectedCount = countSelectedFares();
+    const tripContainers = document.querySelectorAll('[class*="trip-index"]');
+    const totalTrips = tripContainers.length || 1;
+
+    // Todas selecionadas
+    if (selectedCount >= totalTrips && selectedCount > 0) {
+      const currentState = 'all_selected_' + selectedCount;
+      if (lastCTAState !== currentState) {
+        console.log('[PreSelectFare] Todas tarifas selecionadas');
+        lastCTAState = currentState;
+        consecutiveFailedAttempts = 0;
+        updateFloatingCTAState(floatingCTA, { allSelected: true });
+      }
+      return;
+    }
+
+    const newContext = getFareContextHash();
+
+    // Reseta se botão não visível
+    if (modifiedButton && !isModifiedVisible) {
+      modifiedButton.removeAttribute('data-pre-select-modified');
+      modifiedButton.classList.remove('fare-selected-disabled');
+      modifiedButton.removeAttribute('disabled');
+      modifiedButton.style.pointerEvents = '';
+      modifiedButton.removeAttribute('data-touch-bound');
+
+      const fareItem = modifiedButton.closest('.fare-item');
+      if (fareItem) fareItem.classList.remove('fare-item-highlighted');
+
+      lastApplyAttempt = null;
+      lastCTAState = null;
+      consecutiveFailedAttempts = 0;
+    }
+
+    // Detecta mudança de contexto
+    if (currentFareContext && currentFareContext !== newContext && modifiedButton && isModifiedVisible) {
+      console.log('[PreSelectFare] Contexto mudou - reaplicando');
+      isProcessingChange = true;
+      resetCurrentSelection();
+      currentFareContext = newContext;
+
+      setTimeout(function () {
+        applySelection();
+        currentFareContext = getFareContextHash();
+        lastVisibilityState = true;
+        lastApplyAttempt = currentFareContext;
+        isProcessingChange = false;
+
+        const btn = document.querySelector('[data-pre-select-modified]');
+        updateFloatingCTAState(floatingCTA, btn);
+      }, 100);
+      return;
+    }
+
+    // Verifica necessidade de aplicar seleção
+    let idaSelected = false;
+    let voltaSelected = false;
+
+    tripContainers.forEach(function (container) {
+      const isIda = container.className.indexOf('trip-index-0') !== -1;
+      const isVolta = container.className.indexOf('trip-index-1') !== -1;
+
+      if (isIda && checkIfFareAlreadySelected(container)) idaSelected = true;
+      if (isVolta && checkIfFareAlreadySelected(container)) voltaSelected = true;
+    });
+
+    const idaNeedsSelection = !idaSelected && fareItems.ida.length > 0;
+    const voltaNeedsSelection = !voltaSelected && fareItems.volta.length > 0;
+    const hasUnselected = idaNeedsSelection || voltaNeedsSelection;
+
+    if (!(modifiedButton && isModifiedVisible) && hasUnselected) {
+      if (consecutiveFailedAttempts >= 5) {
+        if (newContext !== lastApplyAttempt) {
+          consecutiveFailedAttempts = 0;
+          lastApplyAttempt = null;
+        } else {
+          updateFloatingCTAState(floatingCTA, null);
+          return;
+        }
+      }
+
+      const applied = applySelection();
+
+      if (!applied) consecutiveFailedAttempts++;
+      else consecutiveFailedAttempts = 0;
+
+      currentFareContext = getFareContextHash();
+      lastVisibilityState = true;
+      lastApplyAttempt = currentFareContext;
+      lastCTAState = null;
+
+      const btn = applied ? document.querySelector('[data-pre-select-modified]') : null;
+      updateFloatingCTAState(floatingCTA, btn);
+      return;
+    }
+
+    // Já tem seleção válida
+    currentFareContext = newContext;
+    if (lastVisibilityState !== true || (modifiedButton && isModifiedVisible)) {
+      lastVisibilityState = true;
+      lastCTAState = null;
+      consecutiveFailedAttempts = 0;
+      updateFloatingCTAState(floatingCTA, modifiedButton);
+    }
+  }
+
+  // Configura observer principal
+  function setupObserver() {
+    if (window._preSelectFareObserver) return;
+
+    let debounceTimer = null;
+    const observer = new MutationObserver(function (mutations) {
+      if (isProcessingChange) return;
+
+      // Filtra mudanças causadas pela própria barra flutuante
+      const shouldIgnore = mutations.some(function (mutation) {
+        if (mutation.type === 'attributes') {
+          const target = mutation.target;
+          if (target.nodeType === 1) {
+            if (
+              target.classList && (
+                target.classList.contains('pre-select-floating-cta') ||
+                target.classList.contains('floating-continue-btn')
+              ) ||
+              (target.closest && target.closest('.pre-select-floating-cta'))
+            ) {
+              return true;
+            }
+          }
+        }
+
+        if (mutation.type === 'childList') {
+          const addedNodes = Array.from(mutation.addedNodes);
+          const removedNodes = Array.from(mutation.removedNodes);
+
+          const hasFloatingCTA = addedNodes.some(function (node) {
+            return node.nodeType === 1 && (
+              (node.classList && node.classList.contains('pre-select-floating-cta')) ||
+              (node.querySelector && node.querySelector('.pre-select-floating-cta'))
+            );
+          });
+
+          const removedFloatingCTA = removedNodes.some(function (node) {
+            return node.nodeType === 1 && (
+              (node.classList && node.classList.contains('pre-select-floating-cta')) ||
+              (node.querySelector && node.querySelector('.pre-select-floating-cta'))
+            );
+          });
+
+          return hasFloatingCTA || removedFloatingCTA;
+        }
+
+        return false;
+      });
+
+      if (shouldIgnore) return;
+
+      if (!isInitialized) {
+        const fareItems = document.querySelectorAll('.fare-item');
+        if (fareItems.length > 0) {
+          isInitialized = true;
+          checkFaresVisibility();
+        }
+        return;
+      }
+
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(checkFaresVisibility, 100);
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class', 'hidden']
+    });
+
+    window._preSelectFareObserver = observer;
+  }
+
+  // Configura observer do calendário
+  function setupCalendarObserver() {
+    if (calendarObserver) return;
+
+    calendarObserver = new MutationObserver(function () {
+      const priceCalendar = document.querySelector('[aria-label="Calendário de preços. Veja os preços próximos aos dias de sua busca. Selecionar"]');
+
+      if (priceCalendar && isSecondStep) {
+        console.log('[PreSelectFare] Retornando da segunda etapa');
+
+        isSecondStep = false;
+        isInitialized = false;
+        isProcessingChange = false;
+        currentFareContext = null;
+        lastVisibilityState = null;
+        consecutiveFailedAttempts = 0;
+
+        resetCurrentSelection();
+
+        setTimeout(function () {
+          const fareItems = document.querySelectorAll('.fare-item');
+          if (fareItems.length > 0) {
+            isInitialized = true;
+            checkFaresVisibility();
+          }
+        }, 150);
+      }
+    });
+
+    calendarObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['aria-label']
+    });
+  }
+
+  // Verificador de fallback — força pré-seleção se não houver seleção após delay
+  function setupFallbackChecker() {
+    let fallbackAttempts = 0;
+    const maxFallbackAttempts = 3;
+
+    const fallbackInterval = setInterval(function () {
+      fallbackAttempts++;
+
+      if (fallbackAttempts >= maxFallbackAttempts) {
+        clearInterval(fallbackInterval);
+        return;
+      }
+
+      if (!isInFirstStep()) {
+        clearInterval(fallbackInterval);
+        return;
+      }
+
+      const fareItems = getVisibleFareItemsByTrip(false);
+      const totalVisible = fareItems.ida.length + fareItems.volta.length + fareItems.desconhecido.length;
+
+      if (totalVisible === 0) return;
+
+      const hasPreSelection = document.querySelector('[data-pre-select-modified]');
+      if (hasPreSelection) {
+        console.log('[PreSelectFare] Pre-selecao ja aplicada - fallback cancelado');
+        clearInterval(fallbackInterval);
+        return;
+      }
+
+      const selectedCount = countSelectedFares();
+      if (selectedCount > 0) {
+        console.log('[PreSelectFare] Usuario ja fez selecao - fallback cancelado');
+        clearInterval(fallbackInterval);
+        return;
+      }
+
+      console.log('[PreSelectFare] Fallback: Forcando pre-selecao (tentativa ' + fallbackAttempts + ')');
+      const applied = applySelection();
+
+      if (applied) {
+        console.log('[PreSelectFare] Fallback: Pre-selecao aplicada com sucesso');
+        clearInterval(fallbackInterval);
+      }
+    }, 1000);
+  }
+
+  // Inicialização
+  function init() {
+    injectStyles();
+    setupObserver();
+    setupCalendarObserver();
+
+    const fareItems = document.querySelectorAll('.fare-item');
+    if (fareItems.length > 0) {
+      isInitialized = true;
+      checkFaresVisibility();
+    }
+
+    setupFallbackChecker();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  // Polling para carregamento dinâmico
+  let pollCount = 0;
+  const pollInterval = setInterval(function () {
+    pollCount++;
+    if (pollCount >= 60 || isInitialized) {
+      clearInterval(pollInterval);
+      return;
+    }
+    const fareItems = document.querySelectorAll('.fare-item');
+    if (fareItems.length > 0) {
+      isInitialized = true;
+      checkFaresVisibility();
+      clearInterval(pollInterval);
+    }
+  }, 50);
+})();

@@ -1,32 +1,13 @@
-# `.github` — Copilot e automação
+# `.github` — ponteiros para `.context`
 
-## GitHub Copilot
+Esta pasta **não contém** regras duplicadas. Apenas entradas que o GitHub Copilot exige nos caminhos padrão.
 
-| Arquivo | Função |
-|---------|--------|
-| `copilot-instructions.md` | Instruções **do repositório inteiro** para o Copilot (Chat, fluxos que leem este arquivo). |
-| `instructions/cro-javascript.instructions.md` | Instruções **só para `**/*.js`** (`applyTo` no frontmatter). |
+| Arquivo | Aponta para |
+|---------|-------------|
+| `copilot-instructions.md` | `.context/copilot-instructions.md` |
+| `instructions/cro-javascript.instructions.md` | `.context/instructions/cro-javascript.instructions.md` |
+| `regras.md` | `.context/regras.md` |
 
-Documentação oficial: [Adding repository custom instructions](https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions-for-github-copilot).
+**Manutenção:** edite somente `.context/`.
 
-## Espelho com Cursor
-
-As regras modulares existem em **dois lugares idênticos** (sincronizar via automação):
-
-| Local | Conteúdo |
-|-------|----------|
-| `.cursor/rules/*.md` | Regras por tema (Cursor) |
-| `.github/rules/*.md` | Cópia espelhada (Copilot / leitura no GitHub) |
-
-Índices: `.cursor/regras.md` e `.github/regras.md`.
-
-Outros em **`.cursor/`** apenas:
-
-- `.cursor/docs/skills.md` — uso de Skills
-- `.cursor/skills/*/SKILL.md` — playbooks (ex.: `cro-script-padronizacao`)
-
-**Manutenção:** editar um lado das regras e rodar o sync para o outro (ou atualizar os dois até a automação existir). O resumo em `copilot-instructions.md` pode ser ajustado à parte se necessário.
-
-## Agent / outros
-
-Opcionalmente o time pode usar `AGENTS.md` na raiz (agentes de IA). Este repo prioriza `.cursor/` + `.github/copilot-instructions.md`.
+Documentação: [Adding repository custom instructions](https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions-for-github-copilot)

@@ -19,12 +19,13 @@
 		'header a[href="/"]',
 		'header a[href*="voeazul.com.br"]'
 	];
-	const CTA_URL = 'https://www.voeazul.com.br/br/pt/disney/promocoes-disney';
+	const CTA_URL = 'https://www.voeazul.com.br/br/pt/home/hotel?ds=JPD036691&stdi=29/11/2026&stdo=18/12/2026&r[0].adt=2&s_emid=emkt_pmweb_azv_e-mail_banner_lf_azv_202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOPESQUISAHOSPDISNEY-D0_n_abandonopesquisahospedagem_rec_bnr_lp_&utm_term=202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOPESQUISAHOSPDISNEY-D0&utm_source=e-mail&utm_campaign=pmweb_azv_e-mail_banner_lf_azv_202603-azv-b2c-emm-168h-viagem-abandonopesquisahospdisney-d0_n&utm_medium=rec#hotelList';
 	const ASSET_BG = 'fundo disney.png';
 	const ASSET_GLOW = 'Group 11785.png';
 	const ASSET_SHINE_1 = 'BRILHO copy';
 	const ASSET_SHINE_2 = 'BRILHO copy 2';
 	const ASSET_HERO = '0228ZM_0270SD_R2_xak (1)';
+	const ASSET_HERO_URL = 'https://i.imgur.com/wVOIihy.png';
 
 	let retryCount = 0;
 	let retryTimer = null;
@@ -32,6 +33,7 @@
 	let observer = null;
 	let observerDebounce = null;
 	let exitIntentBound = false;
+	let exitIntentTriggered = false;
 
 	function init() {
 		if (window[SCRIPT_KEY]) {
@@ -61,16 +63,40 @@
 			return;
 		}
 
-		document.addEventListener('mouseout', function (event) {
-			if (event.relatedTarget || event.toElement) {
+		function triggerExitIntent() {
+			if (exitIntentTriggered) {
 				return;
 			}
 
-			if (event.clientY > 8) {
+			const opened = openModal('exit_intent', null);
+			if (opened) {
+				exitIntentTriggered = true;
+			}
+		}
+
+		function onPointerLeavingViewport(event) {
+			const related = event.relatedTarget || event.toElement;
+			if (related) {
 				return;
 			}
 
-			openModal('exit_intent', null);
+			const leftTopEdge = event.clientY <= 0;
+			const leftLeftEdge = event.clientX <= 0;
+			const leftRightEdge = event.clientX >= window.innerWidth - 1;
+			if (!leftTopEdge && !leftLeftEdge && !leftRightEdge) {
+				return;
+			}
+
+			triggerExitIntent();
+		}
+
+		document.addEventListener('mouseleave', onPointerLeavingViewport, true);
+		document.addEventListener('mouseout', onPointerLeavingViewport, true);
+
+		window.addEventListener('blur', function () {
+			if (document.visibilityState === 'hidden') {
+				triggerExitIntent();
+			}
 		});
 
 		exitIntentBound = true;
@@ -328,34 +354,44 @@
 		const parts = [];
 		parts.push('<div class="disneyAbandonmentModal__card">');
 		parts.push('<button type="button" class="disneyAbandonmentModal__close" aria-label="Fechar modal">x</button>');
+		parts.push('<div class="disneyAbandonmentModal__bgGradient"></div>');
+		parts.push('<div class="disneyAbandonmentModal__bgStars"></div>');
 		parts.push('<div class="disneyAbandonmentModal__bgLayer disneyAbandonmentModal__bgLayer--g1"></div>');
 		parts.push('<div class="disneyAbandonmentModal__bgLayer disneyAbandonmentModal__bgLayer--g2"></div>');
 		parts.push('<div class="disneyAbandonmentModal__bgLayer disneyAbandonmentModal__bgLayer--g3"></div>');
-		parts.push('<div class="disneyAbandonmentModal__frame">');
+		parts.push('<div class="disneyAbandonmentModal__bgBlur"></div>');
+		parts.push('<div class="disneyAbandonmentModal__bgStar"></div>');
 		parts.push('<div class="disneyAbandonmentModal__brandRow">');
 		parts.push('<span class="disneyAbandonmentModal__brand">Azul Viagens</span>');
 		parts.push('<span class="disneyAbandonmentModal__divider"></span>');
-		parts.push('<span class="disneyAbandonmentModal__brand">Disney</span>');
+		parts.push('<img class="disneyAbandonmentModal__brandLogo" src="https://i.imgur.com/1CwQhAX.png" alt="Disney" />');
 		parts.push('</div>');
-		parts.push('<h3 class="disneyAbandonmentModal__title">Não Saia ainda! Seu sonho Disney pode ficar ainda melhor</h3>');
-		parts.push('<div class="disneyAbandonmentModal__tag">Conheça nossas ofertas e aproveite</div>');
+		parts.push('<h3 class="disneyAbandonmentModal__title">Nao Saia ainda! <br><span class="disneyAbandonmentModal__titleSub">Seu sonho Disney <br class="disneyAbandonmentModal__br--desktop">pode <br class="disneyAbandonmentModal__br--mobile">ficar ainda <br class="disneyAbandonmentModal__br--desktop">melhor</span></h3>');
+		parts.push('<p class="disneyAbandonmentModal__description">Conheca <br class="disneyAbandonmentModal__br--desktop">nossas ofertas <br class="disneyAbandonmentModal__br--desktop">e aproveite!</p>');
 		parts.push('<div class="disneyAbandonmentModal__offerCard">');
-		parts.push('<p class="disneyAbandonmentModal__offerKicker">Pacotes (aereo + hotel) com</p>');
-		parts.push('<div class="disneyAbandonmentModal__offerValue"><span class="disneyAbandonmentModal__offerNumber">20</span><span class="disneyAbandonmentModal__offerPercent">%</span><span class="disneyAbandonmentModal__offerOff">OFF</span></div>');
+		parts.push('<img class="disneyAbandonmentModal__offerBadge" src="https://i.imgur.com/vrNMXpn.png" alt="" />');
+		parts.push('<p class="disneyAbandonmentModal__offerTitle">Pacotes <span class="disneyAbandonmentModal__offerKicker">(aereo + hotel) com</span></p>');
+		parts.push('<div class="disneyAbandonmentModal__offerValue">');
+		parts.push('<span class="disneyAbandonmentModal__offerNumber">20</span>');
+		parts.push('<div class="disneyAbandonmentModal__offerRight">');
+		parts.push('<span class="disneyAbandonmentModal__offerPercent">%</span>');
+		parts.push('<span class="disneyAbandonmentModal__offerOff">OFF</span>');
+		parts.push('</div>');
+		parts.push('</div>');
+		parts.push('</div>');
 		parts.push('<div class="disneyAbandonmentModal__couponWrap">');
-		parts.push('<span class="disneyAbandonmentModal__couponLabel">Cupom:</span>');
+		parts.push('<span class="disneyAbandonmentModal__couponIcon"></span>');
 		parts.push('<strong class="disneyAbandonmentModal__coupon">HOTELENCANTADO20</strong>');
 		parts.push('</div>');
 		parts.push('<span class="disneyAbandonmentModal__copyFeedback" aria-live="polite"></span>');
-		parts.push('</div>');
 		parts.push('<button type="button" class="disneyAbandonmentModal__ctaPrimary">Eu quero</button>');
 		parts.push('<button type="button" class="disneyAbandonmentModal__ctaSecondary">Continuar navegando</button>');
 		parts.push('<span class="disneyAbandonmentModal__legal">*Consulte condicoes.</span>');
-		parts.push('</div>');
 		parts.push('<div class="disneyAbandonmentModal__heroMask">');
 		parts.push('<div class="disneyAbandonmentModal__heroImage"></div>');
 		parts.push('<span class="disneyAbandonmentModal__copyright">© 2026 Disney</span>');
 		parts.push('</div>');
+		parts.push('<div class="disneyAbandonmentModal__heroDot"></div>');
 		parts.push('</div>');
 		return parts.join('');
 	}
@@ -430,41 +466,88 @@
 
 	function getModalCss() {
 		return [
-			'.disneyAbandonmentModal { position: fixed; inset: 0px; background: ' + OVERLAY_OPACITY + '; z-index: 99999; display: flex; justify-content: center; align-items: center; padding: 16px; box-sizing: border-box; }',
-			'.disneyAbandonmentModal__card { position: relative; width: 360px; max-width: 100%; min-height: 532px; border-radius: 20px; overflow: hidden; background: #0150B5; background-image: linear-gradient(180deg, rgba(1,80,181,0.95) 0%, rgba(0,97,160,0.98) 100%), url("' + ASSET_BG + '"); background-size: cover; background-position: center; box-shadow: 0px 16px 48px rgba(0, 0, 0, 0.36); }',
-			'.disneyAbandonmentModal__close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 999px; border: none; background: rgba(255,255,255,0.2); color: #FFFFFF; font-size: 20px; cursor: pointer; z-index: 6; }',
-			'.disneyAbandonmentModal__bgLayer { position: absolute; background-image: url("' + ASSET_GLOW + '"); background-repeat: no-repeat; background-size: contain; mix-blend-mode: plus-lighter; opacity: 0.7; pointer-events: none; }',
-			'.disneyAbandonmentModal__bgLayer--g1 { width: 290px; height: 274px; left: -188px; top: -112px; transform: rotate(164.96deg); }',
-			'.disneyAbandonmentModal__bgLayer--g2 { width: 290px; height: 274px; left: -94px; top: 170px; transform: rotate(-120deg); }',
-			'.disneyAbandonmentModal__bgLayer--g3 { width: 548px; height: 548px; left: -48px; top: -288px; transform: rotate(45deg); opacity: 0.35; }',
-			'.disneyAbandonmentModal__frame { position: relative; z-index: 4; display: flex; flex-direction: column; gap: 16px; width: 319px; margin: 32px auto 16px; }',
-			'.disneyAbandonmentModal__brandRow { display: flex; align-items: center; gap: 12px; color: #FFFFFF; font-family: Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.02em; }',
-			'.disneyAbandonmentModal__divider { width: 1px; height: 18px; background: #FFFFFF; opacity: 0.75; }',
-			'.disneyAbandonmentModal__title { margin: 0px; color: #FFFFFF; font-family: Helvetica, Arial, sans-serif; font-size: 26px; line-height: 30px; letter-spacing: -0.025em; font-weight: 700; }',
-			'.disneyAbandonmentModal__tag { width: 100%; min-height: 32px; border-radius: 20px; background: #FFFFFF; color: #0061A0; display: flex; align-items: center; justify-content: center; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 18px; line-height: 100%; font-weight: 300; text-align: center; }',
-			'.disneyAbandonmentModal__offerCard { position: relative; width: 100%; min-height: 183px; border: 1px solid rgba(255,255,255,0.9); border-radius: 20px; padding: 18px 14px 12px; box-sizing: border-box; overflow: hidden; }',
-			'.disneyAbandonmentModal__offerCard:before { content: ""; position: absolute; inset: 0px; background-image: url("' + ASSET_SHINE_1 + '"); background-repeat: no-repeat; background-size: 140px auto; background-position: 108% -10%; mix-blend-mode: screen; opacity: 0.55; pointer-events: none; }',
-			'.disneyAbandonmentModal__offerCard:after { content: ""; position: absolute; width: 160px; height: 105px; right: -8px; top: 8px; background-image: url("' + ASSET_SHINE_2 + '"); background-repeat: no-repeat; background-size: contain; mix-blend-mode: screen; opacity: 0.7; pointer-events: none; }',
-			'.disneyAbandonmentModal__offerKicker { margin: 0px; color: #FFFFFF; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 18px; line-height: 120%; font-weight: 300; position: relative; z-index: 2; }',
-			'.disneyAbandonmentModal__offerValue { display: flex; align-items: baseline; gap: 4px; margin-top: 2px; position: relative; z-index: 2; }',
-			'.disneyAbandonmentModal__offerNumber { color: #FFFFFF; font-family: Helvetica, Arial, sans-serif; font-size: 106px; line-height: 100%; font-weight: 700; letter-spacing: -0.03em; }',
-			'.disneyAbandonmentModal__offerPercent { color: #FFFFFF; font-family: Helvetica, Arial, sans-serif; font-size: 56px; line-height: 100%; font-weight: 700; }',
-			'.disneyAbandonmentModal__offerOff { color: #FFFFFF; font-family: Helvetica, Arial, sans-serif; font-size: 36px; line-height: 100%; font-weight: 700; letter-spacing: -0.05em; }',
-			'.disneyAbandonmentModal__couponWrap { margin-top: -8px; width: 100%; min-height: 34px; border-radius: 7.9px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; position: relative; z-index: 2; }',
-			'.disneyAbandonmentModal__couponWrap:hover { cursor: copy; box-shadow: 0px 0px 0px 2px rgba(33, 111, 183, 0.32) inset; }',
-			'.disneyAbandonmentModal__couponLabel { color: #216FB7; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; line-height: 16px; font-weight: 500; }',
-			'.disneyAbandonmentModal__coupon { color: #216FB7; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 21.55px; line-height: 120%; font-weight: 700; }',
-			'.disneyAbandonmentModal__copyFeedback { min-height: 16px; margin-top: -8px; color: #FFFFFF; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 12px; line-height: 120%; font-weight: 700; opacity: 0; transform: translateY(4px); transition: opacity 0.2s ease, transform 0.2s ease; }',
-			'.disneyAbandonmentModal__copyFeedback.is-visible { opacity: 1; transform: translateY(0px); }',
-			'.disneyAbandonmentModal__ctaPrimary { width: 100%; min-height: 43px; border: none; border-radius: 27px; background: #FFFFFF; color: #0061A0; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 700; cursor: pointer; }',
+			'.disneyAbandonmentModal { position: fixed; inset: 0; background: ' + OVERLAY_OPACITY + '; z-index: 99999; display: flex; justify-content: center; align-items: center; padding: 16px; box-sizing: border-box; }',
+			'.disneyAbandonmentModal__card { position: relative; width: 720px; height: 467px; max-width: 100%; border-radius: 20px; overflow: hidden; background: url("' + ASSET_BG + '"), #0150B5; background-size: cover; background-position: center; box-shadow: 0 16px 48px rgba(0,0,0,0.36); }',
+			'.disneyAbandonmentModal__close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 999px; border: none; background: rgba(255,255,255,0.15); color: #FFFFFF; font-size: 20px; line-height: 32px; text-align: center; cursor: pointer; z-index: 10; }',
+			'.disneyAbandonmentModal__bgGradient { position: absolute; inset: 0; background: linear-gradient(61.4deg, #124C86 16.38%, rgba(12,69,129,0) 82.26%); pointer-events: none; z-index: 1; }',
+			'.disneyAbandonmentModal__bgStars { position: absolute; inset: 0; opacity: 0.5; pointer-events: none; z-index: 1; overflow: hidden; }',
+			'.disneyAbandonmentModal__bgStars::before { content: ""; position: absolute; left: 0; top: 0; width: 1px; height: 1px; background: transparent; box-shadow: 105px 222px 0 0.5px rgba(255,255,255,0.46), 174px 136px 0 0.5px rgba(255,255,255,0.25), 527px 299px 0 0.5px rgba(255,255,255,0.37), 278px 222px 0 0.5px rgba(255,255,255,0.29), 576px 90px 0 0.5px rgba(255,255,255,0.32), 295px 333px 0 0.5px rgba(255,255,255,0.21), 350px 91px 0 0.5px rgba(255,255,255,0.31), 510px 15px 0 0.5px rgba(255,255,255,0.48), 30px 323px 0 0.5px rgba(255,255,255,0.36), 176px 413px 0 0.5px rgba(255,255,255,0.34), 507px 135px 0 0.5px rgba(255,255,255,0.42), 61px 57px 0 0.5px rgba(255,255,255,0.48), 147px 275px 0 0.5px rgba(255,255,255,0.34), 294px 199px 0 0.5px rgba(255,255,255,0.38), 333px 249px 0 0.5px rgba(255,255,255,0.29), 329px 374px 0 0.5px rgba(255,255,255,0.33), 106px 284px 0 0.5px rgba(255,255,255,0.45), 109px 119px 0 0.5px rgba(255,255,255,0.44), 391px 363px 0 0.5px rgba(255,255,255,0.36), 221px 132px 0 0.5px rgba(255,255,255,0.49), 358px 140px 0 0.5px rgba(255,255,255,0.25), 517px 97px 0 0.5px rgba(255,255,255,0.37), 138px 32px 0 0.5px rgba(255,255,255,0.50), 400px 346px 0 0.5px rgba(255,255,255,0.25), 56px 229px 0 0.5px rgba(255,255,255,0.48), 30px 78px 0 0.5px rgba(255,255,255,0.49), 494px 326px 0 0.5px rgba(255,255,255,0.34), 691px 97px 0 0.5px rgba(255,255,255,0.24), 273px 354px 0 0.5px rgba(255,255,255,0.26), 546px 308px 0 0.5px rgba(255,255,255,0.35), 610px 176px 0 0.5px rgba(255,255,255,0.43), 599px 259px 0 0.5px rgba(255,255,255,0.32), 604px 452px 0 0.5px rgba(255,255,255,0.35), 350px 460px 0 0.5px rgba(255,255,255,0.30), 122px 20px 2px 3px rgba(255,255,255,0.15), 122px 20px 0 1px rgba(255,255,255,0.9), 262px 30px 2px 3px rgba(255,255,255,0.14), 262px 30px 0 1px rgba(255,255,255,0.85), 463px 41px 2px 3px rgba(255,255,255,0.12), 463px 41px 0 1px rgba(255,255,255,0.75), 543px 16px 2px 3px rgba(255,255,255,0.12), 543px 16px 0 1px rgba(255,255,255,0.7), 623px 26px 2px 3px rgba(255,255,255,0.14), 623px 26px 0 1px rgba(255,255,255,0.8), 33px 111px 2px 3px rgba(255,255,255,0.12), 33px 111px 0 1px rgba(255,255,255,0.75), 104px 132px 2px 3px rgba(255,255,255,0.10), 104px 132px 0 1px rgba(255,255,255,0.65), 504px 122px 2px 3px rgba(255,255,255,0.12), 504px 122px 0 1px rgba(255,255,255,0.7), 573px 141px 2px 3px rgba(255,255,255,0.14), 573px 141px 0 1px rgba(255,255,255,0.8), 654px 112px 2px 3px rgba(255,255,255,0.10), 654px 112px 0 1px rgba(255,255,255,0.6); }',
+			'.disneyAbandonmentModal__bgStars::after { content: ""; position: absolute; inset: 0; background: radial-gradient(40% 45% at 20% 35%, rgba(75,0,130,0.15) 0%, rgba(138,43,226,0.08) 40%, rgba(72,61,139,0.04) 70%, transparent 100%), radial-gradient(35% 40% at 75% 55%, rgba(25,25,112,0.12) 0%, rgba(65,105,225,0.06) 50%, transparent 100%); opacity: 0.6; }',
+			'.disneyAbandonmentModal__bgLayer { position: absolute; background-image: url("' + ASSET_GLOW + '"); background-repeat: no-repeat; background-size: contain; mix-blend-mode: plus-lighter; pointer-events: none; z-index: 1; }',
+			'.disneyAbandonmentModal__bgLayer--g1 { width: 548px; height: 548px; left: -136px; top: -180px; transform: rotate(164.96deg); opacity: 0.2; }',
+			'.disneyAbandonmentModal__bgLayer--g2 { width: 548px; height: 548px; left: -195px; top: -96px; transform: rotate(45deg); opacity: 0.2; }',
+			'.disneyAbandonmentModal__bgLayer--g3 { width: 449px; height: 98px; left: -63px; top: 294px; background-image: none; background: linear-gradient(90deg, #043871 0%, rgba(12,69,129,0) 70.09%); mix-blend-mode: normal; opacity: 0.5; border-radius: 100px; }',
+			'.disneyAbandonmentModal__bgBlur { position: absolute; width: 188px; height: 163px; left: 443px; top: 301px; background: #1158A3; filter: blur(40px); pointer-events: none; z-index: 2; }',
+			'.disneyAbandonmentModal__bgStar { position: absolute; left: 409px; top: 35px; width: 34px; height: 34px; opacity: 0.95; transform: rotate(-17deg); pointer-events: none; z-index: 3; display: none; }',
+			'.disneyAbandonmentModal__bgStar::before { content: ""; position: absolute; inset: -2px; background: linear-gradient(135deg, #FFD700 0%, #FFFACD 50%, #FFD700 100%); border: 0.5px solid rgba(255,255,255,0.8); border-radius: 50%; filter: blur(5px); }',
+			'.disneyAbandonmentModal__bgStar::after { content: ""; position: absolute; left: 25%; top: 25%; width: 50%; height: 50%; background: radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.9) 0%, rgba(232,244,255,0.6) 50%, rgba(168,200,232,0.2) 100%); border-radius: 50%; opacity: 0.3; }',
+			'.disneyAbandonmentModal__brandRow { position: absolute; left: 58px; top: 45px; display: flex; align-items: center; gap: 12px; z-index: 5; }',
+			'.disneyAbandonmentModal__brand { color: #FFFFFF; font-family: Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.02em; }',
+			'.disneyAbandonmentModal__divider { width: 1px; height: 26px; background: #FFFFFF; opacity: 0.75; }',
+			'.disneyAbandonmentModal__brandLogo { height: 20px; width: auto; display: block; }',
+			'.disneyAbandonmentModal__title { position: absolute; left: 58px; top: 93px; width: 298px; margin: 0; color: #F0DE00; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 36px; line-height: 42px; letter-spacing: -0.025em; font-weight: 700; z-index: 5; }',
+			'.disneyAbandonmentModal__titleSub { color: #FFFFFF; }',
+			'.disneyAbandonmentModal__br--mobile { display: none; }',
+			'.disneyAbandonmentModal__description { position: absolute; left: 58px; top: 308px; width: 150px; margin: 0; color: #FFFFFF; font-family: Helvetica, Arial, sans-serif; font-size: 18px; line-height: 120%; letter-spacing: -0.02em; font-weight: 400; z-index: 5; }',
+			'.disneyAbandonmentModal__offerCard { position: absolute; left: 376px; top: 86px; width: 274px; height: 195px; border: 1px solid #FFFFFF; border-radius: 20px; box-sizing: border-box; overflow: hidden; z-index: 5; }',
+			'.disneyAbandonmentModal__offerCard::before { content: ""; position: absolute; inset: 0; background-image: url("' + ASSET_SHINE_1 + '"); background-repeat: no-repeat; background-size: 140px auto; background-position: 108% -10%; mix-blend-mode: screen; opacity: 0.55; pointer-events: none; }',
+			'.disneyAbandonmentModal__offerCard::after { content: ""; position: absolute; width: 160px; height: 105px; right: -8px; top: 8px; background-image: url("' + ASSET_SHINE_2 + '"); background-repeat: no-repeat; background-size: contain; mix-blend-mode: screen; opacity: 0.7; pointer-events: none; }',
+			'.disneyAbandonmentModal__offerTitle { position: absolute; left: 24px; top: 20px; margin: 0; color: #FFFFFF; font-family: Helvetica, Arial, sans-serif; font-size: 24px; line-height: 28px; font-weight: 700; z-index: 2; }',
+			'.disneyAbandonmentModal__offerKicker { display: block; color: #FFFFFF; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 16px; line-height: 20px; font-weight: 300; }',
+			'.disneyAbandonmentModal__offerBadge { position: absolute; right: 8px; top: 8px; width: 75px; height: auto; z-index: 3; pointer-events: none; }',
+			'.disneyAbandonmentModal__offerValue { position: absolute; left: 14px; top: 66px; display: flex; align-items: flex-start; gap: 2px; z-index: 2; }',
+			'.disneyAbandonmentModal__offerNumber { color: #F0DE00; font-family: Helvetica, Arial, sans-serif; font-size: 128px; line-height: 94px; font-weight: 700; margin-top: 10px; }',
+			'.disneyAbandonmentModal__offerRight { display: flex; flex-direction: column; align-items: flex-start; padding-top: 6px; }',
+			'.disneyAbandonmentModal__offerPercent { color: #F0DE00; font-family: Helvetica, Arial, sans-serif; font-size: 65px; line-height: 78px; font-weight: 700; }',
+			'.disneyAbandonmentModal__offerOff { color: #FFFFFF; font-family: Helvetica, Arial, sans-serif; font-size: 42px; line-height: 48px; font-weight: 700; letter-spacing: -0.05em; }',
+			'.disneyAbandonmentModal__couponWrap { position: absolute; left: 404px; top: 288px; width: 261px; height: 43px; background: #004F8B; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: copy; z-index: 5; }',
+			'.disneyAbandonmentModal__couponWrap:hover { box-shadow: 0 0 0 2px rgba(240,222,0,0.32) inset; }',
+			'.disneyAbandonmentModal__couponIcon { display: inline-block; width: 16px; height: 18px; position: relative; flex-shrink: 0; }',
+			'.disneyAbandonmentModal__couponIcon::before { content: ""; position: absolute; width: 11px; height: 13px; left: 0; top: 5px; background: #FFFFFF; border-radius: 1.5px; box-shadow: 0 2px 2px rgba(0,0,0,0.1); }',
+			'.disneyAbandonmentModal__couponIcon::after { content: ""; position: absolute; width: 11px; height: 13px; left: 5px; top: 0; border: 1.3px solid rgba(255,255,255,0.6); border-radius: 1.5px; box-sizing: border-box; }',
+			'.disneyAbandonmentModal__coupon { color: #FFFFFF; font-family: Helvetica, Arial, sans-serif; font-size: 18px; line-height: 120%; font-weight: 400; letter-spacing: 0.04em; }',
+			'.disneyAbandonmentModal__copyFeedback { position: absolute; left: 404px; top: 335px; min-height: 16px; color: #FFFFFF; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 12px; line-height: 120%; font-weight: 700; opacity: 0; transform: translateY(4px); transition: opacity 0.2s ease, transform 0.2s ease; z-index: 5; }',
+			'.disneyAbandonmentModal__copyFeedback.is-visible { opacity: 1; transform: translateY(0); }',
+			'.disneyAbandonmentModal__ctaPrimary { position: absolute; left: 404px; top: 348px; width: 246px; height: 38px; border: none; border-radius: 27px; background: #F0DE00; color: #0B437C; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 18px; line-height: 38px; font-weight: 700; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center; }',
 			'.disneyAbandonmentModal__ctaPrimary.is-pulsing { animation: disney-modal-cta-pulse 0.4s ease-in-out 4; }',
-			'.disneyAbandonmentModal__ctaSecondary { width: 100%; min-height: 43px; border: 1px solid rgba(255,255,255,0.75); border-radius: 27px; background: transparent; color: #FFFFFF; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; }',
-			'.disneyAbandonmentModal__legal { display: inline-block; color: #FFFFFF; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 10px; line-height: 120%; opacity: 0.9; }',
-			'.disneyAbandonmentModal__heroMask { position: absolute; width: 224px; height: 224px; right: -84px; top: 138px; border-radius: 50%; overflow: hidden; z-index: 3; background: rgba(217, 217, 217, 0.18); box-shadow: 0px 0px 0px 8px rgba(255,255,255,0.08); pointer-events: none; }',
-			'.disneyAbandonmentModal__heroImage { position: absolute; width: 363px; height: 233px; left: -66px; top: -4px; background-image: linear-gradient(179.61deg, rgba(0,0,0,0) 86.46%, rgba(0,0,0,0.6) 99.66%), url("' + ASSET_HERO + '"); background-size: cover; background-position: center; }',
-			'.disneyAbandonmentModal__copyright { position: absolute; left: 88px; bottom: 10px; color: #FFFFFF; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 7px; line-height: 100%; }',
+			'.disneyAbandonmentModal__ctaSecondary { position: absolute; left: 448px; top: 400px; width: auto; height: auto; min-height: auto; border: none; border-radius: 0; background: transparent; color: #FFFFFF; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 16px; line-height: 16px; font-weight: 500; cursor: pointer; padding: 0; z-index: 5; }',
+			'.disneyAbandonmentModal__ctaSecondary:hover { text-decoration: underline; }',
+			'.disneyAbandonmentModal__legal { position: absolute; left: 656px; top: 150px; width: 96px; height: 12px; color: #FFFFFF; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 10px; line-height: 120%; opacity: 0.9; transform: rotate(-90deg); z-index: 5; }',
+			'.disneyAbandonmentModal__heroMask { position: absolute; left: 194px; top: 221px; width: 198px; height: 198px; border-radius: 50%; overflow: hidden; z-index: 4; background: rgba(217,217,217,0.18); box-shadow: 0 0 0 6px rgba(255,255,255,0.08); pointer-events: none; }',
+			'.disneyAbandonmentModal__heroImage { position: absolute; width: 321px; height: 206px; left: -55px; top: -4px; background-image: linear-gradient(179.61deg, rgba(0,0,0,0) 86.46%, rgba(0,0,0,0.6) 99.66%), url("' + ASSET_HERO_URL + '"); background-size: cover; background-position: center; }',
+			'.disneyAbandonmentModal__copyright { position: absolute; left: 76px; top: 182px; color: #FFFFFF; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 7px; line-height: 7px; font-weight: 700; text-align: center; }',
+			'.disneyAbandonmentModal__heroDot { position: absolute; left: 242px; top: 318px; width: 58px; height: 90px; background: #F0DE00; border-radius: 50%; pointer-events: none; z-index: 3; }',
 			'@keyframes disney-modal-cta-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.06); } 100% { transform: scale(1); } }',
-			'@media screen and (max-width: 420px) { .disneyAbandonmentModal { padding: 8px; } .disneyAbandonmentModal__card { width: 100%; min-height: 520px; border-radius: 16px; } .disneyAbandonmentModal__frame { width: calc(100% - 24px); margin-top: 24px; } .disneyAbandonmentModal__heroMask { right: -102px; top: 144px; transform: scale(0.92); } .disneyAbandonmentModal__title { font-size: 22px; line-height: 26px; } .disneyAbandonmentModal__offerNumber { font-size: 90px; } .disneyAbandonmentModal__offerPercent { font-size: 48px; } .disneyAbandonmentModal__offerOff { font-size: 30px; } }'
+			'@media screen and (max-width: 768px) {',
+			'  .disneyAbandonmentModal { padding: 8px; }',
+			'  .disneyAbandonmentModal__card { width: 360px; height: 532px; max-width: 100%; }',
+			'  .disneyAbandonmentModal__bgGradient { display: none; }',
+			'  .disneyAbandonmentModal__bgLayer--g1 { width: 274px; height: 274px; left: -195px; top: -96px; transform: rotate(164.96deg); opacity: 0.2; }',
+			'  .disneyAbandonmentModal__bgLayer--g2 { width: 274px; height: 274px; left: 46%; top: -566px; transform: rotate(45deg); opacity: 0.1; }',
+			'  .disneyAbandonmentModal__bgLayer--g3 { display: none; }',
+			'  .disneyAbandonmentModal__bgBlur { width: 200px; height: 200px; left: 58%; top: 53%; filter: blur(48px); }',
+			'  .disneyAbandonmentModal__bgStar { display: none; }',
+			'  .disneyAbandonmentModal__brandRow { left: 20px; top: 20px; }',
+			'  .disneyAbandonmentModal__title { left: 20px; top: 52px; width: 285px; font-size: 26px; line-height: 30px; }',
+			'  .disneyAbandonmentModal__br--desktop { display: none; }',
+			'  .disneyAbandonmentModal__br--mobile { display: inline; }',
+			'  .disneyAbandonmentModal__description { position: absolute; left: 20px; top: 164px; width: 294px; transform: none; text-align: left; font-size: 18px; }',
+			'  .disneyAbandonmentModal__offerCard { left: 20px; top: 204px; width: 319px; height: 196px; border-radius: 20px; }',
+			'  .disneyAbandonmentModal__offerTitle { left: 20px; top: 16px; font-size: 22px; line-height: 26px; }',
+			'  .disneyAbandonmentModal__offerKicker { font-size: 19px; line-height: 120%; }',
+			'  .disneyAbandonmentModal__offerValue { left: 35px; top: 42px; }',
+			'  .disneyAbandonmentModal__offerNumber { font-size: 128px; line-height: 154px; margin-top: 0; }',
+			'  .disneyAbandonmentModal__offerPercent { font-size: 65px; line-height: 78px; }',
+			'  .disneyAbandonmentModal__offerOff { font-size: 42px; line-height: 51px; }',
+			'  .disneyAbandonmentModal__couponWrap { left: 43px; top: 379px; width: 273px; height: 43px; }',
+			'  .disneyAbandonmentModal__copyFeedback { left: 43px; top: 426px; }',
+			'  .disneyAbandonmentModal__ctaPrimary { left: 0; right: 0; margin-left: auto; margin-right: auto; top: 438px; width: 319px; height: 40px; transform: none; font-size: 16px; line-height: 40px; border-radius: 26px; }',
+			'  .disneyAbandonmentModal__ctaPrimary.is-pulsing { animation: disney-modal-cta-pulse 0.4s ease-in-out 4; }',
+			'  .disneyAbandonmentModal__ctaSecondary { left: 50%; top: 494px; transform: translateX(-50%); font-size: 16px; line-height: 16px; white-space: nowrap; }',
+			'  .disneyAbandonmentModal__legal { left: 24px; right: auto; top: 375px; transform: rotate(-90deg); transform-origin: top left; }',
+			'  .disneyAbandonmentModal__heroMask { display: none; }',
+			'  .disneyAbandonmentModal__heroDot { display: none; }',
+			'}'
 		].join('\n');
 	}
 

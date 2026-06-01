@@ -1,0 +1,1440 @@
+(function () {
+  'use strict';
+
+  if (window.__atFiltrosVooMobileSortPills) {
+    return;
+  }
+  window.__atFiltrosVooMobileSortPills = true;
+
+  let isProcessing = false;
+  let isApplyingSort = false;
+  let isMounting = false;
+  let debounceTimer = null;
+  let sortObserver = null;
+  let headerObserver = null;
+  let observedHeaderEl = null;
+  let tripsLifecycleTimer = null;
+  let observedTripsRootEl = null;
+  let lastHeaderSignature = '';
+  let headerWaitFrames = 0;
+  let lastAppliedSortLabel = '';
+  let forceDefaultOnNextMount = false;
+
+  const STYLE_ID = 'at-filtros-voo-mobile-sort-style';
+  const DATA_DONE = 'data-at-voo-sort-pills-done';
+
+  const PAGE_PATH_TARGET = '/selecao-voo';
+  const MOBILE_MAX_WIDTH = 1023;
+  const HEADER_WAIT_MAX_FRAMES = 300;
+
+  const POLL_INTERVAL_MS = 50;
+  const WAIT_MODAL_MS = 800;
+  const WAIT_MENU_MS = 500;
+  const AFTER_APPLY_MS = 250;
+  const AFTER_CLOSE_MS = 200;
+
+  const DEFAULT_SORT_OPTION = 'Menor preço';
+
+  const SORT_OPTIONS = [
+    'Mais cedo',
+    'Menor preço',
+    'Maior preço',
+    'Mais rápido',
+    'Mais tarde',
+    'Voo direto',
+    'Duração',
+  ];
+
+  const KEY_STEPS = {
+    'Mais cedo': 0,
+    'Menor preço': 1,
+    'Maior preço': 2,
+    'Mais rápido': 3,
+    'Mais tarde': 4,
+    'Voo direto': 5,
+    Duração: 6,
+  };
+
+  const SELECTORS = {
+    tripsHeader: '.trips_header',
+    tripInfo: '.trip-info',
+    tripFilter: '.trip-filter',
+    tripFilterBtn: '.trip-filter button',
+    modalFilters: '#modal-filters',
+    sortInput: '#sort-filter',
+    sortControl: '.css-6yzkx4-control',
+    sortDropdown: '.css-2b097c-container',
+    sortSingleValue: '[class*="singleValue"]',
+    sortMenu: '[class*="menu"]',
+    sortMenuOption:
+      '[class*="1ox2bcj-option"], [role="option"], [class*="-option"], [id*="react-select"][id*="option"]',
+    applyFiltersBtn: '#modal-filters .modal-content__footer button',
+    tripsRoot: '.AzulPage .availability .trips',
+    bookingDateBtn:
+      '.booking-calendar__cards button, [class*="booking-calendar"] button, [class*="BookingCalendar"] button',
+  };
+
+  const DATA_HEADER_OBS = 'data-at-voo-header-observed';
+
+  const PILL_WRAP_CLASS = 'at-voo-sort-wrap';
+  const PILL_BAR_CLASS = 'at-voo-sort-pills';
+  const PILL_BTN_CLASS = 'at-voo-sort-pill';
+  const PILL_ACTIVE_CLASS = 'at-voo-sort-pill--active';
+  const PILL_LOADING_CLASS = 'at-voo-sort-pill--loading';
+  const PILL_BAR_BUSY_CLASS = 'at-voo-sort-pills--busy';
+  const CLASS_SILENT_MODAL = 'at-voo-sort-modal-silent';
+
+  function isTargetPage() {
+    return (window.location.pathname || '').indexOf(PAGE_PATH_TARGET) > -1;
+  }
+
+  function isMobileViewport() {
+    return window.innerWidth <= MOBILE_MAX_WIDTH;
+  }
+
+  function normalizeText(text) {
+    return (text || '')
+      .toString()
+      .trim()
+      .replace(/\s+/g, ' ')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+  }
+
+  function analyticsEvent(optionLabel) {
+    if (!optionLabel) {
+      return;
+    }
+    const labelEvent = 'AT_filtros_voo_mobile_ordenacao_clique ' + optionLabel;
+    const s = window.s || (typeof window.s_gi === 'function' && window.s_gi('azul-novo-prod'));
+    if (!s || typeof s.tl !== 'function') {
+      return;
+    }
+    s.linkTrackVars = 'events,eVar82,eVar84';
+    s.linkTrackEvents = 'event90';
+    s.events = 'event90';
+    s.eVar82 = labelEvent;
+    s.eVar84 = 'AT_selecao_voo_mobile';
+    s.tl(true, 'o', 'target_activity_action');
+  }
+
+  function getSortCss() {
+    return (
+      '.trips_header .' +
+      SELECTORS.tripFilter.replace('.', '') +
+      ' {' +
+      '  position: fixed !important;' +
+      '  left: 0 !important;' +
+      '  top: 0 !important;' +
+      '  width: 1px !important;' +
+      '  height: 1px !important;' +
+      '  overflow: hidden !important;' +
+      '  opacity: 0 !important;' +
+      '  clip: rect(0, 0, 0, 0) !important;' +
+      '  clip-path: inset(50%) !important;' +
+      '  pointer-events: none !important;' +
+      '}' +
+      '.trips_header .' +
+      SELECTORS.tripFilter.replace('.', '') +
+      ' button {' +
+      '  position: fixed !important;' +
+      '  left: 0 !important;' +
+      '  top: 0 !important;' +
+      '  width: 44px !important;' +
+      '  height: 44px !important;' +
+      '  opacity: 0 !important;' +
+      '  pointer-events: auto !important;' +
+      '  z-index: 1 !important;' +
+      '}' +
+      '.trips_header.' +
+      PILL_WRAP_CLASS +
+      '-ready {' +
+      '  flex-wrap: wrap;' +
+      '  align-items: flex-start;' +
+      '  margin-bottom: 0px;' +
+      '}' +
+      '.' +
+      PILL_WRAP_CLASS +
+      ' {' +
+      '  width: 100%;' +
+      '  display: flex;' +
+      '  flex-direction: column;' +
+      '  gap: 6px;' +
+      '  margin-top: 20px;' +
+      '}' +
+      '.' +
+      PILL_WRAP_CLASS +
+      '__label {' +
+      '  font-size: 14px;' +
+      '  color: #fff;' +
+      '  margin: 0;' +
+      '}' +
+      '.' +
+      PILL_BAR_CLASS +
+      ' {' +
+      '  display: flex;' +
+      '  flex-wrap: nowrap;' +
+      '  gap: 6px;' +
+      '  width: 100%;' +
+      '  overflow-x: auto;' +
+      '  -webkit-overflow-scrolling: touch;' +
+      '  scrollbar-width: none;' +
+      '  padding-bottom: 2px;' +
+      '}' +
+      '.' +
+      PILL_BAR_CLASS +
+      '::-webkit-scrollbar { display: none; }' +
+      '.' +
+      PILL_BTN_CLASS +
+      ' {' +
+      '  align-items: center;' +
+      '  background-color: #fff;' +
+      '  border: 1px solid #ccc;' +
+      '  border-radius: 32px;' +
+      '  box-sizing: border-box;' +
+      '  color: rgb(96, 96, 96);' +
+      '  cursor: pointer;' +
+      '  display: inline-flex;' +
+      '  flex-shrink: 0;' +
+      '  font-family: inherit;' +
+      '  font-size: 14px;' +
+      '  justify-content: center;' +
+      '  min-height: 28px;' +
+      '  outline: none;' +
+      '  padding: 0 8px;' +
+      '  white-space: nowrap;' +
+      '}' +
+      '.' +
+      PILL_BTN_CLASS +
+      '.' +
+      PILL_ACTIVE_CLASS +
+      ' {' +
+      '  background-color: #026cb6;' +
+      '  border-color: #026cb6;' +
+      '  color: #fff;' +
+      '}' +
+      '.' +
+      PILL_BTN_CLASS +
+      ':disabled {' +
+      '  opacity: 0.55;' +
+      '  cursor: default;' +
+      '}' +
+      '.' +
+      PILL_BTN_CLASS +
+      '.' +
+      PILL_LOADING_CLASS +
+      ' {' +
+      '  position: relative;' +
+      '  color: transparent !important;' +
+      '  font-size: 0;' +
+      '  line-height: 0;' +
+      '  min-width: 72px;' +
+      '  cursor: wait;' +
+      '}' +
+      '.' +
+      PILL_BTN_CLASS +
+      '.' +
+      PILL_LOADING_CLASS +
+      '::after {' +
+      '  content: "";' +
+      '  position: absolute;' +
+      '  left: 50%;' +
+      '  top: 50%;' +
+      '  width: 14px;' +
+      '  height: 14px;' +
+      '  margin: 0;' +
+      '  border: 2px solid #026cb6;' +
+      '  border-top-color: transparent;' +
+      '  border-radius: 50%;' +
+      '  box-sizing: border-box;' +
+      '  transform: translate(-50%, -50%);' +
+      '  animation: at-voo-sort-spin 0.65s linear infinite;' +
+      '}' +
+      '.' +
+      PILL_BTN_CLASS +
+      '.' +
+      PILL_ACTIVE_CLASS +
+      '.' +
+      PILL_LOADING_CLASS +
+      '::after {' +
+      '  border-color: #fff;' +
+      '  border-top-color: transparent;' +
+      '}' +
+      '@keyframes at-voo-sort-spin {' +
+      '  to { transform: translate(-50%, -50%) rotate(360deg); }' +
+      '}' +
+      'body.' +
+      CLASS_SILENT_MODAL +
+      ' .ReactModal__Overlay--after-open,' +
+      'body.' +
+      CLASS_SILENT_MODAL +
+      ' .ReactModal__Overlay.hide-on-desktop.ReactModal__Overlay--after-open {' +
+      '  position: fixed !important;' +
+      '  inset: 0 !important;' +
+      '  width: 100% !important;' +
+      '  height: 100% !important;' +
+      '  opacity: 0 !important;' +
+      '  background: transparent !important;' +
+      '  pointer-events: auto !important;' +
+      '  visibility: visible !important;' +
+      '  transform: none !important;' +
+      '  z-index: 99999 !important;' +
+      '}' +
+      'body.' +
+      CLASS_SILENT_MODAL +
+      ' #modal-filters,' +
+      'body.' +
+      CLASS_SILENT_MODAL +
+      ' #modal-filters.modal--center {' +
+      '  position: fixed !important;' +
+      '  inset: 0 !important;' +
+      '  width: 100% !important;' +
+      '  max-width: 100% !important;' +
+      '  min-height: 100% !important;' +
+      '  margin: 0 !important;' +
+      '  opacity: 0 !important;' +
+      '  pointer-events: auto !important;' +
+      '  visibility: visible !important;' +
+      '  transform: none !important;' +
+      '  z-index: 100000 !important;' +
+      '}'
+    );
+  }
+
+  function injectStyles() {
+    const existing = document.getElementById(STYLE_ID);
+    if (existing && existing.isConnected && existing.sheet) {
+      return;
+    }
+    if (existing) {
+      existing.remove();
+    }
+    const style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = getSortCss();
+    document.head.appendChild(style);
+  }
+
+  function findTripsHeader() {
+    const headers = document.querySelectorAll(SELECTORS.tripsHeader);
+    let i;
+    let header;
+    let fallback = null;
+
+    for (i = 0; i < headers.length; i++) {
+      header = headers[i];
+      if (!header.isConnected) {
+        continue;
+      }
+      if (!fallback) {
+        fallback = header;
+      }
+      if (header.offsetParent !== null) {
+        return header;
+      }
+    }
+
+    return fallback;
+  }
+
+  function isMountHealthy() {
+    const header = findTripsHeader();
+    let bar;
+
+    if (!header || !header.isConnected) {
+      return false;
+    }
+
+    bar = header.querySelector('.' + PILL_BAR_CLASS);
+    if (!bar || !header.contains(bar)) {
+      return false;
+    }
+
+    return bar.querySelectorAll('.' + PILL_BTN_CLASS).length === SORT_OPTIONS.length;
+  }
+
+  function disconnectHeaderObserver() {
+    if (headerObserver) {
+      headerObserver.disconnect();
+      headerObserver = null;
+    }
+    if (observedHeaderEl) {
+      observedHeaderEl.removeAttribute(DATA_HEADER_OBS);
+      observedHeaderEl = null;
+    }
+  }
+
+  function bindHeaderObserver(header) {
+    if (!header) {
+      return;
+    }
+
+    if (
+      observedHeaderEl === header &&
+      header.getAttribute(DATA_HEADER_OBS) === '1' &&
+      header.querySelector('.' + PILL_WRAP_CLASS)
+    ) {
+      return;
+    }
+
+    disconnectHeaderObserver();
+    observedHeaderEl = header;
+    header.setAttribute(DATA_HEADER_OBS, '1');
+
+    headerObserver = new MutationObserver(function () {
+      if (isApplyingSort || isMounting || isProcessing) {
+        return;
+      }
+      if (!header.isConnected) {
+        disconnectHeaderObserver();
+        lastHeaderSignature = '';
+        ensurePillsPresent();
+        return;
+      }
+      if (!header.querySelector('.' + PILL_WRAP_CLASS) || shouldRemountPills()) {
+        ensurePillsPresent();
+      } else {
+        hideNativeFilterButton();
+      }
+    });
+
+    headerObserver.observe(header, { childList: true, subtree: true });
+  }
+
+  function bindBookingDateListeners() {
+    if (window.__atVooBookingDateBound) {
+      return;
+    }
+    window.__atVooBookingDateBound = true;
+
+    document.addEventListener(
+      'click',
+      function (event) {
+        if (!isTargetPage() || !isMobileViewport()) {
+          return;
+        }
+        const btn = event.target.closest(SELECTORS.bookingDateBtn);
+        if (!btn) {
+          return;
+        }
+        ensurePillsPresent();
+        setTimeout(ensurePillsPresent, 400);
+        setTimeout(ensurePillsPresent, 900);
+      },
+      true,
+    );
+  }
+
+  function getHeaderSignature(header) {
+    const tripInfo = header.querySelector(SELECTORS.tripInfo);
+    if (!tripInfo) {
+      return '';
+    }
+    return (tripInfo.textContent || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function ensurePillsPresent() {
+    if (!isTargetPage() || !isMobileViewport() || isApplyingSort || isMounting || isProcessing) {
+      return;
+    }
+
+    injectStyles();
+
+    const header = findTripsHeader();
+    if (!header) {
+      return;
+    }
+
+    const signature = getHeaderSignature(header);
+    const headerReplaced = signature !== lastHeaderSignature;
+
+    if (headerReplaced) {
+      lastAppliedSortLabel = '';
+      lastHeaderSignature = signature;
+      disconnectHeaderObserver();
+    }
+
+    hideNativeFilterButton();
+
+    if (!isMountHealthy() || headerReplaced) {
+      forceDefaultOnNextMount = true;
+      lastAppliedSortLabel = '';
+      document.body.setAttribute(DATA_DONE, '1');
+      mountSortPills();
+      return;
+    }
+
+    bindHeaderObserver(header);
+    syncActivePill(getDisplaySortLabel());
+  }
+
+  function ensureSortObserverConnected() {
+    const tripsRoot = document.querySelector(SELECTORS.tripsRoot);
+    const target = tripsRoot && tripsRoot.isConnected ? tripsRoot : document.body;
+
+    if (sortObserver && observedTripsRootEl === target) {
+      return;
+    }
+
+    if (sortObserver) {
+      sortObserver.disconnect();
+      sortObserver = null;
+    }
+
+    observedTripsRootEl = target;
+
+    sortObserver = new MutationObserver(function () {
+      if (isApplyingSort || isMounting || isProcessing || !isMobileViewport() || !isTargetPage()) {
+        return;
+      }
+      ensurePillsPresent();
+    });
+
+    sortObserver.observe(target, { childList: true, subtree: true });
+  }
+
+  function startTripsLifecycleWatch() {
+    if (tripsLifecycleTimer) {
+      return;
+    }
+
+    tripsLifecycleTimer = setInterval(function () {
+      if (!isTargetPage() || !isMobileViewport()) {
+        return;
+      }
+      ensureSortObserverConnected();
+      ensurePillsPresent();
+    }, 250);
+  }
+
+  function getModal() {
+    return document.getElementById('modal-filters');
+  }
+
+  function getSortInput() {
+    const modal = getModal();
+    if (modal) {
+      return modal.querySelector(SELECTORS.sortInput);
+    }
+    return document.querySelector(SELECTORS.sortInput);
+  }
+
+  function getSortDropdownRoot() {
+    const input = getSortInput();
+    if (!input) {
+      return null;
+    }
+    return input.closest(SELECTORS.sortDropdown) || input.parentElement;
+  }
+
+  function getCurrentSortLabel() {
+    const root = getSortDropdownRoot();
+    if (root) {
+      const single = root.querySelector(SELECTORS.sortSingleValue);
+      if (single && single.textContent) {
+        return single.textContent.trim();
+      }
+    }
+    return '';
+  }
+
+  function getDisplaySortLabel() {
+    if (forceDefaultOnNextMount) {
+      return DEFAULT_SORT_OPTION;
+    }
+    if (lastAppliedSortLabel) {
+      return lastAppliedSortLabel;
+    }
+    const fromDom = getCurrentSortLabel();
+    if (fromDom) {
+      return fromDom;
+    }
+    return DEFAULT_SORT_OPTION;
+  }
+
+  function isSortAppliedInDom(optionLabel) {
+    const fromDom = getCurrentSortLabel();
+    if (!fromDom) {
+      return false;
+    }
+    return normalizeText(fromDom) === normalizeText(optionLabel);
+  }
+
+  function scheduleDefaultSortApply() {
+    let attempts = 0;
+    const maxAttempts = 20;
+
+    function attempt() {
+      attempts += 1;
+      if (attempts > maxAttempts) {
+        return;
+      }
+      if (!isTargetPage() || !isMobileViewport() || isApplyingSort || isMounting) {
+        setTimeout(attempt, 300);
+        return;
+      }
+      const header = findTripsHeader();
+      if (!header) {
+        setTimeout(attempt, 300);
+        return;
+      }
+      if (!document.querySelectorAll('.flight-card').length) {
+        setTimeout(attempt, 300);
+        return;
+      }
+      applySort(DEFAULT_SORT_OPTION, true, null, true);
+    }
+
+    setTimeout(attempt, 700);
+  }
+
+  function hideNativeFilterButton() {
+    const tripFilter = document.querySelector(SELECTORS.tripFilter);
+    if (tripFilter && tripFilter.getAttribute('data-at-voo-filter-hidden') !== '1') {
+      tripFilter.setAttribute('data-at-voo-filter-hidden', '1');
+    }
+  }
+
+  function waitUntil(getValue, maxMs, done) {
+    const start = Date.now();
+
+    function tick() {
+      let value = null;
+      try {
+        value = getValue();
+      } catch (e) {
+        value = null;
+      }
+      if (value) {
+        done(value);
+        return;
+      }
+      if (Date.now() - start >= maxMs) {
+        done(null);
+        return;
+      }
+      setTimeout(tick, POLL_INTERVAL_MS);
+    }
+
+    tick();
+  }
+
+  function setPillLoading(pill, loading) {
+    const header = findTripsHeader();
+    const bar = header ? header.querySelector('.' + PILL_BAR_CLASS) : null;
+    if (!bar) {
+      return;
+    }
+
+    const pills = bar.querySelectorAll('.' + PILL_BTN_CLASS);
+    let i;
+
+    for (i = 0; i < pills.length; i++) {
+      pills[i].classList.remove(PILL_LOADING_CLASS);
+      pills[i].disabled = false;
+      pills[i].removeAttribute('aria-busy');
+    }
+    bar.classList.remove(PILL_BAR_BUSY_CLASS);
+
+    if (!loading || !pill) {
+      return;
+    }
+
+    bar.classList.add(PILL_BAR_BUSY_CLASS);
+    pill.classList.add(PILL_LOADING_CLASS);
+    pill.setAttribute('aria-busy', 'true');
+
+    for (i = 0; i < pills.length; i++) {
+      if (pills[i] !== pill) {
+        pills[i].disabled = true;
+      }
+    }
+  }
+
+  function clearPillLoading() {
+    setPillLoading(null, false);
+  }
+
+  function simulateKey(el, key) {
+    const code = key === 'Enter' ? 13 : 40;
+    el.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: key,
+        code: key,
+        keyCode: code,
+        which: code,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+  }
+
+  function applySilentModalStyles(enabled) {
+    const overlay = document.querySelector('.ReactModal__Overlay--after-open');
+    const modal = getModal();
+    const props = enabled
+      ? [
+          ['position', 'fixed', 'important'],
+          ['inset', '0', 'important'],
+          ['left', '0', 'important'],
+          ['top', '0', 'important'],
+          ['width', '100%', 'important'],
+          ['height', '100%', 'important'],
+          ['opacity', '0', 'important'],
+          ['visibility', 'visible', 'important'],
+          ['pointer-events', 'auto', 'important'],
+          ['background', 'transparent', 'important'],
+        ]
+      : null;
+    let i;
+    let el;
+
+    for (i = 0; i < 2; i++) {
+      el = i === 0 ? overlay : modal;
+      if (!el) {
+        continue;
+      }
+      if (props) {
+        props.forEach(function (item) {
+          el.style.setProperty(item[0], item[1], item[2]);
+        });
+      } else {
+        el.style.removeProperty('inset');
+        el.style.removeProperty('left');
+        el.style.removeProperty('top');
+        el.style.removeProperty('width');
+        el.style.removeProperty('height');
+        el.style.removeProperty('opacity');
+        el.style.removeProperty('visibility');
+        el.style.removeProperty('pointer-events');
+        el.style.removeProperty('background');
+      }
+    }
+  }
+
+  function setSilentModal(enabled) {
+    if (enabled) {
+      document.body.classList.add(CLASS_SILENT_MODAL);
+      applySilentModalStyles(true);
+      requestAnimationFrame(function () {
+        applySilentModalStyles(true);
+      });
+    } else {
+      document.body.classList.remove(CLASS_SILENT_MODAL);
+      applySilentModalStyles(false);
+    }
+  }
+
+  function isModalOpen() {
+    const modal = getModal();
+    return !!(modal && modal.classList.contains('ReactModal__Content--after-open'));
+  }
+
+  function openFiltersModal() {
+    if (isModalOpen()) {
+      applySilentModalStyles(true);
+      return;
+    }
+    const btn = document.querySelector(SELECTORS.tripFilterBtn);
+    if (btn) {
+      simulatePointerClick(btn);
+    }
+    setTimeout(function () {
+      applySilentModalStyles(true);
+    }, 50);
+    setTimeout(function () {
+      applySilentModalStyles(true);
+    }, 200);
+  }
+
+  function closeFiltersModal() {
+    if (!isModalOpen()) {
+      return;
+    }
+    const modal = getModal();
+    if (!modal) {
+      return;
+    }
+    const closeBtn = modal.querySelector('.modal-content__header button');
+    if (closeBtn) {
+      simulatePointerClick(closeBtn);
+    }
+  }
+
+  function clickApplyFiltersButton() {
+    var modal = getModal();
+    if (!modal) {
+      return;
+    }
+    var buttons = modal.querySelectorAll(SELECTORS.applyFiltersBtn);
+    var i;
+    var btn;
+    var text;
+    var textNorm;
+    var acceptLabels = ['aplicar filtros', 'aplicar', 'ver voos', 'confirmar'];
+
+    for (i = 0; i < buttons.length; i++) {
+      btn = buttons[i];
+      text = (btn.textContent || '').trim();
+      textNorm = normalizeText(text);
+      for (var j = 0; j < acceptLabels.length; j++) {
+        if (textNorm.indexOf(acceptLabels[j]) > -1) {
+          simulatePointerClick(btn);
+          return;
+        }
+      }
+    }
+
+    if (buttons.length > 0) {
+      console.log(
+        '[AT Filtros Voo Mobile] Botao Aplicar nao encontrado por texto. Textos encontrados:',
+        Array.prototype.map.call(buttons, function (b) {
+          return (b.textContent || '').trim();
+        }),
+      );
+      simulatePointerClick(buttons[buttons.length - 1]);
+    }
+  }
+
+  function findModalSortOption(optionLabel) {
+    const target = normalizeText(optionLabel);
+    const input = getSortInput();
+    const scopes = [];
+    let sortListbox = null;
+    let i;
+    let s;
+    let opt;
+    let text;
+    let controlsId;
+    let menu;
+    let modal;
+    let options;
+
+    if (input) {
+      controlsId = input.getAttribute('aria-controls');
+      if (controlsId) {
+        sortListbox = document.getElementById(controlsId);
+        if (sortListbox) {
+          scopes.push(sortListbox);
+        }
+      }
+    }
+
+    modal = getModal();
+    if (modal) {
+      menu = modal.querySelector(SELECTORS.sortMenu);
+      if (menu) {
+        scopes.push(menu);
+      }
+      scopes.push(modal);
+    }
+
+    scopes.push(document.body);
+
+    function isSortFilterOption(node) {
+      if (!node) {
+        return false;
+      }
+      if (sortListbox && sortListbox.contains(node)) {
+        return true;
+      }
+      if (modal && modal.contains(node)) {
+        return true;
+      }
+      const optionMenu = node.closest('[class*="menu"]');
+      if (optionMenu && optionMenu.id && optionMenu.id.indexOf('react-select') > -1) {
+        return true;
+      }
+      return false;
+    }
+
+    for (s = 0; s < scopes.length; s++) {
+      options = scopes[s].querySelectorAll(SELECTORS.sortMenuOption);
+      for (i = 0; i < options.length; i++) {
+        opt = options[i];
+        if (scopes[s] === document.body && !isSortFilterOption(opt)) {
+          continue;
+        }
+        text = normalizeText(opt.textContent);
+        if (text === target) {
+          return opt;
+        }
+      }
+    }
+    return null;
+  }
+
+  function isTouchDevice() {
+    return (
+      'ontouchstart' in window ||
+      navigator.maxTouchPoints > 0 ||
+      window.matchMedia('(pointer: coarse)').matches
+    );
+  }
+
+  function getClickPoint(el) {
+    const rect = el.getBoundingClientRect();
+    return {
+      x: rect.left + Math.max(rect.width / 2, 1),
+      y: rect.top + Math.max(rect.height / 2, 1),
+    };
+  }
+
+  function createSyntheticTouch(el, point) {
+    if (typeof window.Touch === 'function') {
+      try {
+        return new Touch({
+          identifier: Date.now(),
+          target: el,
+          clientX: point.x,
+          clientY: point.y,
+          pageX: point.x + window.scrollX,
+          pageY: point.y + window.scrollY,
+          screenX: point.x,
+          screenY: point.y,
+          radiusX: 11.5,
+          radiusY: 11.5,
+          force: 1,
+        });
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  function isReactSelectOption(el) {
+    if (!el) {
+      return false;
+    }
+    var id = el.id || '';
+    var cls = el.className || '';
+    return (
+      el.getAttribute('role') === 'option' ||
+      id.indexOf('react-select') > -1 ||
+      cls.indexOf('-option') > -1
+    );
+  }
+
+  function simulatePointerClick(el) {
+    if (!el) {
+      return;
+    }
+    var point = getClickPoint(el);
+    var base = {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+      clientX: point.x,
+      clientY: point.y,
+    };
+
+    var isTouch = isTouchDevice();
+    var isRsOption = isReactSelectOption(el);
+
+    if (isTouch && isRsOption) {
+      try {
+        el.dispatchEvent(new MouseEvent('mousedown', base));
+        el.dispatchEvent(new MouseEvent('mouseup', base));
+      } catch (e) {}
+      if (typeof el.click === 'function') {
+        el.click();
+      }
+      return;
+    }
+
+    try {
+      el.dispatchEvent(
+        new PointerEvent(
+          'pointerdown',
+          Object.assign({}, base, {
+            pointerId: 1,
+            pointerType: isTouch ? 'touch' : 'mouse',
+            isPrimary: true,
+          }),
+        ),
+      );
+    } catch (e) {}
+
+    if (isTouch) {
+      var touchObj = createSyntheticTouch(el, point);
+      var touchList = touchObj ? [touchObj] : [];
+      try {
+        el.dispatchEvent(
+          new TouchEvent('touchstart', {
+            bubbles: true,
+            cancelable: true,
+            touches: touchList,
+            targetTouches: touchList,
+            changedTouches: touchList,
+          }),
+        );
+      } catch (e) {}
+    }
+
+    try {
+      el.dispatchEvent(
+        new PointerEvent(
+          'pointerup',
+          Object.assign({}, base, {
+            pointerId: 1,
+            pointerType: isTouch ? 'touch' : 'mouse',
+            isPrimary: true,
+          }),
+        ),
+      );
+    } catch (e) {}
+
+    if (isTouch) {
+      var touchObjEnd = createSyntheticTouch(el, point);
+      var touchListEnd = touchObjEnd ? [touchObjEnd] : [];
+      try {
+        el.dispatchEvent(
+          new TouchEvent('touchend', {
+            bubbles: true,
+            cancelable: true,
+            touches: [],
+            targetTouches: [],
+            changedTouches: touchListEnd,
+          }),
+        );
+      } catch (e) {}
+    }
+
+    try {
+      el.dispatchEvent(new MouseEvent('mousedown', base));
+      el.dispatchEvent(new MouseEvent('mouseup', base));
+    } catch (e) {}
+
+    if (typeof el.click === 'function') {
+      el.click();
+    }
+  }
+
+  function openSortMenu(input) {
+    var root = input.closest(SELECTORS.sortDropdown);
+    if (root) {
+      var control = root.querySelector(SELECTORS.sortControl);
+      if (control) {
+        simulatePointerClick(control);
+      }
+    }
+    input.focus();
+    simulateKey(input, 'ArrowDown');
+  }
+
+  function applySortWithKeyboard(input, optionLabel, onDone) {
+    const curIdx = SORT_OPTIONS.indexOf(getCurrentSortLabel());
+    const tgtIdx = SORT_OPTIONS.indexOf(optionLabel);
+    let i;
+    let dir;
+
+    input.focus();
+    simulateKey(input, 'ArrowDown');
+
+    if (tgtIdx >= 0 && curIdx >= 0) {
+      const delta = tgtIdx - curIdx;
+      dir = delta > 0 ? 'ArrowDown' : 'ArrowUp';
+      for (i = 0; i < Math.abs(delta); i++) {
+        simulateKey(input, dir);
+      }
+    } else if (tgtIdx >= 0 && KEY_STEPS[optionLabel] !== undefined) {
+      const steps = KEY_STEPS[optionLabel];
+      for (i = 0; i < steps; i++) {
+        simulateKey(input, 'ArrowDown');
+      }
+    }
+    simulateKey(input, 'Enter');
+
+    if (typeof onDone === 'function') {
+      setTimeout(onDone, AFTER_APPLY_MS);
+    }
+  }
+
+  function selectSortOption(input, optionLabel, onDone) {
+    if (isTouchDevice()) {
+      applySortWithKeyboard(input, optionLabel, function () {
+        if (isSortAppliedInDom(optionLabel)) {
+          if (typeof onDone === 'function') {
+            onDone();
+          }
+          return;
+        }
+        console.log('[AT Filtros Voo Mobile] Keyboard nao aplicou, tentando click na option...');
+        openSortMenu(input);
+        waitUntil(
+          function () {
+            return findModalSortOption(optionLabel);
+          },
+          WAIT_MENU_MS + 500,
+          function (menuOpt) {
+            if (menuOpt) {
+              simulatePointerClick(menuOpt);
+            }
+            if (typeof onDone === 'function') {
+              setTimeout(onDone, AFTER_APPLY_MS);
+            }
+          },
+        );
+      });
+      return;
+    }
+
+    openSortMenu(input);
+
+    waitUntil(
+      function () {
+        return findModalSortOption(optionLabel);
+      },
+      WAIT_MENU_MS,
+      function (menuOpt) {
+        if (menuOpt) {
+          simulatePointerClick(menuOpt);
+          if (typeof onDone === 'function') {
+            setTimeout(onDone, AFTER_APPLY_MS);
+          }
+          return;
+        }
+        applySortWithKeyboard(input, optionLabel, onDone);
+      },
+    );
+  }
+
+  function finishApplySort(optionLabel, skipAnalytics) {
+    setTimeout(function () {
+      clickApplyFiltersButton();
+      setTimeout(function () {
+        closeFiltersModal();
+        lastAppliedSortLabel = optionLabel;
+        syncActivePill(optionLabel);
+        clearPillLoading();
+        if (!skipAnalytics) {
+          analyticsEvent(optionLabel);
+        }
+        isApplyingSort = false;
+        setSilentModal(false);
+      }, AFTER_CLOSE_MS);
+    }, AFTER_APPLY_MS);
+  }
+
+  function abortApplySort() {
+    clearPillLoading();
+    closeFiltersModal();
+    isApplyingSort = false;
+    setSilentModal(false);
+  }
+
+  function applySort(optionLabel, skipAnalytics, loadingPill, forceApply) {
+    if (isApplyingSort) {
+      return;
+    }
+
+    if (!forceApply && isSortAppliedInDom(optionLabel)) {
+      lastAppliedSortLabel = optionLabel;
+      syncActivePill(optionLabel);
+      return;
+    }
+
+    isApplyingSort = true;
+    setPillLoading(loadingPill, true);
+    setSilentModal(true);
+    openFiltersModal();
+
+    waitUntil(
+      function () {
+        if (!getSortInput()) {
+          return null;
+        }
+        return getSortInput();
+      },
+      WAIT_MODAL_MS + (isTouchDevice() ? 400 : 0),
+      function (input) {
+        if (!input) {
+          console.log('[AT Filtros Voo Mobile] #sort-filter indisponivel no modal.');
+          abortApplySort();
+          return;
+        }
+
+        applySilentModalStyles(true);
+
+        selectSortOption(input, optionLabel, function () {
+          finishApplySort(optionLabel, skipAnalytics);
+        });
+      },
+    );
+  }
+
+  function syncActivePill(activeLabel) {
+    const header = findTripsHeader();
+    if (!header) {
+      return;
+    }
+    const bar = header.querySelector('.' + PILL_BAR_CLASS);
+    if (!bar) {
+      return;
+    }
+    const pills = bar.querySelectorAll('.' + PILL_BTN_CLASS);
+    const activeNorm = normalizeText(activeLabel || getDisplaySortLabel());
+    let i;
+    let btn;
+
+    for (i = 0; i < pills.length; i++) {
+      btn = pills[i];
+      if (normalizeText(btn.getAttribute('data-sort-value')) === activeNorm) {
+        btn.classList.add(PILL_ACTIVE_CLASS);
+        btn.setAttribute('aria-pressed', 'true');
+      } else {
+        btn.classList.remove(PILL_ACTIVE_CLASS);
+        btn.setAttribute('aria-pressed', 'false');
+      }
+    }
+  }
+
+  function bindGlobalPillClick() {
+    if (window.__atVooMobilePillClickBound) {
+      return;
+    }
+    window.__atVooMobilePillClickBound = true;
+
+    var touchStartX = 0;
+    var touchStartY = 0;
+    var SCROLL_THRESHOLD = 10;
+
+    function handlePillActivate(event, pill) {
+      if (!pill || pill.disabled) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      const optionLabel = pill.getAttribute('data-sort-value');
+      if (!optionLabel) {
+        return;
+      }
+      applySort(optionLabel, false, pill);
+    }
+
+    document.addEventListener(
+      'touchstart',
+      function (event) {
+        var pill = event.target.closest('.' + PILL_BTN_CLASS);
+        if (!pill) {
+          return;
+        }
+        var touch = event.touches[0];
+        if (touch) {
+          touchStartX = touch.clientX;
+          touchStartY = touch.clientY;
+        }
+      },
+      true,
+    );
+
+    document.addEventListener(
+      'touchend',
+      function (event) {
+        const pill = event.target.closest('.' + PILL_BTN_CLASS);
+        if (!pill) {
+          return;
+        }
+        var touch = event.changedTouches[0];
+        if (touch) {
+          var dx = Math.abs(touch.clientX - touchStartX);
+          var dy = Math.abs(touch.clientY - touchStartY);
+          if (dx > SCROLL_THRESHOLD || dy > SCROLL_THRESHOLD) {
+            return;
+          }
+        }
+        window.__atVooMobileLastTouch = Date.now();
+        handlePillActivate(event, pill);
+      },
+      true,
+    );
+
+    document.addEventListener(
+      'click',
+      function (event) {
+        const pill = event.target.closest('.' + PILL_BTN_CLASS);
+        if (!pill) {
+          return;
+        }
+        if (window.__atVooMobileLastTouch && Date.now() - window.__atVooMobileLastTouch < 500) {
+          return;
+        }
+        handlePillActivate(event, pill);
+      },
+      true,
+    );
+  }
+
+  function shouldRemountPills() {
+    return !isMountHealthy();
+  }
+
+  function mountSortPills() {
+    const header = findTripsHeader();
+    const tripInfo = header ? header.querySelector(SELECTORS.tripInfo) : null;
+    let wrap = header ? header.querySelector('.' + PILL_WRAP_CLASS) : null;
+    let bar;
+    let i;
+    let optionLabel;
+    let btn;
+
+    if (!header) {
+      return;
+    }
+
+    isMounting = true;
+
+    if (wrap) {
+      wrap.remove();
+    }
+
+    wrap = document.createElement('div');
+    wrap.className = PILL_WRAP_CLASS;
+
+    const labelEl = document.createElement('p');
+    labelEl.className = PILL_WRAP_CLASS + '__label';
+    labelEl.textContent = 'Ordenado por:';
+    wrap.appendChild(labelEl);
+
+    bar = document.createElement('div');
+    bar.className = PILL_BAR_CLASS;
+    bar.setAttribute('role', 'group');
+    bar.setAttribute('aria-label', 'Ordenar resultados de voos');
+
+    for (i = 0; i < SORT_OPTIONS.length; i++) {
+      optionLabel = SORT_OPTIONS[i];
+      btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = PILL_BTN_CLASS;
+      btn.setAttribute('data-sort-value', optionLabel);
+      btn.setAttribute('aria-pressed', 'false');
+      btn.textContent = optionLabel;
+      bar.appendChild(btn);
+    }
+
+    wrap.appendChild(bar);
+
+    if (tripInfo && tripInfo.nextSibling) {
+      header.insertBefore(wrap, tripInfo.nextSibling);
+    } else {
+      header.appendChild(wrap);
+    }
+
+    header.classList.add(PILL_WRAP_CLASS + '-ready');
+    hideNativeFilterButton();
+    bindHeaderObserver(header);
+
+    const applyDefaultAfterMount = forceDefaultOnNextMount;
+    const labelToShow = applyDefaultAfterMount ? DEFAULT_SORT_OPTION : getDisplaySortLabel();
+    forceDefaultOnNextMount = false;
+    syncActivePill(labelToShow);
+
+    if (applyDefaultAfterMount) {
+      scheduleDefaultSortApply();
+    }
+
+    isMounting = false;
+
+    console.log('[AT Filtros Voo Mobile] Pills injetadas (' + SORT_OPTIONS.length + ' opcoes).');
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        ensurePillsPresent();
+      });
+    });
+  }
+
+  function injectSortPills(forceRemount) {
+    const header = findTripsHeader();
+
+    if (!header) {
+      return;
+    }
+
+    if (!forceRemount && document.body.getAttribute(DATA_DONE) === '1' && isMountHealthy()) {
+      hideNativeFilterButton();
+      bindHeaderObserver(header);
+      syncActivePill(getDisplaySortLabel());
+      return;
+    }
+
+    document.body.setAttribute(DATA_DONE, '1');
+    mountSortPills();
+  }
+
+  function isListLoading() {
+    const header = findTripsHeader();
+    if (!header) {
+      return true;
+    }
+    return !header.offsetParent;
+  }
+
+  function run(forceRemount) {
+    if (!isTargetPage() || !isMobileViewport() || isProcessing || isApplyingSort) {
+      return;
+    }
+    if (isListLoading() && !forceRemount) {
+      return;
+    }
+    isProcessing = true;
+    try {
+      injectStyles();
+      hideNativeFilterButton();
+      bindGlobalPillClick();
+      bindBookingDateListeners();
+      startTripsLifecycleWatch();
+      injectSortPills(!!forceRemount);
+    } finally {
+      isProcessing = false;
+    }
+  }
+
+  function scheduleRun(forceRemount) {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+    debounceTimer = setTimeout(function () {
+      run(forceRemount);
+    }, 300);
+  }
+
+  function waitForHeader(callback) {
+    headerWaitFrames += 1;
+    if (headerWaitFrames > HEADER_WAIT_MAX_FRAMES) {
+      return;
+    }
+    if (findTripsHeader() && !isListLoading()) {
+      callback();
+      return;
+    }
+    requestAnimationFrame(function () {
+      waitForHeader(callback);
+    });
+  }
+
+  function init() {
+    if (!isTargetPage() || !isMobileViewport()) {
+      return;
+    }
+    startTripsLifecycleWatch();
+    waitForHeader(function () {
+      run();
+      ensureSortObserverConnected();
+      ensurePillsPresent();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  window.addEventListener('resize', function () {
+    if (!isMobileViewport()) {
+      return;
+    }
+    scheduleRun(false);
+  });
+})();

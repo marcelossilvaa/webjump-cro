@@ -3,7 +3,7 @@
 // =============================================================
 (function () {
   var EXPERIMENT_NAME = 'AT_Disney_shooting_star';
-  var BANNER_LINK = 'https://www.voeazul.com.br/br/pt/disney/promocoes-disney-23-10';
+  var BANNER_LINK = 'https://www.voeazul.com.br/br/pt/home/hotel?ds=JPD036691&stdi=29/11/2026&stdo=18/12/2026&r[0].adt=2&s_emid=emkt_pmweb_azv_e-mail_banner_lf_azv_202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOPESQUISAHOSPDISNEY-D0_n_abandonopesquisahospedagem_rec_bnr_lp_&utm_term=202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOPESQUISAHOSPDISNEY-D0&utm_source=e-mail&utm_campaign=pmweb_azv_e-mail_banner_lf_azv_202603-azv-b2c-emm-168h-viagem-abandonopesquisahospdisney-d0_n&utm_medium=rec#hotelList';
   var STYLE_ID = 'at-disney-shooting-star-style';
   var OVERLAY_ID = 'at-disney-overlay';
   var BANNER_ID = 'at-disney-banner';
@@ -507,6 +507,24 @@
     setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1800);
   }
 
+  function navigateToBannerLink() {
+    try {
+      window.location.assign(BANNER_LINK);
+      return;
+    } catch (e) {}
+
+    try {
+      var link = document.createElement('a');
+      link.href = BANNER_LINK;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) {
+      console.log('[Disney] Erro ao redirecionar: ' + e.message);
+    }
+  }
+
   // === BANNER CAMPANHA DISNEY ===
 
   function createBanner() {
@@ -690,6 +708,7 @@
     // --- CTA (direita, rodape) ---
     var cta = document.createElement('button');
     cta.className = 'at-disney-cta';
+    cta.type = 'button';
     cta.textContent = 'Eu quero!';
     container.appendChild(cta);
 
@@ -708,7 +727,7 @@
     cta.addEventListener('click', function (e) {
       e.stopPropagation();
       analyticsEvent('banner_disney_cta', 'click');
-      window.location.href = BANNER_LINK;
+      navigateToBannerLink();
     });
 
     coupon.addEventListener('click', function (e) {
@@ -739,7 +758,7 @@
       if (coupon.contains(e.target)) return;
       e.stopPropagation();
       analyticsEvent('banner_disney_container', 'click');
-      window.location.href = BANNER_LINK;
+      navigateToBannerLink();
     });
 
     closeBtn.addEventListener('click', function (e) {

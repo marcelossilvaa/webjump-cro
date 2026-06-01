@@ -1,6 +1,13 @@
 (function () {
   'use strict';
 
+  // ===================== GUARDS =====================
+  // Somente desktop (largura minima 1024px)
+  if (window.innerWidth < 1024) return;
+
+  // Somente na pagina de hoteis
+  if (window.location.href.indexOf('https://www.voeazul.com.br/br/pt/home/hotel?') === -1) return;
+
   // ===================== CONSTANTES =====================
   const STYLE_ID = 'at-mapa-lista-integrada-style';
   const MAP_ID = 'at-mapa-integrado';
@@ -18,6 +25,11 @@
   let isProcessing = false;
   let debounceTimer = null;
   let observerRef = null;
+  let observerGlobalRef = null;
+  let dadosCache = [];
+  let mapsAPICarregada = false;
+  let aguardandoPaginacao = false;
+  let debounceGlobalTimer = null;
 
   // ===================== CSS =====================
   function injetarEstilos() {
@@ -52,7 +64,6 @@
       '    flex: 0 0 50%;',
       '    order: 2;',
       '    position: sticky;',
-      '    top: 120px;',
       '    align-self: flex-start;',
       '    border-radius: 12px;',
       '    margin: 0 0 0 8px;',
@@ -80,31 +91,428 @@
       '  transition: outline .2s ease;',
       '}',
 
-      // InfoWindow customizada
-      '.at-iw-container { max-width: 260px; font-family: inherit; }',
-      '.at-iw-img { width: 100%; height: 100px; object-fit: cover; border-radius: 6px 6px 0 0; }',
-      '.at-iw-body { padding: 10px; }',
-      '.at-iw-title { font-size: 13px; font-weight: 700; color: #041E42; margin: 0 0 4px; }',
-      '.at-iw-loc { font-size: 11px; color: #666; margin: 0 0 6px; }',
-      '.at-iw-price { font-size: 16px; font-weight: 700; color: #026CB6; margin: 0 0 6px; }',
-      '.at-iw-stars { display: flex; gap: 1px; margin-bottom: 6px; }',
-      '.at-iw-stars svg { width: 12px; height: 12px; fill: #F5A623; }',
-      '.at-iw-btn {',
-      '  display: block; width: 100%; padding: 8px;',
-      '  background: #026CB6; color: #fff; border: none;',
-      '  border-radius: 6px; font-size: 12px; font-weight: 600;',
-      '  cursor: pointer; text-align: center;',
+      // Card reestruturado para o split 50/50 (vertical: imagem > info > preco)
+      '[' + DATA_APLICADO + '] [class*="HotelCardWrapper-sc"] {',
+      '  margin-bottom: 14px;',
+      '  height: auto !important;',
+      '  min-height: unset !important;',
+      '  max-height: none !important;',
       '}',
-      '.at-iw-btn:hover { background: #01588f; }',
+      '[' + DATA_APLICADO + '] [class*="CardContainer-sc"] {',
+      '  border-radius: 12px;',
+      '  overflow: hidden !important;',
+      '  box-shadow: 0 2px 8px rgba(0,0,0,.08);',
+      '  background: #fff;',
+      '  height: auto !important;',
+      '  min-height: unset !important;',
+      '  max-height: none !important;',
+      '  border: 1px solid #e8e8e8;',
+      '}',
 
-      // Thumbnail de imagem no card
-      '.at-card-thumb {',
-      '  width: 100%; height: 160px; object-fit: cover;',
-      '  display: block; border-radius: 10px 10px 0 0;',
+      // === WRAPPER: imagem topo + duas colunas abaixo ===
+      '[' + DATA_APLICADO + '] [class*="WrapperSlidesDesktop-sc"] {',
+      '  display: flex !important;',
+      '  flex-direction: row !important;',
+      '  flex-wrap: wrap !important;',
+      '  height: auto !important;',
+      '  min-height: unset !important;',
+      '  max-height: none !important;',
+      '  width: 100% !important;',
+      '  overflow: visible !important;',
       '}',
-      '[class*="HotelCardWrapper-sc-16a2dz4"] [class*="CardContainer-sc"] {',
-      '  display: flex !important; flex-direction: column !important;',
-      '}'
+
+      // === TOPO: Imagem do hotel (100% largura) ===
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] {',
+      '  width: 100% !important;',
+      '  flex: 0 0 100% !important;',
+      '  height: 160px !important;',
+      '  max-height: 160px !important;',
+      '  min-height: 160px !important;',
+      '  overflow: hidden !important;',
+      '  flex-shrink: 0 !important;',
+      '  position: relative !important;',
+      '  border-radius: 12px 12px 0 0 !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-slider,',
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-list,',
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-track,',
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-slide,',
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-slide > div {',
+      '  height: 160px !important;',
+      '  max-height: 160px !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-list {',
+      '  overflow: hidden !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] .slick-slide {',
+      '  width: 100% !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Slider-sc-1ft5opc"] img {',
+      '  width: 100% !important;',
+      '  height: 160px !important;',
+      '  max-height: 160px !important;',
+      '  object-fit: cover !important;',
+      '  display: block !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="StyledSlider-sc-o70g43"] {',
+      '  height: 160px !important;',
+      '  max-height: 160px !important;',
+      '  width: 100% !important;',
+      '  overflow: hidden !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="BlurImageBackground-sc"] {',
+      '  display: none !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="PromoTagContainer-sc"] {',
+      '  height: 160px !important;',
+      '  max-height: 160px !important;',
+      '  width: 100% !important;',
+      '  overflow: hidden !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="PromoTagChildren-sc"] {',
+      '  height: 160px !important;',
+      '  max-height: 160px !important;',
+      '  overflow: hidden !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="SliderContainer-sc-o70g43"] {',
+      '  height: 160px !important;',
+      '  max-height: 160px !important;',
+      '  overflow: hidden !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="DotsWrapper-sc-o70g43"] {',
+      '  position: absolute !important;',
+      '  bottom: 8px !important;',
+      '  left: 50% !important;',
+      '  transform: translateX(-50%) !important;',
+      '  z-index: 10;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Arrow-sc-o70g43"] {',
+      '  width: 24px !important;',
+      '  height: 24px !important;',
+      '  min-width: 24px !important;',
+      '}',
+
+      // === COLUNA ESQUERDA: Informacoes do hotel ===
+      '[' + DATA_APLICADO + '] [class*="ContentWrapper-sc-1ft5opc"] {',
+      '  width: 55% !important;',
+      '  flex: 0 0 55% !important;',
+      '  padding: 10px 12px 10px 14px !important;',
+      '  box-sizing: border-box !important;',
+      '  display: flex !important;',
+      '  flex-direction: column !important;',
+      '  justify-content: flex-start !important;',
+      '  overflow: visible !important;',
+      '  border-right: 1px solid #eee;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="InfosWrapper-sc-1ft5opc"] {',
+      '  width: 100% !important;',
+      '  overflow: visible !important;',
+      '}',
+
+      // Nome do hotel
+      '[' + DATA_APLICADO + '] [class*="HotelName-sc"] {',
+      '  font-size: 14px !important;',
+      '  font-weight: 700 !important;',
+      '  color: rgb(1, 78, 132) !important;',
+      '  white-space: normal !important;',
+      '  overflow: hidden !important;',
+      '  display: -webkit-box !important;',
+      '  -webkit-line-clamp: 2;',
+      '  -webkit-box-orient: vertical;',
+      '  line-height: 1.35 !important;',
+      '  max-height: 2.7em !important;',
+      '  margin: 0 0 2px 0 !important;',
+      '  font-family: "Helvetica Neue", Arial, sans-serif !important;',
+      '}',
+
+      // Wrapper nome + estrelas: estrelas na mesma linha
+      '[' + DATA_APLICADO + '] [class*="HotelNameWrapper-sc"] {',
+      '  display: flex !important;',
+      '  flex-direction: row !important;',
+      '  align-items: flex-start !important;',
+      '  gap: 6px;',
+      '  margin-bottom: 2px;',
+      '  overflow: visible !important;',
+      '}',
+      // H3 nao pode encolher o wrapper
+      '[' + DATA_APLICADO + '] [class*="HotelNameWrapper-sc"] > h3 {',
+      '  min-width: 0 !important;',
+      '  flex: 1 1 auto;',
+      '}',
+      // Estrelas: nao encolher
+      '[' + DATA_APLICADO + '] [class*="HotelNameWrapper-sc"] > span {',
+      '  flex-shrink: 0;',
+      '  display: flex !important;',
+      '  align-items: center;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="HotelNameWrapper-sc"] svg[data-testid="StarIcon"] {',
+      '  width: 16px !important;',
+      '  height: 16px !important;',
+      '}',
+
+      // Localizacao
+      '[' + DATA_APLICADO + '] [class*="NeighboorhoodDistance-sc"] {',
+      '  font-size: 12px !important;',
+      '  color: #444 !important;',
+      '  display: block !important;',
+      '  white-space: normal !important;',
+      '  overflow: hidden !important;',
+      '  display: -webkit-box !important;',
+      '  -webkit-line-clamp: 2;',
+      '  -webkit-box-orient: vertical;',
+      '  margin-bottom: 6px;',
+      '  line-height: 1.3 !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="MapButton-sc"] {',
+      '  display: none !important;',
+      '}',
+
+      // Comodidades (Restaurante, Piscina, etc.) — exibir em coluna vertical
+      '[' + DATA_APLICADO + '] [class*="AmenitiesWrapper-sc"] {',
+      '  display: flex !important;',
+      '  flex-direction: column !important;',
+      '  align-items: flex-start !important;',
+      '  gap: 2px;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Amenitie-sc"] {',
+      '  margin-bottom: 0 !important;',
+      '}',
+
+      // Badges de beneficio (Quartos com Ofertas, Ultimos quartos, etc.)
+      '[' + DATA_APLICADO + '] [class*="TagWrapper-sc-1ft5opc"] {',
+      '  display: flex !important;',
+      '  flex-wrap: wrap !important;',
+      '  gap: 4px;',
+      '  overflow: visible !important;',
+      '}',
+
+      // Tags (cancelamento, refeicao)
+      '[' + DATA_APLICADO + '] [class*="InfosCarouselWrapper-sc"] {',
+      '  overflow: visible !important;',
+      '  max-width: 100%;',
+      '  margin-top: 2px;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="CarouselWrapper-sc-3qprdy"] {',
+      '  overflow: visible !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Carousel-sc-3qprdy"] {',
+      '  display: flex !important;',
+      '  flex-wrap: wrap !important;',
+      '  gap: 6px;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="InfoTagContainer-sc"] {',
+      '  flex: 0 0 auto !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="InfoTagWrapper-sc"] {',
+      '  width: fit-content !important;',
+      '  flex: 0 0 auto !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="RightSideWrapper-sc"] {',
+      '  flex: 0 0 auto !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="InfoTagWrapper-sc"] span {',
+      '  font-size: 12px !important;',
+      '  white-space: nowrap;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="LeftSideWrapper-sc"] {',
+      '  display: flex !important;',
+      '  align-items: center !important;',
+      '  padding: 0 !important;',
+      '  margin: 0 !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="LeftSideWrapper-sc"] svg {',
+      '  width: 16px !important;',
+      '  height: 16px !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="ButtonWrapperBase-sc-3qprdy"] {',
+      '  display: none !important;',
+      '}',
+
+      // === COLUNA DIREITA: Secao de preco e pontos ===
+      '[' + DATA_APLICADO + '] [class*="PriceWrapper-sc-10ygdxz"] {',
+      '  width: 45% !important;',
+      '  flex: 0 0 45% !important;',
+      '  padding: 10px 14px !important;',
+      '  box-sizing: border-box !important;',
+      '  background: #fff;',
+      '  display: flex !important;',
+      '  flex-direction: column !important;',
+      '  align-items: center !important;',
+      '  justify-content: center !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="ContentPrice-sc"] {',
+      '  width: 100% !important;',
+      '  display: flex !important;',
+      '  flex-direction: column !important;',
+      '  align-items: center !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="BorderContainer-sc"] {',
+      '  display: flex !important;',
+      '  flex-direction: column !important;',
+      '  width: 100% !important;',
+      '  border: none !important;',
+      '  padding: 0 !important;',
+      '  align-items: center !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="BorderContentTier-sc"] {',
+      '  padding: 0 !important;',
+      '  margin: 0 0 6px 0 !important;',
+      '  order: 1;',
+      '  text-align: center;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="BorderContentPrice-sc"] {',
+      '  width: 100% !important;',
+      '  padding: 0 0 10px 0 !important;',
+      '  order: 2;',
+      '}',
+
+      // Acumule pontos: flag com imagem de fundo
+      '[' + DATA_APLICADO + '] [class*="AccrualWrapper-sc"] {',
+      '  padding: 8px 8px !important;',
+      '  background: url(https://www.voeazul.com.br/etc.clientlibs/azul/clientlibs/clientlib-react/resources/static/media/bg_noAccrual.ebb1c94c.svg) no-repeat center center !important;',
+      '  background-size: cover !important;',
+      '  border-radius: 4px;',
+      '  display: inline-flex !important;',
+      '  flex-wrap: wrap !important;',
+      '  align-items: center !important;',
+      '  justify-content: center !important;',
+      '  gap: 3px 6px;',
+      '  margin: 0 auto;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="AccrualInfo-sc"] {',
+      '  display: flex !important;',
+      '  align-items: center !important;',
+      '  gap: 4px;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="AccrualTitle-sc"] {',
+      '  font-size: 11px !important;',
+      '  font-weight: 700 !important;',
+      '  color: #fff !important;',
+      '  white-space: nowrap;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="AccrualTitle-sc"] + span svg {',
+      '  display: none !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="AccrualText-sc"] {',
+      '  font-size: 10px !important;',
+      '  color: #fff !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="BackgroundAccrual-sc"] {',
+      '  display: none !important;',
+      '}',
+
+      // Preco principal
+      '[' + DATA_APLICADO + '] [class*="PriceContentWrapper-sc"] {',
+      '  display: flex !important;',
+      '  flex-wrap: wrap !important;',
+      '  align-items: baseline !important;',
+      '  justify-content: center !important;',
+      '  gap: 2px 8px;',
+      '  margin-top: 0;',
+      '  text-align: center;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="ContainerDaily-sc"] {',
+      '  font-size: 13px !important;',
+      '  width: 100%;',
+      '  margin-bottom: 0;',
+      '  text-align: center;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="DailyText-sc"] {',
+      '  font-size: 13px !important;',
+      '  font-weight: 600 !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Price-sc-10ygdxz"] {',
+      '  white-space: nowrap;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Currency-sc"] {',
+      '  font-size: 14px !important;',
+      '  color: rgb(1, 78, 132) !important;',
+      '  font-weight: 600 !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Integer-sc"] {',
+      '  font-size: 26px !important;',
+      '  color: rgb(1, 78, 132) !important;',
+      '  font-weight: 700 !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="Cents-sc"] {',
+      '  font-size: 14px !important;',
+      '  color: rgb(1, 78, 132) !important;',
+      '  font-weight: 600 !important;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="PriceInstallments-sc"] {',
+      '  font-size: 12px !important;',
+      '  width: 100%;',
+      '  color: #555 !important;',
+      '  margin-top: 2px;',
+      '  text-align: center;',
+      '}',
+      '[' + DATA_APLICADO + '] [class*="PriceInstallments-sc"] span[color] {',
+      '  color: #0089C2 !important;',
+      '  font-weight: 500;',
+      '}',
+
+      // CTA: Botao Ver detalhes
+      '[' +
+        DATA_APLICADO +
+        '] [class*="PriceWrapper-sc"] button[data-testid="search-box-hotel-date-picker-primary-button"] {',
+      '  width: 90% !important;',
+      '  height: 40px;',
+      '  margin: 10px auto 0 !important;',
+      '  padding: 0 !important;',
+      '  font-size: 14px !important;',
+      '  line-height: 20px;',
+      '  font-weight: normal !important;',
+      '  font-style: normal;',
+      '  border-radius: 4px;',
+      '  background-color: rgb(0, 128, 88) !important;',
+      '  color: #fff !important;',
+      '  border: none !important;',
+      '  cursor: pointer;',
+      '  font-family: "Helvetica Neue", Arial !important;',
+      '  display: flex !important;',
+      '  align-items: center !important;',
+      '  justify-content: center !important;',
+      '  text-align: center;',
+      '  transition: background-color 500ms;',
+      '  position: relative;',
+      '}',
+
+      // InfoWindow estilizada
+      '.at-iw-container {',
+      '  padding: 0 10px 15px 10px;',
+      '  font-family: "Helvetica Neue", Arial, sans-serif;',
+      '  min-width: 180px;',
+      '  max-width: 260px;',
+      '}',
+      '.at-iw-container p {',
+      '  margin: 0 !important;',
+      '  padding: 0 !important;',
+      '}',
+      '.at-iw-nome {',
+      '  font-size: 14px !important;',
+      '  font-weight: 700 !important;',
+      '  color: rgb(1, 78, 132) !important;',
+      '  margin: 0 0 3px 0 !important;',
+      '  line-height: 1.3 !important;',
+      '}',
+      '.at-iw-endereco {',
+      '  font-size: 12px !important;',
+      '  color: #555 !important;',
+      '  margin: 0 0 6px 0 !important;',
+      '  line-height: 1.3 !important;',
+      '}',
+      '.at-iw-diarias {',
+      '  font-size: 11px !important;',
+      '  color: #777 !important;',
+      '  margin: 0 0 2px 0 !important;',
+      '  font-weight: 400 !important;',
+      '}',
+      '.at-iw-preco {',
+      '  font-size: 15px !important;',
+      '  font-weight: 700 !important;',
+      '  color: rgb(1, 78, 132) !important;',
+      '  margin: 0 !important;',
+      '}',
     ].join('\n');
     document.head.appendChild(style);
   }
@@ -147,10 +555,18 @@
       if (matchImg) return matchImg[1];
     }
 
-    // Procurar no __NEXT_DATA__
+    // Procurar no __NEXT_DATA__ (acesso direto ao env para evitar stringify de objeto grande)
     try {
-      const ndStr = JSON.stringify(window.__NEXT_DATA__ || {});
-      const matchNd = ndStr.match(/AIzaSy[\w\-]{30,40}/);
+      const nd = window.__NEXT_DATA__;
+      if (nd && nd.runtimeConfig && nd.runtimeConfig.googleMapsKey) {
+        return nd.runtimeConfig.googleMapsKey;
+      }
+      if (nd && nd.props && nd.props.pageProps && nd.props.pageProps.googleMapsKey) {
+        return nd.props.pageProps.googleMapsKey;
+      }
+      // Fallback: stringify limitado
+      var ndStr = JSON.stringify(nd || {}).slice(0, 200000);
+      var matchNd = ndStr.match(/AIzaSy[\w\-]{30,40}/);
       if (matchNd) return matchNd[0];
     } catch (e) {
       // silenciar erro
@@ -208,6 +624,51 @@
     document.head.appendChild(script);
   }
 
+  // ===================== LOADING NATIVO COMO CAMADA =====================
+  function exibirLoadingNativo() {
+    // Clonar o loading nativo existente na pagina para usar como overlay
+    var loadingOriginal = document.querySelector('[class*="LoadingWrapper-sc"]');
+    var searchWrapper = document.querySelector('[class*="SearchListWrapper-sc"]');
+    if (!searchWrapper) return null;
+
+    var overlay = document.createElement('div');
+    overlay.id = 'at-loading-overlay';
+    overlay.style.cssText =
+      'position:absolute;top:0;left:0;width:100%;height:100%;' +
+      'background:#fff;z-index:9999;display:flex;align-items:center;justify-content:center;';
+
+    if (loadingOriginal) {
+      // Clonar o loading nativo para manter a mesma aparencia
+      var clone = loadingOriginal.cloneNode(true);
+      clone.style.setProperty('display', 'block', 'important');
+      overlay.appendChild(clone);
+    } else {
+      // Fallback minimo com texto caso o loading nativo nao exista
+      var msg = document.createElement('span');
+      msg.textContent = 'Carregando mapa interativo...';
+      msg.style.cssText = 'font-size:14px;color:#026CB6;font-family:Helvetica Neue,sans-serif;';
+      overlay.appendChild(msg);
+    }
+
+    // Garantir que o wrapper tem position relativa para o overlay absoluto funcionar
+    var posAtual = window.getComputedStyle(searchWrapper).position;
+    if (posAtual === 'static') {
+      searchWrapper.style.setProperty('position', 'relative');
+    }
+
+    searchWrapper.appendChild(overlay);
+    console.log(LOG_PREFIX + ' Loading nativo exibido como camada.');
+    return overlay;
+  }
+
+  function removerLoadingNativo() {
+    var overlay = document.getElementById('at-loading-overlay');
+    if (overlay && overlay.parentNode) {
+      overlay.parentNode.removeChild(overlay);
+      console.log(LOG_PREFIX + ' Loading nativo removido.');
+    }
+  }
+
   function carregarAPIViaToggle(callback) {
     const toggleBtn = document.querySelector('[class*="AnimatedButton-sc-1oit4q5"]');
     if (!toggleBtn) {
@@ -215,11 +676,19 @@
       return;
     }
 
-    // Esconder a area de conteudo temporariamente para evitar flickering visual
+    // Bloquear monitorarPaginacao durante o fluxo do toggle para evitar dupla execucao
+    aguardandoPaginacao = true;
+
+    // Exibir loading nativo como camada visual enquanto prepara o mapa
+    exibirLoadingNativo();
+
+    // Esconder o conteudo real por baixo para evitar flickering
     const searchWrapper = document.querySelector('[class*="SearchListWrapper-sc"]');
-    if (searchWrapper) {
-      searchWrapper.style.setProperty('opacity', '0', 'important');
-      searchWrapper.style.setProperty('pointer-events', 'none', 'important');
+    var conteudoFilhos = searchWrapper
+      ? searchWrapper.querySelectorAll(':scope > *:not(#at-loading-overlay)')
+      : [];
+    for (var i = 0; i < conteudoFilhos.length; i++) {
+      conteudoFilhos[i].style.setProperty('visibility', 'hidden', 'important');
     }
 
     // Clicar para ativar a view de mapa (isso forca o carregamento do Google Maps API)
@@ -249,11 +718,19 @@
             if (cards.length >= 2 || tentativasLista > 30) {
               clearInterval(pollingLista);
 
-              // Restaurar visibilidade
-              if (searchWrapper) {
-                searchWrapper.style.removeProperty('opacity');
-                searchWrapper.style.removeProperty('pointer-events');
+              // Restaurar visibilidade dos filhos
+              var filhos = searchWrapper
+                ? searchWrapper.querySelectorAll(':scope > *:not(#at-loading-overlay)')
+                : [];
+              for (var f = 0; f < filhos.length; f++) {
+                filhos[f].style.removeProperty('visibility');
               }
+
+              // Remover overlay de loading nativo
+              removerLoadingNativo();
+
+              // Liberar monitorarPaginacao apos fluxo de toggle concluido
+              aguardandoPaginacao = false;
 
               if (cards.length >= 2) {
                 console.log(LOG_PREFIX + ' Lista re-renderizada apos toggle.');
@@ -266,11 +743,19 @@
       } else if (tentativasAPI > 40) {
         clearInterval(pollingAPI);
 
-        // Restaurar visibilidade
-        if (searchWrapper) {
-          searchWrapper.style.removeProperty('opacity');
-          searchWrapper.style.removeProperty('pointer-events');
+        // Restaurar visibilidade dos filhos
+        var filhosFallback = searchWrapper
+          ? searchWrapper.querySelectorAll(':scope > *:not(#at-loading-overlay)')
+          : [];
+        for (var fb = 0; fb < filhosFallback.length; fb++) {
+          filhosFallback[fb].style.removeProperty('visibility');
         }
+
+        // Remover overlay de loading nativo
+        removerLoadingNativo();
+
+        // Liberar monitorarPaginacao apos timeout do toggle
+        aguardandoPaginacao = false;
 
         // Tentar voltar para lista
         const voltarBtnFallback = document.querySelector('[class*="AnimatedButton-sc-1oit4q5"]');
@@ -283,26 +768,164 @@
     }, 500);
   }
 
-  // ===================== ICONE SVG PARA MARCADORES DO MAPA =====================
-  function criarIconePin(textoPreco, ativo) {
-    const largura = Math.max(80, textoPreco.length * 8 + 24);
-    const bg = ativo ? '#026CB6' : '#ffffff';
-    const cor = ativo ? '#ffffff' : '#026CB6';
-    const borda = '#026CB6';
-    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + largura + '" height="42">' +
-      '<rect x="1" y="1" width="' + (largura - 2) + '" height="32" rx="16" ' +
-      'fill="' + bg + '" stroke="' + borda + '" stroke-width="2"/>' +
-      '<text x="' + (largura / 2) + '" y="22" font-family="Arial,sans-serif" ' +
-      'font-size="12" font-weight="bold" fill="' + cor + '" text-anchor="middle">' +
-      textoPreco + '</text>' +
-      '<polygon points="' + (largura / 2 - 6) + ',33 ' + (largura / 2) + ',41 ' +
-      (largura / 2 + 6) + ',33" fill="' + borda + '"/>' +
+  // ===================== PIN CUSTOMIZADO =====================
+  function criarPinSVG(texto, ativo) {
+    var charWidth = 7;
+    var padding = 24;
+    var largura = Math.max(60, texto.length * charWidth + padding);
+    var alturaRect = 28;
+    var alturaCauda = 8;
+    var raio = 14;
+    var svgW, svgH, cx, d, fillColor, strokeAttr, textY, tipY;
+
+    if (ativo) {
+      // Canvas expandido 4px (2px por lado) para o stroke nao ser cortado
+      svgW = largura + 4;
+      svgH = alturaRect + alturaCauda + 4;
+      cx = svgW / 2;
+      tipY = svgH - 2;
+      fillColor = '#002a57';
+      strokeAttr = ' stroke="white" stroke-width="3" stroke-linejoin="round"';
+      textY = 20;
+      d =
+        'M ' +
+        (2 + raio) +
+        ' 2' +
+        ' H ' +
+        (svgW - 2 - raio) +
+        ' Q ' +
+        (svgW - 2) +
+        ' 2 ' +
+        (svgW - 2) +
+        ' ' +
+        (2 + raio) +
+        ' V ' +
+        (2 + alturaRect - raio) +
+        ' Q ' +
+        (svgW - 2) +
+        ' ' +
+        (2 + alturaRect) +
+        ' ' +
+        (svgW - 2 - raio) +
+        ' ' +
+        (2 + alturaRect) +
+        ' H ' +
+        (cx + 5) +
+        ' L ' +
+        cx +
+        ' ' +
+        tipY +
+        ' L ' +
+        (cx - 5) +
+        ' ' +
+        (2 + alturaRect) +
+        ' H ' +
+        (2 + raio) +
+        ' Q 2 ' +
+        (2 + alturaRect) +
+        ' 2 ' +
+        (2 + alturaRect - raio) +
+        ' V ' +
+        (2 + raio) +
+        ' Q 2 2 ' +
+        (2 + raio) +
+        ' 2 Z';
+    } else {
+      svgW = largura;
+      svgH = alturaRect + alturaCauda;
+      cx = svgW / 2;
+      tipY = svgH;
+      fillColor = '#014E84';
+      strokeAttr = '';
+      textY = 18;
+      d =
+        'M ' +
+        raio +
+        ' 0' +
+        ' H ' +
+        (svgW - raio) +
+        ' Q ' +
+        svgW +
+        ' 0 ' +
+        svgW +
+        ' ' +
+        raio +
+        ' V ' +
+        (alturaRect - raio) +
+        ' Q ' +
+        svgW +
+        ' ' +
+        alturaRect +
+        ' ' +
+        (svgW - raio) +
+        ' ' +
+        alturaRect +
+        ' H ' +
+        (cx + 5) +
+        ' L ' +
+        cx +
+        ' ' +
+        tipY +
+        ' L ' +
+        (cx - 5) +
+        ' ' +
+        alturaRect +
+        ' H ' +
+        raio +
+        ' Q 0 ' +
+        alturaRect +
+        ' 0 ' +
+        (alturaRect - raio) +
+        ' V ' +
+        raio +
+        ' Q 0 0 ' +
+        raio +
+        ' 0 Z';
+    }
+
+    var svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="' +
+      svgW +
+      '" height="' +
+      svgH +
+      '">' +
+      '<path d="' +
+      d +
+      '" fill="' +
+      fillColor +
+      '"' +
+      strokeAttr +
+      '/>' +
+      '<text x="' +
+      cx +
+      '" y="' +
+      textY +
+      '" font-family="Helvetica Neue,Arial,sans-serif" font-size="11" fill="#fff" text-anchor="middle" font-weight="bold">' +
+      texto +
+      '</text>' +
       '</svg>';
+
     return {
-      url: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg),
-      scaledSize: new google.maps.Size(largura, 42),
-      anchor: new google.maps.Point(largura / 2, 41)
+      url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+      scaledSize: new google.maps.Size(svgW, svgH),
+      anchor: new google.maps.Point(cx, tipY),
     };
+  }
+
+  function criarConteudoInfoWindow(hotel) {
+    var html = '<div class="at-iw-container">';
+    html += '<p class="at-iw-nome">' + hotel.nome + '</p>';
+    if (hotel.localizacao) {
+      html += '<p class="at-iw-endereco">' + hotel.localizacao + '</p>';
+    }
+    if (hotel.preco) {
+      if (hotel.diarias) {
+        html += '<p class="at-iw-diarias">' + hotel.diarias + '</p>';
+      }
+      html += '<p class="at-iw-preco">' + hotel.preco + '</p>';
+    }
+    html += '</div>';
+    return html;
   }
 
   // ===================== EXTRACAO DE DADOS DOS CARDS =====================
@@ -321,11 +944,12 @@
       const estrelas = card.querySelectorAll('[data-testid="StarIcon"]').length;
 
       // Imagem (tentar varias estrategias)
-      const imgEl = card.querySelector('.slick-slide.slick-active img') ||
+      const imgEl =
+        card.querySelector('.slick-slide.slick-active img') ||
         card.querySelector('.slick-slide img') ||
         card.querySelector('[class*="WrapperSlides"] img') ||
         card.querySelector('img[alt]:not([width="1"])');
-      const imagem = imgEl ? (imgEl.getAttribute('src') || imgEl.getAttribute('data-src') || '') : '';
+      const imagem = imgEl ? imgEl.getAttribute('src') || imgEl.getAttribute('data-src') || '' : '';
 
       // Localizacao
       const locEl = card.querySelector('[class*="NeighboorhoodDistance-sc"]');
@@ -361,7 +985,9 @@
 
       // Comodidades
       const comodidades = [];
-      const itensCom = card.querySelectorAll('[class*="Amenitie-sc"] [class*="TextWrapper-sc"] span');
+      const itensCom = card.querySelectorAll(
+        '[class*="Amenitie-sc"] [class*="TextWrapper-sc"] span',
+      );
       for (let j = 0; j < itensCom.length; j++) {
         const t = itensCom[j].textContent.trim();
         if (t && t.indexOf('+ ') !== 0) comodidades.push(t);
@@ -369,15 +995,22 @@
 
       // Tags
       const tags = [];
-      const tagEls = card.querySelectorAll('[class*="InfoTagWrapper-sc"] [class*="RightSideWrapper-sc"] span');
+      const tagEls = card.querySelectorAll(
+        '[class*="InfoTagWrapper-sc"] [class*="RightSideWrapper-sc"] span',
+      );
       for (let k = 0; k < tagEls.length; k++) {
         const tagTexto = tagEls[k].textContent.trim();
         if (tagTexto) tags.push(tagTexto);
       }
 
       // Botao de detalhes (dentro do PriceWrapper ou FooterCard, nao o toggle geral)
-      const btnDetalhes = card.querySelector('[class*="PriceWrapper"] button[data-testid="search-box-hotel-date-picker-primary-button"]') ||
-        card.querySelector('[class*="FooterCard"] button[data-testid="search-box-hotel-date-picker-primary-button"]') ||
+      const btnDetalhes =
+        card.querySelector(
+          '[class*="PriceWrapper"] button[data-testid="search-box-hotel-date-picker-primary-button"]',
+        ) ||
+        card.querySelector(
+          '[class*="FooterCard"] button[data-testid="search-box-hotel-date-picker-primary-button"]',
+        ) ||
         card.querySelector('[class*="StyledButton-sc"] ') ||
         card.querySelector('button[data-testid="search-box-hotel-date-picker-primary-button"]');
 
@@ -394,7 +1027,7 @@
         tags: tags,
         elemento: card,
         btnDetalhes: btnDetalhes,
-        coordenada: null
+        coordenada: null,
       });
     }
 
@@ -426,18 +1059,29 @@
       const fontes = [pp.hotels, pp.hotelList, pp.searchResults, pp.data];
       for (let f = 0; f < fontes.length; f++) {
         if (!fontes[f]) continue;
-        const lista = Array.isArray(fontes[f]) ? fontes[f] : (fontes[f].items || fontes[f].hotels || []);
+        const lista = Array.isArray(fontes[f])
+          ? fontes[f]
+          : fontes[f].items || fontes[f].hotels || [];
         if (!Array.isArray(lista) || lista.length === 0) continue;
 
         // Verificar se tem lat/lng
         const primeiro = lista[0];
-        if (primeiro && (primeiro.latitude || primeiro.lat || (primeiro.location && primeiro.location.lat))) {
+        if (
+          primeiro &&
+          (primeiro.latitude || primeiro.lat || (primeiro.location && primeiro.location.lat))
+        ) {
           console.log(LOG_PREFIX + ' Coordenadas encontradas em __NEXT_DATA__.');
           for (let i = 0; i < dados.length; i++) {
             if (i < lista.length) {
               const h = lista[i];
-              const lat = h.latitude || h.lat || (h.location && h.location.lat) || (h.geo && h.geo.lat);
-              const lng = h.longitude || h.lng || h.lon || (h.location && h.location.lng) || (h.geo && h.geo.lng);
+              const lat =
+                h.latitude || h.lat || (h.location && h.location.lat) || (h.geo && h.geo.lat);
+              const lng =
+                h.longitude ||
+                h.lng ||
+                h.lon ||
+                (h.location && h.location.lng) ||
+                (h.geo && h.geo.lng);
               if (lat && lng) {
                 dados[i].coordenada = { lat: parseFloat(lat), lng: parseFloat(lng) };
               }
@@ -454,7 +1098,9 @@
 
   function tentarExtrairCoordenadasDoReactFiber(dados) {
     try {
-      const listWrapper = document.querySelector('[data-testid="hotel-list-wrapper-contains-cards"]');
+      const listWrapper = document.querySelector(
+        '[data-testid="hotel-list-wrapper-contains-cards"]',
+      );
       if (!listWrapper) return false;
 
       const fiberKey = Object.keys(listWrapper).find(function (k) {
@@ -523,7 +1169,7 @@
         if (status === 'OK' && results[0]) {
           dados[indice].coordenada = {
             lat: results[0].geometry.location.lat(),
-            lng: results[0].geometry.location.lng()
+            lng: results[0].geometry.location.lng(),
           };
         }
         // Pequeno atraso para evitar rate limiting
@@ -584,10 +1230,10 @@
             for (let idx = 0; idx < dados.length; idx++) {
               if (!dados[idx].coordenada) {
                 const ang = (idx * 2 * Math.PI) / dados.length;
-                const r = 0.008 + (Math.random() * 0.004);
+                const r = 0.008 + Math.random() * 0.004;
                 dados[idx].coordenada = {
                   lat: centroGeo.lat() + r * Math.sin(ang),
-                  lng: centroGeo.lng() + r * Math.cos(ang)
+                  lng: centroGeo.lng() + r * Math.cos(ang),
                 };
               }
             }
@@ -608,10 +1254,10 @@
     for (let i = 0; i < dados.length; i++) {
       if (!dados[i].coordenada) {
         const angulo = (i * 2 * Math.PI) / dados.length;
-        const raio = 0.008 + (Math.random() * 0.004);
+        const raio = 0.008 + Math.random() * 0.004;
         dados[i].coordenada = {
           lat: centroLat + raio * Math.sin(angulo),
-          lng: centroLng + raio * Math.cos(angulo)
+          lng: centroLng + raio * Math.cos(angulo),
         };
       }
     }
@@ -622,13 +1268,17 @@
   function resolverCoordenadas(dados, callback) {
     // Estrategia 1: __NEXT_DATA__
     if (tentarExtrairCoordenadasDoNextData(dados)) {
-      distribuirCoordenadasFallback(dados, '', function () { callback(); });
+      distribuirCoordenadasFallback(dados, '', function () {
+        callback();
+      });
       return;
     }
 
     // Estrategia 2: React Fiber
     if (tentarExtrairCoordenadasDoReactFiber(dados)) {
-      distribuirCoordenadasFallback(dados, '', function () { callback(); });
+      distribuirCoordenadasFallback(dados, '', function () {
+        callback();
+      });
       return;
     }
 
@@ -664,13 +1314,15 @@
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: false,
-      styles: [
-        { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-        { featureType: 'transit', stylers: [{ visibility: 'simplified' }] }
-      ]
     });
 
     // Ajustar bounds
+    if (dados.length > 1) {
+      mapInstance.fitBounds(bounds, { top: 30, right: 30, bottom: 30, left: 30 });
+    }
+
+    // Disparar resize garante renderizacao correta em containers dinamicos (flex, sticky)
+    google.maps.event.trigger(mapInstance, 'resize');
     if (dados.length > 1) {
       mapInstance.fitBounds(bounds, { top: 30, right: 30, bottom: 30, left: 30 });
     }
@@ -687,68 +1339,35 @@
   function adicionarMarcador(hotel, indice) {
     if (!hotel.coordenada || !mapInstance) return;
 
+    var textoPin = hotel.precoCurto || hotel.preco || hotel.nome;
+    var icone = criarPinSVG(textoPin, false);
+
     const marker = new google.maps.Marker({
       position: hotel.coordenada,
       map: mapInstance,
-      icon: criarIconePin(hotel.precoCurto || 'Hotel', false),
       title: hotel.nome,
+      icon: icone,
       zIndex: 1,
-      optimized: false
     });
 
-    // InfoWindow com detalhes do hotel
-    const iwConteudo = criarConteudoInfoWindow(hotel);
-
     marker.addListener('click', function () {
-      abrirInfoWindow(marker, iwConteudo, indice);
+      abrirInfoWindow(marker, criarConteudoInfoWindow(hotel), indice);
       destacarCard(indice);
       rolarParaCard(indice);
       analyticsEvent(hotel.nome, 'mapa_pin_clique');
     });
 
     marker.addListener('mouseover', function () {
-      marker.setIcon(criarIconePin(hotel.precoCurto || 'Hotel', true));
-      marker.setZIndex(100);
       destacarCard(indice);
     });
 
     marker.addListener('mouseout', function () {
       if (cardAtivoIdx !== indice) {
-        marker.setIcon(criarIconePin(hotel.precoCurto || 'Hotel', false));
-        marker.setZIndex(1);
         resetarCard(indice);
       }
     });
 
     marcadores.push(marker);
-  }
-
-  function criarConteudoInfoWindow(hotel) {
-    let html = '<div class="at-iw-container">';
-    if (hotel.imagem) {
-      html += '<img class="at-iw-img" src="' + hotel.imagem + '" alt="' + hotel.nome + '"/>';
-    }
-    html += '<div class="at-iw-body">';
-    html += '<p class="at-iw-title">' + hotel.nome + '</p>';
-
-    // Estrelas
-    if (hotel.estrelas > 0) {
-      html += '<div class="at-iw-stars">';
-      for (let s = 0; s < hotel.estrelas; s++) {
-        html += '<svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>';
-      }
-      html += '</div>';
-    }
-
-    if (hotel.localizacao) {
-      html += '<p class="at-iw-loc">' + hotel.localizacao + '</p>';
-    }
-    if (hotel.preco) {
-      html += '<p class="at-iw-price">' + hotel.preco + '</p>';
-    }
-    html += '<button class="at-iw-btn" data-at-iw-index="' + hotel.index + '">Ver detalhes do hotel</button>';
-    html += '</div></div>';
-    return html;
   }
 
   function abrirInfoWindow(marker, conteudo, indice) {
@@ -758,34 +1377,18 @@
 
     infoWindowAtiva = new google.maps.InfoWindow({
       content: conteudo,
-      maxWidth: 280
     });
 
     infoWindowAtiva.open(mapInstance, marker);
-
-    // Listener para o botao dentro da InfoWindow
-    google.maps.event.addListenerOnce(infoWindowAtiva, 'domready', function () {
-      const btn = document.querySelector('[data-at-iw-index="' + indice + '"]');
-      if (btn) {
-        btn.addEventListener('click', function () {
-          const dados = extrairDadosCards();
-          if (dados[indice] && dados[indice].btnDetalhes) {
-            dados[indice].btnDetalhes.click();
-            analyticsEvent(dados[indice].nome, 'mapa_ver_detalhes');
-          }
-        });
-      }
-    });
   }
 
   function destacarMarcador(indice) {
-    if (!marcadores[indice]) return;
-    // Resetar todos
-    for (let i = 0; i < marcadores.length; i++) {
-      const dados = extrairDadosCards();
-      const precoCurto = (dados[i] && dados[i].precoCurto) ? dados[i].precoCurto : 'Hotel';
-      marcadores[i].setIcon(criarIconePin(precoCurto, i === indice));
-      marcadores[i].setZIndex(i === indice ? 100 : 1);
+    for (var i = 0; i < marcadores.length; i++) {
+      if (!marcadores[i] || !dadosCache[i]) continue;
+      var textoPin = dadosCache[i].precoCurto || dadosCache[i].preco || dadosCache[i].nome;
+      var ativo = i === indice;
+      marcadores[i].setIcon(criarPinSVG(textoPin, ativo));
+      marcadores[i].setZIndex(ativo ? 999 : 1);
     }
   }
 
@@ -837,11 +1440,7 @@
         cardAtivoIdx = indice;
         destacarMarcador(indice);
         if (mapInstance && marcadores[indice]) {
-          abrirInfoWindow(
-            marcadores[indice],
-            criarConteudoInfoWindow(dados[indice]),
-            indice
-          );
+          abrirInfoWindow(marcadores[indice], criarConteudoInfoWindow(dados[indice]), indice);
         }
         analyticsEvent(dados[indice].nome, 'lista_card_clique');
       });
@@ -857,7 +1456,8 @@
       let imgUrl = dados[i].imagem;
       if (!imgUrl) {
         // Fallback: buscar qualquer imagem de hotel no card
-        const anyImg = card.querySelector('.slick-slide img') ||
+        const anyImg =
+          card.querySelector('.slick-slide img') ||
           card.querySelector('[class*="WrapperSlides"] img') ||
           card.querySelector('img[alt]:not([width="1"])');
         if (anyImg) imgUrl = anyImg.getAttribute('src') || anyImg.getAttribute('data-src') || '';
@@ -938,14 +1538,15 @@
         // Verificar se os cards mudaram (re-render do React)
         const mapDiv = document.getElementById(MAP_ID);
         if (!mapDiv) {
-          // Layout foi removido pelo React, reaplicar
+          // Layout foi removido pelo React; limpar estado antes de reaplicar
           console.log(LOG_PREFIX + ' Layout removido, reaplicando...');
+          limparMapaAntigo();
           aplicar();
         } else {
-          // Verificar novos cards sem hover listener e sem imagem
+          // Verificar novos cards sem hover listener
           const dados = extrairDadosCards();
+          dadosCache = dados;
           configurarInteracaoCards(dados);
-          injetarImagensCards(dados);
         }
 
         isProcessing = false;
@@ -953,6 +1554,163 @@
     });
 
     observerRef.observe(listWrapper, { childList: true, subtree: true });
+  }
+
+  // Observer global para detectar re-criacao do ListWrapper (paginacao SPA)
+  function monitorarPaginacao() {
+    if (observerGlobalRef) return;
+
+    observerGlobalRef = new MutationObserver(function () {
+      if (aguardandoPaginacao) return;
+      clearTimeout(debounceGlobalTimer);
+      debounceGlobalTimer = setTimeout(function () {
+        // Verificar se loading apareceu (paginacao em andamento)
+        var loading = document.querySelector('[class*="LoadingContent-sc"]');
+        if (loading) {
+          aguardandoPaginacao = true;
+          console.log(
+            LOG_PREFIX + ' Paginacao detectada (loading visivel). Aguardando novos cards...',
+          );
+          aguardarFimDoPaginacao();
+          return;
+        }
+
+        // Verificar se ListWrapper perdeu o atributo (React recriou)
+        var listWrapper = document.querySelector('[class*="ListWrapper-sc-1oit4q5"]');
+        if (listWrapper && !listWrapper.getAttribute(DATA_APLICADO)) {
+          var cards = document.querySelectorAll('[class*="HotelCardWrapper-sc-16a2dz4"]');
+          if (cards.length >= 2) {
+            console.log(LOG_PREFIX + ' ListWrapper recriada sem mapa. Reaplicando...');
+            limparMapaAntigo();
+            aplicar();
+          }
+        }
+      }, 300);
+    });
+
+    // Sempre observar document.body para nao perder referencia caso SearchListWrapper seja substituido
+    observerGlobalRef.observe(document.body, { childList: true, subtree: true });
+  }
+
+  function aguardarFimDoPaginacao() {
+    var tentativas = 0;
+    var pollingPag = setInterval(function () {
+      tentativas++;
+
+      // Verificar se o loading sumiu e os cards apareceram
+      var loading = document.querySelector('[class*="LoadingContent-sc"]');
+      var cards = document.querySelectorAll('[class*="HotelCardWrapper-sc-16a2dz4"]');
+
+      if (!loading && cards.length >= 2) {
+        clearInterval(pollingPag);
+        aguardandoPaginacao = false;
+        console.log(
+          LOG_PREFIX + ' Paginacao concluida. Reaplicando mapa com ' + cards.length + ' cards.',
+        );
+        limparMapaAntigo();
+        aplicar();
+      } else if (tentativas > 40) {
+        clearInterval(pollingPag);
+        aguardandoPaginacao = false;
+        console.log(LOG_PREFIX + ' Timeout aguardando paginacao.');
+      }
+    }, 500);
+  }
+
+  function aguardarCardsEAplicar() {
+    var tentativas = 0;
+    var poll = setInterval(function () {
+      tentativas++;
+      var loading = document.querySelector('[class*="LoadingContent-sc"]');
+      var cards = document.querySelectorAll('[class*="HotelCardWrapper-sc-16a2dz4"]');
+
+      if (!loading && cards.length >= 2) {
+        clearInterval(poll);
+        console.log(LOG_PREFIX + ' Cards prontos apos navegacao. Aplicando...');
+        if (mapsAPICarregada) {
+          aplicar();
+        } else {
+          garantirGoogleMapsAPI(function () {
+            mapsAPICarregada = true;
+            aplicar();
+          });
+        }
+      } else if (tentativas > 40) {
+        clearInterval(poll);
+        console.log(LOG_PREFIX + ' Timeout aguardando cards apos navegacao.');
+      }
+    }, 500);
+  }
+
+  // Detecta retorno do usuario a partir da pagina de detalhe do hotel (navegacao SPA Next.js)
+  function monitorarNavegacaoSPA() {
+    function onUrlChange() {
+      if (window.location.href.indexOf('https://www.voeazul.com.br/br/pt/home/hotel?') === -1)
+        return;
+      // Verificar se o mapa ja esta presente e funcional (atributo + div no DOM)
+      var listWrapper = document.querySelector('[class*="ListWrapper-sc-1oit4q5"]');
+      if (listWrapper && listWrapper.getAttribute(DATA_APLICADO) && document.getElementById(MAP_ID))
+        return;
+      console.log(
+        LOG_PREFIX + ' Retorno para lista de hoteis detectado via SPA. Aguardando cards...',
+      );
+      limparMapaAntigo();
+      aguardarCardsEAplicar();
+    }
+
+    window.addEventListener('popstate', function () {
+      setTimeout(onUrlChange, 200);
+    });
+
+    var pushOrig = history.pushState.bind(history);
+    history.pushState = function () {
+      pushOrig.apply(history, arguments);
+      setTimeout(onUrlChange, 200);
+    };
+
+    var replaceOrig = history.replaceState.bind(history);
+    history.replaceState = function () {
+      replaceOrig.apply(history, arguments);
+      setTimeout(onUrlChange, 200);
+    };
+  }
+
+  function limparMapaAntigo() {
+    // Remover marcadores antigos
+    for (var i = 0; i < marcadores.length; i++) {
+      if (marcadores[i]) {
+        marcadores[i].setMap(null);
+      }
+    }
+    marcadores = [];
+
+    // Fechar InfoWindow
+    if (infoWindowAtiva) {
+      infoWindowAtiva.close();
+      infoWindowAtiva = null;
+    }
+
+    // Destruir instancia do mapa
+    mapInstance = null;
+    cardAtivoIdx = -1;
+
+    // Remover container do mapa do DOM
+    var mapDiv = document.getElementById(MAP_ID);
+    if (mapDiv && mapDiv.parentNode) {
+      mapDiv.parentNode.removeChild(mapDiv);
+    }
+
+    // Desconectar observer antigo do ListWrapper
+    if (observerRef) {
+      observerRef.disconnect();
+      observerRef = null;
+    }
+
+    // Remover atributo de layout aplicado para permitir reaplicacao
+    var lw = document.querySelector('[class*="ListWrapper-sc-1oit4q5"]');
+    if (lw) {
+      lw.removeAttribute(DATA_APLICADO);
+    }
   }
 
   // ===================== APLICACAO PRINCIPAL =====================
@@ -963,18 +1721,39 @@
       return false;
     }
 
+    // Atualizar cache para uso em destacarMarcador e outros
+    dadosCache = dados;
+
     // Inserir mapa no layout
     const layoutOk = inserirMapaNoLayout(dados);
     if (!layoutOk && !document.getElementById(MAP_ID)) {
       return false;
     }
 
-    // Configurar interacao dos cards e injetar imagens
+    // Configurar interacao dos cards
     configurarInteracaoCards(dados);
-    injetarImagensCards(dados);
 
     // Resolver coordenadas e criar mapa
     resolverCoordenadas(dados, function () {
+      // React pode ter re-renderizado e removido o container durante a geocodificacao
+      var mapDivAtual = document.getElementById(MAP_ID);
+      if (!mapDivAtual) {
+        var lwAtual = document.querySelector('[class*="ListWrapper-sc-1oit4q5"]');
+        var clAtual = lwAtual
+          ? lwAtual.querySelector('[data-testid="hotel-list-wrapper-contains-cards"]')
+          : null;
+        if (!lwAtual || !clAtual) {
+          console.log(
+            LOG_PREFIX + ' Layout indisponivel apos resolucao de coordenadas. Abortando.',
+          );
+          return;
+        }
+        console.log(LOG_PREFIX + ' Container do mapa reinserido apos resolucao de coordenadas.');
+        var novDiv = document.createElement('div');
+        novDiv.id = MAP_ID;
+        lwAtual.insertBefore(novDiv, clAtual);
+        lwAtual.setAttribute(DATA_APLICADO, 'true');
+      }
       criarMapa(dados);
       // Re-configurar interacao apos mapa criado (marcadores agora existem)
       configurarInteracaoCards(dados);
@@ -1004,15 +1783,27 @@
   function init() {
     injetarEstilos();
 
+    // Iniciar observer global de paginacao desde o inicio
+    monitorarPaginacao();
+
+    // Detectar navegacao SPA (retorno da pagina de detalhe do hotel)
+    monitorarNavegacaoSPA();
+
     let tentativas = 0;
     const polling = setInterval(function () {
       tentativas++;
 
       if (tentativas > MAX_TENTATIVAS) {
         clearInterval(polling);
-        console.log(LOG_PREFIX + ' Cards de hotel nao encontrados apos ' + MAX_TENTATIVAS + ' tentativas.');
+        console.log(
+          LOG_PREFIX + ' Cards de hotel nao encontrados apos ' + MAX_TENTATIVAS + ' tentativas.',
+        );
         return;
       }
+
+      // Verificar se ainda esta em loading
+      var loading = document.querySelector('[class*="LoadingContent-sc"]');
+      if (loading) return;
 
       // Verificar se a lista de hoteis esta renderizada
       const cardList = document.querySelector('[data-testid="hotel-list-wrapper-contains-cards"]');
@@ -1020,20 +1811,39 @@
 
       if (cardList && cards.length >= 2) {
         clearInterval(polling);
-        console.log(LOG_PREFIX + ' Cards encontrados (' + cards.length + '). Garantindo Google Maps API...');
+        console.log(
+          LOG_PREFIX + ' Cards encontrados (' + cards.length + '). Garantindo Google Maps API...',
+        );
 
         // Garantir que a API do Google Maps esteja carregada
+        if (mapsAPICarregada) {
+          // API ja foi carregada antes (ex: segunda pagina)
+          setTimeout(function () {
+            let sucesso = aplicar();
+            if (sucesso) {
+              console.log(LOG_PREFIX + ' Inicializado com sucesso (API ja disponivel).');
+            }
+          }, 300);
+          return;
+        }
+
         garantirGoogleMapsAPI(function () {
+          mapsAPICarregada = true;
+
           // Aguardar React estabilizar apos possiveis re-renders
           setTimeout(function () {
             // Re-verificar se os cards ainda existem
             const reCards = document.querySelectorAll('[class*="HotelCardWrapper-sc-16a2dz4"]');
             if (reCards.length < 2) {
-              console.log(LOG_PREFIX + ' Cards sumiram durante carregamento da API. Aguardando re-render...');
+              console.log(
+                LOG_PREFIX + ' Cards sumiram durante carregamento da API. Aguardando re-render...',
+              );
               let tentativasReRender = 0;
               const pollingReRender = setInterval(function () {
                 tentativasReRender++;
-                const novosCards = document.querySelectorAll('[class*="HotelCardWrapper-sc-16a2dz4"]');
+                const novosCards = document.querySelectorAll(
+                  '[class*="HotelCardWrapper-sc-16a2dz4"]',
+                );
                 if (novosCards.length >= 2) {
                   clearInterval(pollingReRender);
                   let sucesso = aplicar();
