@@ -2,6 +2,7 @@
 // AUTO CLICK - Aba "Ingressos" na LP de promoções Disney
 // Página alvo: https://www.voeazul.com.br/br/pt/disney/promocoes-disney
 // Regra: só clicar se usuário veio do modal (flag no localStorage)
+// Ação: scroll até a seção de promoções + clique na aba Ingressos
 // =============================================================
 (function () {
   var PROMO_PATH = '/br/pt/disney/promocoes-disney';
@@ -11,6 +12,7 @@
   var FLAG_TTL_MS = 30 * 60 * 1000; // 30min
   var MAX_WAIT_MS = 15000;
   var POLL_MS = 250;
+  var SCROLL_DELAY_MS = 400;
 
   function analyticsEvent(eventLabel, eventType) {
     if (!eventLabel) return;
@@ -66,6 +68,33 @@
     } catch (e) {}
   }
 
+  function findPromoSection() {
+    try {
+      var promo = document.querySelector('.promo-container');
+      if (promo) return promo;
+
+      var tabsRoot = document.querySelector('.react-tabs[data-tabs="true"]');
+      if (tabsRoot) return tabsRoot.closest('.promo-container') || tabsRoot;
+    } catch (e) {}
+    return null;
+  }
+
+  function scrollToPromoSection() {
+    var el = findPromoSection();
+    if (!el) return false;
+    try {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return true;
+    } catch (e) {
+      try {
+        el.scrollIntoView(true);
+        return true;
+      } catch (e2) {
+        return false;
+      }
+    }
+  }
+
   function findIngressosTab() {
     try {
       // Preferência por aria-label do H3 (mais estável)
@@ -90,14 +119,28 @@
     if (!el) return false;
     try {
       if (el.getAttribute('aria-selected') === 'true') return true;
-      el.scrollIntoView({ block: 'center', inline: 'center' });
-    } catch (e) {}
-    try {
       el.click();
       return true;
     } catch (e) {
       return false;
     }
+  }
+
+  function finishAutoclick(timer) {
+    clearInterval(timer);
+    clearFlag();
+    markDoneThisSession();
+    analyticsEvent('aba_ingressos_autoclick', 'click');
+  }
+
+  function runAutoclickFlow(tab, timer) {
+    scrollToPromoSection();
+
+    setTimeout(function () {
+      var ok = clickTab(tab);
+      if (!ok) return;
+      finishAutoclick(timer);
+    }, SCROLL_DELAY_MS);
   }
 
   function run() {
@@ -124,13 +167,8 @@
       var tab = findIngressosTab();
       if (!tab) return;
 
-      var ok = clickTab(tab);
-      if (!ok) return;
-
       clearInterval(timer);
-      clearFlag();
-      markDoneThisSession();
-      analyticsEvent('aba_ingressos_autoclick', 'click');
+      runAutoclickFlow(tab, timer);
     }, POLL_MS);
   }
 

@@ -1,5 +1,5 @@
 (function () {
-  var EXPERIMENT_NAME = 'AT_Disney_hoteis';
+  var EXPERIMENT_NAME = 'AT_Disney_ingressos_entrada';
   var BANNER_LINK = 'https://www.voeazul.com.br/br/pt/disney/promocoes-disney';
   var STYLE_ID = 'at-disney-hoteis-style';
   var OVERLAY_ID = 'at-disney-hoteis-overlay';
@@ -155,7 +155,7 @@
   function analyticsEvent(eventLabel, eventType) {
     if (!eventLabel) return;
     var labelEvent = EXPERIMENT_NAME + '_' + eventType + ' ' + eventLabel;
-    console.log('[Tracking Disney Hoteis] Evento disparado: ' + labelEvent);
+    console.log('[Tracking Disney Ingressos Entrada] Evento disparado: ' + labelEvent);
     try {
       var s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
       if (!s || typeof s.tl !== 'function') return;
@@ -166,7 +166,7 @@
       s.eVar84 = EVAR84;
       s.tl(true, 'o', 'target_activity_action');
     } catch (e) {
-      console.log('[Tracking Disney Hoteis] Erro no analytics: ' + e.message);
+      console.log('[Tracking Disney Ingressos Entrada] Erro no analytics: ' + e.message);
     }
   }
 
@@ -827,7 +827,7 @@
     });
 
     // Tracking
-    analyticsEvent('banner_disney_hoteis', 'view');
+    analyticsEvent('banner_disney_ingressos', 'view');
 
     // Eventos
     cta.addEventListener('click', function (e) {
@@ -835,25 +835,25 @@
       try {
         localStorage.setItem(PROMO_AUTOCLOCK_KEY, String(Date.now()));
       } catch (err) {}
-      analyticsEvent('banner_disney_hoteis_cta', 'click');
+      analyticsEvent('banner_disney_ingressos_cta', 'click');
     });
 
     closeBtn.addEventListener('click', function (e) {
       e.stopPropagation();
-      analyticsEvent('banner_disney_hoteis_fechar', 'click');
+      analyticsEvent('banner_disney_ingressos_fechar', 'click');
       closeBanner(bannerOverlay);
     });
 
     bannerOverlay.addEventListener('click', function (e) {
       if (e.target === bannerOverlay) {
-        analyticsEvent('banner_disney_hoteis_overlay_fechar', 'click');
+        analyticsEvent('banner_disney_ingressos_overlay_fechar', 'click');
         closeBanner(bannerOverlay);
       }
     });
 
     var handleEsc = function (e) {
       if (e.key === 'Escape') {
-        analyticsEvent('banner_disney_hoteis_esc_fechar', 'click');
+        analyticsEvent('banner_disney_ingressos_esc_fechar', 'click');
         closeBanner(bannerOverlay);
         document.removeEventListener('keydown', handleEsc);
       }

@@ -31,7 +31,7 @@
       '/* hide original elements */' +
       '.cb-shop > .cb-price, .primePDP { display: none !important; }' +
       '.cb-shop { border-top: none !important; padding-top: 0 !important; }' +
-      '.cro-buy-box-cta-subscription { margin-top: 15px !important; width: 100% !important; cursor: pointer; transition: opacity 0.2s; }' +
+      '.cro-buy-box-cta-subscription { width: 100% !important; cursor: pointer; transition: opacity 0.2s; }' +
       '.cro-buy-box-cta-subscription:hover { opacity: 0.9; }';
     document.head.appendChild(style);
   }
@@ -42,9 +42,12 @@
         '<div class="option-header">' +
           '<div class="option-left">' +
             '<div class="custom-radio"></div>' +
-            '<div class="option-label">' +
-              'Assine e economize' +
-              '<span class="subscription-badge">(-10%)</span>' +
+            '<div>' +
+              '<div class="option-label">' +
+                'Assine e economize' +
+                '<span class="subscription-badge">(-10%)</span>' +
+              '</div>' +
+              '<div style="font-size: 11px; font-weight: 400; color: #666; margin-top: -4px; line-height: 1.2; text-align: start;">* A partir de 30 cápsulas</div>' +
             '</div>' +
           '</div>' +
           '<div class="option-price" id="cro-subscription-price"></div>' +
