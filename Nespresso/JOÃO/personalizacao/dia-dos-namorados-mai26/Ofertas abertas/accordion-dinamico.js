@@ -74,7 +74,7 @@
         <strong>TERMOS E CONDIÇÕES</strong><br>
         <strong>DIA DOS NAMORADOS – Dia 01 de Junho até 15 de Junho</strong><br>
         <br>
-As ofertas referentes ao Coffee Boost Summer Nespresso, especificadas nos
+As ofertas referentes ao Coffee Boost Dia dos Namorados Nespresso, especificadas nos
 itens abaixo, são válidas de 13/01/2026 às 09h a 02/02/2026 às 09h , apenas para
 pessoas físicas portadoras de CPF e clientes classificados na categoria B2C Offices
 (pessoas jurídicas com consumo exclusivo de cápsulas da linha doméstica), não se
