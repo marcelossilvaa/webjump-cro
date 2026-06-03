@@ -5,6 +5,7 @@
   var MODAL_ID = 'at-cross-sell-viagens-modal';
   var OVERLAY_ID = 'at-cross-sell-viagens-overlay';
   var CUPOM = 'CLIENTEAZUL';
+  var AUTOCLICK_FLAG_KEY = 'at_cross_sell_minhas_viagens_autoclick_alterar_busca';
   var HOTEL_URL = 'https://www.voeazul.com.br/hoteis';
   var CARRO_URL = 'https://www.voeazul.com.br/carros';
   var HOTEL_IMG = 'https://i.imgur.com/lIZNlje.png';
@@ -47,7 +48,7 @@
       '  background: url("https://i.imgur.com/YD7f56X.png") center / cover no-repeat;',
       '}',
       '.at-cs-header-top {',
-      '  display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start;',
+      '  display: flex; flex-direction: row; justify-content: center; align-items: flex-start;',
       '  width: 100%;',
       '}',
       '.at-cs-badge {',
@@ -113,8 +114,8 @@
       '}',
       '.at-cs-copy-btn {',
       '  display: flex; width: 100%; height: 32px;',
-      '  -webkit-box-align: center; align-items: center; gap: 4px;',
-      '  -webkit-box-pack: center; justify-content: center;',
+      '  -webkit-box-align: center; align-items: center; gap: 8px;',
+      '  -webkit-box-pack: justify; justify-content: center;',
       '  border-radius: 4px;',
       '  border: 1px solid #026CB6;',
       '  background: #FFFFFF;',
@@ -122,12 +123,12 @@
       '  color: #026CB6;',
       '  font-size: 14px; font-weight: 400;',
       '  transition: background 0.2s, border-color 0.2s;',
-      '  box-sizing: border-box; padding: 4px;',
+      '  box-sizing: border-box; padding: 4px 8px;',
       '}',
       '.at-cs-copy-btn:hover {',
       '  background: rgba(2, 108, 182, 0.08);',
       '}',
-      '.at-cs-copy-btn svg { width: 24px; height: 24px; flex-shrink: 0; }',
+      '.at-cs-copy-btn img { width: 24px; height: 24px; flex-shrink: 0; }',
       '.at-cs-points-text {',
       '  font-size: 12px; font-weight: 400; color: #041E42;',
       '  line-height: 18px; margin: 0;',
@@ -157,11 +158,14 @@
 
       '@media screen and (max-width: 580px) {',
       '  #' + MODAL_ID + ' {',
-      '    width: 100%; right: -105%;',
-      '    height: 100%; border-radius: 0;',
+      '    width: calc(100vw - 24px); max-width: 380px;',
+      '    top: 0; height: 100%;',
+      '    right: calc(24px - 100vw);',
+      '    border-radius: 8px 0 0 8px;',
       '  }',
       '  #' + MODAL_ID + '.at-cs-open { right: 0; }',
       '  .at-cs-header { padding: 20px; gap: 12px; }',
+      '  .at-cs-header-top { justify-content: space-between; }',
       '  .at-cs-title { font-size: 20px; }',
       '  .at-cs-subtitle { font-size: 12px; }',
       '  .at-cs-cards { padding: 12px 0 12px; gap: 12px; }',
@@ -171,39 +175,59 @@
       '  .at-cs-card-title { font-size: 15px; }',
       '  .at-cs-card-desc { font-size: 13px; }',
       '  .at-cs-footer { padding: 12px 20px 20px; }',
-      '}'
+      '}',
     ].join('\n');
 
     style.appendChild(document.createTextNode(css));
     document.head.appendChild(style);
   }
 
-  function copySvgIcon() {
-    return '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-      '<path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z" fill="currentColor"/>' +
-      '</svg>';
-  }
-
   function buildCardHtml(type, labelText, title, desc, imgSrc, redirectUrl) {
-    return '<div class="at-cs-card">' +
+    return (
+      '<div class="at-cs-card">' +
       '<div class="at-cs-card-img-wrapper">' +
-      '<img class="at-cs-card-img" src="' + imgSrc + '" alt="' + title + '">' +
-      '<span class="at-cs-card-label">' + labelText + '</span>' +
+      '<img class="at-cs-card-img" src="' +
+      imgSrc +
+      '" alt="' +
+      title +
+      '">' +
+      '<span class="at-cs-card-label">' +
+      labelText +
+      '</span>' +
       '</div>' +
       '<div class="at-cs-card-body">' +
       '<div class="at-cs-card-inner">' +
-      '<h3 class="at-cs-card-title">' + title + '</h3>' +
-      '<p class="at-cs-card-desc">' + desc + '</p>' +
+      '<h3 class="at-cs-card-title">' +
+      title +
+      '</h3>' +
+      '<p class="at-cs-card-desc">' +
+      desc +
+      '</p>' +
       '<div class="at-cs-card-actions">' +
-      '<button class="at-cs-copy-btn" data-at-redirect="' + redirectUrl + '" data-at-type="' + type + '">' +
+      '<button class="at-cs-copy-btn" data-at-redirect="' +
+      redirectUrl +
+      '" data-at-type="' +
+      type +
+      '">' +
       '<span>Copiar cupom</span>' +
-      copySvgIcon() +
+      '<img src="/content/dam/azul/voe-azul/copy.svg" alt="Copiar cupom">' +
       '</button>' +
       '<p class="at-cs-points-text">Acumule até 4.100 pontos com Cartão Azul Itaú</p>' +
       '</div>' +
       '</div>' +
       '</div>' +
-      '</div>';
+      '</div>'
+    );
+  }
+
+  function setAutoclickFlag(cardType) {
+    if (cardType !== 'hotel' && cardType !== 'carro') {
+      return;
+    }
+
+    try {
+      localStorage.setItem(AUTOCLICK_FLAG_KEY, cardType + ':' + String(Date.now()));
+    } catch (e) {}
   }
 
   function triggerOriginalButton(type, fallbackUrl) {
@@ -228,7 +252,10 @@
             found = true;
             break;
           }
-          if (type === 'carro' && (imgAlt === 'carro' || imgSrc.indexOf('cars') !== -1 || imgSrc.indexOf('carro') !== -1)) {
+          if (
+            type === 'carro' &&
+            (imgAlt === 'carro' || imgSrc.indexOf('cars') !== -1 || imgSrc.indexOf('carro') !== -1)
+          ) {
             found = true;
             break;
           }
@@ -273,14 +300,17 @@
 
   function copyAndRedirect(redirectUrl) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(CUPOM).then(function () {
-        showToast('Cupom ' + CUPOM + ' copiado!');
-        setTimeout(function () {
-          window.open(redirectUrl, '_blank');
-        }, 800);
-      }).catch(function () {
-        fallbackCopy(redirectUrl);
-      });
+      navigator.clipboard
+        .writeText(CUPOM)
+        .then(function () {
+          showToast('Cupom ' + CUPOM + ' copiado!');
+          setTimeout(function () {
+            window.open(redirectUrl, '_blank');
+          }, 800);
+        })
+        .catch(function () {
+          fallbackCopy(redirectUrl);
+        });
       return;
     }
 
@@ -360,6 +390,7 @@
         btn.addEventListener('click', function () {
           var targetUrl = btn.getAttribute('data-at-redirect') || '';
           var cardType = btn.getAttribute('data-at-type') || '';
+          setAutoclickFlag(cardType);
           analyticsEvent('cupom_copiado_' + cardType, 'clique');
           triggerOriginalButton(cardType, targetUrl);
         });
@@ -379,7 +410,8 @@
     var modalEl = document.createElement('div');
     modalEl.id = MODAL_ID;
 
-    var html = '<div class="at-cs-header">' +
+    var html =
+      '<div class="at-cs-header">' +
       '<div class="at-cs-header-top">' +
       '<span class="at-cs-badge">15% OFF exclusivo</span>' +
       '<button class="at-cs-close" aria-label="Fechar">' +
@@ -396,7 +428,7 @@
         'Hotéis com 15% OFF',
         'Hospedagens perfeitas para transformar sua viagem em uma experiência inesquecível.',
         HOTEL_IMG,
-        HOTEL_URL
+        HOTEL_URL,
       ) +
       buildCardHtml(
         'carro',
@@ -404,7 +436,7 @@
         'Carro com 15% OFF',
         'Encontre o carro ideal para deixar sua experiência de viagem ainda mais completa.',
         CARRO_IMG,
-        CARRO_URL
+        CARRO_URL,
       ) +
       '</div>' +
       '<div class="at-cs-footer">' +
