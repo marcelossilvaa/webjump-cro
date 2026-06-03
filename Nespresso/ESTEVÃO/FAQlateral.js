@@ -99,6 +99,12 @@
 
   let nativeFaqButton = null;
   let faqInsertAnchor = null;
+  let modalAccordionPollFrame = null;
+  let modalAccordionPollTimer = null;
+  let modalAccordionPollStartedAt = 0;
+
+  const MODAL_ACCORDION_POLL_MAX_MS = 10000;
+  const MODAL_ACCORDION_POLL_INTERVAL_MS = 80;
 
   const PLACEMENTS = [
     {
@@ -616,7 +622,7 @@
       dispatchNativeClick(btn);
     }
 
-    scheduleModalAccordionTransform();
+    ensureModalAccordionApplied();
     return true;
   }
 
@@ -814,41 +820,69 @@
     section.setAttribute('data-wj-faq-modal-processed', 'true');
   }
 
-  function findVisibleModalContent() {
-    var dialogs = document.querySelectorAll('[role="dialog"], [aria-modal="true"]');
-    var contents = document.querySelectorAll('[class*="_Modal__content"]');
-    var nodes = [];
-    var seen = [];
-    var i;
-    var node;
+  function isElementVisible(node) {
     var rect;
 
-    for (i = 0; i < dialogs.length; i += 1) {
-      if (dialogs[i].getAttribute('aria-hidden') === 'true') {
-        continue;
-      }
-      node = dialogs[i].querySelector('[class*="_Modal__content"]');
-      if (node && seen.indexOf(node) === -1) {
-        seen.push(node);
-        nodes.push(node);
-      }
+    if (!node || typeof node.getBoundingClientRect !== 'function') {
+      return false;
     }
 
-    for (i = 0; i < contents.length; i += 1) {
-      if (seen.indexOf(contents[i]) !== -1) {
-        continue;
-      }
-      rect = contents[i].getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0) {
-        nodes.push(contents[i]);
-      }
+    rect = node.getBoundingClientRect();
+    if (rect.width > 0 || rect.height > 0) {
+      return true;
     }
 
-    return nodes.length ? nodes[0] : null;
+    return !!node.closest(
+      '[role="dialog"]:not([aria-hidden="true"]), [aria-modal="true"]:not([aria-hidden="true"])',
+    );
   }
 
-  function transformModalToAccordions() {
-    var modalContent = findVisibleModalContent();
+  function findFaqModalContent(options) {
+    var includeHidden = options && options.includeHidden === true;
+    var contents = document.querySelectorAll('[class*="_Modal__content"]');
+    var best = null;
+    var bestScore = -1;
+    var i;
+    var content;
+    var sections;
+    var unprocessed;
+    var score;
+    var j;
+
+    for (i = 0; i < contents.length; i += 1) {
+      content = contents[i];
+      sections = content.querySelectorAll('[class*="_Modal__section"]');
+
+      if (!sections.length) {
+        continue;
+      }
+
+      if (!includeHidden && !isElementVisible(content)) {
+        continue;
+      }
+
+      unprocessed = 0;
+      for (j = 0; j < sections.length; j += 1) {
+        if (sections[j].getAttribute('data-wj-faq-modal-processed') !== 'true') {
+          unprocessed += 1;
+        }
+      }
+
+      score = sections.length * 10 + unprocessed;
+      if (isElementVisible(content)) {
+        score += 100;
+      }
+
+      if (score > bestScore) {
+        bestScore = score;
+        best = content;
+      }
+    }
+
+    return best;
+  }
+
+  function areModalAccordionsComplete(modalContent) {
     var sections;
     var i;
 
@@ -856,50 +890,172 @@
       return false;
     }
 
-    if (!modalContent.querySelector('[class*="_Modal__section"]')) {
+    sections = modalContent.querySelectorAll('[class*="_Modal__section"]');
+    if (!sections.length) {
+      return false;
+    }
+
+    for (i = 0; i < sections.length; i += 1) {
+      if (sections[i].getAttribute('data-wj-faq-modal-processed') !== 'true') {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  function modalContentNeedsTransform() {
+    var content = findFaqModalContent({ includeHidden: true });
+    return content ? !areModalAccordionsComplete(content) : false;
+  }
+
+  function transformModalToAccordions() {
+    var modalContent = findFaqModalContent({ includeHidden: true });
+    var sections;
+    var i;
+
+    if (!modalContent) {
       return false;
     }
 
     sections = modalContent.querySelectorAll('[class*="_Modal__section"]');
+    if (!sections.length) {
+      return false;
+    }
+
     for (i = 0; i < sections.length; i += 1) {
       transformModalSection(sections[i]);
+    }
+
+    if (!areModalAccordionsComplete(modalContent)) {
+      return false;
     }
 
     modalContent.setAttribute('data-wj-faq-modal-accordion', 'true');
     return true;
   }
 
-  function scheduleModalAccordionTransform() {
-    window.setTimeout(transformModalToAccordions, 0);
-    window.setTimeout(transformModalToAccordions, 100);
-    window.setTimeout(transformModalToAccordions, 300);
-    window.setTimeout(transformModalToAccordions, 600);
+  function stopModalAccordionPoll() {
+    if (modalAccordionPollFrame) {
+      window.cancelAnimationFrame(modalAccordionPollFrame);
+      modalAccordionPollFrame = null;
+    }
+
+    if (modalAccordionPollTimer) {
+      window.clearInterval(modalAccordionPollTimer);
+      modalAccordionPollTimer = null;
+    }
+  }
+
+  function modalAccordionPollStep() {
+    if (transformModalToAccordions()) {
+      stopModalAccordionPoll();
+      return;
+    }
+
+    if (Date.now() - modalAccordionPollStartedAt >= MODAL_ACCORDION_POLL_MAX_MS) {
+      stopModalAccordionPoll();
+      return;
+    }
+
+    if (!findFaqModalContent({ includeHidden: true }) && Date.now() - modalAccordionPollStartedAt > 800) {
+      stopModalAccordionPoll();
+      return;
+    }
+
+    modalAccordionPollFrame = window.requestAnimationFrame(modalAccordionPollStep);
+  }
+
+  function ensureModalAccordionApplied() {
+    stopModalAccordionPoll();
+    modalAccordionPollStartedAt = Date.now();
+
+    if (transformModalToAccordions()) {
+      return;
+    }
+
+    modalAccordionPollFrame = window.requestAnimationFrame(modalAccordionPollStep);
+
+    modalAccordionPollTimer = window.setInterval(function () {
+      if (transformModalToAccordions()) {
+        stopModalAccordionPoll();
+        return;
+      }
+
+      if (Date.now() - modalAccordionPollStartedAt >= MODAL_ACCORDION_POLL_MAX_MS) {
+        stopModalAccordionPoll();
+      }
+    }, MODAL_ACCORDION_POLL_INTERVAL_MS);
   }
 
   function watchModalAccordion() {
-    var timer;
+    var rafId = 0;
 
     if (window._wjFaqModalAccordionObserver) {
       return;
     }
 
-    window._wjFaqModalAccordionObserver = new MutationObserver(function () {
-      window.clearTimeout(timer);
-      timer = window.setTimeout(function () {
-        if (
-          document.documentElement.style.overflow === 'hidden' ||
-          document.body.style.overflow === 'hidden'
-        ) {
-          transformModalToAccordions();
+    window._wjFaqModalAccordionObserver = new MutationObserver(function (mutations) {
+      var shouldCheck = false;
+      var i;
+      var m;
+      var t;
+      var addedNode;
+
+      for (i = 0; i < mutations.length; i += 1) {
+        m = mutations[i];
+
+        if (m.type === 'attributes') {
+          shouldCheck = true;
+          break;
         }
-      }, 150);
+
+        if (m.type !== 'childList') {
+          continue;
+        }
+
+        for (t = 0; t < m.addedNodes.length; t += 1) {
+          addedNode = m.addedNodes[t];
+          if (!addedNode || addedNode.nodeType !== 1) {
+            continue;
+          }
+
+          if (
+            isModalRelatedNode(addedNode) ||
+            (addedNode.querySelector &&
+              addedNode.querySelector('[class*="_Modal__section"], [class*="_Modal__content"]'))
+          ) {
+            shouldCheck = true;
+            break;
+          }
+        }
+
+        if (shouldCheck) {
+          break;
+        }
+      }
+
+      if (!shouldCheck && !modalContentNeedsTransform()) {
+        return;
+      }
+
+      window.cancelAnimationFrame(rafId);
+      rafId = window.requestAnimationFrame(function () {
+        if (transformModalToAccordions()) {
+          return;
+        }
+
+        if (modalContentNeedsTransform()) {
+          ensureModalAccordionApplied();
+        }
+      });
     });
 
     window._wjFaqModalAccordionObserver.observe(document.body, {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['aria-hidden', 'class', 'style'],
+      attributeFilter: ['aria-hidden', 'class', 'style', 'hidden'],
     });
   }
 
