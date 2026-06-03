@@ -1,8 +1,70 @@
 <script>
   (function () {
-    let regexPDPs = /.*\/br\/pt\/order\/capsules\/.*\/(capsula|cafe|capsulas).*/;
-    let regexPLPs = /\/br\/pt\/order\/capsules\/(original|vertuo)$/;
+    // PDP: /br/{pt|en}/order/capsules/{original|vertuo}/{slug-produto}
+    // PT ex.: .../capsulas-cafe-ispirazione-napoli
+    // EN ex.: .../ispirazione-napoli-coffee-capsule (capsule no slug, nao como segmento)
+    let regexPDPs =
+      /\/br\/(pt|en)\/order\/capsules\/(original|vertuo)\/.+/i;
+    let regexPLPs = /\/br\/(pt|en)\/order\/capsules\/(original|vertuo)$/;
     let pagePathAtual = window.location.pathname;
+    let isEnglish = pagePathAtual.indexOf("/br/en/") !== -1;
+
+    function getCopy() {
+      if (isEnglish) {
+        return {
+          limitedEdition: "limited edition",
+          plpSubscriptionSuffix: " w/ Subscription",
+          pedidoAutomaticoUrl:
+            "https://www.nespresso.com/br/en/pedido-automatico",
+          standingOrdersHref:
+            "/br/en/myaccount/standing-orders#/orders/list",
+          subscriptionTitle:
+            "Save with Subscription: 10% off and free shipping on orders of 30+ capsules.",
+          noSubscriptionHeading:
+            'Don\'t have a Subscription?<a href="https://www.nespresso.com/br/en/pedido-automatico" target="_blank">Discover the benefits</a>',
+          subscribeAndPay: "Subscribe and pay:",
+          perBoxWithSubscription: "per box with Subscription",
+          footnoteCapsules: "* From 30 capsules",
+          freeShipping: "Free Shipping*",
+          zeroMonthlyFee: "No monthly fee",
+          ctaSubscribeNow: "SUBSCRIBE NOW",
+          pillCta: "SUBSCRIBE NOW",
+          pillCtaAria: "Subscribe now",
+          pillPriceAria: "Price with subscription",
+          pillPriceCaption: "per box with Subscription",
+          pillDiscountAria: "Discount",
+          pillZeroMonthly: "No monthly fee",
+          pillSub: "From 30 capsules, get",
+        };
+      }
+      return {
+        limitedEdition: "edição limitada",
+        plpSubscriptionSuffix: " na Assinatura",
+        pedidoAutomaticoUrl:
+          "https://www.nespresso.com/br/pt/pedido-automatico",
+        standingOrdersHref:
+          "/br/pt/myaccount/standing-orders#/orders/list",
+        subscriptionTitle:
+          "Economize com a Assinatura: 10% de desconto e frete grátis para pedidos de 30+ cápsulas.",
+        noSubscriptionHeading:
+          'Não tem Assinatura?<a href="https://www.nespresso.com/br/pt/pedido-automatico" target="_blank">Conheça os benefícios</a>',
+        subscribeAndPay: "Assine e pague:",
+        perBoxWithSubscription: "por caixa com Assinatura",
+        footnoteCapsules: "* A partir de 30 cápsulas",
+        freeShipping: "Frete Grátis*",
+        zeroMonthlyFee: "Zero mensalidade",
+        ctaSubscribeNow: "ASSINE AGORA",
+        pillCta: "ASSINE AGORA",
+        pillCtaAria: "Assine agora",
+        pillPriceAria: "Preço com assinatura",
+        pillPriceCaption: "por caixa com Assinatura",
+        pillDiscountAria: "Desconto",
+        pillZeroMonthly: "Zero mensalidade",
+        pillSub: "A partir de 30 cápsulas, garanta",
+      };
+    }
+
+    let copy = getCopy();
 
     let isProcessingVariantC = false;
     let debounceTimerVariantC = null;
@@ -187,20 +249,34 @@
         title +
         '">' +
         '<span class="at-prime-pill-main">' +
-        '<span class="at-prime-cta" role="button" aria-label="Assine agora"><span>ASSINE AGORA</span></span>' +
-        '<span class="at-prime-price" aria-label="Preço com assinatura">' +
+        '<span class="at-prime-cta" role="button" aria-label="' +
+        copy.pillCtaAria +
+        '"><span>' +
+        copy.pillCta +
+        "</span></span>" +
+        '<span class="at-prime-price" aria-label="' +
+        copy.pillPriceAria +
+        '">' +
         '<span class="at-prime-price-amount">' +
         price +
         "</span>" +
-        '<span class="at-prime-price-caption">por caixa com Assinatura</span>' +
+        '<span class="at-prime-price-caption">' +
+        copy.pillPriceCaption +
         "</span>" +
-        '<span class="at-prime-flag" aria-label="Desconto"><span>' +
+        "</span>" +
+        '<span class="at-prime-flag" aria-label="' +
+        copy.pillDiscountAria +
+        '"><span>' +
         flag +
         "</span></span>" +
         "</span>" +
-        '<span class="at-prime-zero-inline"><span class="at-prime-zero-badge">Zero mensalidade</span></span>' +
+        '<span class="at-prime-zero-inline"><span class="at-prime-zero-badge">' +
+        copy.pillZeroMonthly +
+        "</span></span>" +
         "</a>" +
-        '<div class="at-prime-sub">A partir de 30 cápsulas, garanta</div>'
+        '<div class="at-prime-sub">' +
+        copy.pillSub +
+        "</div>"
       );
     }
 
@@ -297,7 +373,9 @@
                 let isAbleToAdjust = true;
                 if (tagsCard) {
                   tagsCard.forEach(function (tagText) {
-                    if (tagText.innerText.toLowerCase() == "edição limitada") {
+                    if (
+                      tagText.innerText.toLowerCase() == copy.limitedEdition
+                    ) {
                       isAbleToAdjust = false;
                       produto.querySelector("footer").classList.add("primeAB");
                     }
@@ -319,14 +397,10 @@
             );
             if (divPrecoCapsula && divPrecoTotalCapsula) {
               produto.querySelector("footer").classList.add("primeAB");
-              let precoSleeve = parseFloat(
-                ajusteStringToNum(divPrecoTotalCapsula.innerText).replace(
-                  ",",
-                  ".",
-                ),
+              let precoSleeve = parsePrecoNumero(divPrecoTotalCapsula.innerText);
+              let precoComDesconto = formatPrecoDesconto(
+                precoSleeve - precoSleeve * 0.1,
               );
-              let precoComDesconto = (precoSleeve - precoSleeve * 0.1).toFixed(2);
-              precoComDesconto = precoComDesconto.toString().replace(".", ",");
 
               let divPrime = document.createElement("div");
               divPrime.classList.add("_capsuleSleeveLabel_10cre_45");
@@ -334,11 +408,11 @@
               divPrime.innerHTML =
                 "<span style='font-size: 14px;'> R$" +
                 precoComDesconto +
-                "</span> na Assinatura";
+                "</span>" +
+                copy.plpSubscriptionSuffix;
               divPrime.addEventListener("click", function (e) {
                 e.stopPropagation();
-                window.location.href =
-                  "https://www.nespresso.com/br/pt/pedido-automatico";
+                window.location.href = copy.pedidoAutomaticoUrl;
               });
               divPrecoCapsula.append(divPrime);
             }
@@ -369,29 +443,37 @@
 
           if (conteudoCardCapsulas && precoCaixaPDP) {
             clearInterval(buscaCardPDP);
+
+            if (conteudoCardCapsulas.querySelector(".primePDP")) {
+              runVariantC();
+              return;
+            }
+
             let tagsCard = conteudoCardCapsulas.parentNode.querySelectorAll(
               "nb-card-labels span",
             );
             let isAbleToAdjustPDP = true;
             tagsCard.forEach(function (tag) {
-              if (tag.innerText.toLowerCase() == "edição limitada") {
+              if (tag.innerText.toLowerCase() == copy.limitedEdition) {
                 isAbleToAdjustPDP = false;
               }
             });
             if (isAbleToAdjustPDP) {
+              let precoTexto =
+                precoCaixaPDP.querySelector("span") || precoCaixaPDP;
+              let precoNumerico = parsePrecoNumero(precoTexto.innerText);
+              if (isNaN(precoNumerico)) {
+                return;
+              }
               let divPrimePDP = document.createElement("div");
               let sectionPrimePDP = document.createElement("section");
               let divDescontoPrime = document.createElement("div");
               let paragrafoApartirCapsulas = document.createElement("p");
-              paragrafoApartirCapsulas.innerText = "* A partir de 30 cápsulas";
+              paragrafoApartirCapsulas.innerText = copy.footnoteCapsules;
 
-              precoCaixaPDP = parseFloat(
-                ajusteStringToNum(precoCaixaPDP.innerText),
+              let precoComDesconto = formatPrecoDesconto(
+                precoNumerico - precoNumerico * 0.1,
               );
-              let precoComDesconto = (precoCaixaPDP - precoCaixaPDP * 0.1)
-                .toFixed(2)
-                .toString();
-              precoComDesconto = precoComDesconto.replace(".", ",");
 
               divPrimePDP.classList.add("primePDP");
               divDescontoPrime.classList.add("primeDescontoProdutoContainer");
@@ -399,10 +481,19 @@
               paragrafoApartirCapsulas.classList.add("observacaoPrime");
 
               divDescontoPrime.innerHTML =
-                '<h3>Não tem Assinatura?<a href="https://www.nespresso.com/br/pt/pedido-automatico" target="_blank">Conheça os benefícios</a></h3><a href="/br/pt/myaccount/standing-orders#/orders/list" title="Economize com a Assinatura: 10% de desconto e frete grátis para pedidos de 30+ cápsulas."><div class="descontoPDP"><p>Assine e pague:</p><h5><span class="precoCaixaPrime">R$ ' +
+                "<h3>" +
+                copy.noSubscriptionHeading +
+                '</h3><a href="' +
+                copy.standingOrdersHref +
+                '" title="' +
+                copy.subscriptionTitle +
+                '"><div class="descontoPDP"><p>' +
+                copy.subscribeAndPay +
+                '</p><h5><span class="precoCaixaPrime">R$ ' +
                 precoComDesconto +
-                '</span>
-                < span > por caixa com Assinatura</ ></h5 > <span class="flagDescontoPDP">-10%</span></div ></a > ';
+                "</span> <span> " +
+                copy.perBoxWithSubscription +
+                '</span></h5><span class="flagDescontoPDP">-10%</span></div></a>';
               divPrimePDP.append(divDescontoPrime);
               divPrimePDP.append(sectionPrimePDP);
               sectionPrimePDP.append(
@@ -415,14 +506,14 @@
               sectionPrimePDP.append(
                 beneficioPrime(
                   '<nb-icon icon="32/delivery/free-delivery"></nb-icon>',
-                  "Frete Grátis*",
+                  copy.freeShipping,
                   "",
                 ),
               );
               sectionPrimePDP.append(
                 beneficioPrime(
                   '<nb-icon icon="24/service/effortless-experience"></nb-icon>',
-                  "Zero mensalidade",
+                  copy.zeroMonthlyFee,
                   "",
                 ),
               );
@@ -432,16 +523,10 @@
                 divPreco.nextSibling,
               );
               let botaoAssinaturaPrime = document.createElement("a");
-              botaoAssinaturaPrime.setAttribute(
-                "href",
-                "/br/pt/myaccount/standing-orders#/orders/list",
-              );
-              botaoAssinaturaPrime.setAttribute(
-                "title",
-                "Economize com a Assinatura: 10% de desconto e frete grátis para pedidos de 30+ cápsulas.",
-              );
+              botaoAssinaturaPrime.setAttribute("href", copy.standingOrdersHref);
+              botaoAssinaturaPrime.setAttribute("title", copy.subscriptionTitle);
               botaoAssinaturaPrime.classList.add("signUpPrime");
-              botaoAssinaturaPrime.innerText = "ASSINE AGORA";
+              botaoAssinaturaPrime.innerText = copy.ctaSubscribeNow;
               divPrimePDP.append(botaoAssinaturaPrime);
               divPrimePDP.append(paragrafoApartirCapsulas);
             }
@@ -461,6 +546,36 @@
 
     function ajusteStringToNum(string) {
       return string.replace(/[^0-9.,]+/g, "");
+    }
+
+    function parsePrecoNumero(texto) {
+      let numStr = ajusteStringToNum(texto);
+      if (!numStr) return NaN;
+
+      let temVirgula = numStr.indexOf(",") !== -1;
+      let temPonto = numStr.indexOf(".") !== -1;
+
+      if (temVirgula && temPonto) {
+        if (numStr.lastIndexOf(",") > numStr.lastIndexOf(".")) {
+          numStr = numStr.replace(/\./g, "").replace(",", ".");
+        } else {
+          numStr = numStr.replace(/,/g, "");
+        }
+      } else if (temVirgula) {
+        numStr = numStr.replace(",", ".");
+      }
+
+      return parseFloat(numStr);
+    }
+
+    function formatPrecoDesconto(valor) {
+      let preco = Number(valor);
+      if (isNaN(preco)) return "";
+      let formatado = preco.toFixed(2);
+      if (isEnglish) {
+        return formatado;
+      }
+      return formatado.replace(".", ",");
     }
 
     let css = `<style>
