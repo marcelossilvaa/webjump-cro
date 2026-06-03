@@ -1,9 +1,11 @@
 (function() {
-    const experienceName = "AT_calc_inter";
+    const experienceName = "AT_calc_esfera";
         const experienceTargetUrls = [
-        "ofertas/inter-meta",
-        "ofertas/inter-google",
-        "ofertas/inter",
+        "ofertas/esfera-meta",
+        "ofertas/esfera-google",
+        "ofertas/esfera-taboola",
+        "ofertas/esfera-parceiro",
+        "ofertas/esfera",
     ];
     const experienceAlreadyExecuted = window[experienceName] || false;
 
@@ -14,8 +16,10 @@
 
     const getExperienceVariantName = () => {
         const activeUrl = getActiveUrl();
-        if (activeUrl.includes("inter-meta"))   return experienceName + "_meta";
-        if (activeUrl.includes("inter-google")) return experienceName + "_google";
+        if (activeUrl.includes("esfera-meta"))     return experienceName + "_meta";
+        if (activeUrl.includes("esfera-google"))   return experienceName + "_google";
+        if (activeUrl.includes("esfera-taboola"))  return experienceName + "_taboola";
+        if (activeUrl.includes("esfera-parceiro")) return experienceName + "_parceiro";
         return experienceName;
     };
 
@@ -42,8 +46,8 @@
     var maximumTries = 100;
     function experienceSetup() {
         const SELECTORS = {
-            targetImageToAppend: "img[src='/content/dam/voe-azul/lp-de-ofertas/17-04/bnr-transfira-pontos-inter-desktop.png']",
-            targetImageToHide: "img[src='/content/dam/voe-azul/lp-de-ofertas/17-04/bnr-transfira-pontos-inter-mobile.png']"
+            targetImageToAppend: "img[src='/content/dam/voe-azul/lp-de-ofertas/19-05/bnr-btg-transferir-desktop.png']",
+            targetImageToHide: "img[src='/content/dam/voe-azul/lp-de-ofertas/19-05/bnr-btg-transferir-mobile.png']"
         };
         
         const imageToAppendAlreadyExists = document.querySelector(SELECTORS.targetImageToAppend);
@@ -205,7 +209,7 @@
                                 <h2 class="injectedCalculator__isClub__titleElement">Transfira já e turbine a sua conta!</h2>
                             </div>
                             <div class="injectedCalculator__isClub__content">
-                                <a class="injectedCalculator__isClub__button" href="https://blog.inter.co/bonus-no-tudo-azul-inter-loop/?af_xp=custom&source_caller=ui&pid=site&is_retargeting=true&af_click_lookback=30d&shortlink=k6tp6430&deep_link_value=bancointer%3A%2F%2FmeiosPagamento%2Frota%2FLOYALTY_REWARD_INTERSTITIAL%3Fid%3DREWARD_AZUL_AIR_MILES&af_reengagement_window=lifetime&c=Loop_Resgate_Azul_LinkLPAzul" target="_blank">Quero transferir</a>
+                                <a class="injectedCalculator__isClub__button" href="https://www.esfera.com.vc/" target="_blank">Quero transferir</a>
                                 <small class="injectedCalculator__isClub__disclaimer">Válido de 10 a 12/03/2026. Consulte condições.</small>
                             </div>
                         </div>
