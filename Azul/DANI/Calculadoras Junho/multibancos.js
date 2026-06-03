@@ -1,5 +1,5 @@
 (function() {
-    const experienceName = "AT_calc_inter";
+    const experienceName = "AT_calc_multibancos";
         const experienceTargetUrls = [
         "ofertas/bancos-google",
         "ofertas/bancos-meta",
