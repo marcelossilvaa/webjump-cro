@@ -6,10 +6,75 @@
   var OVERLAY_ID = 'at-cross-sell-viagens-overlay';
   var CUPOM = 'CLIENTEAZUL';
   var AUTOCLICK_FLAG_KEY = 'at_cross_sell_minhas_viagens_autoclick_alterar_busca';
+  var URL_PATH_FRAGMENT = 'br/pt/home/minhas-viagens';
+  var SESSION_SHOWN_KEY = 'at_cross_sell_minhas_viagens_modal_session';
+  var DAILY_SHOWN_KEY = 'at_cross_sell_minhas_viagens_modal_daily';
+  var DISMISSED_KEY = 'at_cross_sell_minhas_viagens_modal_dismissed';
   var HOTEL_URL = 'https://www.voeazul.com.br/hoteis';
   var CARRO_URL = 'https://www.voeazul.com.br/carros';
   var HOTEL_IMG = 'https://i.imgur.com/lIZNlje.png';
   var CARRO_IMG = 'https://i.imgur.com/ZJdga0p.png';
+  var COPY_REDIRECT_DELAY_MS = 2000;
+  var COPY_CHECK_SVG =
+    '<svg class="at-cs-copy-check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">' +
+    '<path d="M3 8.5L6.5 12L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '</svg>';
+
+  function getTodayKey() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1) + '-' + String(d.getDate());
+  }
+
+  function isTargetPage() {
+    try {
+      var href = ((window.location && window.location.href) || '').toLowerCase();
+      var path = ((window.location && window.location.pathname) || '').toLowerCase();
+      var fragment = URL_PATH_FRAGMENT.toLowerCase();
+
+      return href.indexOf(fragment) !== -1 || path.indexOf(fragment) !== -1;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function canShowModal() {
+    try {
+      if (sessionStorage.getItem(SESSION_SHOWN_KEY) === '1') {
+        return false;
+      }
+
+      var today = getTodayKey();
+
+      if (localStorage.getItem(DAILY_SHOWN_KEY) === today) {
+        return false;
+      }
+
+      if (localStorage.getItem(DISMISSED_KEY) === today) {
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      return true;
+    }
+  }
+
+  function markModalShown() {
+    try {
+      var today = getTodayKey();
+      sessionStorage.setItem(SESSION_SHOWN_KEY, '1');
+      localStorage.setItem(DAILY_SHOWN_KEY, today);
+    } catch (e) {}
+  }
+
+  function markModalDismissed() {
+    try {
+      var today = getTodayKey();
+      sessionStorage.setItem(SESSION_SHOWN_KEY, '1');
+      localStorage.setItem(DAILY_SHOWN_KEY, today);
+      localStorage.setItem(DISMISSED_KEY, today);
+    } catch (e) {}
+  }
 
   function injectCSS() {
     if (document.getElementById(STYLE_ID)) {
@@ -48,7 +113,7 @@
       '  background: url("https://i.imgur.com/YD7f56X.png") center / cover no-repeat;',
       '}',
       '.at-cs-header-top {',
-      '  display: flex; flex-direction: row; justify-content: center; align-items: flex-start;',
+      '  display: flex; flex-direction: row; justify-content: space-between;',
       '  width: 100%;',
       '}',
       '.at-cs-badge {',
@@ -122,13 +187,51 @@
       '  cursor: pointer;',
       '  color: #026CB6;',
       '  font-size: 14px; font-weight: 400;',
-      '  transition: background 0.2s, border-color 0.2s;',
+      '  transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease, transform 0.35s ease, box-shadow 0.35s ease;',
       '  box-sizing: border-box; padding: 4px 8px;',
+      '  position: relative; overflow: hidden;',
       '}',
       '.at-cs-copy-btn:hover {',
       '  background: rgba(2, 108, 182, 0.08);',
       '}',
-      '.at-cs-copy-btn img { width: 24px; height: 24px; flex-shrink: 0; }',
+      '.at-cs-copy-btn:disabled { cursor: default; }',
+      '.at-cs-copy-btn img { width: 24px; height: 24px; flex-shrink: 0; transition: opacity 0.25s ease, transform 0.25s ease; }',
+      '.at-cs-copy-btn-label { transition: opacity 0.25s ease, transform 0.25s ease; }',
+      '.at-cs-copy-check {',
+      '  display: none; align-items: center; justify-content: center;',
+      '  width: 24px; height: 24px; flex-shrink: 0;',
+      '}',
+      '.at-cs-copy-check-icon { display: block; }',
+      '.at-cs-copy-btn.at-cs-copied {',
+      '  background: #026CB6; color: #FFFFFF; border-color: #026CB6;',
+      '  animation: at-cs-copy-pulse 0.5s ease;',
+      '  box-shadow: 0 0 0 0 rgba(2, 108, 182, 0.4);',
+      '}',
+      '.at-cs-copy-btn.at-cs-copied.at-cs-copied-glow {',
+      '  animation: at-cs-copy-glow 1.2s ease-out 0.5s;',
+      '}',
+      '.at-cs-copy-btn.at-cs-copied img { opacity: 0; transform: scale(0.5); width: 0; margin: 0; }',
+      '.at-cs-copy-btn.at-cs-copied .at-cs-copy-check { display: flex; animation: at-cs-check-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1); }',
+      '.at-cs-copy-btn.at-cs-copied .at-cs-copy-btn-label { animation: at-cs-label-in 0.35s ease; font-weight: 600; }',
+      '@keyframes at-cs-copy-pulse {',
+      '  0% { transform: scale(1); }',
+      '  35% { transform: scale(1.05); }',
+      '  100% { transform: scale(1); }',
+      '}',
+      '@keyframes at-cs-copy-glow {',
+      '  0% { box-shadow: 0 0 0 0 rgba(2, 108, 182, 0.35); }',
+      '  70% { box-shadow: 0 0 0 8px rgba(2, 108, 182, 0); }',
+      '  100% { box-shadow: 0 0 0 0 rgba(2, 108, 182, 0); }',
+      '}',
+      '@keyframes at-cs-check-pop {',
+      '  0% { transform: scale(0) rotate(-20deg); opacity: 0; }',
+      '  65% { transform: scale(1.2) rotate(0deg); opacity: 1; }',
+      '  100% { transform: scale(1) rotate(0deg); opacity: 1; }',
+      '}',
+      '@keyframes at-cs-label-in {',
+      '  0% { opacity: 0.4; transform: translateY(4px); }',
+      '  100% { opacity: 1; transform: translateY(0); }',
+      '}',
       '.at-cs-points-text {',
       '  font-size: 12px; font-weight: 400; color: #041E42;',
       '  line-height: 18px; margin: 0;',
@@ -145,16 +248,6 @@
       '  padding: 8px 16px; transition: color 0.2s;',
       '}',
       '.at-cs-dismiss:hover { text-decoration: underline; }',
-
-      '.at-cs-toast {',
-      '  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);',
-      '  background: rgb(4, 30, 66); color: #fff; padding: 12px 24px;',
-      '  border-radius: 100px; font-size: 14px; font-weight: 600;',
-      '  font-family: "Helvetica Neue", Arial, sans-serif !important;',
-      '  z-index: 100000; opacity: 0; transition: opacity 0.3s;',
-      '  pointer-events: none; white-space: nowrap;',
-      '}',
-      '.at-cs-toast.at-cs-visible { opacity: 1; }',
 
       '@media screen and (max-width: 580px) {',
       '  #' + MODAL_ID + ' {',
@@ -209,7 +302,10 @@
       '" data-at-type="' +
       type +
       '">' +
-      '<span>Copiar cupom</span>' +
+      '<span class="at-cs-copy-btn-label">Copiar cupom</span>' +
+      '<span class="at-cs-copy-check">' +
+      COPY_CHECK_SVG +
+      '</span>' +
       '<img src="/content/dam/azul/voe-azul/copy.svg" alt="Copiar cupom">' +
       '</button>' +
       '<p class="at-cs-points-text">Acumule até 4.100 pontos com Cartão Azul Itaú</p>' +
@@ -230,7 +326,63 @@
     } catch (e) {}
   }
 
-  function triggerOriginalButton(type, fallbackUrl) {
+  function copyCupomToClipboard(callback) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard
+        .writeText(CUPOM)
+        .then(function () {
+          callback(true);
+        })
+        .catch(function () {
+          callback(copyCupomFallback());
+        });
+      return;
+    }
+
+    callback(copyCupomFallback());
+  }
+
+  function copyCupomFallback() {
+    var textarea = document.createElement('textarea');
+    textarea.value = CUPOM;
+    textarea.style.setProperty('position', 'fixed', 'important');
+    textarea.style.setProperty('left', '-9999px', 'important');
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    var copied = false;
+
+    try {
+      copied = document.execCommand('copy');
+    } catch (e) {
+      copied = false;
+    }
+
+    document.body.removeChild(textarea);
+    return copied;
+  }
+
+  function showCopySuccessOnButton(btn) {
+    if (!btn) {
+      return;
+    }
+
+    btn.disabled = true;
+    btn.setAttribute('data-at-copied', 'true');
+
+    var label = btn.querySelector('.at-cs-copy-btn-label');
+    if (label) {
+      label.textContent = 'Cupom copiado';
+    }
+
+    btn.classList.add('at-cs-copied');
+
+    setTimeout(function () {
+      btn.classList.add('at-cs-copied-glow');
+    }, 50);
+  }
+
+  function redirectToOffer(type, fallbackUrl) {
     var buttons = document.querySelectorAll('button');
 
     for (var i = 0; i < buttons.length; i++) {
@@ -270,78 +422,32 @@
       }
     }
 
-    copyAndRedirect(fallbackUrl);
+    window.open(fallbackUrl, '_blank');
   }
 
-  function showToast(message) {
-    var existingToast = document.querySelector('.at-cs-toast');
-    if (existingToast) {
-      existingToast.remove();
-    }
-
-    var toast = document.createElement('div');
-    toast.className = 'at-cs-toast';
-    toast.textContent = message;
-    document.body.appendChild(toast);
-
-    setTimeout(function () {
-      toast.classList.add('at-cs-visible');
-    }, 50);
-
-    setTimeout(function () {
-      toast.classList.remove('at-cs-visible');
-      setTimeout(function () {
-        if (toast.parentNode) {
-          toast.remove();
-        }
-      }, 300);
-    }, 2000);
-  }
-
-  function copyAndRedirect(redirectUrl) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard
-        .writeText(CUPOM)
-        .then(function () {
-          showToast('Cupom ' + CUPOM + ' copiado!');
-          setTimeout(function () {
-            window.open(redirectUrl, '_blank');
-          }, 800);
-        })
-        .catch(function () {
-          fallbackCopy(redirectUrl);
-        });
+  function handleCopyClick(btn) {
+    if (!btn || btn.getAttribute('data-at-copied') === 'true') {
       return;
     }
 
-    fallbackCopy(redirectUrl);
+    var targetUrl = btn.getAttribute('data-at-redirect') || '';
+    var cardType = btn.getAttribute('data-at-type') || '';
+
+    copyCupomToClipboard(function () {
+      showCopySuccessOnButton(btn);
+      setAutoclickFlag(cardType);
+      analyticsEvent('cupom_copiado_' + cardType, 'clique');
+
+      setTimeout(function () {
+        redirectToOffer(cardType, targetUrl);
+      }, COPY_REDIRECT_DELAY_MS);
+    });
   }
 
-  function fallbackCopy(redirectUrl) {
-    var textarea = document.createElement('textarea');
-    textarea.value = CUPOM;
-    textarea.style.setProperty('position', 'fixed', 'important');
-    textarea.style.setProperty('left', '-9999px', 'important');
-    document.body.appendChild(textarea);
-    textarea.select();
-
-    try {
-      document.execCommand('copy');
-      showToast('Cupom ' + CUPOM + ' copiado!');
-    } catch (e) {
-      showToast('Cupom: ' + CUPOM);
-    }
-
-    document.body.removeChild(textarea);
-
-    setTimeout(function () {
-      window.open(redirectUrl, '_blank');
-    }, 800);
-  }
-
-  function closeModal() {
+  function closeModal(source) {
     var modal = document.getElementById(MODAL_ID);
     var overlay = document.getElementById(OVERLAY_ID);
+    var closeSource = source || 'desconhecido';
 
     if (modal) {
       modal.classList.remove('at-cs-open');
@@ -358,26 +464,33 @@
       }, 400);
     }
 
-    analyticsEvent('modal_fechado', 'dismiss');
+    markModalDismissed();
+    analyticsEvent('modal_fechado_' + closeSource, 'clique');
   }
 
   function addListeners() {
     var closeBtn = document.querySelector('#' + MODAL_ID + ' .at-cs-close');
     if (closeBtn && closeBtn.getAttribute('data-at-listener-added') !== 'true') {
       closeBtn.setAttribute('data-at-listener-added', 'true');
-      closeBtn.addEventListener('click', closeModal);
+      closeBtn.addEventListener('click', function () {
+        closeModal('fechar');
+      });
     }
 
     var dismissBtn = document.querySelector('#' + MODAL_ID + ' .at-cs-dismiss');
     if (dismissBtn && dismissBtn.getAttribute('data-at-listener-added') !== 'true') {
       dismissBtn.setAttribute('data-at-listener-added', 'true');
-      dismissBtn.addEventListener('click', closeModal);
+      dismissBtn.addEventListener('click', function () {
+        closeModal('agora_nao');
+      });
     }
 
     var overlay = document.getElementById(OVERLAY_ID);
     if (overlay && overlay.getAttribute('data-at-listener-added') !== 'true') {
       overlay.setAttribute('data-at-listener-added', 'true');
-      overlay.addEventListener('click', closeModal);
+      overlay.addEventListener('click', function () {
+        closeModal('overlay');
+      });
     }
 
     var copyBtns = document.querySelectorAll('#' + MODAL_ID + ' .at-cs-copy-btn');
@@ -388,11 +501,7 @@
         }
         btn.setAttribute('data-at-listener-added', 'true');
         btn.addEventListener('click', function () {
-          var targetUrl = btn.getAttribute('data-at-redirect') || '';
-          var cardType = btn.getAttribute('data-at-type') || '';
-          setAutoclickFlag(cardType);
-          analyticsEvent('cupom_copiado_' + cardType, 'clique');
-          triggerOriginalButton(cardType, targetUrl);
+          handleCopyClick(btn);
         });
       })(copyBtns[i]);
     }
@@ -448,12 +557,13 @@
 
     addListeners();
 
+    markModalShown();
+
     setTimeout(function () {
       overlayEl.classList.add('at-cs-visible');
       modalEl.classList.add('at-cs-open');
+      analyticsEvent('modal_exibido', 'impressao');
     }, 100);
-
-    analyticsEvent('modal_exibido', 'impressao');
   }
 
   function analyticsEvent(eventLabel, eventType) {
@@ -480,6 +590,14 @@
   }
 
   function init() {
+    if (!isTargetPage()) {
+      return;
+    }
+
+    if (!canShowModal()) {
+      return;
+    }
+
     injectCSS();
     buildModal();
   }
