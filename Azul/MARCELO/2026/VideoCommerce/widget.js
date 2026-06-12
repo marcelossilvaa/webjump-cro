@@ -7,16 +7,9 @@
   const TRACKING_ATTR = 'data-wj-widget-tracking';
   const STYLE_ID = 'wj-videocommerce-widget-style';
   const STORE_SLUG = 'azullinhasaereas';
-  const UTM_SESSION_KEY = 'wj_azv_videocommerce_widget_session';
-  const UTM_STORAGE_KEY = 'wj_azv_videocommerce_widget_storage';
-  const UTM_COOKIE_NAME = 'wj_azv_videocommerce_widget';
-  const UTM_COOKIE_MAX_AGE_SEC = 86400;
-  const UTM_COOKIE_DOMAIN = '.voeazul.com.br';
   const MOUNTED_KEY = '__wjVideoCommerceWidgetMounted';
   const MOUNTING_KEY = '__wjVideoCommerceWidgetMounting';
-  const UTM_SOURCE_FULL =
-    'pmweb_azv_e-mail_banner_lf_azv_202603-azv-b2c-emm-168h-viagem-hospedagemdisney-d20_hotel';
-  const UTM_SOURCE_PARTIAL = 'hospedagemdisney-d20_hotel';
+  const WIDGET_BTN_INVOKED_KEY = '__wjVideoCommerceWidgetBtnInvoked';
 
   let debounceTimer = null;
   let waitIntervalId = null;
@@ -64,77 +57,6 @@
     } catch (e) {}
   }
 
-  function setWidgetSessionActive() {
-    try {
-      sessionStorage.setItem(UTM_SESSION_KEY, '1');
-    } catch (e) {}
-    try {
-      localStorage.setItem(UTM_STORAGE_KEY, '1');
-    } catch (e) {}
-    try {
-      document.cookie =
-        UTM_COOKIE_NAME +
-        '=1; path=/; domain=' +
-        UTM_COOKIE_DOMAIN +
-        '; max-age=' +
-        String(UTM_COOKIE_MAX_AGE_SEC) +
-        '; SameSite=Lax';
-    } catch (e) {
-      try {
-        document.cookie =
-          UTM_COOKIE_NAME +
-          '=1; path=/; max-age=' +
-          String(UTM_COOKIE_MAX_AGE_SEC) +
-          '; SameSite=Lax';
-      } catch (e2) {}
-    }
-    logVerify(LOG_PREFIX, 'sessão UTM gravada (session, localStorage, cookie).');
-  }
-
-  function isWidgetSessionActive() {
-    try {
-      if (window.location && window.location.search.indexOf('wjwidgetforce=1') !== -1) {
-        return true;
-      }
-      if (sessionStorage.getItem(UTM_SESSION_KEY) === '1') {
-        return true;
-      }
-      if (localStorage.getItem(UTM_STORAGE_KEY) === '1') {
-        return true;
-      }
-      return document.cookie.indexOf(UTM_COOKIE_NAME + '=1') !== -1;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function utmSourceMatches(source) {
-    if (!source) return false;
-    if (source === UTM_SOURCE_FULL) return true;
-    if (source.indexOf(UTM_SOURCE_PARTIAL) !== -1) return true;
-    if (source.indexOf(UTM_SOURCE_FULL) !== -1) return true;
-    return false;
-  }
-
-  function captureUtmFromCurrentUrl() {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const source = params.get('utm_source') || '';
-      if (utmSourceMatches(source)) {
-        setWidgetSessionActive();
-        return true;
-      }
-    } catch (e) {}
-    return false;
-  }
-
-  function shouldRunWidget() {
-    if (captureUtmFromCurrentUrl()) {
-      return true;
-    }
-    return isWidgetSessionActive();
-  }
-
   function injectWidgetLayoutStyles() {
     if (document.getElementById(STYLE_ID)) return;
     const style = document.createElement('style');
@@ -155,15 +77,22 @@
     return document.querySelectorAll('#streamshop-widget, button.ss-button-widget');
   }
 
-  function removeAllStreamshopWidgets() {
+  function dedupeStreamshopWidgets() {
     const nodes = getStreamshopWidgets();
+    if (nodes.length <= 1) return;
     let i;
-    for (i = 0; i < nodes.length; i++) {
+    for (i = 1; i < nodes.length; i++) {
       if (nodes[i].parentNode) {
         nodes[i].parentNode.removeChild(nodes[i]);
       }
     }
-    window[MOUNTED_KEY] = false;
+    logVerify(LOG_PREFIX, 'widgets duplicados removidos; mantido o primeiro.');
+  }
+
+  function isWidgetPresent() {
+    const widgets = getStreamshopWidgets();
+    if (!widgets.length) return false;
+    return document.body.contains(widgets[0]);
   }
 
   function isWidgetHealthy() {
@@ -176,10 +105,7 @@
 
     const videos = el.querySelectorAll('video');
     const closes = el.querySelectorAll('.close-button');
-    if (videos.length !== 1 || closes.length !== 1) {
-      return false;
-    }
-    return true;
+    return videos.length === 1 && closes.length === 1;
   }
 
   function clearWaitInterval() {
@@ -192,9 +118,11 @@
   function waitForWidgetButton(onFound) {
     clearWaitInterval();
     let tentativas = 0;
-    const maxTentativas = 50;
+    const maxTentativas = 80;
 
     waitIntervalId = window.setInterval(function () {
+      dedupeStreamshopWidgets();
+
       if (isWidgetHealthy()) {
         clearWaitInterval();
         injectWidgetLayoutStyles();
@@ -208,22 +136,63 @@
         return;
       }
 
+      if (isWidgetPresent()) {
+        injectWidgetLayoutStyles();
+        const widgetBtn = document.getElementById('streamshop-widget');
+        if (widgetBtn) {
+          attachWidgetTracking(widgetBtn);
+        }
+      }
+
       tentativas += 1;
       if (tentativas >= maxTentativas) {
         clearWaitInterval();
         window[MOUNTING_KEY] = false;
-        warnVerify(LOG_PREFIX, 'timeout aguardando #streamshop-widget saudável.');
+        if (isWidgetPresent()) {
+          window[MOUNTED_KEY] = true;
+          const widgetBtn = document.getElementById('streamshop-widget');
+          if (widgetBtn) {
+            attachWidgetTracking(widgetBtn);
+          }
+          logVerify(LOG_PREFIX, 'widget presente; tracking anexado após timeout de vídeo.');
+          return;
+        }
+        warnVerify(LOG_PREFIX, 'timeout aguardando #streamshop-widget.');
       }
     }, 100);
   }
 
-  function mountWidgetButton() {
-    if (!shouldRunWidget()) return;
+  function invokeWidgetButtonOnce() {
+    if (window[WIDGET_BTN_INVOKED_KEY]) {
+      logVerify(LOG_PREFIX, 'ss_widget_btn já invocado nesta sessão; ignorando nova chamada.');
+      return false;
+    }
+    if (typeof window.ss_widget_btn !== 'function') {
+      return false;
+    }
 
+    window[WIDGET_BTN_INVOKED_KEY] = true;
+    publishWidgetOptions();
+
+    try {
+      window.ss_widget_btn(window.liveshopSdkWidgetButtonOptions);
+      logVerify(LOG_PREFIX, 'ss_widget_btn chamado (uma vez).');
+      return true;
+    } catch (err) {
+      window[WIDGET_BTN_INVOKED_KEY] = false;
+      window[MOUNTING_KEY] = false;
+      warnVerify(LOG_PREFIX, 'erro em ss_widget_btn:', err);
+      return false;
+    }
+  }
+
+  function mountWidgetButton() {
     if (window[MOUNTING_KEY]) {
       logVerify(LOG_PREFIX, 'montagem já em andamento; ignorando.');
       return;
     }
+
+    dedupeStreamshopWidgets();
 
     if (isWidgetHealthy()) {
       attachWidgetTracking(document.getElementById('streamshop-widget'));
@@ -231,9 +200,18 @@
       return;
     }
 
-    if (getStreamshopWidgets().length > 0) {
-      logVerify(LOG_PREFIX, 'widget duplicado ou corrompido; removendo antes de remontar.');
-      removeAllStreamshopWidgets();
+    if (isWidgetPresent()) {
+      window[MOUNTING_KEY] = true;
+      waitForWidgetButton(attachWidgetTracking);
+      return;
+    }
+
+    if (window[WIDGET_BTN_INVOKED_KEY]) {
+      warnVerify(
+        LOG_PREFIX,
+        'ss_widget_btn já foi chamado e o widget sumiu do DOM; recarregue a página para remontar.',
+      );
+      return;
     }
 
     if (typeof window.ss_widget_btn !== 'function') {
@@ -241,14 +219,7 @@
     }
 
     window[MOUNTING_KEY] = true;
-    publishWidgetOptions();
-
-    try {
-      window.ss_widget_btn(window.liveshopSdkWidgetButtonOptions);
-      logVerify(LOG_PREFIX, 'ss_widget_btn chamado (uma vez).');
-    } catch (err) {
-      window[MOUNTING_KEY] = false;
-      warnVerify(LOG_PREFIX, 'erro em ss_widget_btn:', err);
+    if (!invokeWidgetButtonOnce()) {
       return;
     }
 
@@ -256,12 +227,13 @@
   }
 
   function loadWidgetSdk() {
+    publishWidgetOptions();
+
     if (document.querySelector('script[' + SDK_SCRIPT_ATTR + ']')) {
       mountWidgetButton();
       return;
     }
 
-    publishWidgetOptions();
     logVerify(LOG_PREFIX, 'carregando SDK:', SDK_SRC);
 
     const script = document.createElement('script');
@@ -320,19 +292,24 @@
   }
 
   function ensureWidget() {
-    if (!shouldRunWidget()) {
-      return;
-    }
-
     injectWidgetLayoutStyles();
+    dedupeStreamshopWidgets();
 
     if (isWidgetHealthy()) {
       attachWidgetTracking(document.getElementById('streamshop-widget'));
+      window[MOUNTED_KEY] = true;
       return;
     }
 
-    if (window[MOUNTED_KEY] && !isWidgetHealthy()) {
-      removeAllStreamshopWidgets();
+    if (isWidgetPresent()) {
+      if (!window[MOUNTING_KEY]) {
+        waitForWidgetButton(attachWidgetTracking);
+      }
+      return;
+    }
+
+    if (window[MOUNTED_KEY] && !isWidgetPresent()) {
+      window[MOUNTED_KEY] = false;
     }
 
     loadWidgetSdk();
@@ -348,12 +325,18 @@
     window.__wjVideoCommerceWidgetSpaHooked = true;
 
     const fire = function () {
-      captureUtmFromCurrentUrl();
-      if (!shouldRunWidget()) return;
       window.setTimeout(function () {
-        if (!shouldRunWidget()) return;
+        dedupeStreamshopWidgets();
         if (isWidgetHealthy()) {
           attachWidgetTracking(document.getElementById('streamshop-widget'));
+          window[MOUNTED_KEY] = true;
+          return;
+        }
+        if (isWidgetPresent()) {
+          window[MOUNTED_KEY] = true;
+          if (!window[MOUNTING_KEY]) {
+            waitForWidgetButton(attachWidgetTracking);
+          }
           return;
         }
         window[MOUNTED_KEY] = false;
@@ -379,15 +362,14 @@
 
   function initObserver() {
     if (window.__wjVideoCommerceWidgetObserverInitialized) return;
-    if (!shouldRunWidget()) return;
     window.__wjVideoCommerceWidgetObserverInitialized = true;
 
     const observer = new MutationObserver(function () {
-      if (!shouldRunWidget()) return;
       if (window[MOUNTING_KEY] || isWidgetHealthy()) return;
-      const widgets = getStreamshopWidgets();
-      if (widgets.length > 1) {
-        removeAllStreamshopWidgets();
+      if (getStreamshopWidgets().length > 1) {
+        dedupeStreamshopWidgets();
+      }
+      if (!isWidgetPresent() && !window[WIDGET_BTN_INVOKED_KEY]) {
         scheduleEnsureWidget();
       }
     });
@@ -396,11 +378,6 @@
   }
 
   function init() {
-    captureUtmFromCurrentUrl();
-    if (!shouldRunWidget()) {
-      logVerify(LOG_PREFIX, 'sessão UTM inativa nesta página.');
-      return;
-    }
     hookSpaNavigation();
     ensureWidget();
     initObserver();
