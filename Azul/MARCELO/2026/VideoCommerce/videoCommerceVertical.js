@@ -27,6 +27,7 @@
 
   const COMPONENT_WRAPPER_ATTR = 'data-wj-videocommerce-vertical';
   const COMPONENT_WRAPPER_VALUE = '1';
+  const STYLE_ID = 'wj-videocommerce-vertical-style';
   const SDK_SCRIPT_ATTR = 'data-wj-streamshop-sdk';
   const ANALYTICS_VIEW_ATTR = 'data-wj-carousel-analytics-view';
   const ANALYTICS_TRACKING_ATTR = 'data-wj-carousel-analytics-tracking';
@@ -39,6 +40,8 @@
   const DISNEY_PATH_SEGMENT = '/disney';
   const MICKEY_DESK_IMG_SUB = 'foto-mickey-desk';
   const MICKEY_GROUP_IMG_SUB = 'Group 10773';
+  const PARQUES_HEADER_IMG_SUB = 'Header-Parques-26';
+  const PARQUES_MOBILE_IMG_SUB = 'Imagem_mobile26';
 
   const STREAMSHOP_SDKS = [
     'https://assets.streamshop.com.br/sdk-ads/liveshop-ads-video.min.js',
@@ -267,6 +270,19 @@
     } catch (e) {}
   }
 
+  function injectCarouselLayoutStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    const style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent =
+      '@media (max-width: 766px) {' +
+      '[' + COMPONENT_WRAPPER_ATTR + '="' + COMPONENT_WRAPPER_VALUE + '"] {' +
+      'margin-top: 16px !important;' +
+      '}' +
+      '}';
+    document.head.appendChild(style);
+  }
+
   function warnDebug() {
     if (!DEBUG && !FORCE_LOGS) return;
     try {
@@ -331,12 +347,28 @@
     return isParquesTabActiveInNav();
   }
 
+  function removeInjectionIfNotParques() {
+    if (isParquesDisneyPage()) return;
+
+    const wrapper = document.querySelector(
+      '[' + COMPONENT_WRAPPER_ATTR + '="' + COMPONENT_WRAPPER_VALUE + '"]',
+    );
+    if (wrapper && wrapper.parentNode) {
+      wrapper.parentNode.removeChild(wrapper);
+      logDebug(LOG_PREFIX, 'carousel removido (fora da aba Parques).');
+    }
+    window[INJECT_DONE_KEY] = false;
+    window[INJECT_PROMISE_KEY] = null;
+  }
+
   function capsuleHasParquesMickeyAsset(capsule) {
     if (!capsule) return false;
     if (
       capsule.querySelector('img[src*="' + MICKEY_DESK_IMG_SUB + '"]') ||
       capsule.querySelector('img[src*="' + MICKEY_GROUP_IMG_SUB + '"]') ||
-      capsule.querySelector('img[src*="Group%2010773"]')
+      capsule.querySelector('img[src*="Group%2010773"]') ||
+      capsule.querySelector('img[src*="' + PARQUES_HEADER_IMG_SUB + '"]') ||
+      capsule.querySelector('img[src*="' + PARQUES_MOBILE_IMG_SUB + '"]')
     ) {
       return true;
     }
@@ -388,7 +420,7 @@
     return null;
   }
 
-  function getParquesContentCapsule() {
+  function getParquesMickeyHeaderCapsule() {
     const mickey = findParquesMickeyCapsuleInDom();
     if (mickey) return mickey;
 
@@ -402,17 +434,27 @@
         text.indexOf('walt disney world') !== -1
       ) {
         const fromHeading = headings[i].closest('.container-capsule');
-        if (fromHeading) {
-          logDebug(LOG_PREFIX, 'cápsula via heading guia mágico:', fromHeading);
-          return fromHeading;
+        if (!fromHeading) continue;
+
+        const outerMobil = fromHeading.closest(
+          '.container-capsule.containerDefault.hide-on-mobil, .container-capsule.hide-on-mobil',
+        );
+        if (outerMobil) {
+          logDebug(LOG_PREFIX, 'cápsula header via guia mágico (hide-on-mobil):', outerMobil);
+          return outerMobil;
         }
-        const section = headings[i].closest('[class*="css-"]');
-        if (section && section.parentNode) {
-          logDebug(LOG_PREFIX, 'seção via heading guia mágico:', section);
-          return section;
-        }
+
+        logDebug(LOG_PREFIX, 'cápsula via heading guia mágico:', fromHeading);
+        return fromHeading;
       }
     }
+
+    return null;
+  }
+
+  function getParquesContentCapsule() {
+    const mickey = getParquesMickeyHeaderCapsule();
+    if (mickey) return mickey;
 
     const capsules = document.querySelectorAll('.container-capsule.containerDefault');
     if (capsules.length) {
@@ -430,14 +472,16 @@
       capsule.querySelector('button.css-gvybwp') ||
       capsule.querySelector('img[src*="' + MICKEY_DESK_IMG_SUB + '"]') ||
       capsule.querySelector('img[src*="' + MICKEY_GROUP_IMG_SUB + '"]') ||
+      capsule.querySelector('img[src*="' + PARQUES_HEADER_IMG_SUB + '"]') ||
+      capsule.querySelector('img[src*="' + PARQUES_MOBILE_IMG_SUB + '"]') ||
       capsule
     );
   }
 
   function getParquesInsertionPlacement() {
-    const capsule = getParquesContentCapsule();
+    const capsule = getParquesMickeyHeaderCapsule() || getParquesContentCapsule();
     if (capsule && capsule.parentNode) {
-      return { mode: 'before', parent: capsule.parentNode, ref: capsule };
+      return { mode: 'after', parent: capsule.parentNode, ref: capsule };
     }
     return null;
   }
@@ -665,9 +709,9 @@
       logDebug(LOG_PREFIX, 'INJECT_DONE resetado: wrapper sumiu do DOM.');
       return;
     }
-    if (capsule && capsule.previousElementSibling !== wrapper) {
+    if (capsule && capsule.nextElementSibling !== wrapper) {
       window[INJECT_DONE_KEY] = false;
-      logDebug(LOG_PREFIX, 'INJECT_DONE resetado: wrapper não está acima da cápsula alvo.');
+      logDebug(LOG_PREFIX, 'INJECT_DONE resetado: wrapper não está abaixo da cápsula alvo.');
     }
   }
 
@@ -787,6 +831,13 @@
       return;
     }
 
+    removeInjectionIfNotParques();
+
+    if (!isParquesDisneyPage()) {
+      logDebug(LOG_PREFIX, 'fora da aba Parques; carousel nao sera exibido.');
+      return;
+    }
+
     clearInjectDoneIfWrapperMissing();
 
     if (window[INJECT_DONE_KEY]) return;
@@ -839,6 +890,8 @@
   }
 
   function scheduleRun() {
+    removeInjectionIfNotParques();
+    if (!isParquesDisneyPage()) return;
     clearInjectDoneIfWrapperMissing();
     if (window[INJECT_DONE_KEY]) return;
     if (debounceTimer) window.clearTimeout(debounceTimer);
@@ -852,8 +905,13 @@
     window.__wjVideoCommerceVerticalSpaHooked = true;
 
     const fire = function () {
-      window[INJECT_DONE_KEY] = false;
       window.setTimeout(function () {
+        removeInjectionIfNotParques();
+        if (!isParquesDisneyPage()) {
+          window[INJECT_DONE_KEY] = false;
+          return;
+        }
+        window[INJECT_DONE_KEY] = false;
         scheduleRun();
       }, 400);
     };
@@ -872,6 +930,17 @@
 
     window.addEventListener('popstate', fire);
     window.addEventListener('hashchange', fire);
+
+    document.addEventListener('click', function (e) {
+      const tab =
+        e.target &&
+        e.target.closest &&
+        e.target.closest('.container-tabs a[aria-label], nav a[aria-label]');
+      if (tab) {
+        fire();
+      }
+    });
+
     logDebug(LOG_PREFIX, 'SPA hooks ligados.');
   }
 
@@ -905,6 +974,8 @@
       logDebug(LOG_PREFIX, 'UTM invalida ou ausente. Script nao iniciado.');
       return;
     }
+
+    injectCarouselLayoutStyles();
 
     if (!window[ERROR_HOOK_FLAG]) {
       window[ERROR_HOOK_FLAG] = true;
