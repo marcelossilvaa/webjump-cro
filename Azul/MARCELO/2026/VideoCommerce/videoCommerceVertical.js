@@ -41,6 +41,59 @@
     'https://assets.streamshop.com.br/sdk-ads/liveshop-ads-carousel.min.js'
   ];
 
+  const UTM_SESSION_KEY = '__wjVideoCommerceDisneyUtm';
+  const UTM_SOURCE_ALLOWED = [
+    '202512-AZV-B2C-EMM-168H-VIAGEM-INGRESSOSDISNEY-D16',
+    '202604-azv-b2c-psh-168h-Inter-previagemhospedagemdisney-d0_tickets',
+    '202603-AZV-B2C-EMM-168H-VIAGEM-INCENTIVOINGRESSOSDISNEY-D5',
+    'pmweb_azv_e-mail_banner_mf_azv_202510-azv-b2c-emm-168h-viagem-produtosdisneya-d2_n',
+    'pmweb_azv_e-mail_banner_mf_azv_202510-azv-b2c-emm-168h-viagem-produtosdisneyb-d2_n',
+    '202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOCARRINHODISNEY-D0',
+    '202603-azv-b2c-psh-168h-Inter-abandonocarrinhoingressosdisney-d2_pac',
+    'pmweb_azv_e-mail_banner_lf_azv_202603-azv-b2c-emm-168h-viagem-incentivohospedagemdisney-d7_hotel',
+    '202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOPESQUISAINGRESSOSDISNEY-D0',
+    '202604-azv-b2c-emm-168h-viagem-abandonopesquisaingressosdisneyAZ-d2_tickets',
+  ];
+
+  function utmSourceMatches(source) {
+    if (!source) return false;
+    const s = String(source).toLowerCase();
+    let i;
+    for (i = 0; i < UTM_SOURCE_ALLOWED.length; i++) {
+      const allowed = String(UTM_SOURCE_ALLOWED[i] || '').toLowerCase();
+      if (!allowed) continue;
+      if (s === allowed) return true;
+      if (s.indexOf(allowed) !== -1) return true;
+    }
+    return false;
+  }
+
+  function readUtmSourceFromUrl() {
+    try {
+      return new URLSearchParams(window.location.search).get('utm_source') || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function persistUtmSessionIfValid() {
+    if (!utmSourceMatches(readUtmSourceFromUrl())) return false;
+    try {
+      sessionStorage.setItem(UTM_SESSION_KEY, '1');
+    } catch (e) {}
+    return true;
+  }
+
+  function hasRequiredUtm() {
+    if (FORCE_LOGS) return true;
+    if (persistUtmSessionIfValid()) return true;
+    try {
+      return sessionStorage.getItem(UTM_SESSION_KEY) === '1';
+    } catch (e) {
+      return false;
+    }
+  }
+
   function logDebug() {
     if (!DEBUG && !FORCE_LOGS) return;
     try {
@@ -557,6 +610,11 @@
   }
 
   function run() {
+    if (!hasRequiredUtm()) {
+      logDebug(LOG_PREFIX, 'UTM invalida ou ausente. Carousel vertical nao sera exibido.');
+      return;
+    }
+
     clearInjectDoneIfWrapperMissing();
 
     if (window[INJECT_DONE_KEY]) return;
@@ -671,6 +729,11 @@
   }
 
   function init() {
+    if (!hasRequiredUtm()) {
+      logDebug(LOG_PREFIX, 'UTM invalida ou ausente. Script nao iniciado.');
+      return;
+    }
+
     if (!window[ERROR_HOOK_FLAG]) {
       window[ERROR_HOOK_FLAG] = true;
 

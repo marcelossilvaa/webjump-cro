@@ -15,16 +15,16 @@
   const RECOMMENDATION_MAP = {
     // OL
     "7885.90": "7990.90", // Ristretto → Florian
-    "7857.90": "7990.90", // Ristretto Decaf → Florian
-    "7888.90": "7990.90", // Arpeggio → Florian
-    "7862.90": "7990.90", // Arpeggio Decaf → Florian
-    "7865.90": "7886.90", // Volluto → Ethiopia
-    "7864.90": "7886.90", // Volluto Decaf → Ethiopia
-    "7866.90": "7856.90", // Capriccio → Nicaragua
-    "7863.90": "7856.90", // Cosi → Nicaragua
-    "7855.90": "7889.90", // Livanto → Colombia
-    "7890.90": "7990.90", // Venezia → Florian
-    "7895.90": "7990.90", // Napoli → Florian
+    "7857.90": "7051.90", // Ristretto Decaf → Vienna Decaff
+    "7888.90": "7887.90", // Arpeggio → Cape Town
+    "7862.90": "7051.90", // Arpeggio Decaf → Vienna Decaff
+    "7865.90": "7893.90", // Volluto → Buenos Aires
+    "7864.90": "7051.90", // Volluto Decaf → Vienna Decaff
+    "7866.90": "7882.90", // Capriccio → Paris
+    "7863.90": "7878.90", // Cosi → Shanghai
+    "7855.90": "7893.90", // Livanto → Buenos Aires
+    "7890.90": "7877.90", // Venezia → Istanbul Espresso
+    "7895.90": "7887.90", // Napoli → Cape Town
     // VL
     "7011.80": "7026.80", // Ristretto Intenso → Mexico
     "7010.80": "7026.80", // Ristretto Clássico → Mexico
