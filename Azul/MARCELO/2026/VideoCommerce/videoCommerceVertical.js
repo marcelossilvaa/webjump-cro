@@ -28,6 +28,10 @@
   const COMPONENT_WRAPPER_ATTR = 'data-wj-videocommerce-vertical';
   const COMPONENT_WRAPPER_VALUE = '1';
   const SDK_SCRIPT_ATTR = 'data-wj-streamshop-sdk';
+  const ANALYTICS_VIEW_ATTR = 'data-wj-carousel-analytics-view';
+  const ANALYTICS_TRACKING_ATTR = 'data-wj-carousel-analytics-tracking';
+  const EXPERIMENT_NAME = 'AT_VideoCommerce_CarouselVertical';
+  const EVAR84 = 'AT_VideoCommerce_Disney';
 
   const STORE_SLUG = 'azullinhasaereas';
   const PDF_ANCHOR_HREF_SUB = 'Guia-de-Experiencias-WaltDisneyWorld.pdf';
@@ -92,6 +96,168 @@
     } catch (e) {
       return false;
     }
+  }
+
+  function analyticsEvent(eventLabel, eventType) {
+    if (!eventLabel) return;
+    const labelEvent = EXPERIMENT_NAME + '_' + eventType + ' ' + eventLabel;
+    if (FORCE_LOGS) {
+      console.log('[Tracking VideoCommerce Carousel Vertical]', labelEvent);
+    }
+    try {
+      const s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+      if (!s || typeof s.tl !== 'function') return;
+      s.linkTrackVars = 'events,eVar82,eVar84';
+      s.linkTrackEvents = 'event90';
+      s.events = 'event90';
+      s.eVar82 = labelEvent;
+      s.eVar84 = EVAR84;
+      s.tl(true, 'o', 'target_activity_action');
+    } catch (e) {}
+  }
+
+  function getComposedEventPath(evt) {
+    if (evt && typeof evt.composedPath === 'function') {
+      return evt.composedPath();
+    }
+    return evt && evt.target ? [evt.target] : [];
+  }
+
+  function pathIncludesNode(path, node) {
+    let i;
+    for (i = 0; i < path.length; i++) {
+      if (path[i] === node) return true;
+    }
+    return false;
+  }
+
+  function findVideoInPath(path) {
+    let i;
+    for (i = 0; i < path.length; i++) {
+      const node = path[i];
+      if (node && node.tagName === 'VIDEO') {
+        return node.currentSrc || node.src || 'video-sem-url';
+      }
+    }
+    return '';
+  }
+
+  function getCarouselClickHit(evt, carouselEl) {
+    const path = getComposedEventPath(evt);
+    if (!pathIncludesNode(path, carouselEl)) return null;
+
+    const videoSrc = findVideoInPath(path);
+    if (videoSrc) {
+      return { eventType: 'clique-video', eventLabel: videoSrc };
+    }
+
+    let i;
+    for (i = 0; i < path.length; i++) {
+      const node = path[i];
+      if (!node || node.nodeType !== 1) continue;
+
+      if (node.classList && node.classList.contains('close-button')) {
+        return { eventType: 'clique-fechar-overlay', eventLabel: 'overlay-streamshop' };
+      }
+
+      const cls = String(node.className || '').toLowerCase();
+      const aria = String((node.getAttribute && node.getAttribute('aria-label')) || '').toLowerCase();
+
+      if (
+        cls.indexOf('prev') !== -1 ||
+        cls.indexOf('anterior') !== -1 ||
+        aria.indexOf('anterior') !== -1 ||
+        aria.indexOf('previous') !== -1
+      ) {
+        return { eventType: 'clique-navegacao', eventLabel: 'anterior' };
+      }
+
+      if (
+        cls.indexOf('next') !== -1 ||
+        cls.indexOf('proxim') !== -1 ||
+        aria.indexOf('proxim') !== -1 ||
+        aria.indexOf('next') !== -1
+      ) {
+        return { eventType: 'clique-navegacao', eventLabel: 'proximo' };
+      }
+    }
+
+    return { eventType: 'clique-carousel', eventLabel: 'area-carousel' };
+  }
+
+  function attachCarouselTracking(wrapper) {
+    if (!wrapper || wrapper.getAttribute(ANALYTICS_TRACKING_ATTR) === '1') return;
+
+    const carouselEl = wrapper.querySelector('liveshop-ads-carousel');
+    if (!carouselEl) return;
+
+    wrapper.setAttribute(ANALYTICS_TRACKING_ATTR, '1');
+    wrapper.addEventListener(
+      'click',
+      function (evt) {
+        const hit = getCarouselClickHit(evt, carouselEl);
+        if (!hit) return;
+        analyticsEvent(hit.eventLabel, hit.eventType);
+      },
+      true,
+    );
+    logDebug(LOG_PREFIX, 'tracking do carousel anexado.');
+  }
+
+  function trackCarouselView(wrapper) {
+    if (!wrapper || wrapper.getAttribute(ANALYTICS_VIEW_ATTR) === '1') return;
+    wrapper.setAttribute(ANALYTICS_VIEW_ATTR, '1');
+    analyticsEvent('carousel-vertical-parques', 'visualizacao');
+  }
+
+  function ensureCarouselAnalytics(wrapper) {
+    if (!wrapper) return;
+    attachCarouselTracking(wrapper);
+    trackCarouselView(wrapper);
+  }
+
+  function hookOverlayAnalytics() {
+    if (window.__wjVideoCommerceVerticalOverlayAnalytics) return;
+    window.__wjVideoCommerceVerticalOverlayAnalytics = true;
+
+    document.addEventListener(
+      'click',
+      function (evt) {
+        const path = getComposedEventPath(evt);
+        let overlayNode = null;
+        let i;
+
+        for (i = 0; i < path.length; i++) {
+          const node = path[i];
+          if (!node || node.nodeType !== 1) continue;
+          if (node.id === OVERLAY_SDK_ID) {
+            overlayNode = node;
+            break;
+          }
+        }
+
+        if (!overlayNode) return;
+
+        const videoSrc = findVideoInPath(path);
+        if (videoSrc) {
+          analyticsEvent(videoSrc, 'clique-video-overlay');
+          return;
+        }
+
+        for (i = 0; i < path.length; i++) {
+          const node = path[i];
+          if (!node || node.nodeType !== 1) continue;
+          if (node.classList && node.classList.contains('close-button')) {
+            analyticsEvent('overlay-streamshop', 'clique-fechar-overlay');
+            return;
+          }
+        }
+
+        analyticsEvent('overlay-streamshop', 'clique-overlay');
+      },
+      true,
+    );
+    logDebug(LOG_PREFIX, 'tracking do overlay ligado.');
   }
 
   function logDebug() {
@@ -531,6 +697,10 @@
 
     if (wrapperAlreadyAdjacent(placementStart)) {
       logDebug(LOG_PREFIX, 'wrapper já existe adjacente ao alvo. Nada a fazer.');
+      const adjacentWrapper = document.querySelector(
+        '[' + COMPONENT_WRAPPER_ATTR + '="' + COMPONENT_WRAPPER_VALUE + '"]',
+      );
+      ensureCarouselAnalytics(adjacentWrapper);
       window[INJECT_DONE_KEY] = true;
       return true;
     }
@@ -540,6 +710,7 @@
     );
     if (existing) {
       logDebug(LOG_PREFIX, 'wrapper já existe em algum lugar:', existing);
+      ensureCarouselAnalytics(existing);
       window[INJECT_DONE_KEY] = true;
       return true;
     }
@@ -599,6 +770,7 @@
         const carousel = buildLiveshopCarouselVerticalElement();
         wrapper2.appendChild(carousel);
         insertWrapperForPlacement(wrapper2, placementNow);
+        ensureCarouselAnalytics(wrapper2);
         window[INJECT_DONE_KEY] = true;
         logDebug(LOG_PREFIX, 'inserido. Wrapper:', wrapper2, 'Carousel:', carousel);
       })
@@ -750,6 +922,7 @@
     }
 
     hookSpaNavigation();
+    hookOverlayAnalytics();
     run();
     initObserver();
   }

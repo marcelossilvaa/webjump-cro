@@ -5,7 +5,10 @@
   const SDK_SCRIPT_ATTR = 'data-wj-streamshop-widget-sdk';
   const SDK_SRC = 'https://assets.streamshop.com.br/sdk/liveshop-sdk-widget-btn.min.js';
   const TRACKING_ATTR = 'data-wj-widget-tracking';
+  const ANALYTICS_VIEW_ATTR = 'data-wj-widget-analytics-view';
   const STYLE_ID = 'wj-videocommerce-widget-style';
+  const EXPERIMENT_NAME = 'AT_VideoCommerce_Widget';
+  const EVAR84 = 'AT_VideoCommerce_Disney';
   const STORE_SLUG = 'azullinhasaereas';
   const MOUNTED_KEY = '__wjVideoCommerceWidgetMounted';
   const MOUNTING_KEY = '__wjVideoCommerceWidgetMounting';
@@ -94,6 +97,37 @@
     } catch (e) {
       return false;
     }
+  }
+
+  function analyticsEvent(eventLabel, eventType) {
+    if (!eventLabel) return;
+    const labelEvent = EXPERIMENT_NAME + '_' + eventType + ' ' + eventLabel;
+    if (VERIFY_LOGS) {
+      console.info('[Tracking VideoCommerce Widget]', labelEvent);
+    }
+    try {
+      const s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+      if (!s || typeof s.tl !== 'function') return;
+      s.linkTrackVars = 'events,eVar82,eVar84';
+      s.linkTrackEvents = 'event90';
+      s.events = 'event90';
+      s.eVar82 = labelEvent;
+      s.eVar84 = EVAR84;
+      s.tl(true, 'o', 'target_activity_action');
+    } catch (e) {}
+  }
+
+  function getWidgetVideoLabel(btn) {
+    if (!btn) return 'video-nao-encontrado';
+    const videoElement = btn.querySelector('video');
+    if (!videoElement) return 'video-nao-encontrado';
+    return videoElement.currentSrc || videoElement.src || 'video-sem-url';
+  }
+
+  function trackWidgetView(widgetBtn) {
+    if (!widgetBtn || widgetBtn.getAttribute(ANALYTICS_VIEW_ATTR) === '1') return;
+    widgetBtn.setAttribute(ANALYTICS_VIEW_ATTR, '1');
+    analyticsEvent('floating-widget', 'visualizacao');
   }
 
   function logVerify() {
@@ -308,25 +342,6 @@
     }
   }
 
-  function pushWidgetEvent(btn) {
-    window.gtmDataObject = window.gtmDataObject || [];
-
-    const videoElement = btn.querySelector('video');
-    const fullVideoPath = videoElement
-      ? videoElement.currentSrc || videoElement.src
-      : 'url-nao-encontrada';
-
-    window.gtmDataObject.push({
-      event: 'local_event',
-      event_raised_by: 'br',
-      local_event_category: 'streamshop-widget-disney',
-      local_event_action: 'click:floating-widget',
-      local_event_label: fullVideoPath,
-    });
-
-    logVerify(LOG_PREFIX, 'tracking:', fullVideoPath);
-  }
-
   function attachWidgetTracking(widgetBtn) {
     if (!widgetBtn || widgetBtn.getAttribute(TRACKING_ATTR) === '1') {
       return false;
@@ -335,11 +350,13 @@
     widgetBtn.setAttribute(TRACKING_ATTR, '1');
     widgetBtn.addEventListener('click', function (e) {
       if (e.target.closest('.close-button')) {
+        analyticsEvent('floating-widget', 'clique-fechar');
         return;
       }
-      pushWidgetEvent(this);
+      analyticsEvent(getWidgetVideoLabel(this), 'clique-widget');
     });
 
+    trackWidgetView(widgetBtn);
     logVerify(LOG_PREFIX, 'tracking anexado.');
     return true;
   }
