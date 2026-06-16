@@ -559,7 +559,7 @@
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] .pdp-payment-methods { margin-top: 28px !important; } .wj-floating-whatsapp { right: 16px; bottom: 16px; width: 50px !important; height: 50px !important; min-width: 50px !important; min-height: 50px !important; padding: 0 !important; } }',
+        '="true"] .pdp-payment-methods { margin-top: 28px !important; } .wj-floating-whatsapp { right: 16px; bottom: 16px; width: 50px !important; height: 50px !important; min-width: 50px !important; min-height: 50px !important; padding: 0 !important; } }'
     ].join('\n');
   }
 
@@ -676,17 +676,17 @@
         removePropertyFromRules(
           rules,
           '.product-main-section .product-info-additional-wrapper',
-          propertyName,
+          propertyName
         );
         removePropertyFromRules(
           rules,
           '.product-main-section .product-info-additional .product-info-shipping',
-          propertyName,
+          propertyName
         );
         removePropertyFromRules(
           rules,
           '.product-main-section .product-info-additional .product-info-shipping',
-          'border',
+          'border'
         );
       }
     });
@@ -721,7 +721,7 @@
       event_raised_by: 'br',
       local_event_category: TRACKING_CATEGORY,
       local_event_action: action || 'click',
-      local_event_label: label,
+      local_event_label: label
     };
 
     if (window.gtmDataObject && typeof window.gtmDataObject.push === 'function') {
@@ -754,30 +754,22 @@
     const shippingMethods = document.querySelectorAll('.pdp-shipping-title .shipping-method');
     const qtyButtons = document.querySelectorAll('.product-add-form .product-item-qty-btn');
 
-    addTrackedClick(
-      document.querySelector('#product-addtocart-button'),
-      'clicou_adicionar_ao_carrinho',
-    );
+    addTrackedClick(document.querySelector('#product-addtocart-button'), 'clicou_adicionar_ao_carrinho');
     addTrackedClick(document.querySelector('#product-buynow-button'), 'clicou_comprar_agora');
     addTrackedClick(document.querySelector('#buy-via-whatsapp'), 'clicou_comprar_whatsapp');
-    addTrackedClick(
-      document.querySelector('.custom-price .see-more-link'),
-      'clicou_ver_todas_as_ofertas',
-    );
+    addTrackedClick(document.querySelector('.custom-price .see-more-link'), 'clicou_ver_todas_as_ofertas');
 
     shippingMethods.forEach(function (method) {
-      const label =
-        getText(method).toLowerCase().indexOf('retirar') > -1
-          ? 'clicou_frete_retirar'
-          : 'clicou_frete_receber';
+      const isPickupMethod = getText(method).toLowerCase().indexOf('retirar') > -1;
+      const label = isPickupMethod ? 'clicou_frete_retirar' : 'clicou_frete_receber';
+
       addTrackedClick(method, label);
     });
 
     qtyButtons.forEach(function (button) {
-      const label =
-        button.className.indexOf('minus') > -1
-          ? 'clicou_quantidade_menos'
-          : 'clicou_quantidade_mais';
+      const isMinusButton = button.className.indexOf('minus') > -1;
+      const label = isMinusButton ? 'clicou_quantidade_menos' : 'clicou_quantidade_mais';
+
       addTrackedClick(button, label);
     });
   }
@@ -805,7 +797,7 @@
   function normalizePaymentMethods() {
     const title = document.querySelector('.pdp-payment-methods h2');
     const paymentLabels = Array.prototype.slice.call(
-      document.querySelectorAll('.pdp-payment-methods li > div > div'),
+      document.querySelectorAll('.pdp-payment-methods li > div > div')
     );
 
     setTextIfChanged(title, 'Formas de pagamento');
@@ -877,11 +869,9 @@
 
   function organizeTitleMeta() {
     const titleWrapper = document.querySelector('.page-title-wrapper.product');
-    const brandContainer = titleWrapper
-      ? titleWrapper.querySelector('.product-brand-container')
-      : null;
+    const brandContainer = titleWrapper ? titleWrapper.querySelector('.product-brand-container') : null;
     const sku = document.querySelector(
-      '.pdp-winning-seller .product.attribute.sku, .wj-pdp-meta-row .product.attribute.sku',
+      '.pdp-winning-seller .product.attribute.sku, .wj-pdp-meta-row .product.attribute.sku'
     );
     let metaRow = titleWrapper ? titleWrapper.querySelector('.wj-pdp-meta-row') : null;
 
@@ -935,9 +925,7 @@
     }
 
     const label = count === '1' ? 'loja' : 'lojas';
-    const regionText = count
-      ? 'Entre ' + count + ' ' + label + ' da sua regi\u00e3o'
-      : 'Oferta da sua regi\u00e3o';
+    const regionText = count ? 'Entre ' + count + ' ' + label + ' da sua regi\u00e3o' : 'Oferta da sua regi\u00e3o';
 
     setTextIfChanged(regionNote, regionText);
   }
@@ -945,16 +933,10 @@
   function ensureCompareTitle() {
     const customPrice = document.querySelector('.custom-price');
     const previous = customPrice ? customPrice.previousElementSibling : null;
-    const hasCompareInside =
-      customPrice && getNormalizedText(customPrice).indexOf('compare pre') > -1;
-    const hasCompareBefore =
-      previous &&
-      !previous.classList.contains('wj-compare-title') &&
-      getNormalizedText(previous).indexOf('compare pre') > -1;
+    const hasCompareInside = Boolean(customPrice && getNormalizedText(customPrice).indexOf('compare pre') > -1);
+    const hasCompareBefore = Boolean(previous && !previous.classList.contains('wj-compare-title') && getNormalizedText(previous).indexOf('compare pre') > -1);
     const nativeCompareTitle = hasCompareInside || hasCompareBefore;
-    const injectedTitles = Array.prototype.slice.call(
-      document.querySelectorAll('.wj-compare-title'),
-    );
+    const injectedTitles = Array.prototype.slice.call(document.querySelectorAll('.wj-compare-title'));
     let title = injectedTitles[0];
 
     if (!customPrice) return;
@@ -1016,7 +998,7 @@
     if (!isMobileViewport()) return;
 
     removeElements(
-      Array.prototype.slice.call(document.querySelectorAll('.sellers-carousel-content')),
+      Array.prototype.slice.call(document.querySelectorAll('.sellers-carousel-content'))
     );
   }
 
@@ -1024,11 +1006,9 @@
     const priceWrapper = document.querySelector('.product-info-price-wrapper');
     const purchaseContainer = document.querySelector('.product-info-price-container');
     const shippingWrapper = document.querySelector('.product-info-additional-wrapper');
-    const existingSlot = priceWrapper
-      ? priceWrapper.querySelector('.wj-mobile-shipping-slot')
-      : null;
+    const existingSlot = priceWrapper ? priceWrapper.querySelector('.wj-mobile-shipping-slot') : null;
     const shippingContent = document.querySelector(
-      '.wj-mobile-shipping-slot .product-info-additional, .product-info-additional-wrapper .product-info-additional',
+      '.wj-mobile-shipping-slot .product-info-additional, .product-info-additional-wrapper .product-info-additional'
     );
     let shippingSlot = existingSlot;
 
@@ -1066,7 +1046,7 @@
     [
       shippingSlot,
       shippingContent,
-      shippingContent.querySelector('.product-info-shipping'),
+      shippingContent.querySelector('.product-info-shipping')
     ].forEach(function (element) {
       if (!element || !element.style) return;
 
@@ -1098,7 +1078,7 @@
 
     setTextIfChanged(
       link,
-      count ? 'Ver todas as ofertas (' + count + ' ' + label + ')' : 'Ver todas as ofertas',
+      count ? 'Ver todas as ofertas (' + count + ' ' + label + ')' : 'Ver todas as ofertas'
     );
   }
 
@@ -1144,9 +1124,7 @@
     let scope = null;
 
     if (isMobileViewport()) {
-      const shippingContent = mobileSlot
-        ? mobileSlot.querySelector('.product-info-additional')
-        : null;
+      const shippingContent = mobileSlot ? mobileSlot.querySelector('.product-info-additional') : null;
 
       if (!mobileSlot || !shippingContent) return;
 
@@ -1156,13 +1134,11 @@
 
       if (desktopWrapper) {
         removeElements(
-          Array.prototype.slice.call(desktopWrapper.querySelectorAll('.wj-shipping-title')),
+          Array.prototype.slice.call(desktopWrapper.querySelectorAll('.wj-shipping-title'))
         );
       }
     } else {
-      const container = desktopWrapper
-        ? desktopWrapper.querySelector('.product-info-additional-container')
-        : null;
+      const container = desktopWrapper ? desktopWrapper.querySelector('.product-info-additional-container') : null;
 
       if (!desktopWrapper || !container) return;
 
@@ -1172,7 +1148,7 @@
 
       if (mobileSlot) {
         removeElements(
-          Array.prototype.slice.call(mobileSlot.querySelectorAll('.wj-shipping-title')),
+          Array.prototype.slice.call(mobileSlot.querySelectorAll('.wj-shipping-title'))
         );
       }
     }
@@ -1213,14 +1189,12 @@
 
   function ensureFloatingWhatsApp() {
     const nativeButton = document.querySelector('#buy-via-whatsapp');
-    const nativeIcon = nativeButton
-      ? nativeButton.querySelector('img, .buy-via-whatsapp-icon')
-      : null;
+    const nativeIcon = nativeButton ? nativeButton.querySelector('img, .buy-via-whatsapp-icon') : null;
     let button = document.querySelector('.wj-floating-whatsapp');
 
     if (!nativeButton) {
       removeElements(
-        Array.prototype.slice.call(document.querySelectorAll('.wj-floating-whatsapp')),
+        Array.prototype.slice.call(document.querySelectorAll('.wj-floating-whatsapp'))
       );
       return;
     }
@@ -1239,7 +1213,7 @@
     }
 
     removeElements(
-      Array.prototype.slice.call(button.querySelectorAll('.wj-floating-whatsapp-text')),
+      Array.prototype.slice.call(button.querySelectorAll('.wj-floating-whatsapp-text'))
     );
 
     if (button.getAttribute(TRACKING_ATTR) === 'true') return;
@@ -1320,7 +1294,7 @@
 
     window[OBSERVER_KEY].observe(document.body, {
       childList: true,
-      subtree: true,
+      subtree: true
     });
   }
 
