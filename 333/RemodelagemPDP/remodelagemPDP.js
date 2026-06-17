@@ -923,15 +923,15 @@
 
   function organizeTitleMeta() {
     const titleWrapper = document.querySelector('.page-title-wrapper.product');
-    const brandContainer = titleWrapper
-      ? titleWrapper.querySelector('.product-brand-container')
-      : null;
+    let brandContainer = null;
     const sku = document.querySelector(
-      '.pdp-winning-seller .product.attribute.sku, .wj-pdp-meta-row .product.attribute.sku',
+      '.pdp-winning-seller .product.attribute.sku, .wj-pdp-meta-row .product.attribute.sku'
     );
     let metaRow = titleWrapper ? titleWrapper.querySelector('.wj-pdp-meta-row') : null;
 
     if (!titleWrapper) return;
+
+    brandContainer = titleWrapper.querySelector('.product-brand-container');
 
     if (!metaRow) {
       metaRow = document.createElement('div');
@@ -981,9 +981,11 @@
     }
 
     const label = count === '1' ? 'loja' : 'lojas';
-    const regionText = count
-      ? 'Entre ' + count + ' ' + label + ' da sua regi\u00e3o'
-      : 'Oferta da sua regi\u00e3o';
+    let regionText = 'Oferta da sua regi\u00e3o';
+
+    if (count) {
+      regionText = 'Entre ' + count + ' ' + label + ' da sua regi\u00e3o';
+    }
 
     setTextIfChanged(regionNote, regionText);
   }
@@ -1072,13 +1074,16 @@
     const priceWrapper = document.querySelector('.product-info-price-wrapper');
     const purchaseContainer = document.querySelector('.product-info-price-container');
     const shippingWrapper = document.querySelector('.product-info-additional-wrapper');
-    const existingSlot = priceWrapper
-      ? priceWrapper.querySelector('.wj-mobile-shipping-slot')
-      : null;
+    let existingSlot = null;
     const shippingContent = document.querySelector(
-      '.wj-mobile-shipping-slot .product-info-additional, .product-info-additional-wrapper .product-info-additional',
+      '.wj-mobile-shipping-slot .product-info-additional, .product-info-additional-wrapper .product-info-additional'
     );
     let shippingSlot = existingSlot;
+
+    if (priceWrapper) {
+      existingSlot = priceWrapper.querySelector('.wj-mobile-shipping-slot');
+      shippingSlot = existingSlot;
+    }
 
     if (
       !isMobileViewport() ||
@@ -1193,9 +1198,11 @@
     let scope = null;
 
     if (isMobileViewport()) {
-      const shippingContent = mobileSlot
-        ? mobileSlot.querySelector('.product-info-additional')
-        : null;
+      let shippingContent = null;
+
+      if (mobileSlot) {
+        shippingContent = mobileSlot.querySelector('.product-info-additional');
+      }
 
       if (!mobileSlot || !shippingContent) return;
 
@@ -1205,13 +1212,15 @@
 
       if (desktopWrapper) {
         removeElements(
-          Array.prototype.slice.call(desktopWrapper.querySelectorAll('.wj-shipping-title')),
+          Array.prototype.slice.call(desktopWrapper.querySelectorAll('.wj-shipping-title'))
         );
       }
     } else {
-      const container = desktopWrapper
-        ? desktopWrapper.querySelector('.product-info-additional-container')
-        : null;
+      let container = null;
+
+      if (desktopWrapper) {
+        container = desktopWrapper.querySelector('.product-info-additional-container');
+      }
 
       if (!desktopWrapper || !container) return;
 
@@ -1262,10 +1271,12 @@
 
   function ensureFloatingWhatsApp() {
     const nativeButton = getMainButton('#buy-via-whatsapp');
-    const nativeIcon = nativeButton
-      ? nativeButton.querySelector('img, .buy-via-whatsapp-icon')
-      : null;
+    let nativeIcon = null;
     let button = document.querySelector('.wj-floating-whatsapp');
+
+    if (nativeButton) {
+      nativeIcon = nativeButton.querySelector('img, .buy-via-whatsapp-icon');
+    }
 
     if (!nativeButton) {
       removeElements(
