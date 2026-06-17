@@ -237,15 +237,15 @@
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] .custom-price .see-more-btn { display: inline-flex !important; align-items: center !important; gap: 5px !important; width: auto !important; height: auto !important; margin: 0 !important; padding: 0 !important; border: 0 !important; background: transparent !important; color: #0054bd !important; }',
+        '="true"] .custom-price .see-more-btn:not([class*="fixed-"]) { display: inline-flex !important; align-items: center !important; gap: 5px !important; width: auto !important; height: auto !important; margin: 0 !important; padding: 0 !important; border: 0 !important; background: transparent !important; color: #0054bd !important; }',
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] .custom-price .see-more-link { color: #0054bd !important; font-size: 12px !important; font-weight: 700 !important; line-height: 1.2 !important; text-decoration: none !important; }',
+        '="true"] .custom-price .see-more-btn:not([class*="fixed-"]) .see-more-link { color: #0054bd !important; font-size: 12px !important; font-weight: 700 !important; line-height: 1.2 !important; text-decoration: none !important; }',
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] .custom-price .icon-arrow-next { color: #0054bd !important; font-size: 10px !important; transform: rotate(90deg); }',
+        '="true"] .custom-price .see-more-btn:not([class*="fixed-"]) .icon-arrow-next { color: #0054bd !important; font-size: 10px !important; transform: rotate(90deg); }',
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
@@ -297,31 +297,31 @@
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] #product-addtocart-button, ' +
+        '="true"] #product-addtocart-button:not([class*="fixed-"]), ' +
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] #product-buynow-button, ' +
+        '="true"] #product-buynow-button:not([class*="fixed-"]), ' +
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] #buy-via-whatsapp { width: 100% !important; min-height: 40px !important; margin: 0 !important; border-radius: 6px !important; font-size: 14px !important; font-weight: 800 !important; line-height: 1.2 !important; text-transform: none !important; letter-spacing: 0 !important; box-shadow: none !important; }',
+        '="true"] #buy-via-whatsapp:not([class*="fixed-"]) { width: 100% !important; min-height: 40px !important; margin: 0 !important; border-radius: 6px !important; font-size: 14px !important; font-weight: 800 !important; line-height: 1.2 !important; text-transform: none !important; letter-spacing: 0 !important; box-shadow: none !important; }',
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] #product-addtocart-button { background: #ff5a14 !important; border: 1px solid #ff5a14 !important; color: #ffffff !important; }',
+        '="true"] #product-addtocart-button:not([class*="fixed-"]) { background: #ff5a14 !important; border: 1px solid #ff5a14 !important; color: #ffffff !important; }',
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] #product-buynow-button { order: 3; background: #ffffff !important; border: 1px solid #ff5a14 !important; color: #394150 !important; }',
+        '="true"] #product-buynow-button:not([class*="fixed-"]) { order: 3; background: #ffffff !important; border: 1px solid #ff5a14 !important; color: #394150 !important; }',
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] #buy-via-whatsapp { order: 4; display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; background: #24a944 !important; border: 1px solid #24a944 !important; color: #ffffff !important; }',
+        '="true"] #buy-via-whatsapp:not([class*="fixed-"]) { order: 4; display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; background: #24a944 !important; border: 1px solid #24a944 !important; color: #ffffff !important; }',
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] #buy-via-whatsapp .buy-via-whatsapp-icon { width: 18px !important; height: 18px !important; margin: 0 !important; }',
+        '="true"] #buy-via-whatsapp:not([class*="fixed-"]) .buy-via-whatsapp-icon { width: 18px !important; height: 18px !important; margin: 0 !important; }',
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
@@ -515,7 +515,15 @@
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] .wj-mobile-shipping-slot { display: block !important; width: 100% !important; height: auto !important; max-height: none !important; margin: 8px 0 0 !important; padding: 0 !important; position: static !important; opacity: 1 !important; visibility: visible !important; overflow: visible !important; max-width: none; } ' +
+        '="true"] .product.media .gallery-placeholder { height: 100% !important; } ' +
+        ROOT_SELECTOR +
+        '[' +
+        ROOT_ATTR +
+        '="true"] .product.media .fotorama__stage { width: 100% !important; height: 100% !important; } ' +
+        ROOT_SELECTOR +
+        '[' +
+        ROOT_ATTR +
+        '="true"] .wj-mobile-shipping-slot { display: block !important; width: 100% !important; height: auto !important; max-height: none !important; max-width: initial !important; margin: 8px 0 0 !important; padding: 0 !important; position: static !important; opacity: 1 !important; visibility: visible !important; overflow: visible !important; } ' +
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
@@ -527,7 +535,7 @@
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] .wj-mobile-shipping-slot .product-info-shipping { display: block !important; height: auto !important; max-height: none !important; opacity: 1 !important; visibility: visible !important; overflow: visible !important; } ' +
+        '="true"] .wj-mobile-shipping-slot .product-info-shipping { display: block !important; height: auto !important; max-height: none !important; max-width: initial !important; opacity: 1 !important; visibility: visible !important; overflow: visible !important; } ' +
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
@@ -612,6 +620,25 @@
     if (element) {
       element.insertBefore(document.createTextNode(text), element.firstChild);
     }
+  }
+
+  function getMainElement(selector, scope) {
+    const parent = scope || document;
+    const elements = Array.prototype.slice.call(parent.querySelectorAll(selector));
+
+    return elements.filter(function (element) {
+      return element.className.indexOf('fixed-') === -1;
+    })[0] || null;
+  }
+
+  function getMainButton(selector, scope) {
+    return getMainElement(selector, scope);
+  }
+
+  function getMainCompareLink() {
+    const button = getMainElement('.custom-price .see-more-btn');
+
+    return button ? button.querySelector('.see-more-link') : null;
   }
 
   function getPriceValue(text) {
@@ -703,6 +730,26 @@
     }
   }
 
+  function normalizeGallerySizing() {
+    if (!isMobileViewport()) return;
+
+    const placeholders = Array.prototype.slice.call(document.querySelectorAll('.product.media .gallery-placeholder'));
+    const stages = Array.prototype.slice.call(document.querySelectorAll('.product.media .fotorama__stage'));
+
+    placeholders.forEach(function (placeholder) {
+      if (!placeholder || !placeholder.style) return;
+
+      placeholder.style.setProperty('height', '100%', 'important');
+    });
+
+    stages.forEach(function (stage) {
+      if (!stage || !stage.style) return;
+
+      stage.style.setProperty('height', '100%', 'important');
+      stage.style.setProperty('width', '100%', 'important');
+    });
+  }
+
   function getOfferCount() {
     const compareText = getText(document.querySelector('.custom-price-see-more'));
     const availableText = getText(document.querySelector('.wk-ap-available-sellers'));
@@ -754,10 +801,10 @@
     const shippingMethods = document.querySelectorAll('.pdp-shipping-title .shipping-method');
     const qtyButtons = document.querySelectorAll('.product-add-form .product-item-qty-btn');
 
-    addTrackedClick(document.querySelector('#product-addtocart-button'), 'clicou_adicionar_ao_carrinho');
-    addTrackedClick(document.querySelector('#product-buynow-button'), 'clicou_comprar_agora');
-    addTrackedClick(document.querySelector('#buy-via-whatsapp'), 'clicou_comprar_whatsapp');
-    addTrackedClick(document.querySelector('.custom-price .see-more-link'), 'clicou_ver_todas_as_ofertas');
+    addTrackedClick(getMainButton('#product-addtocart-button'), 'clicou_adicionar_ao_carrinho');
+    addTrackedClick(getMainButton('#product-buynow-button'), 'clicou_comprar_agora');
+    addTrackedClick(getMainButton('#buy-via-whatsapp'), 'clicou_comprar_whatsapp');
+    addTrackedClick(getMainCompareLink(), 'clicou_ver_todas_as_ofertas');
 
     shippingMethods.forEach(function (method) {
       const isPickupMethod = getText(method).toLowerCase().indexOf('retirar') > -1;
@@ -776,14 +823,14 @@
 
   function normalizeTexts() {
     const cheapestBadge = document.querySelector('.pdp-winning-seller .cheapest');
-    const addToCartButton = document.querySelector('#product-addtocart-button');
-    const buyNowButton = document.querySelector('#product-buynow-button');
+    const addToCartButton = getMainButton('#product-addtocart-button');
+    const buyNowButton = getMainButton('#product-buynow-button');
 
     setTextIfChanged(cheapestBadge, 'MELHOR PRE\u00c7O');
 
     if (addToCartButton) {
       addToCartButton.querySelectorAll('span').forEach(function (span) {
-        setTextIfChanged(span, 'Adicionar ao carrinho');
+        setTextIfChanged(span, 'Adicionar ao Carrinho');
       });
     }
 
@@ -1060,6 +1107,7 @@
       element.style.setProperty('inset', 'auto', 'important');
       element.style.setProperty('transform', 'none', 'important');
       element.style.setProperty('width', '100%', 'important');
+      element.style.setProperty('max-width', 'initial', 'important');
     });
 
     const shippingTitle = shippingContent.querySelector('.pdp-shipping-title');
@@ -1070,7 +1118,7 @@
   }
 
   function updateCompareLink() {
-    const link = document.querySelector('.custom-price .see-more-link');
+    const link = getMainCompareLink();
     const count = getOfferCount();
     const label = count === '1' ? 'loja' : 'lojas';
 
@@ -1086,8 +1134,8 @@
     const fieldset = document.querySelector('.product-add-form .fieldset');
     const qty = fieldset ? fieldset.querySelector('.field.qty') : null;
     const actions = fieldset ? fieldset.querySelector('.actions') : null;
-    const buyNowButton = fieldset ? fieldset.querySelector('#product-buynow-button') : null;
-    const whatsappButton = document.querySelector('#buy-via-whatsapp');
+    const buyNowButton = fieldset ? getMainButton('#product-buynow-button', fieldset) : null;
+    const whatsappButton = getMainButton('#buy-via-whatsapp');
 
     if (!fieldset) return;
 
@@ -1188,7 +1236,7 @@
   }
 
   function ensureFloatingWhatsApp() {
-    const nativeButton = document.querySelector('#buy-via-whatsapp');
+    const nativeButton = getMainButton('#buy-via-whatsapp');
     const nativeIcon = nativeButton ? nativeButton.querySelector('img, .buy-via-whatsapp-icon') : null;
     let button = document.querySelector('.wj-floating-whatsapp');
 
@@ -1219,7 +1267,7 @@
     if (button.getAttribute(TRACKING_ATTR) === 'true') return;
 
     button.addEventListener('click', function () {
-      const currentNativeButton = document.querySelector('#buy-via-whatsapp');
+      const currentNativeButton = getMainButton('#buy-via-whatsapp');
 
       sendTrackingEvent('clicou_whatsapp_flutuante', 'click');
 
@@ -1242,6 +1290,7 @@
     try {
       productSection.setAttribute(ROOT_ATTR, 'true');
       removeNativeLayoutLimits();
+      normalizeGallerySizing();
       normalizeTexts();
       normalizePaymentMethods();
       organizeTitleMeta();
