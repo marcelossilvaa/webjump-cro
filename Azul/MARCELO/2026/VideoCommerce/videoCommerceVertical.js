@@ -5,6 +5,18 @@
   let debounceTimer = null;
   const DEBUG = false;
   const LOG_PREFIX = '[WJ-VideoCommerce-Vertical]';
+  const FORCE_LOGS = (function () {
+    try {
+      return (
+        (window.location &&
+          window.location.search &&
+          window.location.search.indexOf('wjvcdebug=1') !== -1) ||
+        window.__WJ_VC_DEBUG === true
+      );
+    } catch (e) {
+      return false;
+    }
+  })();
   const INJECT_PROMISE_KEY = '__wjVideoCommerceVerticalInjectPromise';
   const INJECT_DONE_KEY = '__wjVideoCommerceVerticalInjectDone';
   const ERROR_HOOK_FLAG = '__wjVideoCommerceVerticalErrorHooked';
@@ -15,13 +27,268 @@
 
   const COMPONENT_WRAPPER_ATTR = 'data-wj-videocommerce-vertical';
   const COMPONENT_WRAPPER_VALUE = '1';
+  const STYLE_ID = 'wj-videocommerce-vertical-style';
   const SDK_SCRIPT_ATTR = 'data-wj-streamshop-sdk';
+  const ANALYTICS_VIEW_ATTR = 'data-wj-carousel-analytics-view';
+  const ANALYTICS_TRACKING_ATTR = 'data-wj-carousel-analytics-tracking';
+  const EXPERIMENT_NAME = 'AT_VideoCommerce_CarouselVertical';
+  const EVAR84 = 'AT_VideoCommerce_Disney';
+
+  const STORE_SLUG = 'azullinhasaereas';
+  const PDF_ANCHOR_HREF_SUB = 'Guia-de-Experiencias-WaltDisneyWorld.pdf';
+  const PARQUES_PATH_SEGMENT = '/disney/parques-disney';
+  const DISNEY_PATH_SEGMENT = '/disney';
+  const MICKEY_DESK_IMG_SUB = 'foto-mickey-desk';
+  const MICKEY_GROUP_IMG_SUB = 'Group 10773';
+  const PARQUES_HEADER_IMG_SUB = 'Header-Parques-26';
+  const PARQUES_MOBILE_IMG_SUB = 'Imagem_mobile26';
 
   const STREAMSHOP_SDKS = [
     'https://assets.streamshop.com.br/sdk-ads/liveshop-ads-video.min.js',
-    'https://assets.streamshop.com.br/sdk-ads/liveshop-ads-carousel.min.js',
-    'https://assets.streamshop.com.br/sdk-ads/liveshop-ads-carousel-v2.min.js'
+    'https://assets.streamshop.com.br/sdk-ads/liveshop-ads-carousel.min.js'
   ];
+
+  const UTM_SESSION_KEY = '__wjVideoCommerceDisneyUtm';
+  const UTM_SOURCE_ALLOWED = [
+    '202512-AZV-B2C-EMM-168H-VIAGEM-INGRESSOSDISNEY-D16',
+    '202604-azv-b2c-psh-168h-Inter-previagemhospedagemdisney-d0_tickets',
+    '202603-AZV-B2C-EMM-168H-VIAGEM-INCENTIVOINGRESSOSDISNEY-D5',
+    'pmweb_azv_e-mail_banner_mf_azv_202510-azv-b2c-emm-168h-viagem-produtosdisneya-d2_n',
+    'pmweb_azv_e-mail_banner_mf_azv_202510-azv-b2c-emm-168h-viagem-produtosdisneyb-d2_n',
+    '202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOCARRINHODISNEY-D0',
+    '202603-azv-b2c-psh-168h-Inter-abandonocarrinhoingressosdisney-d2_pac',
+    'pmweb_azv_e-mail_banner_lf_azv_202603-azv-b2c-emm-168h-viagem-incentivohospedagemdisney-d7_hotel',
+    '202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOPESQUISAINGRESSOSDISNEY-D0',
+    '202604-azv-b2c-emm-168h-viagem-abandonopesquisaingressosdisneyAZ-d2_tickets',
+  ];
+
+  function utmSourceMatches(source) {
+    if (!source) return false;
+    const s = String(source).toLowerCase();
+    let i;
+    for (i = 0; i < UTM_SOURCE_ALLOWED.length; i++) {
+      const allowed = String(UTM_SOURCE_ALLOWED[i] || '').toLowerCase();
+      if (!allowed) continue;
+      if (s === allowed) return true;
+      if (s.indexOf(allowed) !== -1) return true;
+    }
+    return false;
+  }
+
+  function readUtmSourceFromUrl() {
+    try {
+      return new URLSearchParams(window.location.search).get('utm_source') || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function persistUtmSessionIfValid() {
+    if (!utmSourceMatches(readUtmSourceFromUrl())) return false;
+    try {
+      sessionStorage.setItem(UTM_SESSION_KEY, '1');
+    } catch (e) {}
+    return true;
+  }
+
+  function hasRequiredUtm() {
+    if (FORCE_LOGS) return true;
+    if (persistUtmSessionIfValid()) return true;
+    try {
+      return sessionStorage.getItem(UTM_SESSION_KEY) === '1';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function analyticsEvent(eventLabel, eventType) {
+    if (!eventLabel) return;
+    const labelEvent = EXPERIMENT_NAME + '_' + eventType + ' ' + eventLabel;
+    if (FORCE_LOGS) {
+      console.log('[Tracking VideoCommerce Carousel Vertical]', labelEvent);
+    }
+    try {
+      const s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+      if (!s || typeof s.tl !== 'function') return;
+      s.linkTrackVars = 'events,eVar82,eVar84';
+      s.linkTrackEvents = 'event90';
+      s.events = 'event90';
+      s.eVar82 = labelEvent;
+      s.eVar84 = EVAR84;
+      s.tl(true, 'o', 'target_activity_action');
+    } catch (e) {}
+  }
+
+  function getComposedEventPath(evt) {
+    if (evt && typeof evt.composedPath === 'function') {
+      return evt.composedPath();
+    }
+    return evt && evt.target ? [evt.target] : [];
+  }
+
+  function pathIncludesNode(path, node) {
+    let i;
+    for (i = 0; i < path.length; i++) {
+      if (path[i] === node) return true;
+    }
+    return false;
+  }
+
+  function findVideoInPath(path) {
+    let i;
+    for (i = 0; i < path.length; i++) {
+      const node = path[i];
+      if (node && node.tagName === 'VIDEO') {
+        return node.currentSrc || node.src || 'video-sem-url';
+      }
+    }
+    return '';
+  }
+
+  function getCarouselClickHit(evt, carouselEl) {
+    const path = getComposedEventPath(evt);
+    if (!pathIncludesNode(path, carouselEl)) return null;
+
+    const videoSrc = findVideoInPath(path);
+    if (videoSrc) {
+      return { eventType: 'clique-video', eventLabel: videoSrc };
+    }
+
+    let i;
+    for (i = 0; i < path.length; i++) {
+      const node = path[i];
+      if (!node || node.nodeType !== 1) continue;
+
+      if (node.classList && node.classList.contains('close-button')) {
+        return { eventType: 'clique-fechar-overlay', eventLabel: 'overlay-streamshop' };
+      }
+
+      const cls = String(node.className || '').toLowerCase();
+      const aria = String((node.getAttribute && node.getAttribute('aria-label')) || '').toLowerCase();
+
+      if (
+        cls.indexOf('prev') !== -1 ||
+        cls.indexOf('anterior') !== -1 ||
+        aria.indexOf('anterior') !== -1 ||
+        aria.indexOf('previous') !== -1
+      ) {
+        return { eventType: 'clique-navegacao', eventLabel: 'anterior' };
+      }
+
+      if (
+        cls.indexOf('next') !== -1 ||
+        cls.indexOf('proxim') !== -1 ||
+        aria.indexOf('proxim') !== -1 ||
+        aria.indexOf('next') !== -1
+      ) {
+        return { eventType: 'clique-navegacao', eventLabel: 'proximo' };
+      }
+    }
+
+    return { eventType: 'clique-carousel', eventLabel: 'area-carousel' };
+  }
+
+  function attachCarouselTracking(wrapper) {
+    if (!wrapper || wrapper.getAttribute(ANALYTICS_TRACKING_ATTR) === '1') return;
+
+    const carouselEl = wrapper.querySelector('liveshop-ads-carousel');
+    if (!carouselEl) return;
+
+    wrapper.setAttribute(ANALYTICS_TRACKING_ATTR, '1');
+    wrapper.addEventListener(
+      'click',
+      function (evt) {
+        const hit = getCarouselClickHit(evt, carouselEl);
+        if (!hit) return;
+        analyticsEvent(hit.eventLabel, hit.eventType);
+      },
+      true,
+    );
+    logDebug(LOG_PREFIX, 'tracking do carousel anexado.');
+  }
+
+  function trackCarouselView(wrapper) {
+    if (!wrapper || wrapper.getAttribute(ANALYTICS_VIEW_ATTR) === '1') return;
+    wrapper.setAttribute(ANALYTICS_VIEW_ATTR, '1');
+    analyticsEvent('carousel-vertical-parques', 'visualizacao');
+  }
+
+  function ensureCarouselAnalytics(wrapper) {
+    if (!wrapper) return;
+    attachCarouselTracking(wrapper);
+    trackCarouselView(wrapper);
+  }
+
+  function hookOverlayAnalytics() {
+    if (window.__wjVideoCommerceVerticalOverlayAnalytics) return;
+    window.__wjVideoCommerceVerticalOverlayAnalytics = true;
+
+    document.addEventListener(
+      'click',
+      function (evt) {
+        const path = getComposedEventPath(evt);
+        let overlayNode = null;
+        let i;
+
+        for (i = 0; i < path.length; i++) {
+          const node = path[i];
+          if (!node || node.nodeType !== 1) continue;
+          if (node.id === OVERLAY_SDK_ID) {
+            overlayNode = node;
+            break;
+          }
+        }
+
+        if (!overlayNode) return;
+
+        const videoSrc = findVideoInPath(path);
+        if (videoSrc) {
+          analyticsEvent(videoSrc, 'clique-video-overlay');
+          return;
+        }
+
+        for (i = 0; i < path.length; i++) {
+          const node = path[i];
+          if (!node || node.nodeType !== 1) continue;
+          if (node.classList && node.classList.contains('close-button')) {
+            analyticsEvent('overlay-streamshop', 'clique-fechar-overlay');
+            return;
+          }
+        }
+
+        analyticsEvent('overlay-streamshop', 'clique-overlay');
+      },
+      true,
+    );
+    logDebug(LOG_PREFIX, 'tracking do overlay ligado.');
+  }
+
+  function logDebug() {
+    if (!DEBUG && !FORCE_LOGS) return;
+    try {
+      console.log.apply(console, arguments);
+    } catch (e) {}
+  }
+
+  function injectCarouselLayoutStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    const style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent =
+      '@media (max-width: 766px) {' +
+      '[' + COMPONENT_WRAPPER_ATTR + '="' + COMPONENT_WRAPPER_VALUE + '"] {' +
+      'margin-top: 16px !important;' +
+      '}' +
+      '}';
+    document.head.appendChild(style);
+  }
+
+  function warnDebug() {
+    if (!DEBUG && !FORCE_LOGS) return;
+    try {
+      console.warn.apply(console, arguments);
+    } catch (e) {}
+  }
 
   function waitForCondition(checkFn, timeoutMs, intervalMs) {
     const start = Date.now();
@@ -36,10 +303,281 @@
 
   function isCarouselDefined() {
     try {
-      return !!(window.customElements && window.customElements.get && window.customElements.get('liveshop-ads-carousel'));
+      return !!(
+        window.customElements &&
+        window.customElements.get &&
+        window.customElements.get('liveshop-ads-carousel')
+      );
     } catch (e) {
       return false;
     }
+  }
+
+  function isMobileViewport() {
+    try {
+      if (window.matchMedia) {
+        return window.matchMedia('(max-width: 766px)').matches;
+      }
+    } catch (e) {}
+    return typeof window.innerWidth === 'number' && window.innerWidth <= 766;
+  }
+
+  function isDisneySection() {
+    try {
+      return (window.location.pathname || '').toLowerCase().indexOf(DISNEY_PATH_SEGMENT) !== -1;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function isParquesTabActiveInNav() {
+    const parquesTab = document.querySelector(
+      '.container-tabs a[aria-label="Parques"], a[aria-label="Parques"]',
+    );
+    if (!parquesTab) return false;
+    return (parquesTab.className || '').indexOf('bxyvc') !== -1;
+  }
+
+  function isParquesDisneyPage() {
+    if (!isDisneySection()) return false;
+    const path = (window.location.pathname || '').toLowerCase();
+    if (path.indexOf(PARQUES_PATH_SEGMENT) !== -1) {
+      return true;
+    }
+    return isParquesTabActiveInNav();
+  }
+
+  function removeInjectionIfNotParques() {
+    if (isParquesDisneyPage()) return;
+
+    const wrapper = document.querySelector(
+      '[' + COMPONENT_WRAPPER_ATTR + '="' + COMPONENT_WRAPPER_VALUE + '"]',
+    );
+    if (wrapper && wrapper.parentNode) {
+      wrapper.parentNode.removeChild(wrapper);
+      logDebug(LOG_PREFIX, 'carousel removido (fora da aba Parques).');
+    }
+    window[INJECT_DONE_KEY] = false;
+    window[INJECT_PROMISE_KEY] = null;
+  }
+
+  function capsuleHasParquesMickeyAsset(capsule) {
+    if (!capsule) return false;
+    if (
+      capsule.querySelector('img[src*="' + MICKEY_DESK_IMG_SUB + '"]') ||
+      capsule.querySelector('img[src*="' + MICKEY_GROUP_IMG_SUB + '"]') ||
+      capsule.querySelector('img[src*="Group%2010773"]') ||
+      capsule.querySelector('img[src*="' + PARQUES_HEADER_IMG_SUB + '"]') ||
+      capsule.querySelector('img[src*="' + PARQUES_MOBILE_IMG_SUB + '"]')
+    ) {
+      return true;
+    }
+    const btn = capsule.querySelector('button.css-gvybwp');
+    if (btn) {
+      if (btn.querySelector('.css-1n4qgef')) return true;
+      if ((btn.textContent || '').indexOf('Código copiado') !== -1) return true;
+    }
+    return false;
+  }
+
+  function findParquesMickeyCapsuleInDom() {
+    const typoCapsule = document.querySelector(
+      '.container-capsule.containerDefault.hide-on-mobil, .container-capsule.hide-on-mobil',
+    );
+    if (typoCapsule && capsuleHasParquesMickeyAsset(typoCapsule)) {
+      logDebug(LOG_PREFIX, 'cápsula Mickey (hide-on-mobil):', typoCapsule);
+      return typoCapsule;
+    }
+
+    const buttons = document.querySelectorAll('button.css-gvybwp');
+    let b;
+    for (b = 0; b < buttons.length; b++) {
+      const btn = buttons[b];
+      if (
+        !btn.querySelector('.css-1n4qgef') &&
+        (btn.textContent || '').indexOf('Código copiado') === -1
+      ) {
+        continue;
+      }
+      const fromBtn = btn.closest('.container-capsule');
+      if (fromBtn) {
+        logDebug(LOG_PREFIX, 'cápsula Mickey via botão:', fromBtn);
+        return fromBtn;
+      }
+    }
+
+    const capsules = document.querySelectorAll(
+      '.container-capsule.containerDefault, .container-capsule',
+    );
+    if (!capsules || !capsules.length) return null;
+    let i;
+    for (i = 0; i < capsules.length; i++) {
+      if (capsuleHasParquesMickeyAsset(capsules[i])) {
+        logDebug(LOG_PREFIX, 'cápsula Mickey via asset:', capsules[i]);
+        return capsules[i];
+      }
+    }
+    return null;
+  }
+
+  function getParquesMickeyHeaderCapsule() {
+    const mickey = findParquesMickeyCapsuleInDom();
+    if (mickey) return mickey;
+
+    const headings = document.querySelectorAll('h1, h2, h3, h4');
+    let i;
+    for (i = 0; i < headings.length; i++) {
+      const text = (headings[i].textContent || '').toLowerCase();
+      if (
+        text.indexOf('guia mágico') !== -1 ||
+        text.indexOf('guia magico') !== -1 ||
+        text.indexOf('walt disney world') !== -1
+      ) {
+        const fromHeading = headings[i].closest('.container-capsule');
+        if (!fromHeading) continue;
+
+        const outerMobil = fromHeading.closest(
+          '.container-capsule.containerDefault.hide-on-mobil, .container-capsule.hide-on-mobil',
+        );
+        if (outerMobil) {
+          logDebug(LOG_PREFIX, 'cápsula header via guia mágico (hide-on-mobil):', outerMobil);
+          return outerMobil;
+        }
+
+        logDebug(LOG_PREFIX, 'cápsula via heading guia mágico:', fromHeading);
+        return fromHeading;
+      }
+    }
+
+    return null;
+  }
+
+  function getParquesContentCapsule() {
+    const mickey = getParquesMickeyHeaderCapsule();
+    if (mickey) return mickey;
+
+    const capsules = document.querySelectorAll('.container-capsule.containerDefault');
+    if (capsules.length) {
+      logDebug(LOG_PREFIX, 'fallback: primeira container-capsule:', capsules[0]);
+      return capsules[0];
+    }
+
+    return null;
+  }
+
+  function getParquesTargetAnchor() {
+    const capsule = getParquesContentCapsule();
+    if (!capsule) return null;
+    return (
+      capsule.querySelector('button.css-gvybwp') ||
+      capsule.querySelector('img[src*="' + MICKEY_DESK_IMG_SUB + '"]') ||
+      capsule.querySelector('img[src*="' + MICKEY_GROUP_IMG_SUB + '"]') ||
+      capsule.querySelector('img[src*="' + PARQUES_HEADER_IMG_SUB + '"]') ||
+      capsule.querySelector('img[src*="' + PARQUES_MOBILE_IMG_SUB + '"]') ||
+      capsule
+    );
+  }
+
+  function getParquesInsertionPlacement() {
+    const capsule = getParquesMickeyHeaderCapsule() || getParquesContentCapsule();
+    if (capsule && capsule.parentNode) {
+      return { mode: 'after', parent: capsule.parentNode, ref: capsule };
+    }
+    return null;
+  }
+
+  function getMobileDisneyHeroCapsule() {
+    const capsules = document.querySelectorAll(
+      '.container-capsule.containerDefault.hide-on-desktop',
+    );
+    if (!capsules || !capsules.length) return null;
+    const pdfSel = 'a[href*="' + PDF_ANCHOR_HREF_SUB + '"]';
+    let i;
+    for (i = 0; i < capsules.length; i++) {
+      const c = capsules[i];
+      if (!c.querySelector(pdfSel)) continue;
+      if (
+        c.querySelector('source[srcset*="kv-personagens-mobile"]') ||
+        c.querySelector('img[src*="kv-personagens-mobile"]')
+      ) {
+        return c;
+      }
+    }
+    for (i = 0; i < capsules.length; i++) {
+      const c = capsules[i];
+      if (!c.querySelector(pdfSel)) continue;
+      if (c.querySelector('.BannerContainer.variation1')) {
+        return c;
+      }
+    }
+    return null;
+  }
+
+  function getInsertionPlacement(anchorEl) {
+    if (isParquesDisneyPage()) {
+      return getParquesInsertionPlacement();
+    }
+    if (isMobileViewport()) {
+      let capsule = null;
+      if (anchorEl) {
+        capsule = anchorEl.closest('.container-capsule.containerDefault.hide-on-desktop');
+      }
+      if (!capsule) {
+        capsule = getMobileDisneyHeroCapsule();
+      }
+      if (capsule && capsule.parentNode) {
+        return { mode: 'before', parent: capsule.parentNode, ref: capsule };
+      }
+      return null;
+    }
+    if (!anchorEl) return null;
+    const deskCap = anchorEl.closest('.container-capsule.containerDefault.hide-on-mobile');
+    if (deskCap && deskCap.parentNode) {
+      return { mode: 'after', parent: deskCap.parentNode, ref: deskCap };
+    }
+    const putdhw = anchorEl.closest('.css-putdhw');
+    if (putdhw && putdhw.parentNode && putdhw.parentNode.parentNode) {
+      return { mode: 'after', parent: putdhw.parentNode.parentNode, ref: putdhw.parentNode };
+    }
+    const cap = anchorEl.closest('.container-capsule.containerDefault');
+    if (cap && cap.parentNode) {
+      return { mode: 'after', parent: cap.parentNode, ref: cap };
+    }
+    return null;
+  }
+
+  function getTargetAnchor() {
+    if (isParquesDisneyPage()) {
+      return getParquesTargetAnchor();
+    }
+    const links = document.querySelectorAll('a[href*="' + PDF_ANCHOR_HREF_SUB + '"]');
+    logDebug(LOG_PREFIX, 'links PDF encontrados:', links ? links.length : 0);
+    if (!links || !links.length) return null;
+    let i;
+    if (isMobileViewport()) {
+      const heroCap = getMobileDisneyHeroCapsule();
+      if (heroCap) {
+        const inner = heroCap.querySelector('a[href*="' + PDF_ANCHOR_HREF_SUB + '"]');
+        if (inner) return inner;
+      }
+      for (i = 0; i < links.length; i++) {
+        if (links[i].closest('.container-capsule.containerDefault.hide-on-desktop')) {
+          return links[i];
+        }
+      }
+    } else {
+      for (i = 0; i < links.length; i++) {
+        if (links[i].closest('.container-capsule.containerDefault.hide-on-mobile')) {
+          return links[i];
+        }
+      }
+      for (i = 0; i < links.length; i++) {
+        if (!links[i].closest('.container-capsule.containerDefault.hide-on-desktop')) {
+          return links[i];
+        }
+      }
+    }
+    return links[0];
   }
 
   function loadOverlaySdkOnce() {
@@ -47,7 +585,7 @@
     const existingBySrc = document.querySelector('script[src="' + OVERLAY_SDK_SRC + '"]');
 
     if (existingById || existingBySrc) {
-      if (DEBUG) console.log(LOG_PREFIX, 'overlay SDK já existe.');
+      logDebug(LOG_PREFIX, 'overlay SDK já existe.');
       return Promise.resolve(true);
     }
 
@@ -58,43 +596,34 @@
       script.id = OVERLAY_SDK_ID;
       script.setAttribute('overlay-position', 'right');
       script.onload = function () {
-        if (DEBUG) console.log(LOG_PREFIX, 'overlay SDK carregado:', OVERLAY_SDK_SRC);
+        logDebug(LOG_PREFIX, 'overlay SDK carregado:', OVERLAY_SDK_SRC);
         resolve(true);
       };
       script.onerror = function () {
-        if (DEBUG) console.warn(LOG_PREFIX, 'falha ao carregar overlay SDK:', OVERLAY_SDK_SRC);
+        warnDebug(LOG_PREFIX, 'falha ao carregar overlay SDK:', OVERLAY_SDK_SRC);
         resolve(false);
       };
-      if (DEBUG) console.log(LOG_PREFIX, 'injetando overlay SDK:', OVERLAY_SDK_SRC);
+      logDebug(LOG_PREFIX, 'injetando overlay SDK:', OVERLAY_SDK_SRC);
       document.head.appendChild(script);
     });
   }
 
-  function isCarouselV2Defined() {
-    try {
-      return !!(window.customElements && window.customElements.get && window.customElements.get('liveshop-ads-carousel-v2'));
-    } catch (e) {
-      return false;
-    }
-  }
-
   function loadSdkScriptsOnce() {
-    if (isCarouselV2Defined()) {
-      if (DEBUG) console.log(LOG_PREFIX, 'custom element v2 já definido, pulando load de SDK.');
+    if (isCarouselDefined()) {
+      logDebug(LOG_PREFIX, 'custom element v1 já definido, pulando load de SDK.');
       return Promise.resolve(true);
     }
 
-    // Overlay primeiro (dependência observada no teste local).
     let chain = loadOverlaySdkOnce();
 
     for (let i = 0; i < STREAMSHOP_SDKS.length; i++) {
       (function (src) {
         chain = chain.then(function () {
-          if (isCarouselV2Defined()) return true;
+          if (isCarouselDefined()) return true;
 
           const already = document.querySelector('script[src="' + src + '"]');
           if (already) {
-            if (DEBUG) console.log(LOG_PREFIX, 'script já existe:', src);
+            logDebug(LOG_PREFIX, 'script já existe:', src);
             return true;
           }
 
@@ -104,15 +633,15 @@
             script.src = src;
             script.setAttribute(SDK_SCRIPT_ATTR, COMPONENT_WRAPPER_VALUE);
             script.onload = function () {
-              if (DEBUG) console.log(LOG_PREFIX, 'script carregado:', src);
-              if (DEBUG) console.log(LOG_PREFIX, 'custom element após load? v2:', isCarouselV2Defined());
+              logDebug(LOG_PREFIX, 'script carregado:', src);
+              logDebug(LOG_PREFIX, 'custom element após load? v1:', isCarouselDefined());
               resolve(true);
             };
             script.onerror = function () {
-              if (DEBUG) console.warn(LOG_PREFIX, 'falha ao carregar script:', src);
+              warnDebug(LOG_PREFIX, 'falha ao carregar script:', src);
               resolve(false);
             };
-            if (DEBUG) console.log(LOG_PREFIX, 'injetando script:', src);
+            logDebug(LOG_PREFIX, 'injetando script:', src);
             document.head.appendChild(script);
           });
         });
@@ -120,23 +649,21 @@
     }
 
     return chain.then(function () {
-      if (DEBUG) console.log(LOG_PREFIX, 'aguardando custom element liveshop-ads-carousel-v2...');
-      return waitForCondition(isCarouselV2Defined, 5000, 100).then(function (ok) {
-        if (DEBUG) console.log(LOG_PREFIX, 'custom element v2 definido?', ok);
+      logDebug(LOG_PREFIX, 'aguardando custom element liveshop-ads-carousel...');
+      return waitForCondition(isCarouselDefined, 15000, 100).then(function (ok) {
+        logDebug(LOG_PREFIX, 'custom element v1 definido?', ok);
         return ok;
       });
     });
   }
 
   function buildLiveshopCarouselVerticalElement() {
-    // Para vertical usamos o v2 (atributo use-active-videos-from é do v2).
-    const el = document.createElement('liveshop-ads-carousel-v2');
+    const el = document.createElement('liveshop-ads-carousel');
     el.setAttribute('height', '412px');
     el.setAttribute('width', '100%');
     el.setAttribute('videos-width', '263px');
     el.setAttribute('border-radius', '25px');
-    el.setAttribute('use-active-videos-from', 'azullinhasaereas');
-    el.setAttribute('opacity', '1');
+    el.setAttribute('use-active-videos-from', STORE_SLUG);
     return el;
   }
 
@@ -146,68 +673,139 @@
     return wrapper;
   }
 
-  function getTargetAnchor() {
-    return document.querySelector('a[href*="Guia-de-Experiencias-WaltDisneyWorld.pdf"]');
+  function insertWrapperForPlacement(outer, placement) {
+    if (placement.mode === 'before') {
+      placement.parent.insertBefore(outer, placement.ref);
+      return;
+    }
+    placement.parent.insertBefore(outer, placement.ref.nextSibling);
   }
 
-  function getInsertionReferenceContainer(anchorEl) {
-    if (!anchorEl) return null;
-
-    const hideOnMobile = anchorEl.closest('.container-capsule.containerDefault.hide-on-mobile');
-    if (hideOnMobile) return hideOnMobile;
-
-    return anchorEl.closest('.container-capsule.containerDefault');
+  function wrapperAlreadyAdjacent(placement) {
+    if (placement.mode === 'before') {
+      const prev = placement.ref.previousElementSibling;
+      return !!(
+        prev &&
+        prev.getAttribute &&
+        prev.getAttribute(COMPONENT_WRAPPER_ATTR) === COMPONENT_WRAPPER_VALUE
+      );
+    }
+    const next = placement.ref.nextElementSibling;
+    return !!(
+      next &&
+      next.getAttribute &&
+      next.getAttribute(COMPONENT_WRAPPER_ATTR) === COMPONENT_WRAPPER_VALUE
+    );
   }
 
-  function injectAfter(referenceEl) {
-    if (!referenceEl || !referenceEl.parentNode) return false;
+  function clearInjectDoneIfWrapperMissing() {
+    if (!window[INJECT_DONE_KEY]) return;
+    const wrapper = document.querySelector(
+      '[' + COMPONENT_WRAPPER_ATTR + '="' + COMPONENT_WRAPPER_VALUE + '"]',
+    );
+    const capsule = getParquesContentCapsule();
+    if (!wrapper) {
+      window[INJECT_DONE_KEY] = false;
+      logDebug(LOG_PREFIX, 'INJECT_DONE resetado: wrapper sumiu do DOM.');
+      return;
+    }
+    if (capsule && capsule.nextElementSibling !== wrapper) {
+      window[INJECT_DONE_KEY] = false;
+      logDebug(LOG_PREFIX, 'INJECT_DONE resetado: wrapper não está abaixo da cápsula alvo.');
+    }
+  }
+
+  function injectAfter(anchorEl) {
+    if (!anchorEl) return false;
+
+    const placementStart = getInsertionPlacement(anchorEl);
+    if (!placementStart || !placementStart.parent) {
+      warnDebug(LOG_PREFIX, 'ponto de inserção inválido para âncora:', anchorEl);
+      return false;
+    }
+
+    logDebug(
+      LOG_PREFIX,
+      'placement:',
+      placementStart.mode,
+      'ref:',
+      placementStart.ref,
+      'parent:',
+      placementStart.parent,
+    );
 
     if (window[INJECT_DONE_KEY]) {
-      if (DEBUG) console.log(LOG_PREFIX, 'injeção já concluída anteriormente. Ignorando.');
+      logDebug(LOG_PREFIX, 'injeção já concluída anteriormente. Ignorando.');
       return true;
     }
 
-    const next = referenceEl.nextElementSibling;
-    if (next && next.getAttribute && next.getAttribute(COMPONENT_WRAPPER_ATTR) === COMPONENT_WRAPPER_VALUE) {
-      if (DEBUG) console.log(LOG_PREFIX, 'já existe wrapper logo após o bloco alvo. Nada a fazer.');
+    if (wrapperAlreadyAdjacent(placementStart)) {
+      logDebug(LOG_PREFIX, 'wrapper já existe adjacente ao alvo. Nada a fazer.');
+      const adjacentWrapper = document.querySelector(
+        '[' + COMPONENT_WRAPPER_ATTR + '="' + COMPONENT_WRAPPER_VALUE + '"]',
+      );
+      ensureCarouselAnalytics(adjacentWrapper);
       window[INJECT_DONE_KEY] = true;
       return true;
     }
 
-    const existing = document.querySelector('[' + COMPONENT_WRAPPER_ATTR + '="' + COMPONENT_WRAPPER_VALUE + '"]');
+    const existing = document.querySelector(
+      '[' + COMPONENT_WRAPPER_ATTR + '="' + COMPONENT_WRAPPER_VALUE + '"]',
+    );
     if (existing) {
-      if (DEBUG) console.log(LOG_PREFIX, 'wrapper já existe em algum lugar. Nada a fazer.');
+      logDebug(LOG_PREFIX, 'wrapper já existe em algum lugar:', existing);
+      ensureCarouselAnalytics(existing);
       window[INJECT_DONE_KEY] = true;
       return true;
     }
 
     if (window[INJECT_PROMISE_KEY]) {
-      if (DEBUG) console.log(LOG_PREFIX, 'injeção já em andamento. Ignorando chamada duplicada.');
+      logDebug(LOG_PREFIX, 'injeção já em andamento. Ignorando chamada duplicada.');
       return true;
     }
 
-    if (DEBUG) console.log(LOG_PREFIX, 'iniciando load de SDKs...');
+    logDebug(LOG_PREFIX, 'iniciando load de SDKs...', 'href:', window.location && window.location.href);
     window[INJECT_PROMISE_KEY] = loadSdkScriptsOnce()
       .then(function (ok) {
         if (window[INJECT_DONE_KEY]) return;
 
         if (!ok) {
-          if (DEBUG) console.warn(LOG_PREFIX, 'SDK não ficou pronto; não inserindo.');
+          warnDebug(
+            LOG_PREFIX,
+            'SDK não ficou pronto; não inserindo. v1 definido?',
+            isCarouselDefined(),
+          );
           return;
         }
 
         const anchorNow = getTargetAnchor();
-        if (!anchorNow) return;
-        const refNow = getInsertionReferenceContainer(anchorNow);
-        if (!refNow || !refNow.parentNode) return;
+        if (!anchorNow) {
+          warnDebug(
+            LOG_PREFIX,
+            'âncora não encontrada após SDK ok. Parques?',
+            isParquesDisneyPage(),
+            'URL:',
+            window.location.href,
+          );
+          return;
+        }
 
-        if (document.querySelector('[' + COMPONENT_WRAPPER_ATTR + '="' + COMPONENT_WRAPPER_VALUE + '"]')) {
+        const placementNow = getInsertionPlacement(anchorNow);
+        if (!placementNow || !placementNow.parent) {
+          warnDebug(LOG_PREFIX, 'ponto de inserção não encontrado após SDK ok.');
+          return;
+        }
+
+        if (
+          document.querySelector(
+            '[' + COMPONENT_WRAPPER_ATTR + '="' + COMPONENT_WRAPPER_VALUE + '"]',
+          )
+        ) {
           window[INJECT_DONE_KEY] = true;
           return;
         }
 
-        const nextNow = refNow.nextElementSibling;
-        if (nextNow && nextNow.getAttribute && nextNow.getAttribute(COMPONENT_WRAPPER_ATTR) === COMPONENT_WRAPPER_VALUE) {
+        if (wrapperAlreadyAdjacent(placementNow)) {
           window[INJECT_DONE_KEY] = true;
           return;
         }
@@ -215,21 +813,10 @@
         const wrapper2 = createWrapper();
         const carousel = buildLiveshopCarouselVerticalElement();
         wrapper2.appendChild(carousel);
-        refNow.parentNode.insertBefore(wrapper2, refNow.nextSibling);
+        insertWrapperForPlacement(wrapper2, placementNow);
+        ensureCarouselAnalytics(wrapper2);
         window[INJECT_DONE_KEY] = true;
-        if (DEBUG) console.log(LOG_PREFIX, 'inserido. Wrapper:', wrapper2, 'Carousel:', carousel);
-
-        if (DEBUG) {
-          window.setTimeout(function () {
-            const hasSdkError = !!window[SDK_ERROR_FLAG];
-            const hasShadow = !!(carousel && carousel.shadowRoot);
-            if (!hasSdkError && hasShadow) {
-              console.log(LOG_PREFIX, 'carousel v2 com shadowRoot detectado.');
-              return;
-            }
-            console.warn(LOG_PREFIX, 'carousel v2 pode não ter renderizado (erro SDK?', hasSdkError, 'shadowRoot?', hasShadow, ').');
-          }, 1200);
-        }
+        logDebug(LOG_PREFIX, 'inserido. Wrapper:', wrapper2, 'Carousel:', carousel);
       })
       .finally(function () {
         window[INJECT_PROMISE_KEY] = null;
@@ -239,38 +826,122 @@
   }
 
   function run() {
+    if (!hasRequiredUtm()) {
+      logDebug(LOG_PREFIX, 'UTM invalida ou ausente. Carousel vertical nao sera exibido.');
+      return;
+    }
+
+    removeInjectionIfNotParques();
+
+    if (!isParquesDisneyPage()) {
+      logDebug(LOG_PREFIX, 'fora da aba Parques; carousel nao sera exibido.');
+      return;
+    }
+
+    clearInjectDoneIfWrapperMissing();
+
     if (window[INJECT_DONE_KEY]) return;
     if (isProcessing) return;
     isProcessing = true;
 
     try {
-      if (DEBUG) console.log(LOG_PREFIX, 'run() acionado. URL:', window.location && window.location.href);
+      logDebug(
+        LOG_PREFIX,
+        'run() acionado.',
+        'URL:',
+        window.location && window.location.href,
+        'mobile?',
+        isMobileViewport(),
+        'parques?',
+        isParquesDisneyPage(),
+        'parquesTabNav?',
+        isParquesTabActiveInNav(),
+      );
+
       const anchor = getTargetAnchor();
       if (!anchor) {
-        if (DEBUG) console.warn(LOG_PREFIX, 'âncora do PDF não encontrada ainda.');
+        warnDebug(
+          LOG_PREFIX,
+          'âncora não encontrada.',
+          'Parques?',
+          isParquesDisneyPage(),
+          'PDF links:',
+          document.querySelectorAll('a[href*="' + PDF_ANCHOR_HREF_SUB + '"]').length,
+          'mickey capsule?',
+          !!findParquesMickeyCapsuleInDom(),
+          'guia heading?',
+          !!getParquesContentCapsule(),
+        );
         return;
       }
-      if (DEBUG) console.log(LOG_PREFIX, 'âncora encontrada:', anchor);
+      logDebug(LOG_PREFIX, 'âncora encontrada:', anchor);
 
-      const reference = getInsertionReferenceContainer(anchor);
-      if (!reference) {
-        if (DEBUG) console.warn(LOG_PREFIX, 'container de referência não encontrado a partir da âncora.');
+      const placement = getInsertionPlacement(anchor);
+      if (!placement) {
+        warnDebug(LOG_PREFIX, 'ponto de inserção não encontrado a partir da âncora.');
         return;
       }
-      if (DEBUG) console.log(LOG_PREFIX, 'container de referência encontrado:', reference);
+      logDebug(LOG_PREFIX, 'placement resolvido:', placement.mode);
 
-      injectAfter(reference);
+      injectAfter(anchor);
     } finally {
       isProcessing = false;
     }
   }
 
   function scheduleRun() {
+    removeInjectionIfNotParques();
+    if (!isParquesDisneyPage()) return;
+    clearInjectDoneIfWrapperMissing();
     if (window[INJECT_DONE_KEY]) return;
     if (debounceTimer) window.clearTimeout(debounceTimer);
     debounceTimer = window.setTimeout(function () {
       run();
     }, 150);
+  }
+
+  function hookSpaNavigation() {
+    if (window.__wjVideoCommerceVerticalSpaHooked) return;
+    window.__wjVideoCommerceVerticalSpaHooked = true;
+
+    const fire = function () {
+      window.setTimeout(function () {
+        removeInjectionIfNotParques();
+        if (!isParquesDisneyPage()) {
+          window[INJECT_DONE_KEY] = false;
+          return;
+        }
+        window[INJECT_DONE_KEY] = false;
+        scheduleRun();
+      }, 400);
+    };
+
+    const pushState = history.pushState;
+    history.pushState = function () {
+      pushState.apply(history, arguments);
+      fire();
+    };
+
+    const replaceState = history.replaceState;
+    history.replaceState = function () {
+      replaceState.apply(history, arguments);
+      fire();
+    };
+
+    window.addEventListener('popstate', fire);
+    window.addEventListener('hashchange', fire);
+
+    document.addEventListener('click', function (e) {
+      const tab =
+        e.target &&
+        e.target.closest &&
+        e.target.closest('.container-tabs a[aria-label], nav a[aria-label]');
+      if (tab) {
+        fire();
+      }
+    });
+
+    logDebug(LOG_PREFIX, 'SPA hooks ligados.');
   }
 
   function initObserver() {
@@ -295,10 +966,16 @@
     });
 
     observer.observe(document.documentElement, { childList: true, subtree: true });
+    logDebug(LOG_PREFIX, 'MutationObserver ligado.');
   }
 
   function init() {
-    if (DEBUG) console.log(LOG_PREFIX, 'init()');
+    if (!hasRequiredUtm()) {
+      logDebug(LOG_PREFIX, 'UTM invalida ou ausente. Script nao iniciado.');
+      return;
+    }
+
+    injectCarouselLayoutStyles();
 
     if (!window[ERROR_HOOK_FLAG]) {
       window[ERROR_HOOK_FLAG] = true;
@@ -306,10 +983,6 @@
       window.addEventListener('error', function (evt) {
         try {
           const msg = (evt && evt.message) || '';
-          const file = (evt && evt.filename) || '';
-          if (file.indexOf('assets.streamshop.com.br') !== -1 || msg.indexOf('liveshop') !== -1) {
-            console.warn(LOG_PREFIX, 'erro capturado do SDK:', msg, 'arquivo:', file, 'linha:', evt.lineno, 'col:', evt.colno);
-          }
           if (msg && msg.indexOf(SDK_ERROR_MSG_FRAGMENT) !== -1) {
             window[SDK_ERROR_FLAG] = true;
           }
@@ -317,19 +990,10 @@
           // noop
         }
       });
-
-      window.addEventListener('unhandledrejection', function (evt) {
-        try {
-          const reason = evt && evt.reason;
-          console.warn(LOG_PREFIX, 'unhandledrejection:', reason);
-        } catch (e) {
-          // noop
-        }
-      });
-
-      if (DEBUG) console.log(LOG_PREFIX, 'listeners de erro do SDK ligados.');
     }
 
+    hookSpaNavigation();
+    hookOverlayAnalytics();
     run();
     initObserver();
   }

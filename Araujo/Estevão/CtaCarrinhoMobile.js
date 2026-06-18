@@ -7,8 +7,8 @@
     const TOTALS_SELECTOR = '.cart__totals';
     const ROOT_FLAG = 'data-ctam-restruct';
     const CHECKOUT_HREF = '/checkout';
-    const PARCELAS = 3;
-    const VALOR_MINIMO_PARCELAMENTO = 180;
+    const VALOR_MINIMO_2X = 120;
+    const VALOR_MINIMO_3X = 180;
     const MAX_TENTATIVAS = 30;
     const INTERVALO_RETRY = 500;
     const DEBOUNCE_MS = 150;
@@ -188,12 +188,18 @@
         totalValue.textContent = dados.totalTexto;
         totalWrap.appendChild(totalValue);
 
-        // Parcelamento somente se total > R$ 180,00
-        if (dados.totalValor > VALOR_MINIMO_PARCELAMENTO) {
-            const parcela = dados.totalValor / PARCELAS;
+        // Parcelamento: 3x a partir de R$ 180,00; 2x a partir de R$ 120,00
+        let numeroParcelas = 0;
+        if (dados.totalValor >= VALOR_MINIMO_3X) {
+            numeroParcelas = 3;
+        } else if (dados.totalValor >= VALOR_MINIMO_2X) {
+            numeroParcelas = 2;
+        }
+        if (numeroParcelas > 0) {
+            const parcela = dados.totalValor / numeroParcelas;
             const installments = document.createElement('span');
             installments.className = 'ctam-installments';
-            installments.textContent = PARCELAS + 'x s/ juros de ' + formatarReal(parcela);
+            installments.textContent = numeroParcelas + 'x s/ juros de ' + formatarReal(parcela);
             totalWrap.appendChild(installments);
         }
 

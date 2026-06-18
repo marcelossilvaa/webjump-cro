@@ -6,6 +6,17 @@
     if (window._croDescafeinadoInit) return;
     window._croDescafeinadoInit = true;
 
+    function sendGAEvent(label) {
+        window.gtmDataObject = window.gtmDataObject || [];
+        gtmDataObject.push({
+            event: 'local_event',
+            event_raised_by: 'br',
+            local_event_category: 'user engagement',
+            local_event_action: 'click',
+            local_event_label: label,
+        });
+    }
+
     function injectButton() {
         if (document.querySelector('.cro-btn-descafeinado-container')) return;
 
@@ -62,14 +73,7 @@
             const nativeLabel = document.querySelector('label[for="plp-filter-chip-checkbox-flavors-nesclub2.br.b2c/cat/capsule-aromatic-decaffeinato"]');
             const chk = document.getElementById('plp-filter-chip-checkbox-flavors-nesclub2.br.b2c/cat/capsule-aromatic-decaffeinato');
             
-            // Dispara evento para o Google Tag Manager / Analytics (Taqueamento CRO)
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({
-                event: 'cro_event',
-                event_category: 'cro_ab_test',
-                event_action: 'click_filtro_descafeinados',
-                event_label: (chk && chk.checked) ? 'desativou_filtro' : 'ativou_filtro'
-            });
+            sendGAEvent((chk && chk.checked) ? 'desativou_filtro_descafeinado' : 'ativou_filtro_descafeinado');
             
             if (nativeLabel && chk) {
                 // O clique no nativeLabel alterna o checkbox nativo (liga se desligado, desliga se ligado)
