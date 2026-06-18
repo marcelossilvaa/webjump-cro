@@ -517,6 +517,18 @@
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
+        '="true"] .product-add-form .field.qty .control { flex-wrap: nowrap !important; overflow: hidden !important; padding: 6px 10px !important; } ' +
+        ROOT_SELECTOR +
+        '[' +
+        ROOT_ATTR +
+        '="true"] .product-add-form .product-item-qty-btn { flex: 0 0 34px !important; position: static !important; margin: 0 !important; transform: none !important; } ' +
+        ROOT_SELECTOR +
+        '[' +
+        ROOT_ATTR +
+        '="true"] .product-add-form input.qty { flex: 1 1 0 !important; min-width: 0 !important; max-width: none !important; padding: 0 8px !important; } ' +
+        ROOT_SELECTOR +
+        '[' +
+        ROOT_ATTR +
         '="true"] .product.media .gallery-placeholder { height: 100% !important; } ' +
         ROOT_SELECTOR +
         '[' +
@@ -541,7 +553,7 @@
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] .wj-mobile-shipping-slot .pdp-shipping-title { display: flex !important; margin: 0 !important; } ' +
+        '="true"] .wj-mobile-shipping-slot .pdp-shipping-title { display: flex !important; margin: 0 0 5px !important; height: auto !important; } ' +
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
