@@ -490,6 +490,7 @@
       '.wj-floating-whatsapp:hover { transform: scale(1.08); box-shadow: 0 10px 24px rgba(15, 23, 42, 0.28) !important; }',
       '.wj-floating-whatsapp img, .wj-floating-whatsapp .buy-via-whatsapp-icon { width: 24px !important; height: 24px !important; min-width: 24px !important; margin: 0 !important; object-fit: contain !important; }',
       '.catalog-product-view #buy-via-whatsapp.fixed-wspp-button { gap: 4px !important; }',
+      '#text-1454703450633 { font-size: 14px !important; }',
       '@keyframes wj-whatsapp-pulse { 0% { box-shadow: 0 0 0 0 rgba(36, 169, 68, 0.42), 0 8px 20px rgba(15, 23, 42, 0.22); } 70% { box-shadow: 0 0 0 12px rgba(36, 169, 68, 0), 0 8px 20px rgba(15, 23, 42, 0.22); } 100% { box-shadow: 0 0 0 0 rgba(36, 169, 68, 0), 0 8px 20px rgba(15, 23, 42, 0.22); } }',
       '@media (max-width: 1100px) and (min-width: 900px) { ' +
         ROOT_SELECTOR +
