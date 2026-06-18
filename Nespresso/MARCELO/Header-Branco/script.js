@@ -454,13 +454,9 @@
     document.head.appendChild(style);
   }
 
-  function init() {
+  if (document.head) {
     injectStyles();
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
   } else {
-    init();
+    document.addEventListener('DOMContentLoaded', injectStyles);
   }
 })();
