@@ -37,6 +37,11 @@
     "7279.80": "7043.80", // Chiaro Decaffeinato → Costa Rica
   };
 
+  // SKUs de origem que devem usar o copy de despedida no titulo do popup
+  const FAREWELL_COPY_BY_SKU = {
+    "7885.90": "RISTRETTO",
+  };
+
   let popupShown = false;
   let lastQuantity = 0;
   let currentProductData = null;
@@ -181,6 +186,24 @@
     }
   }
 
+  function getRecommendationTitle(sku) {
+    const farewellProductName = FAREWELL_COPY_BY_SKU[sku];
+
+    if (farewellProductName) {
+      return (
+        'O CAFÉ <span style="font-weight: 600;">' +
+        farewellProductName +
+        "</span> ESTÁ SE DESPEDINDO. APROVEITE PARA CONHECER:"
+      );
+    }
+
+    return (
+      'QUEM COMPRA <span style="font-weight: 600;">' +
+      lastAddedProductName +
+      "</span> TAMBÉM COMPRA"
+    );
+  }
+
   // Função para mostrar popup de recomendação
   async function showPopup(sku = "") {
     if (popupShown) {
@@ -216,6 +239,7 @@
     const productPrice = productData.unitPrice || "";
     const productImage =
       productData.responsiveImages?.plp || productData.images?.main || "";
+    const popupTitle = getRecommendationTitle(sku);
 
     // Obter quantidade no carrinho para o copy do botão
     const recommendedSku = RECOMMENDATION_MAP[sku];
@@ -286,9 +310,9 @@
       '<div id="recommendation-popup" style="position: fixed; bottom: 20px; left: 20px; z-index: 999; max-width: 450px; animation: slideInLeft 0.3s ease-out;">' +
       '<div style="background: white; border-radius: 8px; padding: 24px 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">' +
       '<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">' +
-      '<h3 style="margin: 0; color: #999; font-size: 16px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.5px;">QUEM COMPRA <span style="font-weight: 600;">' +
-      lastAddedProductName +
-      "</span> TAMBÉM COMPRA</h3>" +
+      '<h3 style="margin: 0; color: #999; font-size: 16px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.5px;">' +
+      popupTitle +
+      "</h3>" +
       '<button onclick="closeRecommendationPopup()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #666; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">&times;</button>' +
       "</div>" +
       '<div style="display: flex; gap: 16px; margin-bottom: 20px;">' +
