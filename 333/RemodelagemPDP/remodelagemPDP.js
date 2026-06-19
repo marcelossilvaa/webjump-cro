@@ -490,6 +490,7 @@
       '.wj-floating-whatsapp:hover { transform: scale(1.08); box-shadow: 0 10px 24px rgba(15, 23, 42, 0.28) !important; }',
       '.wj-floating-whatsapp img, .wj-floating-whatsapp .buy-via-whatsapp-icon { width: 24px !important; height: 24px !important; min-width: 24px !important; margin: 0 !important; object-fit: contain !important; }',
       '.catalog-product-view #buy-via-whatsapp.fixed-wspp-button { gap: 4px !important; }',
+      '#text-1454703450633 { font-size: 14px !important; }',
       '@keyframes wj-whatsapp-pulse { 0% { box-shadow: 0 0 0 0 rgba(36, 169, 68, 0.42), 0 8px 20px rgba(15, 23, 42, 0.22); } 70% { box-shadow: 0 0 0 12px rgba(36, 169, 68, 0), 0 8px 20px rgba(15, 23, 42, 0.22); } 100% { box-shadow: 0 0 0 0 rgba(36, 169, 68, 0), 0 8px 20px rgba(15, 23, 42, 0.22); } }',
       '@media (max-width: 1100px) and (min-width: 900px) { ' +
         ROOT_SELECTOR +
@@ -513,6 +514,18 @@
         '[' +
         ROOT_ATTR +
         '="true"] .product-info-price-wrapper { margin-top: 10px !important; } ' +
+        ROOT_SELECTOR +
+        '[' +
+        ROOT_ATTR +
+        '="true"] .product-add-form .field.qty .control { flex-wrap: nowrap !important; overflow: hidden !important; padding: 6px 10px !important; } ' +
+        ROOT_SELECTOR +
+        '[' +
+        ROOT_ATTR +
+        '="true"] .product-add-form .product-item-qty-btn { flex: 0 0 34px !important; position: static !important; margin: 0 !important; transform: none !important; } ' +
+        ROOT_SELECTOR +
+        '[' +
+        ROOT_ATTR +
+        '="true"] .product-add-form input.qty { flex: 1 1 0 !important; min-width: 0 !important; max-width: none !important; padding: 0 8px !important; } ' +
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
@@ -540,7 +553,7 @@
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] .wj-mobile-shipping-slot .pdp-shipping-title { display: flex !important; margin: 0 !important; } ' +
+        '="true"] .wj-mobile-shipping-slot .pdp-shipping-title { display: flex !important; margin: 0 0 5px !important; height: auto !important; } ' +
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +

@@ -250,9 +250,9 @@
       + '  border-radius:50%; overflow:hidden; background:#0150B5;'
       + '}'
       + '.at-dh-photo-img {'
-      + '  position:absolute; width:auto; height:100%; min-width:100%;'
-      + '  left:50%; top:50%; transform:translate(-50%,-50%);'
-      + '  object-fit:cover; object-position:center center;'
+      + '  position:absolute; width:100%; height:100%;'
+      + '  left:0; top:0; transform:none;'
+      + '  object-fit:contain; object-position:left bottom;'
       + '}'
       + '.at-dh-photo-gradient {'
       + '  position:absolute; bottom:0; left:0; width:100%; height:40%;'
@@ -573,7 +573,7 @@
 
     var photoImg = document.createElement('img');
     photoImg.className = 'at-dh-photo-img';
-    photoImg.src = 'https://i.imgur.com/NwAJ44j.jpeg';
+    photoImg.src = 'https://i.imgur.com/xQBGJAh.png';
     photoImg.alt = 'Disney';
     photoWrap.appendChild(photoImg);
 

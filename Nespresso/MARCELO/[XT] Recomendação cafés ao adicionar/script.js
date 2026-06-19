@@ -25,6 +25,13 @@
     "7855.90": "7893.90", // Livanto → Buenos Aires
     "7890.90": "7877.90", // Venezia → Istanbul Espresso
     "7895.90": "7887.90", // Napoli → Cape Town
+    // OL Delisted 2026
+    "7886.90": "7889.90", // Ethiopia → Colombia
+    "7892.90": "7865.90", // Chiaro → Volluto
+    "7880.90": "7884.90", // Rio de Janeiro → India
+    "7894.90": "7856.90", // Brazil Organic → Nicaragua
+    "7871.90": "7890.90", // Corto → Venezia
+    "7877.90": "7882.90", // Istanbul → Paris
     // VL
     "7011.80": "7026.80", // Ristretto Intenso → Mexico
     "7010.80": "7026.80", // Ristretto Clássico → Mexico
@@ -35,6 +42,27 @@
     "7085.80": "7043.80", // Dolce → Costa Rica
     "7049.80": "7026.80", // Diavolito → Mexico
     "7279.80": "7043.80", // Chiaro Decaffeinato → Costa Rica
+    // VL Delisted 2026
+    "7002.80": "7085.80", // Bianco Piccolo → Dolce
+    "7017.80": "7028.80", // Ethiopia → Colombia
+    "7027.80": "7039.80", // El Salvador → Melozio
+    "7144.10": "7038.80", // Carafe → Alto Onice
+    "7001.80": "7038.80", // Alto Ambrato → Alto Onice
+  };
+
+  // SKUs de origem que devem usar o copy de despedida no titulo do popup
+  const FAREWELL_COPY_BY_SKU = {
+    "7886.90": "ETHIOPIA",
+    "7892.90": "CHIARO",
+    "7880.90": "RIO DE JANEIRO",
+    "7894.90": "BRAZIL ORGANIC",
+    "7871.90": "CORTO",
+    "7877.90": "ISTANBUL",
+    "7002.80": "BIANCO PICCOLO",
+    "7017.80": "ETHIOPIA",
+    "7027.80": "EL SALVADOR",
+    "7144.10": "CARAFE",
+    "7001.80": "ALTO AMBRATO",
   };
 
   let popupShown = false;
@@ -181,6 +209,24 @@
     }
   }
 
+  function getRecommendationTitle(sku) {
+    const farewellProductName = FAREWELL_COPY_BY_SKU[sku];
+
+    if (farewellProductName) {
+      return (
+        'O CAFÉ <span style="font-weight: 600;">' +
+        farewellProductName +
+        "</span> ESTÁ SE DESPEDINDO. APROVEITE PARA CONHECER:"
+      );
+    }
+
+    return (
+      'QUEM COMPRA <span style="font-weight: 600;">' +
+      lastAddedProductName +
+      "</span> TAMBÉM COMPRA"
+    );
+  }
+
   // Função para mostrar popup de recomendação
   async function showPopup(sku = "") {
     if (popupShown) {
@@ -216,6 +262,7 @@
     const productPrice = productData.unitPrice || "";
     const productImage =
       productData.responsiveImages?.plp || productData.images?.main || "";
+    const popupTitle = getRecommendationTitle(sku);
 
     // Obter quantidade no carrinho para o copy do botão
     const recommendedSku = RECOMMENDATION_MAP[sku];
@@ -286,9 +333,9 @@
       '<div id="recommendation-popup" style="position: fixed; bottom: 20px; left: 20px; z-index: 999; max-width: 450px; animation: slideInLeft 0.3s ease-out;">' +
       '<div style="background: white; border-radius: 8px; padding: 24px 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">' +
       '<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">' +
-      '<h3 style="margin: 0; color: #999; font-size: 16px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.5px;">QUEM COMPRA <span style="font-weight: 600;">' +
-      lastAddedProductName +
-      "</span> TAMBÉM COMPRA</h3>" +
+      '<h3 style="margin: 0; color: #999; font-size: 16px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.5px;">' +
+      popupTitle +
+      "</h3>" +
       '<button onclick="closeRecommendationPopup()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #666; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">&times;</button>' +
       "</div>" +
       '<div style="display: flex; gap: 16px; margin-bottom: 20px;">' +
