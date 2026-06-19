@@ -6,6 +6,11 @@
   var STYLE_ID = 'at-baixar-app-menu-style';
   var DATA_ATTR = 'data-baixar-app-added';
   var APP_LINK = 'https://nespresso.go.link/?adj_t=1nca0syu';
+  var MOBILE_BREAKPOINT = 1024;
+
+  function isMobile() {
+    return window.innerWidth < MOBILE_BREAKPOINT;
+  }
 
   function sendGAEvent(action, label) {
     window.gtmDataObject = window.gtmDataObject || [];
@@ -127,6 +132,13 @@
       '  height: 16px !important;',
       '  fill: #5C4A32 !important;',
       '}',
+      '',
+      '/* Esconder em desktop */',
+      '@media (min-width: ' + MOBILE_BREAKPOINT + 'px) {',
+      '  [data-baixar-app-added] {',
+      '    display: none !important;',
+      '  }',
+      '}',
     ].join('\n');
   }
 
@@ -213,6 +225,7 @@
 
   function run() {
     if (isProcessing) return;
+    if (!isMobile()) return;
     isProcessing = true;
     try {
       addAppMenuItem();
