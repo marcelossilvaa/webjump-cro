@@ -58,7 +58,7 @@
       '  justify-content: center !important;',
       '  width: 32px !important;',
       '  height: 32px !important;',
-      '  background: #fff !important;',
+      '  background: #F5E6D3 !important;',
       '  border-radius: 8px !important;',
       '  flex-shrink: 0 !important;',
       '  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;',
