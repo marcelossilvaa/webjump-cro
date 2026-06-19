@@ -46,8 +46,8 @@
     var maximumTries = 100;
     function experienceSetup() {
         const SELECTORS = {
-            targetImageToAppend: "img[src='/content/dam/voe-azul/lp-de-ofertas/19-05/bnr-btg-transferir-desktop.png']",
-            targetImageToHide: "img[src='/content/dam/voe-azul/lp-de-ofertas/19-05/bnr-btg-transferir-mobile.png']"
+            targetImageToAppend: "img[src='/content/dam/voe-azul/lp-de-ofertas/10-06/bnr-esfera_transferir-desktop.png']",
+            targetImageToHide: "img[src='/content/dam/voe-azul/lp-de-ofertas/10-06/bnr-esfera_transferir-mobile.png']"
         };
         
         const imageToAppendAlreadyExists = document.querySelector(SELECTORS.targetImageToAppend);
@@ -210,7 +210,7 @@
                             </div>
                             <div class="injectedCalculator__isClub__content">
                                 <a class="injectedCalculator__isClub__button" href="https://www.esfera.com.vc/" target="_blank">Quero transferir</a>
-                                <small class="injectedCalculator__isClub__disclaimer">Válido de 10 a 12/03/2026. Consulte condições.</small>
+                                <small class="injectedCalculator__isClub__disclaimer">Válido de 11 a 14/06/2026. Consulte condições.</small>
                             </div>
                         </div>
                     </div>

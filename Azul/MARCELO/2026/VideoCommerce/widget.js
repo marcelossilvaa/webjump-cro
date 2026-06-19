@@ -5,18 +5,14 @@
   const SDK_SCRIPT_ATTR = 'data-wj-streamshop-widget-sdk';
   const SDK_SRC = 'https://assets.streamshop.com.br/sdk/liveshop-sdk-widget-btn.min.js';
   const TRACKING_ATTR = 'data-wj-widget-tracking';
+  const ANALYTICS_VIEW_ATTR = 'data-wj-widget-analytics-view';
   const STYLE_ID = 'wj-videocommerce-widget-style';
+  const EXPERIMENT_NAME = 'AT_VideoCommerce_Widget';
+  const EVAR84 = 'AT_VideoCommerce_Disney';
   const STORE_SLUG = 'azullinhasaereas';
-  const UTM_SESSION_KEY = 'wj_azv_videocommerce_widget_session';
-  const UTM_STORAGE_KEY = 'wj_azv_videocommerce_widget_storage';
-  const UTM_COOKIE_NAME = 'wj_azv_videocommerce_widget';
-  const UTM_COOKIE_MAX_AGE_SEC = 86400;
-  const UTM_COOKIE_DOMAIN = '.voeazul.com.br';
   const MOUNTED_KEY = '__wjVideoCommerceWidgetMounted';
   const MOUNTING_KEY = '__wjVideoCommerceWidgetMounting';
-  const UTM_SOURCE_FULL =
-    'pmweb_azv_e-mail_banner_lf_azv_202603-azv-b2c-emm-168h-viagem-hospedagemdisney-d20_hotel';
-  const UTM_SOURCE_PARTIAL = 'hospedagemdisney-d20_hotel';
+  const WIDGET_BTN_INVOKED_KEY = '__wjVideoCommerceWidgetBtnInvoked';
 
   let debounceTimer = null;
   let waitIntervalId = null;
@@ -50,6 +46,90 @@
     useActiveVideosFrom: STORE_SLUG,
   };
 
+  const UTM_SESSION_KEY = '__wjVideoCommerceDisneyUtm';
+  const UTM_SOURCE_ALLOWED = [
+    '202512-AZV-B2C-EMM-168H-VIAGEM-INGRESSOSDISNEY-D16',
+    '202604-azv-b2c-psh-168h-Inter-previagemhospedagemdisney-d0_tickets',
+    '202603-AZV-B2C-EMM-168H-VIAGEM-INCENTIVOINGRESSOSDISNEY-D5',
+    'pmweb_azv_e-mail_banner_mf_azv_202510-azv-b2c-emm-168h-viagem-produtosdisneya-d2_n',
+    'pmweb_azv_e-mail_banner_mf_azv_202510-azv-b2c-emm-168h-viagem-produtosdisneyb-d2_n',
+    '202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOCARRINHODISNEY-D0',
+    '202603-azv-b2c-psh-168h-Inter-abandonocarrinhoingressosdisney-d2_pac',
+    'pmweb_azv_e-mail_banner_lf_azv_202603-azv-b2c-emm-168h-viagem-incentivohospedagemdisney-d7_hotel',
+    '202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOPESQUISAINGRESSOSDISNEY-D0',
+    '202604-azv-b2c-emm-168h-viagem-abandonopesquisaingressosdisneyAZ-d2_tickets',
+  ];
+
+  function utmSourceMatches(source) {
+    if (!source) return false;
+    const s = String(source).toLowerCase();
+    let i;
+    for (i = 0; i < UTM_SOURCE_ALLOWED.length; i++) {
+      const allowed = String(UTM_SOURCE_ALLOWED[i] || '').toLowerCase();
+      if (!allowed) continue;
+      if (s === allowed) return true;
+      if (s.indexOf(allowed) !== -1) return true;
+    }
+    return false;
+  }
+
+  function readUtmSourceFromUrl() {
+    try {
+      return new URLSearchParams(window.location.search).get('utm_source') || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function persistUtmSessionIfValid() {
+    if (!utmSourceMatches(readUtmSourceFromUrl())) return false;
+    try {
+      sessionStorage.setItem(UTM_SESSION_KEY, '1');
+    } catch (e) {}
+    return true;
+  }
+
+  function hasRequiredUtm() {
+    if (VERIFY_LOGS) return true;
+    if (persistUtmSessionIfValid()) return true;
+    try {
+      return sessionStorage.getItem(UTM_SESSION_KEY) === '1';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function analyticsEvent(eventLabel, eventType) {
+    if (!eventLabel) return;
+    const labelEvent = EXPERIMENT_NAME + '_' + eventType + ' ' + eventLabel;
+    if (VERIFY_LOGS) {
+      console.info('[Tracking VideoCommerce Widget]', labelEvent);
+    }
+    try {
+      const s = window.s || (typeof s_gi === 'function' && s_gi('azul-novo-prod'));
+      if (!s || typeof s.tl !== 'function') return;
+      s.linkTrackVars = 'events,eVar82,eVar84';
+      s.linkTrackEvents = 'event90';
+      s.events = 'event90';
+      s.eVar82 = labelEvent;
+      s.eVar84 = EVAR84;
+      s.tl(true, 'o', 'target_activity_action');
+    } catch (e) {}
+  }
+
+  function getWidgetVideoLabel(btn) {
+    if (!btn) return 'video-nao-encontrado';
+    const videoElement = btn.querySelector('video');
+    if (!videoElement) return 'video-nao-encontrado';
+    return videoElement.currentSrc || videoElement.src || 'video-sem-url';
+  }
+
+  function trackWidgetView(widgetBtn) {
+    if (!widgetBtn || widgetBtn.getAttribute(ANALYTICS_VIEW_ATTR) === '1') return;
+    widgetBtn.setAttribute(ANALYTICS_VIEW_ATTR, '1');
+    analyticsEvent('floating-widget', 'visualizacao');
+  }
+
   function logVerify() {
     if (!VERIFY_LOGS) return;
     try {
@@ -62,77 +142,6 @@
     try {
       console.warn.apply(console, arguments);
     } catch (e) {}
-  }
-
-  function setWidgetSessionActive() {
-    try {
-      sessionStorage.setItem(UTM_SESSION_KEY, '1');
-    } catch (e) {}
-    try {
-      localStorage.setItem(UTM_STORAGE_KEY, '1');
-    } catch (e) {}
-    try {
-      document.cookie =
-        UTM_COOKIE_NAME +
-        '=1; path=/; domain=' +
-        UTM_COOKIE_DOMAIN +
-        '; max-age=' +
-        String(UTM_COOKIE_MAX_AGE_SEC) +
-        '; SameSite=Lax';
-    } catch (e) {
-      try {
-        document.cookie =
-          UTM_COOKIE_NAME +
-          '=1; path=/; max-age=' +
-          String(UTM_COOKIE_MAX_AGE_SEC) +
-          '; SameSite=Lax';
-      } catch (e2) {}
-    }
-    logVerify(LOG_PREFIX, 'sessão UTM gravada (session, localStorage, cookie).');
-  }
-
-  function isWidgetSessionActive() {
-    try {
-      if (window.location && window.location.search.indexOf('wjwidgetforce=1') !== -1) {
-        return true;
-      }
-      if (sessionStorage.getItem(UTM_SESSION_KEY) === '1') {
-        return true;
-      }
-      if (localStorage.getItem(UTM_STORAGE_KEY) === '1') {
-        return true;
-      }
-      return document.cookie.indexOf(UTM_COOKIE_NAME + '=1') !== -1;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function utmSourceMatches(source) {
-    if (!source) return false;
-    if (source === UTM_SOURCE_FULL) return true;
-    if (source.indexOf(UTM_SOURCE_PARTIAL) !== -1) return true;
-    if (source.indexOf(UTM_SOURCE_FULL) !== -1) return true;
-    return false;
-  }
-
-  function captureUtmFromCurrentUrl() {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const source = params.get('utm_source') || '';
-      if (utmSourceMatches(source)) {
-        setWidgetSessionActive();
-        return true;
-      }
-    } catch (e) {}
-    return false;
-  }
-
-  function shouldRunWidget() {
-    if (captureUtmFromCurrentUrl()) {
-      return true;
-    }
-    return isWidgetSessionActive();
   }
 
   function injectWidgetLayoutStyles() {
@@ -155,15 +164,22 @@
     return document.querySelectorAll('#streamshop-widget, button.ss-button-widget');
   }
 
-  function removeAllStreamshopWidgets() {
+  function dedupeStreamshopWidgets() {
     const nodes = getStreamshopWidgets();
+    if (nodes.length <= 1) return;
     let i;
-    for (i = 0; i < nodes.length; i++) {
+    for (i = 1; i < nodes.length; i++) {
       if (nodes[i].parentNode) {
         nodes[i].parentNode.removeChild(nodes[i]);
       }
     }
-    window[MOUNTED_KEY] = false;
+    logVerify(LOG_PREFIX, 'widgets duplicados removidos; mantido o primeiro.');
+  }
+
+  function isWidgetPresent() {
+    const widgets = getStreamshopWidgets();
+    if (!widgets.length) return false;
+    return document.body.contains(widgets[0]);
   }
 
   function isWidgetHealthy() {
@@ -176,10 +192,7 @@
 
     const videos = el.querySelectorAll('video');
     const closes = el.querySelectorAll('.close-button');
-    if (videos.length !== 1 || closes.length !== 1) {
-      return false;
-    }
-    return true;
+    return videos.length === 1 && closes.length === 1;
   }
 
   function clearWaitInterval() {
@@ -192,9 +205,11 @@
   function waitForWidgetButton(onFound) {
     clearWaitInterval();
     let tentativas = 0;
-    const maxTentativas = 50;
+    const maxTentativas = 80;
 
     waitIntervalId = window.setInterval(function () {
+      dedupeStreamshopWidgets();
+
       if (isWidgetHealthy()) {
         clearWaitInterval();
         injectWidgetLayoutStyles();
@@ -208,22 +223,63 @@
         return;
       }
 
+      if (isWidgetPresent()) {
+        injectWidgetLayoutStyles();
+        const widgetBtn = document.getElementById('streamshop-widget');
+        if (widgetBtn) {
+          attachWidgetTracking(widgetBtn);
+        }
+      }
+
       tentativas += 1;
       if (tentativas >= maxTentativas) {
         clearWaitInterval();
         window[MOUNTING_KEY] = false;
-        warnVerify(LOG_PREFIX, 'timeout aguardando #streamshop-widget saudável.');
+        if (isWidgetPresent()) {
+          window[MOUNTED_KEY] = true;
+          const widgetBtn = document.getElementById('streamshop-widget');
+          if (widgetBtn) {
+            attachWidgetTracking(widgetBtn);
+          }
+          logVerify(LOG_PREFIX, 'widget presente; tracking anexado após timeout de vídeo.');
+          return;
+        }
+        warnVerify(LOG_PREFIX, 'timeout aguardando #streamshop-widget.');
       }
     }, 100);
   }
 
-  function mountWidgetButton() {
-    if (!shouldRunWidget()) return;
+  function invokeWidgetButtonOnce() {
+    if (window[WIDGET_BTN_INVOKED_KEY]) {
+      logVerify(LOG_PREFIX, 'ss_widget_btn já invocado nesta sessão; ignorando nova chamada.');
+      return false;
+    }
+    if (typeof window.ss_widget_btn !== 'function') {
+      return false;
+    }
 
+    window[WIDGET_BTN_INVOKED_KEY] = true;
+    publishWidgetOptions();
+
+    try {
+      window.ss_widget_btn(window.liveshopSdkWidgetButtonOptions);
+      logVerify(LOG_PREFIX, 'ss_widget_btn chamado (uma vez).');
+      return true;
+    } catch (err) {
+      window[WIDGET_BTN_INVOKED_KEY] = false;
+      window[MOUNTING_KEY] = false;
+      warnVerify(LOG_PREFIX, 'erro em ss_widget_btn:', err);
+      return false;
+    }
+  }
+
+  function mountWidgetButton() {
     if (window[MOUNTING_KEY]) {
       logVerify(LOG_PREFIX, 'montagem já em andamento; ignorando.');
       return;
     }
+
+    dedupeStreamshopWidgets();
 
     if (isWidgetHealthy()) {
       attachWidgetTracking(document.getElementById('streamshop-widget'));
@@ -231,9 +287,18 @@
       return;
     }
 
-    if (getStreamshopWidgets().length > 0) {
-      logVerify(LOG_PREFIX, 'widget duplicado ou corrompido; removendo antes de remontar.');
-      removeAllStreamshopWidgets();
+    if (isWidgetPresent()) {
+      window[MOUNTING_KEY] = true;
+      waitForWidgetButton(attachWidgetTracking);
+      return;
+    }
+
+    if (window[WIDGET_BTN_INVOKED_KEY]) {
+      warnVerify(
+        LOG_PREFIX,
+        'ss_widget_btn já foi chamado e o widget sumiu do DOM; recarregue a página para remontar.',
+      );
+      return;
     }
 
     if (typeof window.ss_widget_btn !== 'function') {
@@ -241,14 +306,7 @@
     }
 
     window[MOUNTING_KEY] = true;
-    publishWidgetOptions();
-
-    try {
-      window.ss_widget_btn(window.liveshopSdkWidgetButtonOptions);
-      logVerify(LOG_PREFIX, 'ss_widget_btn chamado (uma vez).');
-    } catch (err) {
-      window[MOUNTING_KEY] = false;
-      warnVerify(LOG_PREFIX, 'erro em ss_widget_btn:', err);
+    if (!invokeWidgetButtonOnce()) {
       return;
     }
 
@@ -256,12 +314,13 @@
   }
 
   function loadWidgetSdk() {
+    publishWidgetOptions();
+
     if (document.querySelector('script[' + SDK_SCRIPT_ATTR + ']')) {
       mountWidgetButton();
       return;
     }
 
-    publishWidgetOptions();
     logVerify(LOG_PREFIX, 'carregando SDK:', SDK_SRC);
 
     const script = document.createElement('script');
@@ -283,25 +342,6 @@
     }
   }
 
-  function pushWidgetEvent(btn) {
-    window.gtmDataObject = window.gtmDataObject || [];
-
-    const videoElement = btn.querySelector('video');
-    const fullVideoPath = videoElement
-      ? videoElement.currentSrc || videoElement.src
-      : 'url-nao-encontrada';
-
-    window.gtmDataObject.push({
-      event: 'local_event',
-      event_raised_by: 'br',
-      local_event_category: 'streamshop-widget-disney',
-      local_event_action: 'click:floating-widget',
-      local_event_label: fullVideoPath,
-    });
-
-    logVerify(LOG_PREFIX, 'tracking:', fullVideoPath);
-  }
-
   function attachWidgetTracking(widgetBtn) {
     if (!widgetBtn || widgetBtn.getAttribute(TRACKING_ATTR) === '1') {
       return false;
@@ -310,29 +350,41 @@
     widgetBtn.setAttribute(TRACKING_ATTR, '1');
     widgetBtn.addEventListener('click', function (e) {
       if (e.target.closest('.close-button')) {
+        analyticsEvent('floating-widget', 'clique-fechar');
         return;
       }
-      pushWidgetEvent(this);
+      analyticsEvent(getWidgetVideoLabel(this), 'clique-widget');
     });
 
+    trackWidgetView(widgetBtn);
     logVerify(LOG_PREFIX, 'tracking anexado.');
     return true;
   }
 
   function ensureWidget() {
-    if (!shouldRunWidget()) {
+    if (!hasRequiredUtm()) {
+      logVerify(LOG_PREFIX, 'UTM invalida ou ausente. Widget nao sera exibido.');
       return;
     }
 
     injectWidgetLayoutStyles();
+    dedupeStreamshopWidgets();
 
     if (isWidgetHealthy()) {
       attachWidgetTracking(document.getElementById('streamshop-widget'));
+      window[MOUNTED_KEY] = true;
       return;
     }
 
-    if (window[MOUNTED_KEY] && !isWidgetHealthy()) {
-      removeAllStreamshopWidgets();
+    if (isWidgetPresent()) {
+      if (!window[MOUNTING_KEY]) {
+        waitForWidgetButton(attachWidgetTracking);
+      }
+      return;
+    }
+
+    if (window[MOUNTED_KEY] && !isWidgetPresent()) {
+      window[MOUNTED_KEY] = false;
     }
 
     loadWidgetSdk();
@@ -348,12 +400,18 @@
     window.__wjVideoCommerceWidgetSpaHooked = true;
 
     const fire = function () {
-      captureUtmFromCurrentUrl();
-      if (!shouldRunWidget()) return;
       window.setTimeout(function () {
-        if (!shouldRunWidget()) return;
+        dedupeStreamshopWidgets();
         if (isWidgetHealthy()) {
           attachWidgetTracking(document.getElementById('streamshop-widget'));
+          window[MOUNTED_KEY] = true;
+          return;
+        }
+        if (isWidgetPresent()) {
+          window[MOUNTED_KEY] = true;
+          if (!window[MOUNTING_KEY]) {
+            waitForWidgetButton(attachWidgetTracking);
+          }
           return;
         }
         window[MOUNTED_KEY] = false;
@@ -379,15 +437,14 @@
 
   function initObserver() {
     if (window.__wjVideoCommerceWidgetObserverInitialized) return;
-    if (!shouldRunWidget()) return;
     window.__wjVideoCommerceWidgetObserverInitialized = true;
 
     const observer = new MutationObserver(function () {
-      if (!shouldRunWidget()) return;
       if (window[MOUNTING_KEY] || isWidgetHealthy()) return;
-      const widgets = getStreamshopWidgets();
-      if (widgets.length > 1) {
-        removeAllStreamshopWidgets();
+      if (getStreamshopWidgets().length > 1) {
+        dedupeStreamshopWidgets();
+      }
+      if (!isWidgetPresent() && !window[WIDGET_BTN_INVOKED_KEY]) {
         scheduleEnsureWidget();
       }
     });
@@ -396,11 +453,11 @@
   }
 
   function init() {
-    captureUtmFromCurrentUrl();
-    if (!shouldRunWidget()) {
-      logVerify(LOG_PREFIX, 'sessão UTM inativa nesta página.');
+    if (!hasRequiredUtm()) {
+      logVerify(LOG_PREFIX, 'UTM invalida ou ausente. Script nao iniciado.');
       return;
     }
+
     hookSpaNavigation();
     ensureWidget();
     initObserver();

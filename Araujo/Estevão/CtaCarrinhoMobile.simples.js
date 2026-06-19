@@ -2,10 +2,10 @@
     'use strict';
 
     // Identificadores e seletores
-    const STYLE_ID = 'ctam-restruct-style';
+    const STYLE_ID = 'ctam-simples-style';
     const SUMMARY_SELECTOR = '.cart__summary.fixed-bottom.d-xl-none.mobile';
     const TOTALS_SELECTOR = '.cart__totals';
-    const ROOT_FLAG = 'data-ctam-restruct';
+    const ROOT_FLAG = 'data-ctam-simples';
     const CHECKOUT_HREF = '/checkout';
     const VALOR_MINIMO_2X = 120;
     const VALOR_MINIMO_3X = 180;
@@ -24,40 +24,9 @@
         style.id = STYLE_ID;
         style.textContent = [
             '.cart__summary.fixed-bottom.d-xl-none.mobile[' + ROOT_FLAG + '="true"]{',
-            '  box-sizing:border-box;display:flex;flex-direction:column;align-items:flex-start;',
-            '  padding:17px 24px;gap:12px;width:100%;min-height:123px;left:0;bottom:0;',
-            '  background:#FFFFFF;border:1px solid #D6DADA;z-index:3;',
-            '}',
-            '.cart__summary.fixed-bottom.d-xl-none.mobile[' + ROOT_FLAG + '="true"] .ctam-info{',
-            '  display:flex;flex-direction:column;align-items:flex-start;padding:0;gap:4px;',
-            '  width:100%;align-self:stretch;',
-            '}',
-            '.cart__summary.fixed-bottom.d-xl-none.mobile[' + ROOT_FLAG + '="true"] .ctam-row{',
-            '  display:flex;flex-direction:row;justify-content:space-between;align-items:center;',
-            '  padding:0;gap:4px;width:100%;align-self:stretch;',
-            '}',
-            '.cart__summary.fixed-bottom.d-xl-none.mobile[' + ROOT_FLAG + '="true"] .ctam-label,',
-            '.cart__summary.fixed-bottom.d-xl-none.mobile[' + ROOT_FLAG + '="true"] .ctam-value{',
-            '  font-family:"Inter",Arial,sans-serif;font-style:normal;font-weight:400;',
-            '  font-size:12px;line-height:15px;color:#757575;margin:0;',
-            '}',
-            '.cart__summary.fixed-bottom.d-xl-none.mobile[' + ROOT_FLAG + '="true"] .ctam-discount-group{',
-            '  display:flex;flex-direction:row;justify-content:flex-end;align-items:center;',
-            '  padding:0;gap:8px;height:20px;',
-            '}',
-            '.cart__summary.fixed-bottom.d-xl-none.mobile[' + ROOT_FLAG + '="true"] .ctam-discount-pill{',
-            '  display:flex;flex-direction:column;align-items:flex-start;padding:0 5px;',
-            '  height:20px;background:#3A8600;border-radius:4px;',
-            '  font-family:"Inter",Arial,sans-serif;font-weight:400;font-size:8px;line-height:20px;',
-            '  color:#FFFFFF;',
-            '}',
-            '.cart__summary.fixed-bottom.d-xl-none.mobile[' + ROOT_FLAG + '="true"] .ctam-discount-value{',
-            '  font-family:"Inter",Arial,sans-serif;font-weight:400;font-size:12px;line-height:15px;',
-            '  color:#3A8600;',
-            '}',
-            '.cart__summary.fixed-bottom.d-xl-none.mobile[' + ROOT_FLAG + '="true"] .ctam-checkout{',
-            '  display:flex;flex-direction:row;justify-content:space-between;align-items:center;',
-            '  padding:0;width:100%;align-self:stretch;min-height:38px;',
+            '  box-sizing:border-box;display:flex;flex-direction:row;justify-content:space-between;',
+            '  align-items:center;padding:17px 24px;gap:12px;width:100%;min-height:72px;',
+            '  left:0;bottom:0;background:#FFFFFF;border:1px solid #D6DADA;z-index:3;',
             '}',
             '.cart__summary.fixed-bottom.d-xl-none.mobile[' + ROOT_FLAG + '="true"] .ctam-total{',
             '  display:flex;flex-direction:column;justify-content:center;align-items:flex-start;',
@@ -106,79 +75,21 @@
         return 'R$ ' + inteiro + ',' + partes[1];
     }
 
-    // Coleta valores do bloco .cart__totals
+    // Coleta apenas o total final do bloco .cart__totals
     function coletarTotais() {
         const totals = document.querySelector(TOTALS_SELECTOR);
         if (!totals) return null;
-        const subtotalEl = totals.querySelector('.js-subtotal');
         const totalEl = totals.querySelector('.js-cart-totals');
-        const percentualEl = totals.querySelector('.js-porcentagem');
-        const discountEl = totals.querySelector('.js-discount');
         if (!totalEl) return null;
         return {
-            subtotalTexto: subtotalEl ? subtotalEl.textContent.trim() : '',
-            subtotalValor: subtotalEl ? parseValor(subtotalEl.textContent) : 0,
             totalTexto: totalEl.textContent.trim(),
-            totalValor: parseValor(totalEl.textContent),
-            percentualTexto: percentualEl ? percentualEl.textContent.trim() : '',
-            descontoTexto: discountEl ? discountEl.textContent.trim() : '',
-            temDesconto: !!(percentualEl || discountEl)
+            totalValor: parseValor(totalEl.textContent)
         };
     }
 
-    // Cria a nova estrutura interna do summary
+    // Cria a estrutura interna do summary (sem valor inicial e sem desconto)
     function montarConteudo(dados) {
         const frag = document.createDocumentFragment();
-
-        const info = document.createElement('div');
-        info.className = 'ctam-info';
-
-        // Linha "Valor inicial"
-        if (dados.subtotalTexto) {
-            const rowSub = document.createElement('div');
-            rowSub.className = 'ctam-row ctam-row--subtotal';
-            const subLabel = document.createElement('span');
-            subLabel.className = 'ctam-label';
-            subLabel.textContent = 'Valor inicial';
-            const subValue = document.createElement('span');
-            subValue.className = 'ctam-value';
-            subValue.textContent = dados.subtotalTexto;
-            rowSub.appendChild(subLabel);
-            rowSub.appendChild(subValue);
-            info.appendChild(rowSub);
-        }
-
-        // Linha "Desconto"
-        if (dados.temDesconto) {
-            const rowDesc = document.createElement('div');
-            rowDesc.className = 'ctam-row ctam-row--discount';
-            const descLabel = document.createElement('span');
-            descLabel.className = 'ctam-label';
-            descLabel.textContent = 'Desconto';
-            const descGroup = document.createElement('div');
-            descGroup.className = 'ctam-discount-group';
-            if (dados.percentualTexto) {
-                const pill = document.createElement('span');
-                pill.className = 'ctam-discount-pill';
-                pill.textContent = dados.percentualTexto;
-                descGroup.appendChild(pill);
-            }
-            if (dados.descontoTexto) {
-                const descVal = document.createElement('span');
-                descVal.className = 'ctam-discount-value';
-                descVal.textContent = dados.descontoTexto;
-                descGroup.appendChild(descVal);
-            }
-            rowDesc.appendChild(descLabel);
-            rowDesc.appendChild(descGroup);
-            info.appendChild(rowDesc);
-        }
-
-        frag.appendChild(info);
-
-        // Bloco de checkout (total + parcelamento + botao)
-        const checkout = document.createElement('div');
-        checkout.className = 'ctam-checkout';
 
         const totalWrap = document.createElement('div');
         totalWrap.className = 'ctam-total';
@@ -203,7 +114,7 @@
             totalWrap.appendChild(installments);
         }
 
-        checkout.appendChild(totalWrap);
+        frag.appendChild(totalWrap);
 
         const button = document.createElement('a');
         button.className = 'ctam-button';
@@ -212,9 +123,8 @@
         const buttonLabel = document.createElement('span');
         buttonLabel.textContent = 'Ir para entrega';
         button.appendChild(buttonLabel);
-        checkout.appendChild(button);
+        frag.appendChild(button);
 
-        frag.appendChild(checkout);
         return frag;
     }
 
@@ -270,13 +180,13 @@
 
     // Observer global unico
     function iniciarObserver() {
-        if (window._ctamObserver) return;
+        if (window._ctamSimplesObserver) return;
         const observer = new MutationObserver(function () {
             if (isProcessing) return;
             agendarAplicar();
         });
         observer.observe(document.body, { childList: true, subtree: true, characterData: true });
-        window._ctamObserver = observer;
+        window._ctamSimplesObserver = observer;
     }
 
     function init() {
