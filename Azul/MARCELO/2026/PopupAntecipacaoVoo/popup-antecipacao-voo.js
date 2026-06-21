@@ -431,6 +431,13 @@
     if (popup) popup.classList.remove('active');
   }
 
+  function isCookieBannerClick(target) {
+    if (!target || typeof target.closest !== 'function') return false;
+    return !!target.closest(
+      '#onetrust-consent-sdk, #onetrust-banner-sdk, #onetrust-pc-sdk, .ot-sdk-container, [id^="onetrust-"], [class*="onetrust"], [aria-label="Privacidade"]'
+    );
+  }
+
   function bindEvents() {
     const btn = document.getElementById(BUTTON_ID);
     const popup = document.getElementById(POPUP_ID);
@@ -470,6 +477,7 @@
 
     document.addEventListener('click', function (e) {
       if (!popup.classList.contains('active')) return;
+      if (isCookieBannerClick(e.target)) return;
       if (!popup.contains(e.target) && !btn.contains(e.target)) {
         hidePopup();
         analyticsEvent('Fechar Outside', 'clique', activeVariant);
