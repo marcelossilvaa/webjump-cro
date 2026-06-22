@@ -45,9 +45,6 @@
     // VL Delisted 2026
     "7002.80": "7085.80", // Bianco Piccolo → Dolce
     "7017.80": "7028.80", // Ethiopia → Colombia
-    "7027.80": "7039.80", // El Salvador → Melozio
-    "7144.10": "7038.80", // Carafe → Alto Onice
-    "7001.80": "7038.80", // Alto Ambrato → Alto Onice
   };
 
   // SKUs de origem que devem usar o copy de despedida no titulo do popup
@@ -60,9 +57,6 @@
     "7877.90": "ISTANBUL",
     "7002.80": "BIANCO PICCOLO",
     "7017.80": "ETHIOPIA",
-    "7027.80": "EL SALVADOR",
-    "7144.10": "CARAFE",
-    "7001.80": "ALTO AMBRATO",
   };
 
   let popupShown = false;

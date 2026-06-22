@@ -213,7 +213,7 @@
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] .custom-price .seller-box { min-width: 0 !important; min-height: 72px !important; padding: 8px !important; border: 1px solid #e2e7ef !important; border-radius: 5px !important; background: #fcf8f6 !important; box-shadow: none !important; overflow: hidden !important; }',
+        '="true"] .custom-price .seller-box { min-width: 0 !important; min-height: 72px !important; padding: 8px !important; border: 1px solid #e2e7ef !important; border-radius: 5px !important; background: #fcf8f6 !important; box-shadow: none !important; overflow: hidden !important; width: 31.5% !important; }',
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
@@ -353,7 +353,7 @@
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] .pdp-shipping-title { display: flex !important; gap: 8px !important; margin: 0 0 14px !important; padding: 0 !important; width: 100% !important; align-items: stretch !important; }',
+        '="true"] .pdp-shipping-title { display: flex !important; gap: 8px !important; margin: 0 0 5px !important; padding: 0 !important; width: 100% !important; align-items: stretch !important;         height: auto !important;}',
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
@@ -521,11 +521,11 @@
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] .product-add-form .product-item-qty-btn { flex: 0 0 34px !important; position: static !important; margin: 0 !important; transform: none !important; } ' +
+        '="true"] .product-add-form .product-item-qty-btn { flex: 0 0 34px !important; position: static !important; top: auto !important; right: auto !important; left: auto !important; margin: 0 !important; transform: none !important; } ' +
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] .product-add-form input.qty { flex: 1 1 0 !important; min-width: 0 !important; max-width: none !important; padding: 0 8px !important; } ' +
+        '="true"] .product-add-form input.qty { flex: 1 1 0 !important; width: 1% !important; min-width: 0 !important; max-width: none !important; padding: 0 8px !important; } ' +
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
@@ -1083,6 +1083,50 @@
     );
   }
 
+  function normalizeQuantityControls() {
+    const qtyControl = document.querySelector('.product-add-form .field.qty .control');
+    const qtyInput = document.querySelector('.product-add-form input.qty');
+    const qtyButtons = Array.prototype.slice.call(
+      document.querySelectorAll('.product-add-form .product-item-qty-btn')
+    );
+
+    if (!qtyControl) return;
+
+    qtyControl.style.setProperty('display', 'flex', 'important');
+    qtyControl.style.setProperty('align-items', 'center', 'important');
+    qtyControl.style.setProperty('flex-wrap', 'nowrap', 'important');
+    qtyControl.style.setProperty('overflow', 'hidden', 'important');
+
+    if (isMobileViewport()) {
+      qtyControl.style.setProperty('padding', '6px 10px', 'important');
+    }
+
+    qtyButtons.forEach(function (button) {
+      if (!button || !button.style) return;
+
+      button.style.setProperty('position', 'static', 'important');
+      button.style.setProperty('top', 'auto', 'important');
+      button.style.setProperty('right', 'auto', 'important');
+      button.style.setProperty('left', 'auto', 'important');
+      button.style.setProperty('inset', 'auto', 'important');
+      button.style.setProperty('transform', 'none', 'important');
+      button.style.setProperty('margin', '0', 'important');
+      button.style.setProperty('flex', '0 0 34px', 'important');
+      button.style.setProperty('width', '34px', 'important');
+      button.style.setProperty('min-width', '34px', 'important');
+      button.style.setProperty('max-width', '34px', 'important');
+    });
+
+    if (qtyInput && qtyInput.style) {
+      qtyInput.style.setProperty('flex', '1 1 0', 'important');
+      qtyInput.style.setProperty('width', '1%', 'important');
+      qtyInput.style.setProperty('min-width', '0', 'important');
+      qtyInput.style.setProperty('max-width', 'none', 'important');
+      qtyInput.style.setProperty('padding-left', '8px', 'important');
+      qtyInput.style.setProperty('padding-right', '8px', 'important');
+    }
+  }
+
   function organizeMobileShipping() {
     const priceWrapper = document.querySelector('.product-info-price-wrapper');
     const purchaseContainer = document.querySelector('.product-info-price-container');
@@ -1354,6 +1398,7 @@
       ensureCompareTitle();
       updateCompareLink();
       organizePurchaseArea();
+      normalizeQuantityControls();
       ensureShippingTitle();
       ensureFloatingWhatsApp();
       addTrackingListeners();
