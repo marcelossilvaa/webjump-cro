@@ -4,12 +4,16 @@
   const STYLE_ID = 'at-faq-pagamento-style';
   const FAQ_ID = 'at-faq-pagamento';
   const SELOS_ID = 'at-selos-seguranca';
+  const COUNTDOWN_ID = 'at-countdown-pagamento';
+  const COUNTDOWN_SEGUNDOS = 10 * 60;
   const ATTR_OCULTO = 'data-faq-nativo-oculto';
   const ACTIVITY = 'AT_FAQTelaPagamento';
   const CONTEXT = 'tela_pagamento';
 
   let debounceTimer = null;
   let isProcessing = false;
+  let countdownInterval = null;
+  let countdownSecondsLeft = COUNTDOWN_SEGUNDOS;
 
   const faqItems = [
     {
@@ -223,6 +227,60 @@
         'color: rgba(1, 78, 132, 0.45);' +
         'text-align: center;' +
         'line-height: 1.5;' +
+      '}' +
+
+      '#at-countdown-pagamento {' +
+        'margin-top: 12px;' +
+        'margin-bottom: 4px;' +
+        'background: linear-gradient(135deg, rgb(0, 29, 70) 0%, rgb(1, 78, 132) 100%);' +
+        'border-radius: 8px;' +
+        'padding: 14px 16px;' +
+        'display: flex;' +
+        'align-items: center;' +
+        'justify-content: center;' +
+        'gap: 8px;' +
+        'flex-wrap: wrap;' +
+        'font-family: "Helvetica Neue", Arial, sans-serif;' +
+      '}' +
+
+      '#at-countdown-pagamento .at-countdown-icon svg {' +
+        'width: 18px;' +
+        'height: 18px;' +
+        'fill: rgba(255, 255, 255, 0.85);' +
+        'display: block;' +
+      '}' +
+
+      '#at-countdown-pagamento .at-countdown-texto {' +
+        'font-size: 13px;' +
+        'font-weight: 500;' +
+        'color: rgba(255, 255, 255, 0.9);' +
+      '}' +
+
+      '#at-countdown-pagamento .at-countdown-timer {' +
+        'display: inline-flex;' +
+        'align-items: center;' +
+        'background: rgba(255, 255, 255, 0.15);' +
+        'border-radius: 6px;' +
+        'padding: 3px 10px;' +
+        'gap: 2px;' +
+        'border: 1px solid rgba(255, 255, 255, 0.2);' +
+      '}' +
+
+      '#at-countdown-pagamento .at-countdown-digito {' +
+        'font-family: "Courier New", Courier, monospace;' +
+        'font-size: 20px;' +
+        'font-weight: 700;' +
+        'color: #fff;' +
+        'min-width: 26px;' +
+        'text-align: center;' +
+        'line-height: 1;' +
+      '}' +
+
+      '#at-countdown-pagamento .at-countdown-sep {' +
+        'font-size: 20px;' +
+        'font-weight: 700;' +
+        'color: rgba(255, 255, 255, 0.6);' +
+        'line-height: 1;' +
       '}';
 
     document.head.appendChild(style);
@@ -304,17 +362,104 @@
     return wrapper;
   }
 
-  function reordenarHold(containerBotao) {
+  function criarCountdown() {
+    const wrapper = document.createElement('div');
+    wrapper.id = COUNTDOWN_ID;
+
+    const iconeWrap = document.createElement('span');
+    iconeWrap.className = 'at-countdown-icon';
+    iconeWrap.appendChild(criarSVG('M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z'));
+
+    const textoPre = document.createElement('span');
+    textoPre.className = 'at-countdown-texto';
+    textoPre.textContent = 'Finalize sua compra em';
+
+    const timer = document.createElement('div');
+    timer.className = 'at-countdown-timer';
+
+    const minEl = document.createElement('span');
+    minEl.className = 'at-countdown-digito at-countdown-min';
+    minEl.textContent = '10';
+
+    const sep = document.createElement('span');
+    sep.className = 'at-countdown-sep';
+    sep.textContent = ':';
+
+    const secEl = document.createElement('span');
+    secEl.className = 'at-countdown-digito at-countdown-sec';
+    secEl.textContent = '00';
+
+    timer.appendChild(minEl);
+    timer.appendChild(sep);
+    timer.appendChild(secEl);
+
+    const textoPos = document.createElement('span');
+    textoPos.className = 'at-countdown-texto';
+    textoPos.textContent = 'e garanta o melhor preço';
+
+    wrapper.appendChild(iconeWrap);
+    wrapper.appendChild(textoPre);
+    wrapper.appendChild(timer);
+    wrapper.appendChild(textoPos);
+
+    return wrapper;
+  }
+
+  function iniciarCountdown() {
+    if (countdownInterval) return;
+
+    countdownInterval = setInterval(function () {
+      countdownSecondsLeft--;
+
+      if (countdownSecondsLeft <= 0) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+        const el = document.getElementById(COUNTDOWN_ID);
+        if (el) {
+          const timerEl = el.querySelector('.at-countdown-timer');
+          if (timerEl) timerEl.textContent = '00:00';
+        }
+        return;
+      }
+
+      const m = Math.floor(countdownSecondsLeft / 60);
+      const s = countdownSecondsLeft % 60;
+      const el = document.getElementById(COUNTDOWN_ID);
+      if (!el) return;
+
+      const mEl = el.querySelector('.at-countdown-min');
+      const sEl = el.querySelector('.at-countdown-sec');
+      if (mEl) mEl.textContent = String(m).padStart(2, '0');
+      if (sEl) sEl.textContent = String(s).padStart(2, '0');
+    }, 1000);
+  }
+
+  function ocultarHoldEInserirCountdown(containerBotao) {
     const checkbox = document.querySelector('[data-test-id="booking-hold-checkbox"]');
-    if (!checkbox) return;
+    if (checkbox) {
+      const holdEl = checkbox.closest('.sc-d781f9ae-2') || checkbox.parentElement.parentElement;
+      if (holdEl && !holdEl.getAttribute('data-hold-oculto')) {
+        holdEl.setAttribute('data-hold-oculto', 'true');
+        holdEl.style.display = 'none';
+        console.log('[FAQPagamento] Elemento "Precisa de mais tempo?" ocultado.');
+      }
+    }
 
-    const holdEl = checkbox.closest('.sc-d781f9ae-2') || checkbox.parentElement.parentElement;
-    if (!holdEl) return;
-    if (holdEl.getAttribute('data-hold-reordenado')) return;
+    if (document.getElementById(COUNTDOWN_ID)) return;
 
-    holdEl.setAttribute('data-hold-reordenado', 'true');
-    containerBotao.insertAdjacentElement('beforebegin', holdEl);
-    console.log('[FAQPagamento] Elemento "Precisa de mais tempo?" reposicionado.');
+    const countdownEl = criarCountdown();
+
+    const summaryHeader = document.querySelector('[data-test-id="summary-header-total"]');
+    const summaryEl = summaryHeader ? summaryHeader.closest('.sc-d781f9ae-1') : null;
+
+    if (summaryEl) {
+      summaryEl.insertAdjacentElement('beforebegin', countdownEl);
+    } else {
+      containerBotao.insertAdjacentElement('beforebegin', countdownEl);
+    }
+
+    iniciarCountdown();
+    console.log('[FAQPagamento] Countdown inserido.');
   }
 
   function ocultarFaqNativo() {
@@ -426,7 +571,7 @@
     const selosEl = criarSelosSeguranca();
     faqEl.insertAdjacentElement('afterend', selosEl);
 
-    reordenarHold(containerBotao);
+    ocultarHoldEInserirCountdown(containerBotao);
 
     analyticsEvent('FAQ exibido', 'view');
     console.log('[FAQPagamento] FAQ e selos de seguranca inseridos com sucesso.');
