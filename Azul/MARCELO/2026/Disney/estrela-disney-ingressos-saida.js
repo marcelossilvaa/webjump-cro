@@ -12,6 +12,9 @@
     '202603-azv-b2c-psh-168h-inter-abandonocarrinhoingressosdisney-d2_pac',
     'pmweb_azv_e-mail_banner_lf_azv_202603-azv-b2c-emm-168h-viagem-incentivohospedagemdisney-d7_hotel',
   ];
+  var COUPON_CODE = 'ALEGRIA12';
+  var COUPON_ICON_TICKET = 'https://i.imgur.com/4GwUwV6.png';
+  var COUPON_ICON_COPY = 'https://i.imgur.com/B1wX3xt.png';
   var BANNER_ASSET_URLS = [
     'https://i.imgur.com/7dXE65l.png',
     'https://i.imgur.com/ydjrslV.png',
@@ -21,6 +24,8 @@
     'https://i.imgur.com/ZPcL8R3.png',
     'https://i.imgur.com/jSNMMjB.png',
     'https://i.imgur.com/noLA829.png',
+    COUPON_ICON_TICKET,
+    COUPON_ICON_COPY,
   ];
 
   // ============================================
@@ -155,6 +160,49 @@
     } catch (e) {}
   }
 
+  function copyCouponCode(couponBtn) {
+    if (!couponBtn || couponBtn.classList.contains('at-dh-coupon-box--copied')) return;
+
+    var codeEl = couponBtn.querySelector('.at-dh-coupon-code');
+    if (!codeEl) return;
+
+    function onSuccess() {
+      var originalText = codeEl.textContent;
+      codeEl.textContent = 'Copiado!';
+      couponBtn.classList.add('at-dh-coupon-box--copied');
+      analyticsEvent('banner_disney_ingressos_copiar_cupom', 'click');
+      setTimeout(function () {
+        codeEl.textContent = originalText;
+        couponBtn.classList.remove('at-dh-coupon-box--copied');
+      }, 2000);
+    }
+
+    function onError() {
+      console.log('[Disney Ingressos Saida] Nao foi possivel copiar o cupom.');
+    }
+
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      navigator.clipboard.writeText(COUPON_CODE).then(onSuccess).catch(onError);
+      return;
+    }
+
+    var input = document.createElement('input');
+    input.value = COUPON_CODE;
+    input.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+    input.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(input);
+    input.select();
+
+    try {
+      document.execCommand('copy');
+      onSuccess();
+    } catch (e) {
+      onError();
+    }
+
+    document.body.removeChild(input);
+  }
+
   function analyticsEvent(eventLabel, eventType) {
     if (!eventLabel) return;
     var labelEvent = EXPERIMENT_NAME + '_' + eventType + ' ' + eventLabel;
@@ -237,10 +285,11 @@
       '#' +
       BANNER_ID +
       '.at-disney-banner-fade-out { opacity:0; pointer-events:none; }' +
-      // ===== CONTAINER PRINCIPAL 800x400 (desktop - foto inteira) =====
+      // ===== CONTAINER PRINCIPAL 720x500 =====
       '.at-dh-container {' +
-      '  position:relative; width:800px; height:400px;' +
-      '  background:url("fundo disney.png"), #0150B5; border-radius:16px; overflow:hidden;' +
+      '  position:relative; width:720px; height:486px;' +
+      '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;' +
+      '  background:url("fundo disney.png"), #0150B5; border-radius:8px; overflow:hidden;' +
       '  box-shadow:0 20px 80px rgba(0,0,0,0.5);' +
       '  animation:atDhBannerIn 0.6s ease-out forwards;' +
       '}' +
@@ -294,58 +343,122 @@
       '  0%,100%{opacity:0;transform:scale(0.5)}' +
       '  50%{opacity:1;transform:scale(1.2)}' +
       '}' +
-      // ===== TITULO (txt) =====
+      // ===== LAYOUT FLEX PRINCIPAL =====
+      '.at-dh-layout {' +
+      '  position:relative; z-index:5;' +
+      '  display:flex; flex-direction:row; align-items:flex-start;' +
+      '  gap:24px; padding:24px 40px; box-sizing:border-box;' +
+      '  width:100%; height:100%;' +
+      '}' +
+      '.at-dh-col-left {' +
+      '  display:flex; flex-direction:column; align-items:flex-start;' +
+      '  gap:16px; width:367px; flex:none;' +
+      '}' +
+      '.at-dh-col-right {' +
+      '  display:flex; flex-direction:column; align-items:flex-end;' +
+      '  gap:40px; width:250px; flex:none; margin-left:auto;' +
+      '}' +
+      // ===== LOGO TOPO =====
+      '.at-dh-logo {' +
+      '  display:flex; align-items:center; flex:none;' +
+      '}' +
+      '.at-dh-logo img { height:29px; width:auto; object-fit:contain; display:block; }' +
+      // ===== TITULO =====
       '.at-dh-txt {' +
-      '  position:absolute; width:400px; height:99px;' +
-      '  left:57px; top:26px;' +
-      '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;' +
-      '  font-weight:300; font-size:20px; line-height:109%;' +
-      '  display:block; color:#FFFFFF; z-index:5;' +
+      '  display:flex; flex-direction:column; gap:8px;' +
+      '  width:100%; font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;' +
+      '  font-weight:300; color:#FFFFFF;' +
       '  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;' +
-      '  text-rendering:optimizeLegibility;' +
       '}' +
       '.at-dh-txt strong { font-weight:700; }' +
-      '.at-dh-txt-line1 { display:block; margin-bottom:10px; }' +
-      '.at-dh-txt-body { display:block; }' +
-      // ===== FRAME OFERTA (Rectangle 6) =====
-      '.at-dh-offer-frame {' +
-      '  position:absolute; box-sizing:border-box;' +
-      '  width:366px; height:121px;' +
-      '  left:57px; top:153px;' +
-      '  border:1px solid #FFFFFF; border-radius:13px;' +
-      '  z-index:5;' +
+      '.at-dh-highlight {' +
+      '  background:#FFCE00; color:#00043E; font-weight:700;' +
+      '  padding:0 3px; border-radius:2px;' +
       '}' +
-      // ===== FAIXA DE PARQUES (Frame 15065) =====
+      '.at-dh-txt-line1 { font-size:20px; line-height:109%; }' +
+      '.at-dh-txt-body { font-size:14px; line-height:104%; letter-spacing:-0.025em; }' +
+      // ===== BLOCO OFERTA =====
+      '.at-dh-offer-block {' +
+      '  position:relative; width:100%; padding-top:10px;' +
+      '}' +
+      '.at-dh-offer-frame {' +
+      '  box-sizing:border-box; width:100%;' +
+      '  border:1px solid #FFFFFF; border-radius:13px;' +
+      '  padding:28px 12px 55px;' +
+      '  display:flex; flex-direction:column;' +
+      '}' +
       '.at-dh-park-strip {' +
-      '  position:absolute; display:flex; flex-direction:row; flex-wrap:nowrap;' +
+      '  position:absolute; top:0; left:50%; transform:translateX(-50%);' +
+      '  display:flex; flex-direction:row; flex-wrap:nowrap;' +
       '  align-items:center; justify-content:center;' +
-      '  padding:5px 10px; gap:10px;' +
-      '  width:241px; min-height:25.56px;' +
-      '  left:161px; top:138px;' +
-      '  background:#0150B5;' +
-      '  z-index:7; box-sizing:border-box;' +
+      '  padding:0 8px; gap:8px;' +
+      '  background:#0150B5; z-index:2; box-sizing:border-box;' +
       '}' +
       '.at-dh-park-icon {' +
-      '  height:25px; width:auto; max-height:25.56px; object-fit:contain;' +
-      '  flex:none; display:block;' +
+      '  height:18px; width:auto; object-fit:contain; flex:none; display:block;' +
       '}' +
-      // ===== BULLET ROWS =====
+      '.at-dh-bullets {' +
+      '  display:flex; flex-direction:column; gap:0; width:100%;' +
+      '}' +
       '.at-dh-bullet-row {' +
-      '  position:absolute; display:flex; flex-direction:row; align-items:center;' +
-      '  padding:0; gap:12px; width:326px; height:28px; left:74px; z-index:6;' +
+      '  display:flex; flex-direction:row; align-items:flex-start;' +
+      '  gap:12px; width:100%; min-height:33px; padding:0;' +
       '}' +
       '.at-dh-bullet-text strong { font-weight:700; }' +
       '.at-dh-bullet-icon-wrap {' +
       '  display:flex; align-items:center; justify-content:center;' +
-      '  width:28px; height:28px; flex:none;' +
+      '  width:24px; height:24px; flex:none; margin-top:0;' +
       '  background:#5EDCFF; border-radius:50%;' +
       '}' +
       '.at-dh-bullet-icon-img {' +
-      '  width:28px; height:28px; object-fit:contain; flex:none; display:block;' +
+      '  width:24px; height:24px; object-fit:contain; flex:none; display:block;' +
       '}' +
       '.at-dh-bullet-text {' +
-      '  font-family:"Inter",Arial,sans-serif; font-weight:400; font-size:14px;' +
-      '  line-height:16px; color:#FFFFFF; flex:1;' +
+      '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif; font-weight:400; font-size:14px;' +
+      '  line-height:16px; color:#FFFFFF; flex:1; padding-top:4px;' +
+      '}' +
+      // ===== CUPOM (sobre a linha inferior do frame — Figma) =====
+      '.at-dh-coupon-wrap {' +
+      '  display:flex; flex-direction:column; align-items:center; gap:6px;' +
+      '  width:100%; margin-top:-40px; position:relative; z-index:3;' +
+      '}' +
+      '.at-dh-coupon-label {' +
+      '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;' +
+      '  font-weight:400; font-size:12px; line-height:120%;' +
+      '  text-align:center; color:#FFFFFF;' +
+      '}' +
+      '.at-dh-coupon-box {' +
+      '  max-width:100%; height:44px;' +
+      '  background:#004F8B; border:none; border-radius:10px;' +
+      '  display:flex; align-items:center; justify-content:center;' +
+      '  padding:10px 16px; gap:10px; box-sizing:border-box;' +
+      '  cursor:pointer;' +
+      '  transition:background 0.2s ease, transform 0.2s ease;' +
+      '}' +
+      '.at-dh-coupon-box:hover { transform:translateY(-1px); background:#003D6E; }' +
+      '.at-dh-coupon-box--copied { background:#0150B5 !important; transform:none !important; }' +
+      '.at-dh-coupon-percent {' +
+      '  display:flex; align-items:center; justify-content:center;' +
+      '  width:20px; height:20px; flex:none;' +
+      '}' +
+      '.at-dh-coupon-percent img, .at-dh-coupon-copy img {' +
+      '  width:100%; height:100%; object-fit:contain; display:block;' +
+      '}' +
+      '.at-dh-coupon-code {' +
+      '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;' +
+      '  font-weight:700; font-size:18px; line-height:18px;' +
+      '  color:#FFFFFF; flex:1; text-align:center; letter-spacing:0.02em;' +
+      '  white-space:nowrap; overflow:hidden;' +
+      '}' +
+      '.at-dh-coupon-box--copied .at-dh-coupon-code { font-size:16px; letter-spacing:0; }' +
+      '.at-dh-coupon-copy {' +
+      '  display:flex; align-items:center; justify-content:center;' +
+      '  width:20px; height:20px; flex:none;' +
+      '}' +
+      // ===== RODAPE ESQUERDA (CTA) =====
+      '.at-dh-footer {' +
+      '  display:flex; flex-direction:column; align-items:stretch; gap:4px;' +
+      '  width:100%;' +
       '}' +
       // ===== CTA PULSE =====
       '@keyframes atDhCtaPulse {' +
@@ -356,114 +469,80 @@
       '.at-dh-cta-pulse { animation:atDhCtaPulse 0.9s ease-out 2; }' +
       // ===== CTA =====
       '.at-dh-cta {' +
-      '  position:absolute; width:206.95px; height:49.13px;' +
-      '  left:56.95px; top:290.42px;' +
-      '  background:#5EDCFF; border-radius:45.2779px; border:none;' +
+      '  width:100%; height:51px;' +
+      '  background:#5EDCFF; border-radius:45px; border:none;' +
       '  text-decoration:none; box-sizing:border-box;' +
-      '  cursor:pointer; z-index:5;' +
+      '  cursor:pointer;' +
       '  display:flex; align-items:center; justify-content:center;' +
-      '  padding:0 30.2856px; gap:5.66px;' +
+      '  padding:0 30px; gap:6px;' +
       '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;' +
-      '  font-weight:700; font-size:15px; line-height:20px; color:#00043E;' +
+      '  font-weight:700; font-size:19px; line-height:20px; color:#00043E;' +
       '  transition:transform 0.2s ease, box-shadow 0.2s ease;' +
       '}' +
       '.at-dh-cta:hover {' +
       '  transform:translateY(-2px); box-shadow:0 4px 20px rgba(94,220,255,0.4);' +
       '}' +
-      '.at-dh-cta-logo {' +
-      '  position:absolute; left:282px; top:310px;' +
-      '  height:24px; width:133px; z-index:5;' +
-      '  display:flex; align-items:center;' +
-      '}' +
-      '.at-dh-cta-logo img { height:24px; width:auto; object-fit:contain; display:block; }' +
-      // ===== LOGOS =====
-      '.at-dh-logos { display:none; }' +
-      '.at-dh-logos-divider { display:none; }' +
       // ===== CONSULTE CONDICOES =====
       '.at-dh-consult {' +
-      '  position:absolute; width:115px; height:14px; left:102.47px; top:349.43px;' +
-      '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;' +
-      '  font-weight:400; font-size:12px; line-height:120%; color:#FFFFFF; z-index:5;' +
+      '  width:100%; font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;' +
+      '  font-weight:400; font-size:12px; line-height:120%; color:#FFFFFF;' +
+      '  text-align:center;' +
       '}' +
-      // ===== FOTO PERSONAGEM (arredondado) =====
+      // ===== COLUNA DIREITA - FOTO =====
+      '.at-dh-photo-col {' +
+      '  display:flex; flex-direction:column; align-items:flex-end; gap:4px;' +
+      '  width:100%;' +
+      '}' +
       '.at-dh-photo-wrapper {' +
-      '  position:absolute; width:360px; height:360px;' +
-      '  right:12px; top:18px; left:auto; z-index:3;' +
-      '  border-radius:50%; overflow:hidden; background:#0150B5;' +
+      '  width:250px; height:250px; border-radius:50%;' +
+      '  overflow:hidden; background:#0150B5; flex:none;' +
       '}' +
       '.at-dh-photo-img {' +
-      '  position:absolute; width:100%; height:100%;' +
-      '  left:50%; top:50%; transform:translate(-50%,-50%);' +
-      '  object-fit:cover; object-position:68% center;' +
+      '  width:100%; height:100%; object-fit:cover; object-position:68% center;' +
+      '  display:block;' +
       '}' +
       '.at-dh-photo-gradient {' +
-      '  position:absolute; bottom:0; left:0; width:100%; height:40%;' +
-      '  background:linear-gradient(180deg, transparent 20%, rgba(0,0,0,0.35) 100%);' +
-      '  border-radius:0 0 175px 175px; z-index:4; pointer-events:none;' +
+      '  display:none;' +
       '}' +
       // ===== COPYRIGHT =====
       '.at-dh-copyright {' +
-      '  position:absolute; right:28px; left:auto; top:368px;' +
       '  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;' +
-      '  font-weight:400; font-size:8.88603px; line-height:7px;' +
-      '  color:#FFFFFF; z-index:5; text-align:center;' +
+      '  font-weight:400; font-size:9px; line-height:7px;' +
+      '  color:#FFFFFF; text-align:center; padding:10px;' +
       '}' +
       // ===== BOTAO FECHAR =====
       '.at-dh-close {' +
-      '  position:absolute; top:10px; right:10px; width:28px; height:28px;' +
-      '  background:rgba(255,255,255,0.15); border:none; border-radius:50%;' +
+      '  width:24px; height:24px; padding:0;' +
+      '  background:transparent; border:none;' +
       '  cursor:pointer; display:flex; align-items:center; justify-content:center;' +
-      '  z-index:10; transition:background 0.2s ease;' +
+      '  flex:none; transition:opacity 0.2s ease;' +
       '}' +
-      '.at-dh-close:hover { background:rgba(255,255,255,0.3); }' +
-      '.at-dh-close svg { width:12px; height:12px; }' +
-      // ===== LOGO MOBILE (topo) =====
-      '.at-dh-mobile-logo { display:none; }' +
+      '.at-dh-close:hover { opacity:0.75; }' +
+      '.at-dh-close svg { width:14px; height:14px; }' +
       // ===== RESPONSIVO MOBILE =====
       '@media (max-width: 768px) {' +
       '  .at-dh-container {' +
-      '    width:360px; height:420px; border-radius:16px;' +
+      '    width:360px; height:auto; min-height:500px; border-radius:8px;' +
       '    background:url("fundo disney.png"), #0150B5;' +
       '    background-size:cover; background-position:center;' +
-      '    transform:none;' +
       '  }' +
       '  .at-dh-glow-layer, .at-dh-lens-flare { display:none; }' +
-      '  .at-dh-mobile-logo {' +
-      '    display:flex; justify-content:center; align-items:center;' +
-      '    position:absolute; left:0; right:0; top:20px; height:28px; z-index:6;' +
+      '  .at-dh-layout {' +
+      '    flex-direction:column; padding:20px 16px; gap:16px;' +
       '  }' +
-      '  .at-dh-mobile-logo img { height:24px; width:auto; object-fit:contain; display:block; }' +
-      '  .at-dh-txt {' +
-      '    width:328px; height:auto; left:16px; top:56px;' +
-      '    font-size:16px; line-height:125%; text-align:center;' +
+      '  .at-dh-col-left, .at-dh-col-right { width:100%; margin-left:0; }' +
+      '  .at-dh-col-right {' +
+      '    position:absolute; top:0; right:0; width:auto; height:auto;' +
+      '    pointer-events:none; gap:0;' +
       '  }' +
-      '  .at-dh-txt-line1 { margin-bottom:8px; }' +
-      '  .at-dh-offer-frame {' +
-      '    width:328px; height:128px; left:16px; top:168px;' +
-      '    border-radius:13px;' +
-      '  }' +
-      '  .at-dh-park-strip {' +
-      '    left:50%; top:155px; width:auto; max-width:300px;' +
-      '    transform:translateX(-50%); padding:4px 8px; gap:8px;' +
-      '  }' +
-      '  .at-dh-park-icon { height:22px; max-height:22px; }' +
-      '  .at-dh-bullet-row { left:28px; width:304px; height:28px; }' +
-      '  .at-dh-bullet-row-0 { top:182px !important; }' +
-      '  .at-dh-bullet-row-1 { top:218px !important; }' +
-      '  .at-dh-bullet-row-2 { top:254px !important; }' +
-      '  .at-dh-cta {' +
-      '    width:calc(100% - 48px); max-width:320px; height:49px;' +
-      '    left:50%; top:312px; transform:translateX(-50%);' +
-      '    font-size:16px;' +
-      '  }' +
-      '  .at-dh-cta:hover { transform:translateX(-50%) translateY(-2px); }' +
-      '  .at-dh-consult {' +
-      '    width:100%; left:0; top:372px;' +
-      '    font-size:10px; text-align:center;' +
-      '  }' +
-      '  .at-dh-photo-wrapper { display:none; }' +
-      '  .at-dh-copyright { display:none; }' +
-      '  .at-dh-cta-logo { display:none; }' +
+      '  .at-dh-close { position:absolute; top:16px; right:16px; z-index:10; pointer-events:auto; }' +
+      '  .at-dh-txt-line1 { font-size:16px; }' +
+      '  .at-dh-txt-body { font-size:14px; line-height:140%; }' +
+      '  .at-dh-park-icon { height:16px; }' +
+      '  .at-dh-offer-block { padding-bottom:22px; }' +
+      '  .at-dh-coupon-wrap { margin-top:-36px; }' +
+      '  .at-dh-coupon-box { width:100%; max-width:280px; }' +
+      '  .at-dh-photo-col, .at-dh-photo-wrapper, .at-dh-copyright { display:none; }' +
       '}';
 
     var style = document.createElement('style');
@@ -643,7 +722,7 @@
     var bannerOverlay = document.createElement('div');
     bannerOverlay.id = BANNER_ID;
 
-    // Container principal 720x386
+    // Container principal 720x500
     var container = document.createElement('div');
     container.className = 'at-dh-container';
 
@@ -686,39 +765,35 @@
     }
     container.appendChild(sparkleLayer);
 
-    // --- Botao fechar ---
-    var closeBtn = document.createElement('button');
-    closeBtn.className = 'at-dh-close';
-    closeBtn.setAttribute('aria-label', 'Fechar');
-    closeBtn.innerHTML =
-      '<svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-      '<path d="M1 1L13 13M13 1L1 13" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
-    container.appendChild(closeBtn);
+    // --- Layout principal (flex) ---
+    var layout = document.createElement('div');
+    layout.className = 'at-dh-layout';
 
-    // --- Logo Disney (mobile - topo) ---
-    var mobileLogoWrap = document.createElement('div');
-    mobileLogoWrap.className = 'at-dh-mobile-logo';
-    var mobileLogoImg = document.createElement('img');
-    mobileLogoImg.src = 'https://i.imgur.com/ydjrslV.png';
-    mobileLogoImg.alt = 'Walt Disney World';
-    mobileLogoWrap.appendChild(mobileLogoImg);
-    container.appendChild(mobileLogoWrap);
+    // --- Coluna esquerda ---
+    var colLeft = document.createElement('div');
+    colLeft.className = 'at-dh-col-left';
 
-    // --- Titulo (txt) ---
+    // Logo topo
+    var logoWrap = document.createElement('div');
+    logoWrap.className = 'at-dh-logo';
+    var logoImg = document.createElement('img');
+    logoImg.src = 'https://i.imgur.com/ydjrslV.png';
+    logoImg.alt = 'Walt Disney World';
+    logoWrap.appendChild(logoImg);
+    colLeft.appendChild(logoWrap);
+
+    // Titulo
     var txt = document.createElement('div');
     txt.className = 'at-dh-txt';
     txt.innerHTML =
-      '<span class="at-dh-txt-line1">Complete sua experi\u00EAncia Disney!</span>' +
-      '<span class="at-dh-txt-body">Garanta seus <strong>ingressos e passes Disney</strong><br>' +
-      'por condi\u00E7\u00F5es imperd\u00EDveis</span>';
-    container.appendChild(txt);
+      '<span class="at-dh-txt-line1">Complete sua experi\u00EAncia m\u00E1gica!</span>' +
+      '<span class="at-dh-txt-body">Garanta seus <strong>Ingressos <span class="at-dh-highlight">Disney</span></strong> com 12%OFF com o cupom exclusivo. Por tempo e disponibilidade limitada.</span>';
+    colLeft.appendChild(txt);
 
-    // --- Frame oferta (Rectangle 6) ---
-    var offerFrame = document.createElement('div');
-    offerFrame.className = 'at-dh-offer-frame';
-    container.appendChild(offerFrame);
+    // Bloco oferta
+    var offerBlock = document.createElement('div');
+    offerBlock.className = 'at-dh-offer-block';
 
-    // --- Faixa de parques (Frame 15065) - 6 icones Figma ---
     var parkIcons = [
       { src: 'https://i.imgur.com/12lQ5lp.png', alt: 'Magic Kingdom' },
       { src: 'https://i.imgur.com/nLG5yvC.png', alt: 'Animal Kingdom' },
@@ -736,71 +811,114 @@
       parkImg.alt = park.alt;
       parkStrip.appendChild(parkImg);
     });
-    container.appendChild(parkStrip);
+    offerBlock.appendChild(parkStrip);
 
-    // --- Bullet rows ---
+    var offerFrame = document.createElement('div');
+    offerFrame.className = 'at-dh-offer-frame';
+
+    var bulletsWrap = document.createElement('div');
+    bulletsWrap.className = 'at-dh-bullets';
+
     var bulletItems = [
-      { type: 'check', html: '+ de <strong>60 op\u00E7\u00F5es</strong> de ingressos' },
-      { type: 'check', html: 'Ganhe pontos com <strong>Cart\u00E3o Azul</strong>' },
-      { type: 'check', html: 'Parcelamento em at\u00E9 <strong>10x sem juros</strong>' },
+      {
+        type: 'check',
+        html: '12%OFF em ingressos para todos os <strong>Parques Tem\u00E1ticos <span class="at-dh-highlight">Disney</span></strong> aplicando o cupom',
+      },
+      {
+        type: 'check',
+        html: 'V\u00E1lido de <strong>18/06/2026</strong> a <strong>30/06/2026</strong>',
+      },
+      {
+        type: 'check',
+        html: 'Apenas para viagens a serem realizadas entre <strong>18/05/2026</strong> a <strong>31/12/2027</strong>',
+      },
     ];
-    var bulletTops = [166, 202, 238];
-    bulletItems.forEach(function (item, index) {
+    bulletItems.forEach(function (item) {
       var row = document.createElement('div');
-      row.className = 'at-dh-bullet-row at-dh-bullet-row-' + index;
-      row.style.top = bulletTops[index] + 'px';
+      row.className = 'at-dh-bullet-row';
 
-      var iconEl;
-      if (item.type === 'img') {
-        iconEl = document.createElement('img');
-        iconEl.className = 'at-dh-bullet-icon-img';
-        iconEl.src = item.src;
-        iconEl.alt = '';
-      } else {
-        iconEl = document.createElement('div');
-        iconEl.className = 'at-dh-bullet-icon-wrap';
-        iconEl.innerHTML =
-          '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7.5L5.5 11L12 3.5" stroke="#00043E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-      }
+      var iconEl = document.createElement('div');
+      iconEl.className = 'at-dh-bullet-icon-wrap';
+      iconEl.innerHTML =
+        '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7.5L5.5 11L12 3.5" stroke="#00043E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
       row.appendChild(iconEl);
 
       var bulletTxt = document.createElement('span');
       bulletTxt.className = 'at-dh-bullet-text';
-      if (item.html) {
-        bulletTxt.innerHTML = item.html;
-      } else {
-        bulletTxt.textContent = item.text;
-      }
+      bulletTxt.innerHTML = item.html;
       row.appendChild(bulletTxt);
 
-      container.appendChild(row);
+      bulletsWrap.appendChild(row);
     });
+    offerFrame.appendChild(bulletsWrap);
 
-    // --- CTA ---
+    var couponWrap = document.createElement('div');
+    couponWrap.className = 'at-dh-coupon-wrap';
+
+    var couponLabel = document.createElement('div');
+    couponLabel.className = 'at-dh-coupon-label';
+    couponLabel.textContent = 'Aproveite o cupom';
+    couponWrap.appendChild(couponLabel);
+
+    var couponBtn = document.createElement('button');
+    couponBtn.type = 'button';
+    couponBtn.className = 'at-dh-coupon-box';
+    couponBtn.setAttribute('aria-label', 'Copiar cupom ' + COUPON_CODE);
+    couponBtn.innerHTML =
+      '<span class="at-dh-coupon-percent" aria-hidden="true">' +
+      '<img src="' +
+      COUPON_ICON_TICKET +
+      '" alt="" width="20" height="20" />' +
+      '</span>' +
+      '<span class="at-dh-coupon-code">' +
+      COUPON_CODE +
+      '</span>' +
+      '<span class="at-dh-coupon-copy" aria-hidden="true">' +
+      '<img src="' +
+      COUPON_ICON_COPY +
+      '" alt="" width="20" height="20" />' +
+      '</span>';
+    couponWrap.appendChild(couponBtn);
+
+    offerBlock.appendChild(offerFrame);
+    offerBlock.appendChild(couponWrap);
+    colLeft.appendChild(offerBlock);
+
+    // Rodape (CTA + consulte)
+    var footer = document.createElement('div');
+    footer.className = 'at-dh-footer';
+
     var cta = document.createElement('a');
     cta.className = 'at-dh-cta';
     cta.href = BANNER_LINK;
     cta.target = '_blank';
     cta.rel = 'noopener noreferrer';
-    cta.textContent = 'Comprar Ingressos';
-    container.appendChild(cta);
+    cta.textContent = 'Comprar ingressos';
+    footer.appendChild(cta);
 
-    // --- Logo Disney ao lado do CTA ---
-    var ctaLogoWrap = document.createElement('div');
-    ctaLogoWrap.className = 'at-dh-cta-logo';
-    var logoDisney = document.createElement('img');
-    logoDisney.src = 'https://i.imgur.com/ydjrslV.png';
-    logoDisney.alt = 'Walt Disney World';
-    ctaLogoWrap.appendChild(logoDisney);
-    container.appendChild(ctaLogoWrap);
-
-    // --- Consulte condicoes ---
     var consult = document.createElement('div');
     consult.className = 'at-dh-consult';
     consult.textContent = '*Consulte condi\u00E7\u00F5es.';
-    container.appendChild(consult);
+    footer.appendChild(consult);
 
-    // --- Foto personagem (circulo grande) ---
+    colLeft.appendChild(footer);
+    layout.appendChild(colLeft);
+
+    // --- Coluna direita ---
+    var colRight = document.createElement('div');
+    colRight.className = 'at-dh-col-right';
+
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'at-dh-close';
+    closeBtn.setAttribute('aria-label', 'Fechar');
+    closeBtn.innerHTML =
+      '<svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M1 1L13 13M13 1L1 13" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+    colRight.appendChild(closeBtn);
+
+    var photoCol = document.createElement('div');
+    photoCol.className = 'at-dh-photo-col';
+
     var photoWrap = document.createElement('div');
     photoWrap.className = 'at-dh-photo-wrapper';
 
@@ -809,17 +927,17 @@
     photoImg.src = 'https://i.imgur.com/7dXE65l.png';
     photoImg.alt = 'Disney';
     photoWrap.appendChild(photoImg);
+    photoCol.appendChild(photoWrap);
 
-    var photoGrad = document.createElement('div');
-    photoGrad.className = 'at-dh-photo-gradient';
-    photoWrap.appendChild(photoGrad);
-    container.appendChild(photoWrap);
-
-    // --- Copyright ---
     var copy = document.createElement('div');
     copy.className = 'at-dh-copyright';
-    copy.textContent = '\u00A9 2026 Disney';
-    container.appendChild(copy);
+    copy.innerHTML = '\u00A9 2026 <span class="at-dh-highlight">Disney</span>';
+    photoCol.appendChild(copy);
+
+    colRight.appendChild(photoCol);
+    layout.appendChild(colRight);
+
+    container.appendChild(layout);
 
     // Monta tudo
     bannerOverlay.appendChild(container);
@@ -835,10 +953,15 @@
     // Eventos
     cta.addEventListener('click', function (e) {
       e.stopPropagation();
-        try {
-          localStorage.setItem(PROMO_AUTOCLOCK_KEY, String(Date.now()));
-        } catch (err) {}
+      try {
+        localStorage.setItem(PROMO_AUTOCLOCK_KEY, String(Date.now()));
+      } catch (err) {}
       analyticsEvent('banner_disney_ingressos_cta', 'click');
+    });
+
+    couponBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      copyCouponCode(couponBtn);
     });
 
     closeBtn.addEventListener('click', function (e) {
