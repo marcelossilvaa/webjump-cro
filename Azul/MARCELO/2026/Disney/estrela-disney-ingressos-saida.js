@@ -13,11 +13,11 @@
     'pmweb_azv_e-mail_banner_lf_azv_202603-azv-b2c-emm-168h-viagem-incentivohospedagemdisney-d7_hotel',
   ];
   var COUPON_CODE = 'ALEGRIA12';
-  var COUPON_ICON_TICKET = 'https://i.imgur.com/4GwUwV6.png';
-  var COUPON_ICON_COPY = 'https://i.imgur.com/B1wX3xt.png';
+  var COUPON_ICON_TICKET = 'https://i.imgur.com/B1wX3xt.png';
+  var COUPON_ICON_COPY = 'https://i.imgur.com/4GwUwV6.png';
   var BANNER_ASSET_URLS = [
     'https://i.imgur.com/7dXE65l.png',
-    'https://i.imgur.com/ydjrslV.png',
+    'https://i.imgur.com/XXIXMQA.png',
     'https://i.imgur.com/12lQ5lp.png',
     'https://i.imgur.com/nLG5yvC.png',
     'https://i.imgur.com/PhHNRqr.png',
@@ -372,7 +372,7 @@
       '}' +
       '.at-dh-txt strong { font-weight:700; }' +
       '.at-dh-highlight {' +
-      '  background:#FFCE00; color:#00043E; font-weight:700;' +
+      '  font-weight:700;' +
       '  padding:0 3px; border-radius:2px;' +
       '}' +
       '.at-dh-txt-line1 { font-size:20px; line-height:109%; }' +
@@ -777,7 +777,7 @@
     var logoWrap = document.createElement('div');
     logoWrap.className = 'at-dh-logo';
     var logoImg = document.createElement('img');
-    logoImg.src = 'https://i.imgur.com/ydjrslV.png';
+    logoImg.src = 'https://i.imgur.com/XXIXMQA.png';
     logoImg.alt = 'Walt Disney World';
     logoWrap.appendChild(logoImg);
     colLeft.appendChild(logoWrap);
