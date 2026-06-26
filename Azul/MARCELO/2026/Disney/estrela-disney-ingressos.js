@@ -5,12 +5,16 @@
   var OVERLAY_ID = 'at-disney-hoteis-overlay';
   var BANNER_ID = 'at-disney-hoteis-banner';
   var EVAR84 = 'AT_Disney_campaign';
-  var UTM_SOURCE_ALLOWED = [
+  var UTM_CAMPAIGN_ALLOWED = [
     'pmweb_azv_e-mail_banner_mf_azv_202510-azv-b2c-emm-168h-viagem-produtosdisneya-d2_n',
     'pmweb_azv_e-mail_banner_mf_azv_202510-azv-b2c-emm-168h-viagem-produtosdisneyb-d2_n',
+    'pmweb_azv_e-mail_banner_lf_azv_202512-azv-b2c-emm-168h-viagem-ingressosdisney-d16_tickets',
+    'pmweb_azv_e-mail_banner_lf_azv_202603-azv-b2c-emm-168h-viagem-incentivoingressosdisney-d5_tickets',
     '202512-AZV-B2C-EMM-168H-VIAGEM-INGRESSOSDISNEY-D16',
     '202604-azv-b2c-psh-168h-inter-previagemhospedagemdisney-d0_tickets',
     '202603-AZV-B2C-EMM-168H-VIAGEM-INCENTIVOINGRESSOSDISNEY-D5',
+    '20260624-azv-b2c-wpp-128h-viagem-q3-',
+    'pmweb_azv_whatsapp_conteudo_uf_azv_20260624-azv-b2c-wpp-128h-viagem-q3-_tickets',
   ];
   var COUPON_CODE = 'ALEGRIA12';
   var COUPON_ICON_TICKET = 'https://i.imgur.com/B1wX3xt.png';
@@ -37,6 +41,7 @@
   var DAILY_KEY = 'at_disney_ingressos_shown_daily';
   // Flag para automação na LP de promoções
   var PROMO_AUTOCLOCK_KEY = 'at_disney_promocoes_autoclick_ingressos';
+  var PROMO_DISNEY_PATH = '/br/pt/disney/promocoes-disney';
   var HOME_BLOCKED_URL = 'https://www.voeazul.com.br/br/pt/home';
 
   // Limpa execucoes anteriores
@@ -47,23 +52,62 @@
   var oldBanner = document.getElementById(BANNER_ID);
   if (oldBanner) oldBanner.parentNode.removeChild(oldBanner);
 
-  function utmSourceMatches(source) {
-    if (!source) return false;
-    var s = String(source).toLowerCase();
-    for (var i = 0; i < UTM_SOURCE_ALLOWED.length; i++) {
-      var allowed = String(UTM_SOURCE_ALLOWED[i] || '').toLowerCase();
+  function isPromocoesDisneyPage() {
+    try {
+      return String(window.location.pathname || '') === PROMO_DISNEY_PATH;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function readCampaignCandidates() {
+    var candidates = [];
+    try {
+      var params = new URLSearchParams(window.location.search || '');
+      var keys = ['utm_campaign', 'utm_campaing', 'utm_term'];
+      for (var i = 0; i < keys.length; i++) {
+        var val = params.get(keys[i]);
+        if (val) candidates.push(val);
+      }
+      var sWpp = params.get('s_wpp') || '';
+      var sEmid = params.get('s_emid') || '';
+      if (sWpp) candidates.push(sWpp);
+      if (sEmid) candidates.push(sEmid);
+    } catch (e) {}
+    return candidates;
+  }
+
+  function utmCampaignMatches(campaign) {
+    if (!campaign) return false;
+    var c = String(campaign).toLowerCase();
+    for (var i = 0; i < UTM_CAMPAIGN_ALLOWED.length; i++) {
+      var allowed = String(UTM_CAMPAIGN_ALLOWED[i] || '').toLowerCase();
       if (!allowed) continue;
-      if (s === allowed) return true;
-      if (s.indexOf(allowed) !== -1) return true;
+      if (c === allowed) return true;
+      if (c.indexOf(allowed) !== -1) return true;
     }
     return false;
   }
 
   function hasRequiredUtm() {
+    if (isPromocoesDisneyPage()) return true;
+
     try {
-      var params = new URLSearchParams(window.location.search);
-      var source = params.get('utm_source') || '';
-      return utmSourceMatches(source);
+      var search = window.location.search || '';
+      if (
+        search.indexOf('utm_campaign=') === -1 &&
+        search.indexOf('utm_campaing=') === -1 &&
+        search.indexOf('s_wpp=') === -1 &&
+        search.indexOf('s_emid=') === -1
+      ) {
+        return false;
+      }
+
+      var candidates = readCampaignCandidates();
+      for (var i = 0; i < candidates.length; i++) {
+        if (utmCampaignMatches(candidates[i])) return true;
+      }
+      return false;
     } catch (e) {
       return false;
     }

@@ -5,7 +5,7 @@
   var OVERLAY_ID = 'at-disney-hoteis-overlay';
   var BANNER_ID = 'at-disney-hoteis-banner';
   var EVAR84 = 'AT_Disney_campaign';
-  var UTM_SOURCE_ALLOWED = [
+  var UTM_CAMPAIGN_ALLOWED = [
     '202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOPESQUISAINGRESSOSDISNEY-D0',
     '202604-azv-b2c-emm-168h-viagem-abandonopesquisaingressosdisneyAZ-d2_tickets',
     '202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOCARRINHODISNEY-D0',
@@ -50,23 +50,27 @@
   var oldBanner = document.getElementById(BANNER_ID);
   if (oldBanner) oldBanner.parentNode.removeChild(oldBanner);
 
-  function utmSourceMatches(source) {
-    if (!source) return false;
-    var s = String(source).toLowerCase();
-    for (var i = 0; i < UTM_SOURCE_ALLOWED.length; i++) {
-      var allowed = String(UTM_SOURCE_ALLOWED[i] || '').toLowerCase();
+  function utmCampaignMatches(campaign) {
+    if (!campaign) return false;
+    var c = String(campaign).toLowerCase();
+    for (var i = 0; i < UTM_CAMPAIGN_ALLOWED.length; i++) {
+      var allowed = String(UTM_CAMPAIGN_ALLOWED[i] || '').toLowerCase();
       if (!allowed) continue;
-      if (s === allowed) return true;
-      if (s.indexOf(allowed) !== -1) return true;
+      if (c === allowed) return true;
+      if (c.indexOf(allowed) !== -1) return true;
     }
     return false;
   }
 
   function hasRequiredUtm() {
     try {
-      var params = new URLSearchParams(window.location.search);
-      var source = params.get('utm_source') || '';
-      return utmSourceMatches(source);
+      var search = window.location.search || '';
+      if (search.indexOf('utm_campaign=') === -1 && search.indexOf('utm_campaing=') === -1) {
+        return false;
+      }
+      var params = new URLSearchParams(search);
+      var campaign = params.get('utm_campaign') || params.get('utm_campaing') || '';
+      return utmCampaignMatches(campaign);
     } catch (e) {
       return false;
     }
