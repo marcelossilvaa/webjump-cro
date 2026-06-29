@@ -16,7 +16,6 @@
     "https://www.nespresso.com/br/pt/myaccount/standing-orders";
   const STANDING_ORDERS_EDIT_URL =
     "https://www.nespresso.com/br/pt/myaccount/standing-orders#/orders/list";
-  const DEADLINE_DATE = "24/06";
   const TRACKING_CATEGORY = "cafes_descontinuados_assinatura";
 
   const DELISTED_SKUS = [
@@ -154,10 +153,10 @@
   }
 
   function getGreeting() {
-    if (cachedFirstName) {
-      return "Atenção, " + cachedFirstName + "!";
-    }
-    return "Atenção!";
+    const attentionLine = cachedFirstName
+      ? "Atenção, " + cachedFirstName + "!"
+      : "Atenção!";
+    return attentionLine + "<br>Atualize sua Assinatura";
   }
 
   function getProductImageUrl(productData) {
@@ -173,44 +172,6 @@
     return image;
   }
 
-  function getProductSubtitle(productData) {
-    let weight = "";
-    let grind = "";
-
-    if (productData.ingredients && productData.ingredients.length) {
-      productData.ingredients.forEach(function (ingredient) {
-        const text = ingredient.text || "";
-        const lowerText = text.toLowerCase();
-
-        if (
-          lowerText.indexOf("peso") !== -1 ||
-          (lowerText.indexOf("g") !== -1 && lowerText.indexOf("cápsula") === -1)
-        ) {
-          weight = text.replace(/Peso Líquido\s*/i, "").trim();
-        }
-
-        if (
-          lowerText.indexOf("torrado") !== -1 ||
-          lowerText.indexOf("moído") !== -1 ||
-          lowerText.indexOf("grão") !== -1 ||
-          lowerText.indexOf("graos") !== -1
-        ) {
-          grind = text;
-        }
-      });
-    }
-
-    const parts = [];
-    if (weight) {
-      parts.push(weight);
-    }
-    if (grind) {
-      parts.push(grind);
-    }
-
-    return parts.join(" • ");
-  }
-
   function buildProductItemHtml(productData) {
     const name = productData.name || "";
     const intensity =
@@ -218,19 +179,12 @@
         productData.capsuleProperties.intensity) ||
       "";
     const image = getProductImageUrl(productData);
-    const subtitle = getProductSubtitle(productData);
 
     let detailsHtml = "";
     if (intensity) {
       detailsHtml +=
         '<span class="wj-delisted-subs-product-intensity">Intensidade ' +
         intensity +
-        "</span>";
-    }
-    if (subtitle) {
-      detailsHtml +=
-        '<span class="wj-delisted-subs-product-subtitle">' +
-        subtitle +
         "</span>";
     }
 
@@ -444,8 +398,7 @@
       "font-weight: 700;" +
       "color: #17171A;" +
       "}" +
-      ".wj-delisted-subs-product-intensity," +
-      ".wj-delisted-subs-product-subtitle {" +
+      ".wj-delisted-subs-product-intensity {" +
       "font-size: 12px;" +
       "color: #666;" +
       "}" +
@@ -529,25 +482,25 @@
       '<h2 id="wj-delisted-subs-heading" class="wj-delisted-subs-title">' +
       greeting +
       "</h2>" +
-      '<p class="wj-delisted-subs-text">Alguns cafés da sua assinatura estão sendo descontinuados. Edite sua assinatura para continuar recebendo seus pedidos recorrentes.</p>' +
+      '<p class="wj-delisted-subs-text">Alguns cafés da sua Assinatura serão descontinuados. Confira ao lado os cafés que precisam ser substituídos. Revise sua seleção e escolha novos cafés antes do seu próximo envio.</p>' +
       '<div class="wj-delisted-subs-info-box">' +
       '<p class="wj-delisted-subs-info-title">' +
       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2C8.5 2 6 4.5 6 8c0 4.5 6 12 6 12s6-7.5 6-12c0-3.5-2.5-6-6-6z" fill="#257A57"/><circle cx="12" cy="8" r="2" fill="#EEF5F0"/></svg>' +
-      "Por que isso aconteceu?" +
+      "Por que devo atualizar minha Assinatura?" +
       "</p>" +
-      '<p class="wj-delisted-subs-info-text">Nossos cafés estão sempre evoluindo para oferecer novas experiências. Alguns itens saem do portfólio para dar espaço a novidades incríveis.</p>' +
+      '<p class="wj-delisted-subs-info-text">Caso cafés descontinuados não sejam substituídos e/ou sua seleção fique abaixo de 30 cápsulas, seus próximos pedidos serão enviados automaticamente, sem os benefícios da Assinatura, como: 10% OFF em cafés, frete grátis e status Ambassador.</p>' +
       "</div>" +
       '<div class="wj-delisted-subs-actions">' +
       '<a href="' +
       STANDING_ORDERS_EDIT_URL +
-      '" class="wj-delisted-subs-btn-primary" data-wj-action="editar">Editar assinatura</a>' +
+      '" class="wj-delisted-subs-btn-primary" data-wj-action="atualizar">Atualizar Assinatura</a>' +
       '<a href="' +
       STANDING_ORDERS_URL +
       '" class="wj-delisted-subs-btn-secondary" data-wj-action="ver">Ver minha assinatura</a>' +
       "</div>" +
       "</div>" +
       '<div class="wj-delisted-subs-right">' +
-      '<h3 class="wj-delisted-subs-list-title">Cafés descontinuados da sua assinatura</h3>' +
+      '<h3 class="wj-delisted-subs-list-title">Cafés descontinuados do portfólio:</h3>' +
       '<ul class="wj-delisted-subs-product-list" id="wj-delisted-subs-products">' +
       cachedProductsHtml +
       "</ul>" +
@@ -555,9 +508,7 @@
       "</div>" +
       '<div class="wj-delisted-subs-footer">' +
       '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" stroke="#257A57" stroke-width="2"/><path d="M3 9h18M8 3v4M16 3v4" stroke="#257A57" stroke-width="2" stroke-linecap="round"/></svg>' +
-      '<p class="wj-delisted-subs-footer-text">Evite interrupções! Atualize sua assinatura até <strong>' +
-      DEADLINE_DATE +
-      "</strong> para garantir que seu próximo pedido seja enviado normalmente.</p>" +
+      '<p class="wj-delisted-subs-footer-text">Evite perder seus benefícios de Assinante! Atualize sua Assinatura antes do processamento do seu próximo pedido.</p>' +
       "</div>" +
       "</div>";
 
@@ -579,11 +530,11 @@
       }
     });
 
-    const editBtn = overlay.querySelector('[data-wj-action="editar"]');
+    const editBtn = overlay.querySelector('[data-wj-action="atualizar"]');
     const viewBtn = overlay.querySelector('[data-wj-action="ver"]');
 
     editBtn.addEventListener("click", function () {
-      sendGAEvent("click", "clicou_editar_assinatura");
+      sendGAEvent("click", "clicou_atualizar_assinatura");
     });
 
     viewBtn.addEventListener("click", function () {
