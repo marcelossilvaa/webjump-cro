@@ -10,6 +10,7 @@
   const ROOT_ATTR = 'data-wj-resumo-compra';
   const DATE_ENHANCED_ATTR = 'data-wj-date-enhanced';
   const BADGE_ENHANCED_ATTR = 'data-wj-badge-enhanced';
+  const TOTAL_PRICE_ENHANCED_ATTR = 'data-wj-total-price-enhanced';
   const ROW_HIDDEN_CLASS = 'wj-summary-row-hidden';
   const ROW_SUBTOTAL_CLASS = 'wj-summary-row-subtotal';
   const ROW_SHIPPING_CLASS = 'wj-summary-row-shipping';
@@ -22,13 +23,14 @@
 
   const COLOR_ORANGE = '#ff5a14';
   const COLOR_ORANGE_LINE = '#e8a070';
-  const COLOR_ORANGE_BADGE = '#ff5a14';
-  const COLOR_ORANGE_BADGE_BG = '#fff0e8';
+  const COLOR_BADGE_BG = '#f2f2f2';
+  const COLOR_BADGE_TEXT = '#697386';
   const COLOR_GREEN = '#13a538';
   const COLOR_TEXT = '#202938';
   const COLOR_MUTED = '#8b8f98';
   const COLOR_BORDER = '#e1e5ea';
   const COLOR_PEACH = '#fcf8f6';
+  const FONT_FAMILY = 'Ubuntu, Arial, Helvetica, sans-serif';
 
   function scoped(selector) {
     return ROOT_SELECTOR + '[' + ROOT_ATTR + '="true"] ' + selector;
@@ -45,17 +47,17 @@
       '  border-radius: 8px !important;',
       '  background: #ffffff !important;',
       '  box-shadow: none !important;',
-      '  font-family: Arial, Helvetica, sans-serif !important;',
+      '  font-family: ' + FONT_FAMILY + ' !important;',
       '  color: ' + COLOR_TEXT + ' !important;',
       '}',
       scoped('*, ') + scoped('*::before, ') + scoped('*::after') + ' {',
       '  box-sizing: border-box !important;',
       '}',
       scoped('> h3') + ' {',
-      '  margin: 0 0 14px !important;',
+      '  margin: 0 !important;',
       '  padding: 0 0 12px !important;',
       '  border: 0 !important;',
-      '  border-bottom: 1px solid ' + COLOR_ORANGE_LINE + ' !important;',
+      '  border-bottom: 2px solid ' + COLOR_ORANGE_LINE + ' !important;',
       '  color: ' + COLOR_TEXT + ' !important;',
       '  font-size: 18px !important;',
       '  font-weight: 700 !important;',
@@ -79,14 +81,14 @@
       '  align-items: flex-start !important;',
       '  justify-content: space-between !important;',
       '  gap: 12px !important;',
-      '  margin: 0 0 10px !important;',
       '  padding: 12px 14px !important;',
       '  border: 0 !important;',
-      '  border-top: 2px solid ' + COLOR_ORANGE + ' !important;',
+      '  border-top: 0 !important;',
       '  border-radius: 0 !important;',
       '  background: ' + COLOR_PEACH + ' !important;',
       '  box-shadow: none !important;',
       '}',
+
       scoped('.seller-info-container') + ' {',
       '  flex: 1 1 auto !important;',
       '  min-width: 0 !important;',
@@ -200,25 +202,40 @@
       '  align-items: center !important;',
       '  justify-content: space-between !important;',
       '  gap: 12px !important;',
-      '  margin: 8px 0 0 !important;',
       '  padding: 10px 0 0 !important;',
       '  border: 0 !important;',
       '  border-top: 1px solid ' + COLOR_BORDER + ' !important;',
       '  background: transparent !important;',
       '  color: ' + COLOR_TEXT + ' !important;',
       '  font-size: 13px !important;',
+      '  margin-top: 0px !important;',
       '}',
       scoped('.delivery-cost > div') + ' {',
       '  display: inline-flex !important;',
       '  align-items: center !important;',
       '  gap: 4px !important;',
+      '  font-size: 13px !important;',
+      '  font-weight: 400 !important;',
       '}',
       scoped('.delivery-cost .delivery-price') + ' {',
       '  color: ' + COLOR_TEXT + ' !important;',
+      '  font-size: 13px !important;',
       '  font-weight: 400 !important;',
+      '}',
+      scoped('.delivery-cost > div > span:not(.delivery-price)') + ' {',
+      '  font-size: 13px !important;',
+      '  font-weight: 700 !important;',
       '}',
       scoped('.delivery-cost .total-price') + ' {',
       '  color: ' + COLOR_TEXT + ' !important;',
+      '  font-size: 13px !important;',
+      '  font-weight: 400 !important;',
+      '}',
+      scoped('.delivery-cost .total-price .wj-total-price-label') + ' {',
+      '  font-size: 11px !important;',
+      '  font-weight: 400 !important;',
+      '}',
+      scoped('.delivery-cost .total-price .wj-total-price-value') + ' {',
       '  font-size: 13px !important;',
       '  font-weight: 700 !important;',
       '}',
@@ -245,7 +262,9 @@
       scoped('.seller-delivery-information .delivery-date.wj-delivery-date-ko') + ' {',
       '  color: ' + COLOR_TEXT + ' !important;',
       '}',
-      scoped('.seller-delivery-information .delivery-date.wj-delivery-date-ko .wj-delivery-date-value') + ' {',
+      scoped(
+        '.seller-delivery-information .delivery-date.wj-delivery-date-ko .wj-delivery-date-value',
+      ) + ' {',
       '  color: ' + COLOR_ORANGE + ' !important;',
       '  font-weight: 700 !important;',
       '}',
@@ -261,22 +280,22 @@
       '  min-width: 56px !important;',
       '  margin: 0 !important;',
       '  padding: 4px 10px !important;',
-      '  border: 1px solid ' + COLOR_ORANGE_LINE + ' !important;',
-      '  border-radius: 999px !important;',
-      '  background: ' + COLOR_ORANGE_BADGE_BG + ' !important;',
-      '  color: ' + COLOR_ORANGE_BADGE + ' !important;',
+      '  border: 0 !important;',
+      '  border-radius: 8px !important;',
+      '  background: ' + COLOR_BADGE_BG + ' !important;',
+      '  color:' + COLOR_ORANGE + ' !important;',
       '  font-size: 12px !important;',
-      '  font-weight: 700 !important;',
+      '  font-weight: 600 !important;',
       '  white-space: nowrap !important;',
       '}',
       scoped('.order-summary') + ' {',
       '  display: flex !important;',
       '  flex-direction: column !important;',
-      '  gap: 10px !important;',
+      '  gap: 6px !important;',
       '  margin: 16px 0 0 !important;',
       '  padding: 16px 0 0 !important;',
       '  border: 0 !important;',
-      '  border-top: 1px solid ' + COLOR_ORANGE_LINE + ' !important;',
+      '  border-top: 2px solid ' + COLOR_ORANGE_LINE + ' !important;',
       '  border-bottom: 0 !important;',
       '  background: transparent !important;',
       '  box-shadow: none !important;',
@@ -380,10 +399,18 @@
     const text = normalizeText(label.textContent).toLowerCase();
     const bind = label.getAttribute('data-bind') || '';
 
-    if (bind.indexOf('Quotation') !== -1 || text.indexOf('cotação') !== -1 || text.indexOf('cotacao') !== -1) {
+    if (
+      bind.indexOf('Quotation') !== -1 ||
+      text.indexOf('cotação') !== -1 ||
+      text.indexOf('cotacao') !== -1
+    ) {
       return 'quotation';
     }
-    if (bind.indexOf('Product value') !== -1 || text.indexOf('valor dos produto') !== -1 || text === 'subtotal') {
+    if (
+      bind.indexOf('Product value') !== -1 ||
+      text.indexOf('valor dos produto') !== -1 ||
+      text === 'subtotal'
+    ) {
       return 'subtotal';
     }
     if (bind.indexOf('Shipping total') !== -1 || text.indexOf('total do frete') !== -1) {
@@ -426,7 +453,10 @@
     let childIndex = 0;
 
     for (let j = 0; j < visibleRows.length; j++) {
-      while (childIndex < children.length && children[childIndex].classList.contains(ROW_HIDDEN_CLASS)) {
+      while (
+        childIndex < children.length &&
+        children[childIndex].classList.contains(ROW_HIDDEN_CLASS)
+      ) {
         childIndex += 1;
       }
       if (childIndex >= children.length || children[childIndex] !== visibleRows[j]) {
@@ -475,7 +505,12 @@
       const row = rows[i];
       const type = getSummaryRowType(row);
 
-      row.classList.remove(ROW_HIDDEN_CLASS, ROW_SUBTOTAL_CLASS, ROW_SHIPPING_CLASS, ROW_QUANTITY_CLASS);
+      row.classList.remove(
+        ROW_HIDDEN_CLASS,
+        ROW_SUBTOTAL_CLASS,
+        ROW_SHIPPING_CLASS,
+        ROW_QUANTITY_CLASS,
+      );
 
       if (type === 'quotation') {
         grouped.quotation = row;
@@ -512,10 +547,15 @@
       grouped.other.push(row);
     }
 
-    const orderedRows = [grouped.subtotal, grouped.quantity, grouped.shipping].concat(grouped.other);
+    const orderedRows = [grouped.subtotal, grouped.quantity, grouped.shipping].concat(
+      grouped.other,
+    );
     const orderKey = getSummaryRowOrderKey(rows);
 
-    if (container.getAttribute(ORDER_DONE_ATTR) === orderKey && isSummaryOrderCorrect(container, orderedRows)) {
+    if (
+      container.getAttribute(ORDER_DONE_ATTR) === orderKey &&
+      isSummaryOrderCorrect(container, orderedRows)
+    ) {
       return;
     }
 
@@ -528,6 +568,17 @@
 
   function updateSummaryTitle(summary) {
     setTextIfChanged(summary.querySelector('h3'), 'Resumo da compra');
+  }
+
+  function getAddressText(addressEl) {
+    if (!addressEl) return '';
+
+    const boundSpan = addressEl.querySelector('span[data-bind]');
+    if (boundSpan) {
+      return normalizeText(boundSpan.textContent);
+    }
+
+    return normalizeText(addressEl.textContent);
   }
 
   function enhanceDeliveryDate(dateEl) {
@@ -544,13 +595,13 @@
     const nextText = label + ' ' + value;
     const existingValue = dateEl.querySelector('.wj-delivery-date-value');
 
-    if (existingValue && existingValue.textContent === value) {
+    if (dateEl.getAttribute(DATE_ENHANCED_ATTR) === nextText && existingValue) {
       return;
     }
 
+    dateEl.classList.add('wj-delivery-date-ko');
     if (dateEl.getAttribute('data-bind')) {
-      dateEl.classList.add('wj-delivery-date-ko');
-      return;
+      dateEl.removeAttribute('data-bind');
     }
 
     dateEl.textContent = '';
@@ -561,6 +612,44 @@
     strong.textContent = value;
     dateEl.appendChild(strong);
     dateEl.setAttribute(DATE_ENHANCED_ATTR, nextText);
+  }
+
+  function enhanceTotalPrice(totalEl) {
+    if (!totalEl) return;
+
+    const rawText = normalizeText(totalEl.textContent);
+    if (!rawText) return;
+
+    const match = rawText.match(/^Total:\s*(.+)$/i);
+    if (!match) return;
+
+    const value = match[1].trim();
+    const nextText = 'Total: ' + value;
+
+    if (
+      totalEl.getAttribute(TOTAL_PRICE_ENHANCED_ATTR) === nextText &&
+      totalEl.querySelector('.wj-total-price-value')
+    ) {
+      return;
+    }
+
+    if (totalEl.getAttribute('data-bind')) {
+      totalEl.removeAttribute('data-bind');
+    }
+
+    totalEl.textContent = '';
+
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'wj-total-price-label';
+    labelSpan.textContent = 'Total: ';
+
+    const valueSpan = document.createElement('span');
+    valueSpan.className = 'wj-total-price-value';
+    valueSpan.textContent = value;
+
+    totalEl.appendChild(labelSpan);
+    totalEl.appendChild(valueSpan);
+    totalEl.setAttribute(TOTAL_PRICE_ENHANCED_ATTR, nextText);
   }
 
   function enhanceItemCountBadge(infoBar) {
@@ -580,7 +669,7 @@
   function toggleEmptyAddress(addressEl) {
     if (!addressEl) return;
 
-    const text = addressEl.textContent.replace(/\s+/g, ' ').trim();
+    const text = getAddressText(addressEl);
     if (text) {
       addressEl.classList.remove('wj-empty-address');
       return;
@@ -616,6 +705,11 @@
     const infoBars = summary.querySelectorAll('.seller-delivery-information');
     for (let k = 0; k < infoBars.length; k++) {
       enhanceItemCountBadge(infoBars[k]);
+    }
+
+    const totalPrices = summary.querySelectorAll('.delivery-cost .total-price');
+    for (let t = 0; t < totalPrices.length; t++) {
+      enhanceTotalPrice(totalPrices[t]);
     }
 
     enhanceOrderSummaryRows(summary);
@@ -675,7 +769,10 @@
         const target = mutation.target;
 
         if (mutation.type === 'childList') {
-          if (checkSellerItemNodes(mutation.addedNodes) || checkSellerItemNodes(mutation.removedNodes)) {
+          if (
+            checkSellerItemNodes(mutation.addedNodes) ||
+            checkSellerItemNodes(mutation.removedNodes)
+          ) {
             hasRelevant = true;
             break;
           }
@@ -691,8 +788,16 @@
         }
 
         if (mutation.type === 'characterData') {
-          if (target.parentElement && target.parentElement.closest('.seller-items')) {
+          const parent = target.parentElement;
+          if (parent && parent.closest('.seller-items')) {
             continue;
+          }
+          if (
+            parent &&
+            (parent.classList.contains('delivery-date') || parent.closest('.seller-address'))
+          ) {
+            hasRelevant = true;
+            break;
           }
         }
 
