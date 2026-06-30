@@ -1,5 +1,5 @@
 (function () {
-  if (window.campaignProgressBar) {
+  if (window.boostVertuoWorldProgressBar) {
     return;
   }
   gtmDataObject = window.gtmDataObject || [];
@@ -12,7 +12,7 @@
     experiment_variant_id: "${campaign.recipe.id}",
     experiment_variant: "${campaign.recipe.name}",
   });
-  window.campaignProgressBar = "true";
+  window.boostVertuoWorldProgressBar = "true";
 
   function sendGAEvent(label) {
     window.gtmDataObject = window.gtmDataObject || [];
@@ -27,54 +27,54 @@
   const giftTiersOL = [
     {
       threshold: 150,
-      gift: "1 Pixie Lungo",
-      shortName: "1 Pixie Lungo",
-      displayName: "GANHE 1 PIXIE LUNGO",
+      gift: "1 Porta Cápsula Médio",
+      shortName: "1 Porta Cápsula Médio",
+      displayName: "GANHE 1 PORTA CÁPSULA MÉDIO",
       imageUrl:
-        "https://www.nespresso.com/ecom/medias/sys_master/public/51150903705630/Dinamic-Banner-N3.jpg?attachment=true&cimgnr=9j9nT",
+        "https://www.nespresso.com/ecom/medias/sys_master/public/51473052336158/Dinamic-Banner-N3-1.jpg?attachment=true&cimgnr=ofGB6",
     },
     {
       threshold: 200,
-      gift: "1 Par de Pixie Espresso",
-      shortName: "1 Par de Pixie Espresso",
-      displayName: "GANHE 1 PAR DE PIXIE ESPRESSO",
+      gift: "1 Porta Cápsula Grande",
+      shortName: "1 Porta Cápsula Grande",
+      displayName: "GANHE 1 PORTA CÁPSULA GRANDE",
       imageUrl:
-        "https://www.nespresso.com/ecom/medias/sys_master/public/51150903771166/Dinamic-Banner-N4.jpg?attachment=true&cimgnr=8zOgW",
+        "https://www.nespresso.com/ecom/medias/sys_master/public/51473052401694/Dinamic-Banner-N4-1.jpg?attachment=true&cimgnr=KnrCC",
     },
     {
       threshold: 270,
-      gift: "1 Par de Pixie Lungo",
-      shortName: "1 Par de Pixie Lungo",
-      displayName: "GANHE 1 PAR DE PIXIE LUNGO",
+      gift: "1 Par de Xícara Barista Grande",
+      shortName: "1 Par de Xícara Barista Grande",
+      displayName: "GANHE 1 PAR DE XÍCARA BARISTA GRANDE",
       imageUrl:
-        "https://www.nespresso.com/ecom/medias/sys_master/public/51150903836702/Dinamic-Banner-N5.jpg?attachment=true&cimgnr=KA5qc",
+        "https://www.nespresso.com/ecom/medias/sys_master/public/51473052467230/Dinamic-Banner-N5-1.jpg?attachment=true&cimgnr=QPXds",
     },
   ];
 
   const giftTiersVL = [
     {
       threshold: 120,
-      gift: "1 Pixie Lungo",
-      shortName: "1 Pixie Lungo",
-      displayName: "GANHE 1 PIXIE LUNGO",
+      gift: "1 Porta Cápsula Médio",
+      shortName: "1 Porta Cápsula Médio",
+      displayName: "GANHE 1 PORTA CÁPSULA MÉDIO",
       imageUrl:
-        "https://www.nespresso.com/ecom/medias/sys_master/public/51150903705630/Dinamic-Banner-N3.jpg?attachment=true&cimgnr=9j9nT",
+        "https://www.nespresso.com/ecom/medias/sys_master/public/51473052336158/Dinamic-Banner-N3-1.jpg?attachment=true&cimgnr=ofGB6",
     },
     {
       threshold: 180,
-      gift: "1 Par de Pixie Espresso",
-      shortName: "1 Par de Pixie Espresso",
-      displayName: "GANHE 1 PAR DE PIXIE ESPRESSO",
+      gift: "1 Porta Cápsula Grande",
+      shortName: "1 Porta Cápsula Grande",
+      displayName: "GANHE 1 PORTA CÁPSULA GRANDE",
       imageUrl:
-        "https://www.nespresso.com/ecom/medias/sys_master/public/51150903771166/Dinamic-Banner-N4.jpg?attachment=true&cimgnr=8zOgW",
+        "https://www.nespresso.com/ecom/medias/sys_master/public/51473052401694/Dinamic-Banner-N4-1.jpg?attachment=true&cimgnr=KnrCC",
     },
     {
       threshold: 210,
-      gift: "1 Par de Pixie Lungo",
-      shortName: "1 Par de Pixie Lungo",
-      displayName: "GANHE 1 PAR DE PIXIE LUNGO",
+      gift: "1 Par de Xícara Barista Grande",
+      shortName: "1 Par de Xícara Barista Grande",
+      displayName: "GANHE 1 PAR DE XÍCARA BARISTA GRANDE",
       imageUrl:
-        "https://www.nespresso.com/ecom/medias/sys_master/public/51150903836702/Dinamic-Banner-N5.jpg?attachment=true&cimgnr=KA5qc",
+        "https://www.nespresso.com/ecom/medias/sys_master/public/51473052467230/Dinamic-Banner-N5-1.jpg?attachment=true&cimgnr=QPXds",
     },
   ];
 
@@ -113,7 +113,7 @@
                     
                     .nespresso-shimmer-effect {
                       background-color: transparent !important;
-                      border:3px solid #ab2417 !important;
+                      border:3px solid #fbeaa0 !important;
                       background-size: 200% 100%;
                     }
                     .nespresso-shimmer-effect p{
@@ -127,7 +127,7 @@
                     .nespresso-tooltip .nespresso-tooltip-text {
                       visibility: hidden;
                       width: 160px;
-                      background-color: #555;
+                      background-color: #3d441e;
                       color: #fff;
                       text-align: center;
                       border-radius: 6px;
@@ -151,7 +151,7 @@
                       margin-left: -5px;
                       border-width: 5px;
                       border-style: solid;
-                      border-color: #555 transparent transparent transparent;
+                      border-color: #3d441e transparent transparent transparent;
                     }
             
                     .nespresso-tooltip:hover .nespresso-tooltip-text {
@@ -161,11 +161,11 @@
             
                     /* Style for the current info box */
                     .nespresso-current-gift {
-                      background-color: #f9f3e6;
+                      background-color: #f8ecdf;
                       border-radius: 6px;
                       padding: 8px 12px;
                       margin: 8px 0;
-                      border-left: 3px solid #8d3577;
+                      border-left: 3px solid #3d441e;
                     }
                   `;
     document.head.appendChild(styleEl);
@@ -173,14 +173,14 @@
 
   const createOffersComponent = () => {
     const existingComponent = document.getElementById(
-      "nespresso-summer-offers"
+      "nespresso-boost-vertuo-world-offers"
     );
     if (existingComponent) {
       existingComponent.remove();
     }
 
     const container = document.createElement("div");
-    container.id = "nespresso-summer-offers";
+    container.id = "nespresso-boost-vertuo-world-offers";
     container.style.cssText =
       "padding: 4px 0px 4px; border-radius: 8px; border-bottom:1px solid #efefef; font-family: NespressoLucas, sans-serif; opacity: 0;";
     container.classList.add("nespresso-component-enter");
@@ -327,19 +327,19 @@
           `
           <div style="display: flex; align-items: center; justify-content: space-between; padding: 0px 25px; gap: 12px;">
             <div style="flex: 1; text-align: left;">
-              <p style="font-size: 13px; color: #000; margin: 0 0 6px 0; font-weight: 600;">
-                Adicione mais <span style="background-color: #ffa29a; padding: 2px 6px; border-radius: 4px; font-weight: 700;">` +
+              <p style="font-size: 13px; color: #3d441e; margin: 0 0 6px 0; font-weight: 600;">
+                Adicione mais <span style="background-color: #fbeaa0; padding: 2px 6px; border-radius: 4px; font-weight: 700;">` +
           tierInfo.capsulesToNextTier +
           ` cápsulas</span>
               </p>
-              <p style="font-size: 12px; color: #ab2417; margin: 0; font-weight: 700;">
+              <p style="font-size: 12px; color: #3d441e; margin: 0; font-weight: 700;">
                 e ganhe: ` +
           tierInfo.nextTier.gift +
           `
               </p>
             </div>
             <div style="flex-shrink: 0;">
-              <div style="width: 70px; height: 70px; border-radius: 50%; border: 3px solid #ab2417; overflow: hidden; background-color: #fff;">
+              <div style="width: 70px; height: 70px; border-radius: 50%; border: 3px solid #3d441e; overflow: hidden; background-color: #fff;">
                 <img src="` +
           tierInfo.nextTier.imageUrl +
           `" 
@@ -357,15 +357,15 @@
           `
           <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 8px; gap: 12px;">
             <div style="flex: 1; text-align: left;">
-              <p style="font-size: 13px; color: #000; margin: 0 0 4px 0; font-weight: 600;">
+              <p style="font-size: 13px; color: #3d441e; margin: 0 0 4px 0; font-weight: 600;">
               Parabéns!
               </p>
-              <p style="font-size: 12px; color: #ab2417; margin: 0; font-weight: 700;">
+              <p style="font-size: 12px; color: #3d441e; margin: 0; font-weight: 700;">
                 Você alcançou a oferta máxima!
               </p>
             </div>
             <div style="flex-shrink: 0;">
-              <div style="width: 70px; height: 70px; border-radius: 50%; border: 3px solid #ab2417; overflow: hidden; background-color: #fff;">
+              <div style="width: 70px; height: 70px; border-radius: 50%; border: 3px solid #3d441e; overflow: hidden; background-color: #fff;">
                 <img src="` +
           tierInfo.currentTier.imageUrl +
           `" 
@@ -410,10 +410,10 @@
             `"
                            style="width: 60px; height: 60px; margin: 0 auto 4px auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
                            background-color: ` +
-            (achieved ? "#ffffff" : "#f5f5f5") +
+            (achieved ? "#ffffff" : "#f8ecdf") +
             `; 
                            border: 3px solid ` +
-            (achieved ? "#ab2417" : "#e2e2e2") +
+            (achieved ? "#3d441e" : "#b3ca9a") +
             `;
                            overflow: hidden;
                            transition: all 0.3s ease;
@@ -432,14 +432,14 @@
             tier.threshold +
             ` cápsulas)</span>
                       <div style="height: 3px; background-color: ` +
-            (achieved ? "#ab2417" : "#e2e2e2") +
+            (achieved ? "#3d441e" : "#b3ca9a") +
             `; position: absolute; top: 20px; ` +
             (index === 0 ? "left: 50%;" : "left: 0;") +
             " " +
             (index === giftTiers.length - 1 ? "right: 50%;" : "right: 0;") +
             ` z-index: 1;"></div>
                       <p style="font-size: 10px; line-height: 1.1; color: ` +
-            (isCurrent ? "#ab2417" : "#000") +
+            (isCurrent ? "#3d441e" : "#000") +
             `; margin: 0; ` +
             (isCurrent ? "font-weight: 600;" : "") +
             `">
@@ -464,10 +464,10 @@
                 <div style="margin-top: 12px;">
                   <div style="display: flex; align-items: center; justify-content: space-between; border-radius: 6px; padding: 2px 8px;">
                     <div style="flex: 1; display:flex; align-items:center;justify-content:space-evenly;">
-                      <p style="font-size: 12px; color: #000; margin: 0 0 2px 0;text-align:center">
-                        <strong>Adicione mais <span style="background-color: #ffa29a; padding: 2px 4px;border-radius: 4px;">` +
+                      <p style="font-size: 12px; color: #3d441e; margin: 0 0 2px 0;text-align:center">
+                        <strong>Adicione mais <span style="background-color: #fbeaa0; padding: 2px 4px;border-radius: 4px;">` +
         tierInfo.capsulesToNextTier +
-        ` cápsulas</span></strong> para ganhar: <span style="font-size: 13px; color: #ab2417; font-weight: 700; margin: 0;">` +
+        ` cápsulas</span></strong> para ganhar: <span style="font-size: 13px; color: #3d441e; font-weight: 700; margin: 0;">` +
         tierInfo.nextTier.gift +
         `</span>
                       </p>
@@ -478,7 +478,7 @@
     } else {
       nextTierInfoHtml = `
                 <div style="text-align: center; padding: 8px 0; margin-top: 8px;">
-                  <span style="font-size: 11px; color: #000; font-weight: 500;">
+                  <span style="font-size: 11px; color: #3d441e; font-weight: 500;">
                     VOCÊ ALCANÇOU A <strong>OFERTA MÁXIMA!</strong>
                   </span>
                 </div>
@@ -487,7 +487,7 @@
 
     let html = nextTierInfoHtml;
     html += progressIndicatorsHtml;
-    // html += `<span class="credito_span_regua_oferta" style="display: block;text-align: center;font-size: 11px;color: #000;margin-top: 6px;">*Crédito disponível em até 48h</span>`;
+    // html += `<span class="credito_span_regua_oferta" style="display: block;text-align: center;font-size: 11px;color: #3d441e;margin-top: 6px;">*Crédito disponível em até 48h</span>`;
     container.innerHTML = html;
 
     container.style.opacity = "1";
@@ -631,7 +631,7 @@
 
   const handleResize = () => {
     const existingComponent = document.getElementById(
-      "nespresso-summer-offers"
+      "nespresso-boost-vertuo-world-offers"
     );
     if (existingComponent) {
       handleCartUpdate();

@@ -1,8 +1,8 @@
 (function () {
-  if (window.acordeaoNamorados || window.innerWidth > 600) {
+  if (window.acordeaoBoostVertuoWorld || window.innerWidth > 600) {
     return;
   }
-  window.acordeaoNamorados = "true";
+  window.acordeaoBoostVertuoWorld = "true";
 
   // ===== VERIFICAÇÃO DO TIPO DE LINHA =====
   const currentPath = window.location.pathname;
@@ -22,23 +22,23 @@
         {
           quantidadeCafes: 150,
           imagem:
-            "https://www.nespresso.com/ecom/medias/sys_master/public/51150903705630/Dinamic-Banner-N3.jpg?attachment=true&cimgnr=9j9nT",
-          titulo: "Ganhe 1 Pixie Lungo",
-          alt: "Pixie Lungo",
+            "https://www.nespresso.com/ecom/medias/sys_master/public/51473052336158/Dinamic-Banner-N3-1.jpg?attachment=true&cimgnr=ofGB6",
+          titulo: "Ganhe 1 Porta Cápsula Médio",
+          alt: "Porta Cápsula Médio",
         },
         {
           quantidadeCafes: 200,
           imagem:
-            "https://www.nespresso.com/ecom/medias/sys_master/public/51150903771166/Dinamic-Banner-N4.jpg?attachment=true&cimgnr=8zOgW",
-          titulo: "Ganhe 1 Par de Pixie Espresso",
-          alt: "Par de Pixie Espresso",
+            "https://www.nespresso.com/ecom/medias/sys_master/public/51473052401694/Dinamic-Banner-N4-1.jpg?attachment=true&cimgnr=KnrCC",
+          titulo: "Ganhe 1 Porta Cápsula Grande",
+          alt: "Porta Cápsula Grande",
         },
         {
           quantidadeCafes: 270,
           imagem:
-            "https://www.nespresso.com/ecom/medias/sys_master/public/51150903836702/Dinamic-Banner-N5.jpg?attachment=true&cimgnr=KA5qc",
-          titulo: "Ganhe 1 Par de Pixie Lungo",
-          alt: "Par de Pixie Lungo",
+            "https://www.nespresso.com/ecom/medias/sys_master/public/51473052467230/Dinamic-Banner-N5-1.jpg?attachment=true&cimgnr=QPXds",
+          titulo: "Ganhe 1 Par de Xícara Barista Grande",
+          alt: "Par de Xícara Barista Grande",
         },
       ]
       : isVertuo
@@ -46,23 +46,23 @@
           {
             quantidadeCafes: 120,
             imagem:
-              "https://www.nespresso.com/ecom/medias/sys_master/public/51150903705630/Dinamic-Banner-N3.jpg?attachment=true&cimgnr=9j9nT",
-            titulo: "Ganhe 1 Pixie Lungo",
-            alt: "Pixie Lungo",
+              "https://www.nespresso.com/ecom/medias/sys_master/public/51473052336158/Dinamic-Banner-N3-1.jpg?attachment=true&cimgnr=ofGB6",
+            titulo: "Ganhe 1 Porta Cápsula Médio",
+            alt: "Porta Cápsula Médio",
           },
           {
             quantidadeCafes: 180,
             imagem:
-              "https://www.nespresso.com/ecom/medias/sys_master/public/51150903771166/Dinamic-Banner-N4.jpg?attachment=true&cimgnr=8zOgW",
-            titulo: "Ganhe 1 Par de Pixie Espresso",
-            alt: "Par de Pixie Espresso",
+              "https://www.nespresso.com/ecom/medias/sys_master/public/51473052401694/Dinamic-Banner-N4-1.jpg?attachment=true&cimgnr=KnrCC",
+            titulo: "Ganhe 1 Porta Cápsula Grande",
+            alt: "Porta Cápsula Grande",
           },
           {
             quantidadeCafes: 210,
             imagem:
-              "https://www.nespresso.com/ecom/medias/sys_master/public/51150903836702/Dinamic-Banner-N5.jpg?attachment=true&cimgnr=KA5qc",
-            titulo: "Ganhe 1 Par de Pixie Lungo",
-            alt: "Par de Pixie Lungo",
+              "https://www.nespresso.com/ecom/medias/sys_master/public/51473052467230/Dinamic-Banner-N5-1.jpg?attachment=true&cimgnr=QPXds",
+            titulo: "Ganhe 1 Par de Xícara Barista Grande",
+            alt: "Par de Xícara Barista Grande",
           },
         ]
         : [],
@@ -271,7 +271,7 @@ www.Nespresso.com ou aplicativos para iPhone, iPad e Android.`,
             ` +
       gerarOfertasHTML() +
       `
-            <a class="linkCondicoesOfertaMaes" id="verCondicoesLink">*Veja condições</a>
+            <a class="linkCondicoesOfertaBoostVertuoWorld" id="verCondicoesLink">*Veja condições</a>
           </div>
         </div>
       </div>
@@ -299,7 +299,7 @@ www.Nespresso.com ou aplicativos para iPhone, iPad e Android.`,
           </button>
         </div>
         <div class="modal-content">
-          <div class="modalTermosECondicoesCampanhaMaes">
+          <div class="modalTermosECondicoesBoostVertuoWorld">
             ` +
       CAMPANHA_CONFIG.modal.conteudo +
       `
@@ -339,7 +339,7 @@ www.Nespresso.com ou aplicativos para iPhone, iPad e Android.`,
         justify-content: space-between;
         padding: 15px;
         cursor: pointer;
-        background-color: #ffa29a;
+        background-color: #3d441e;
         position: relative;
         transition: all 0.3s ease;
         overflow: hidden;
@@ -347,8 +347,8 @@ www.Nespresso.com ou aplicativos para iPhone, iPad e Android.`,
 
       .nespresso-accordion .new-badge {
         display: inline-block;
-        background-color: #660e06;
-        color:#FFF;
+        background-color: #fbeaa0;
+        color:#3d441e;
         font-size: 10px;
         padding: 2px 6px;
         border-radius: 60px;
@@ -373,7 +373,7 @@ www.Nespresso.com ou aplicativos para iPhone, iPad e Android.`,
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #660e06;
+        color: #fbeaa0;
         animation: wiggle 2.5s ease infinite;
         transform-origin: center;
       }
@@ -399,14 +399,14 @@ www.Nespresso.com ou aplicativos para iPhone, iPad e Android.`,
       .nespresso-accordion .gift-icon svg {
         width: 20px;
         height: 20px;
-        stroke:#660e06;
+        stroke:#fbeaa0;
       }
 
       .nespresso-accordion .subtitle {
         font-size: 12px;
         margin-top: 3px;
         position: relative;
-        color:#660e06;
+        color:#f8ecdf;
       }
       
       @keyframes fadeInOut {
@@ -432,10 +432,11 @@ www.Nespresso.com ou aplicativos para iPhone, iPad e Android.`,
       .nespresso-accordion .title-text h2 {
         font-size: 16px;
         font-weight: 700;
-        color: #660e06;
+        color: #fbeaa0;
       }
       
       .nespresso-accordion .arrow {
+        color: #fbeaa0;
         width: 20px;
         height: 20px;
         transition: transform 0.3s ease;
@@ -449,7 +450,7 @@ www.Nespresso.com ou aplicativos para iPhone, iPad e Android.`,
         height: 0;
         overflow: hidden;
         transition: height 0.3s ease;
-        background-color: #ffa29a33;
+        background-color: #f8ecdf;
       }
       
       .nespresso-accordion .accordion-body {
@@ -459,7 +460,7 @@ www.Nespresso.com ou aplicativos para iPhone, iPad e Android.`,
       .nespresso-accordion .offer-item {
         display: flex;
         padding: 15px;
-        border-top: 1px solid #8d8d8d;
+        border-top: 1px solid #b3ca9a;
         align-items: center;
       }
       
@@ -482,7 +483,7 @@ www.Nespresso.com ou aplicativos para iPhone, iPad e Android.`,
         font-size: 15px;
         font-weight: bold;
         margin-bottom: 5px;
-        color: #333;
+        color: #3d441e;
         line-height: 1.3;
       }
       
@@ -492,12 +493,12 @@ www.Nespresso.com ou aplicativos para iPhone, iPad e Android.`,
         line-height: 1.2;
       }
       
-      .nespresso-accordion .linkCondicoesOfertaMaes{
+      .nespresso-accordion .linkCondicoesOfertaBoostVertuoWorld{
         font-size:12px;
         text-align:center;
         display:block;
         text-decoration: underline;
-        color:#2e2e34;
+        color:#3d441e;
         padding-bottom: 15px;
         cursor: pointer;
       }
@@ -590,9 +591,9 @@ www.Nespresso.com ou aplicativos para iPhone, iPad e Android.`,
         line-height: 1.5;
       }
       
-      .modalTermosECondicoesCampanhaMaes {
+      .modalTermosECondicoesBoostVertuoWorld {
         font-size: 14px;
-        color: #333;
+        color: #3d441e;
       }
       
       @media (max-width: 480px) {
