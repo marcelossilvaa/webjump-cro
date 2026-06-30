@@ -11,6 +11,8 @@
   const DATE_ENHANCED_ATTR = 'data-wj-date-enhanced';
   const BADGE_ENHANCED_ATTR = 'data-wj-badge-enhanced';
   const TOTAL_PRICE_ENHANCED_ATTR = 'data-wj-total-price-enhanced';
+  const ADDRESS_ENHANCED_ATTR = 'data-wj-address-enhanced';
+  const KO_CACHE_KEY = '_wj333ResumoCompraKo';
   const ROW_HIDDEN_CLASS = 'wj-summary-row-hidden';
   const ROW_SUBTOTAL_CLASS = 'wj-summary-row-subtotal';
   const ROW_SHIPPING_CLASS = 'wj-summary-row-shipping';
@@ -119,10 +121,18 @@
       '}',
       scoped('.seller-address') + ' {',
       '  display: block !important;',
-      '  margin: 4px 0 0 46px !important;',
+      '  margin: -6px 0 0 46px !important;',
       '  padding: 0 !important;',
       '  color: ' + COLOR_MUTED + ' !important;',
-      '  font-size: 11px !important;',
+      '  font-size: 12px !important;',
+      '  font-weight: 400 !important;',
+      '  line-height: 1.35 !important;',
+      '}',
+      scoped('.seller-summary .seller-address span') + ' {',
+      '  display: block !important;',
+      '  max-width: none !important;',
+      '  color: ' + COLOR_MUTED + ' !important;',
+      '  font-size: 12px !important;',
       '  font-weight: 400 !important;',
       '  line-height: 1.35 !important;',
       '}',
@@ -244,7 +254,7 @@
       '  align-items: center !important;',
       '  justify-content: space-between !important;',
       '  gap: 12px !important;',
-      '  margin: 8px 0 0 !important;',
+      '  margin: 0px !important;',
       '  padding: 0 !important;',
       '  border: 0 !important;',
       '  border-radius: 0 !important;',
@@ -570,8 +580,69 @@
     setTextIfChanged(summary.querySelector('h3'), 'Resumo da compra');
   }
 
+  function getKnockout() {
+    if (window[KO_CACHE_KEY]) return window[KO_CACHE_KEY];
+    if (typeof ko !== 'undefined' && ko.contextFor) {
+      window[KO_CACHE_KEY] = ko;
+      return ko;
+    }
+    return null;
+  }
+
+  function bootstrapKnockout() {
+    if (getKnockout()) return;
+    if (typeof window.require !== 'function') return;
+
+    try {
+      window.require(['ko'], function (koModule) {
+        if (koModule && koModule.contextFor) {
+          window[KO_CACHE_KEY] = koModule;
+          run();
+        }
+      });
+    } catch (e) {
+      /* require indisponível fora do Magento */
+    }
+  }
+
+  function getSellerDataFromElement(element) {
+    const knockout = getKnockout();
+    if (!knockout || !element) return null;
+
+    let node = element;
+    while (node) {
+      const context = knockout.contextFor(node);
+      if (context && context.$data) {
+        const data = context.$data;
+        if (
+          data.seller_id != null ||
+          data.seller_name ||
+          data.seller_address ||
+          data.pickup_address
+        ) {
+          return data;
+        }
+      }
+      node = node.parentElement;
+    }
+
+    return null;
+  }
+
+  function resolveSellerAddress(sellerData) {
+    if (!sellerData) return '';
+
+    const pickupAddress = normalizeText(sellerData.pickup_address);
+    if (pickupAddress) return pickupAddress;
+
+    return normalizeText(sellerData.seller_address);
+  }
+
   function getAddressText(addressEl) {
     if (!addressEl) return '';
+
+    const enhanced = addressEl.getAttribute(ADDRESS_ENHANCED_ATTR);
+    if (enhanced) return normalizeText(enhanced);
 
     const boundSpan = addressEl.querySelector('span[data-bind]');
     if (boundSpan) {
@@ -579,6 +650,44 @@
     }
 
     return normalizeText(addressEl.textContent);
+  }
+
+  function enhanceSellerAddress(sellerSummary) {
+    const addressEl = sellerSummary.querySelector('.seller-address');
+    if (!addressEl) return;
+
+    const sellerData = getSellerDataFromElement(sellerSummary);
+    const resolvedAddress = resolveSellerAddress(sellerData);
+    const currentText = getAddressText(addressEl);
+    const displayAddress = resolvedAddress || currentText;
+
+    if (!displayAddress) {
+      addressEl.classList.add('wj-empty-address');
+      addressEl.removeAttribute(ADDRESS_ENHANCED_ATTR);
+      return;
+    }
+
+    if (
+      addressEl.getAttribute(ADDRESS_ENHANCED_ATTR) === displayAddress &&
+      getAddressText(addressEl) === displayAddress
+    ) {
+      addressEl.classList.remove('wj-empty-address');
+      return;
+    }
+
+    let targetSpan = addressEl.querySelector('span');
+    if (!targetSpan) {
+      targetSpan = document.createElement('span');
+      addressEl.appendChild(targetSpan);
+    }
+
+    if (targetSpan.getAttribute('data-bind')) {
+      targetSpan.removeAttribute('data-bind');
+    }
+
+    targetSpan.textContent = displayAddress;
+    addressEl.setAttribute(ADDRESS_ENHANCED_ATTR, displayAddress);
+    addressEl.classList.remove('wj-empty-address');
   }
 
   function enhanceDeliveryDate(dateEl) {
@@ -666,18 +775,6 @@
     restructureOrderSummary(summary);
   }
 
-  function toggleEmptyAddress(addressEl) {
-    if (!addressEl) return;
-
-    const text = getAddressText(addressEl);
-    if (text) {
-      addressEl.classList.remove('wj-empty-address');
-      return;
-    }
-
-    addressEl.classList.add('wj-empty-address');
-  }
-
   function enhanceSummary(summary) {
     if (!summary) return false;
 
@@ -692,9 +789,9 @@
     normalizeFreeLabels(summary);
     cleanupOrphanSellerNodes(summary);
 
-    const addresses = summary.querySelectorAll('.seller-address');
-    for (let i = 0; i < addresses.length; i++) {
-      toggleEmptyAddress(addresses[i]);
+    const sellerSummaries = summary.querySelectorAll('.seller-summary');
+    for (let i = 0; i < sellerSummaries.length; i++) {
+      enhanceSellerAddress(sellerSummaries[i]);
     }
 
     const deliveryDates = summary.querySelectorAll('.delivery-date');
@@ -823,6 +920,7 @@
 
   function initWithRetry() {
     injectStyles();
+    bootstrapKnockout();
     const applied = run();
 
     if (applied) {
