@@ -18,7 +18,7 @@
   const WHATSAPP_PHONE = '+551145724545';
   const NATIVE_WRAPPER_IDS = ['whatsapp-wrapper', 'whatsapp-wrapper-2'];
   const MASCOT_SRC = 'https://i.imgur.com/PM4dYNf.png';
-  const CHAT_ICON_SRC = 'https://i.imgur.com/WU7xgtM.png';
+  const CHAT_ICON_SRC = 'https://i.imgur.com/LIUCgm1.png';
 
   function getStyles() {
     return [
