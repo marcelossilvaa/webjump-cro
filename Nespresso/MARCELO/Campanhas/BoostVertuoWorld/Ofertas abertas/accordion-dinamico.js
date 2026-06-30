@@ -72,123 +72,40 @@
       titulo: "Termos e Condições",
       conteudo: `
         <strong>TERMOS E CONDIÇÕES</strong><br>
-        <strong>DIA DOS NAMORADOS – Dia 01 de Junho até 15 de Junho</strong><br>
+        <strong>COFFEE BOOST NESPRESSO WORLD</strong><br>
         <br>
-As ofertas referentes ao Coffee Boost Dia dos Namorados Nespresso, especificadas nos
-itens abaixo, são válidas de 13/01/2026 às 09h a 02/02/2026 às 09h , apenas para
-pessoas físicas portadoras de CPF e clientes classificados na categoria B2C Offices
-(pessoas jurídicas com consumo exclusivo de cápsulas da linha doméstica), não se
-aplicando para pessoas jurídicas com histórico de compras de cápsulas da linha
-profissional, bem como para outros clientes portadores de CNPJ, não cumulativas
-com outras ofertas em andamento e limitadas a um uso por CPF de registro na
-Nespresso. Todos os produtos estão sujeitos à disponibilidade de estoque e as ofertas
-estão sujeitas alterações sem aviso prévio.
-Os brindes oferecidos nesta ação poderão, a critério da Promotora, ser substituídos
-por outros de valor equivalente ou superior, caso haja indisponibilidade de estoque
-de algum item. A alteração será informada nas peças de comunicação da promoção,
-sem prejuízo aos participantes que atenderem aos requisitos da promoção até a data
-da substituição.
-As ofertas estarão disponíveis no período mencionado nos canais de compra oficiais
-da marca: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578 -
-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.
-Todos os pedidos realizados durante o período da Coffee Boost Summer, de
-13/01/2026 às 09h a 02/02/2026 às 09h , todos os pedidos a partir de R$100,00
-poderão ser parcelados em até 10x sem juros, sendo o número de parcelas limitado
-de acordo com o valor do pedido, respeitando o valor mínimo de R$50,00 por
-parcela, e terão entrega gratuita (frete grátis) para o modo de entrega padrão ou
-‘standard’, para compras com no mínimo 70 cápsulas. Verifique o prazo de entrega
-para sua localidade ao escolher o modo de e ntrega antes da finalização de seu
-pedido.
-O modo de entrega Boutique Clique & Retire (retirada em loja em todas as Boutiques
-Nespresso), será válido na compra de cápsulas, máquinas e acessórios. O prazo para
-retirada é de 1 (um) dia, ou seja, no dia seguinte da compra, de acordo com a
-disponibilidade de estoque da Boutique Nespresso selecionada.
-A Nespresso se reserva o direito, a seu critério exclusivo, de desqualificar qualquer
-indivíduo que interferir com o funcionamento das ofertas, seja ao criar várias contas,
-utilizar várias identidades ou agir de qualquer outra forma que seja considerada pela
-Nespresso como uma violação dos Termos e Condições, ou de alguma outra forma
-prejudicial.
-Se você tiver consentido, no momento do cadastro, com o uso dos seus dados de
-contato e interações para receber comunicações de marketing da Nespresso, saiba
-que seu consentimento para este fim é voluntário e você é livre para retirá -lo a
-qualquer momento. Mais informações disponíveis na Política de Privacidade da
-Nespresso.
-Em caso de dúvidas ou necessidade de informações adicionais, entre em contato com
-um de nossos Especialistas de Café pelo telefone gratuito 0800 7777 737 ( segunda a
-sábado, das 6h às 22h ).<br><br>
+As ofertas referentes ao Coffee Boost Nespresso World, especificadas nos itens abaixo, são válidas de 01/07/2026 às 09h a 22/07/2026, apenas para pessoas físicas portadoras de CPF e clientes classificados na categoria B2C Offices (pessoas jurídicas com consumo exclusivo de cápsulas da linha doméstica), não se aplicando para pessoas jurídicas com histórico de compras de cápsulas da linha profissional, bem como para outros clientes portadores de CNPJ, não cumulativas com outras ofertas em andamento e limitadas a um uso por CPF de registro na Nespresso. Todos os produtos estão sujeitos à disponibilidade de estoque e as ofertas estão sujeitas alterações sem aviso prévio.<br><br>
+Os brindes oferecidos nesta ação poderão, a critério da Promotora, ser substituídos por outros de valor equivalente ou superior, caso haja indisponibilidade de estoque de algum item. A alteração será informada nas peças de comunicação da promoção, sem prejuízo aos participantes que atenderem aos requisitos da promoção até a data da substituição.<br><br>
+As ofertas estarão disponíveis no período mencionado nos canais de compra oficiais da marca: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
+Todos os pedidos realizados durante o período da Coffee Boost Nespresso World, de 01/07/2026 às 09h a 22/07/2026, todos os pedidos a partir de R$100,00 poderão ser parcelados em até 10x sem juros, sendo o número de parcelas limitado de acordo com o valor do pedido, respeitando o valor mínimo de R$50,00 por parcela, e terão entrega gratuita (frete grátis) para o modo de entrega padrão ou 'standard', para compras com no mínimo 70 cápsulas. Verifique o prazo de entrega para sua localidade ao escolher o modo de entrega antes da finalização de seu pedido.<br><br>
+O modo de entrega Boutique Clique & Retire (retirada em loja em todas as Boutiques Nespresso), será válido na compra de cápsulas, máquinas e acessórios. O prazo para retirada é de 1 (um) dia, ou seja, no dia seguinte da compra, de acordo com a disponibilidade de estoque da Boutique Nespresso selecionada.<br><br>
+A Nespresso se reserva o direito, a seu critério exclusivo, de desqualificar qualquer indivíduo que interferir com o funcionamento das ofertas, seja ao criar várias contas, utilizar várias identidades ou agir de qualquer outra forma que seja considerada pela Nespresso como uma violação dos Termos e Condições, ou de alguma outra forma prejudicial.<br><br>
+Se você tiver consentido, no momento do cadastro, com o uso dos seus dados de contato e interações para receber comunicações de marketing da Nespresso, saiba que seu consentimento para este fim é voluntário e você é livre para retirá-lo a qualquer momento. Mais informações disponíveis na Política de Privacidade da Nespresso.<br><br>
+Em caso de dúvidas ou necessidade de informações adicionais, entre em contato com um de nossos Especialistas de Café pelo telefone gratuito 0800 7777 737 (segunda a sábado, das 6h às 22h).<br><br>
 
-Para pedidos que contenham cápsulas exclusivamente da linha Original ou que
-incluam, de forma combinada, cápsulas das linhas Original e Vertuo:<br><br>
+<strong>Para pedidos que contenham cápsulas exclusivamente da linha Original ou que incluam, de forma combinada, cápsulas das linhas Original e Vertuo:</strong><br><br>
 
-a. Na compra a partir de 250 cápsulas, durante o período supramencionado, o
-consumidor ganhará uma Caneca Térmica Grande Smokey Blue Nespresso,
-concedido apenas em pedidos que (i) contenham cápsulas exclusivamente da
-linha Original ou, (ii) que contenham, de forma combinada, cápsulas das linhas
-Original e Vertuo dentro de um mesmo pedido . Essa oferta estará disponível
-para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800
-7777 737, WhatsApp (11) 95578 -4670 ,site www.Nespresso.com ou aplicativos
-para iPhone, iPad e Android.<br>
-b. Na compra de 2 00 a 249 cápsulas, durante o período supramencionado, o
-consumidor ganhará uma Bolsa Térmica Nespresso, concedido apenas em
-pedidos que (i) contenham cápsulas exclusivamente da linha Original ou, (ii)
-que contenham, de forma combinada, cápsulas das linhas Original e Vertuo
-dentro de um mesmo pedido . Essa oferta estará disponível para todos os
-canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737,
-WhatsApp (11) 95578 -4670 ,site www.Nespresso.com ou aplicativos para
-iPhone, iPad e Android.<br>
-c. Na compra de 150 a 199 cápsulas, durante o período supramencionado, o
-consumidor ganhará um Copo de Drinks e uma Forma de Gelo Nespresso,
-concedido apenas em pedidos que (i) contenham cápsulas exclusivamente da
-linha Original ou, (ii) que contenham, de forma combinada, cápsulas das linhas
-Original e Vertuo dentro de um mesmo pedido . Essa oferta estará disponível
-para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800
-7777 737, WhatsApp (11) 95578 -4670 ,site www.Nespresso.com ou aplicativos
-para iPhone, iPad e Android.<br>
-d. Na compra de 100 a 149 cápsulas, durante o período supramencionado, o
-consumidor ganhará um Kit de Receitas Nespresso, concedido apenas em
-pedidos que (i) contenham cápsulas exclusivamente da linha Original ou, (ii)
-que contenham, de forma combinada, cápsulas das linhas Original e Vertuo
-dentro de um mesmo pedido . Essa oferta estará disponível para todos os
-canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737,
-WhatsApp (11) 95578 -4670 ,site www.Nespresso.com ou aplicativos para
-iPhone, iPad e Android.<br>
-e. Na compra de 70 a 99 cápsulas, durante o período supramencionado, o
-consumidor ganhará um sleeve de café Pistachio Vanilla Original Line
-Nespresso, concedido apenas em pedidos que (i) contenham cápsulas
-exclusivamente da linha Original ou, (ii) que contenham, de forma combinada,
-cápsulas das linhas Original e Vertuo dentro de um mesmo pedido .<br><br>
+Na compra a partir de 270 cápsulas, durante o período supramencionado, o consumidor ganhará Par de Xícara Barista Grande Nespresso, concedido apenas em pedidos que (i) contenham cápsulas exclusivamente da linha Original ou, (ii) que contenham, de forma combinada, cápsulas das linhas Original e Vertuo dentro de um mesmo pedido. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
 
-Para pedidos que contenham exclusivamente cápsulas da linha Vertuo:<br><br>
+Na compra de 200 a 269 cápsulas, durante o período supramencionado, o consumidor ganhará Porta Cápsula Grande Nespresso, concedido apenas em pedidos que (i) contenham cápsulas exclusivamente da linha Original ou, (ii) que contenham, de forma combinada, cápsulas das linhas Original e Vertuo dentro de um mesmo pedido. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
 
-a. Na compra a partir de 180 cápsulas, durante o período supramencionado, o
-consumidor ganhará uma Bolsa Térmica Nespresso, concedido apenas em
-pedidos que contenham exclusivamente cápsulas da linha Vertuo. Essa oferta
-estará disponível para todos os canais oficiais Nespresso: Boutiques
-Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578 -4670, site
-www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br>
-b. Na compra de 120 a 179 cápsulas, durante o período supramencionado, o
-consumidor ganhará um Copo de Drinks e uma Forma de Gelo Nespresso,
-concedido apenas em pedidos que contenham exclusivamente cápsulas da
-linha Vertuo. Essa oferta estará disponível para todos os canais oficiais
-Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11)
-95578 -4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e
-Android.<br>
-c. Na compra de 70 a 119 cápsulas, durante o período supramencionado, o
-consumidor ganhará um Kit de Receitas Nespresso, concedido apenas em
-pedidos que contenham exclusivamente cápsulas da linha Vertuo. Essa oferta
-estará disponível para todos os canais oficiais Nespresso: Boutiques
-Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578 -4670, site
-www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br>
-d. Na compra de 50 a 69 cápsulas, durante o período supramencionado, o
-consumidor ganhará um sleeve de café Pistachio Vanilla Vertuo Line Nespresso,
-concedido apenas em pedidos que contenham exclusivamente cápsulas da linha
-Vertuo. Essa oferta estará disponível para todos os canais oficiais Nespresso:
-Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578 -4670, site
-www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br>
+Na compra de 150 a 199 cápsulas, durante o período supramencionado, o consumidor ganhará Porta Cápsula Médio Nespresso, concedido apenas em pedidos que (i) contenham cápsulas exclusivamente da linha Original ou, (ii) que contenham, de forma combinada, cápsulas das linhas Original e Vertuo dentro de um mesmo pedido. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
 
-Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques
-Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578 -4670 ,site
-www.Nespresso.com ou aplicativos para iPhone, iPad e Android.`,
+Na compra de 100 a 149 cápsulas, durante o período supramencionado, o consumidor ganhará Copo de Drinks Nespresso, concedido apenas em pedidos que (i) contenham cápsulas exclusivamente da linha Original ou, (ii) que contenham, de forma combinada, cápsulas das linhas Original e Vertuo dentro de um mesmo pedido. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
+
+Na compra de 70 a 99 cápsulas, durante o período supramencionado, o consumidor ganhará Tote Bag Nespresso, concedido apenas em pedidos que (i) contenham cápsulas exclusivamente da linha Original ou, (ii) que contenham, de forma combinada, cápsulas das linhas Original e Vertuo dentro de um mesmo pedido. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
+
+<strong>Para pedidos que contenham exclusivamente cápsulas da linha Vertuo:</strong><br><br>
+
+Na compra a partir de 210 cápsulas, durante o período supramencionado, o consumidor ganhará Par de Xícara Barista Grande Nespresso, concedido apenas em pedidos que contenham exclusivamente cápsulas da linha Vertuo. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
+
+Na compra de 180 a 209 cápsulas, durante o período supramencionado, o consumidor ganhará Porta Cápsula Grande Nespresso, concedido apenas em pedidos que contenham exclusivamente cápsulas da linha Vertuo. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
+
+Na compra de 120 a 179 cápsulas, durante o período supramencionado, o consumidor ganhará Porta Cápsula Médio Nespresso, concedido apenas em pedidos que contenham exclusivamente cápsulas da linha Vertuo. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
+
+Na compra de 70 a 119 cápsulas, durante o período supramencionado, o consumidor ganhará Copo de Drinks Nespresso, concedido apenas em pedidos que contenham exclusivamente cápsulas da linha Vertuo. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
+
+Na compra de 50 a 69 cápsulas, durante o período supramencionado, o consumidor ganhará Tote Bag Nespresso, concedido apenas em pedidos que contenham exclusivamente cápsulas da linha Vertuo. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.`,
     },
   };
   // ===== FIM DA CONFIGURAÇÃO =====

@@ -286,6 +286,8 @@ Campanha configurada em `BoostVertuoWorld/` como exemplo vivo deste padrão.
 - `modalTermosECondicoesBoostVertuoWorld`
 - `nespresso-boost-vertuo-world-offers`
 
-### Pendente
+### Termos e Condições
 
-- Texto final dos **Termos e Condições** (modal ainda com placeholder de campanha anterior)
+- Campanha: **Coffee Boost Nespresso World**
+- Período: **01/07/2026 às 09h a 22/07/2026**
+- Texto aplicado em todos os `accordion-*.js`
