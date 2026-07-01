@@ -128,10 +128,10 @@ Definir 4 cores e aplicar em accordion e régua:
 
 | Papel | Exemplo (Boost Vertuo World) | Uso sugerido |
 |-------|------------------------------|--------------|
-| **Principal** | `#3d441e` | Cabeçalho accordion, textos de destaque, bordas ativas, progresso conquistado |
-| **Secundária** | `#fbeaa0` | Título/ícones no header escuro, badge, highlights de cápsulas, borda shimmer |
-| **Terciária** | `#f8ecdf` | Fundo do conteúdo expandido, tiers não conquistados, caixa de brinde atual |
-| **Quaternária** | `#b3ca9a` | Divisores entre ofertas, bordas/progresso pendente |
+| **Principal** | `#3d441e` | Cabeçalho accordion, textos de destaque, bordas/linhas de níveis atingidos na régua |
+| **Secundária** | `#fbeaa0` | Título/ícones no header escuro, badge, highlights de cápsulas, fundo dos tiers atingidos |
+| **Terciária** | `#f8ecdf` | Fundo do conteúdo expandido do accordion |
+| **Quaternária** | `#b3ca9a` | Divisores entre ofertas no accordion |
 
 ### Accordion — composição recomendada
 
@@ -141,14 +141,20 @@ Definir 4 cores e aplicar em accordion e régua:
 - **Conteúdo expandido:** fundo terciária
 - **Itens de oferta:** borda superior quaternária, título na cor principal
 
-### Régua — composição recomendada
+### Régua — composição recomendada (estados binários)
 
-- Highlight de cápsulas: fundo secundária
-- Tier conquistado: borda principal, fundo branco
-- Tier pendente: fundo terciária, borda quaternária
-- Barra de progresso: principal (conquistado) / quaternária (pendente)
-- Shimmer no tier atual: borda secundária (contraste no minicart escuro)
-- Tooltip: fundo principal
+A régua usa **apenas dois estados visuais** — atingido ou não atingido. Não misturar amarelo, verde e cinza no mesmo nó.
+
+| Estado | Círculo do brinde | Borda do círculo | Linha entre nós | Label (ex.: "70 cafés") |
+|--------|-------------------|------------------|-----------------|-------------------------|
+| **Nível atingido** | Fundo secundária (`#fbeaa0`) | Principal (`#3d441e`) | Principal (`#3d441e`) | Principal (`#3d441e`) |
+| **Nível não atingido** | Cinza claro (`#f5f5f5`) | Cinza (`#cccccc`) | Cinza (`#cccccc`) | Cinza médio (`#999999`) |
+
+Demais elementos:
+
+- Highlight de cápsulas no texto: fundo secundária (`#fbeaa0`)
+- Tooltip: fundo principal (`#3d441e`)
+- **Não usar** efeito shimmer (`nespresso-shimmer-effect`) no tier atual — todos os níveis atingidos seguem o mesmo visual amarelo + borda verde
 
 ### Cores antigas a substituir (campanhas vermelhas/rosa)
 
@@ -203,10 +209,46 @@ Bloco `modal.conteudo` dentro de `CAMPANHA_CONFIG` nos arquivos:
 
 - Nome da campanha no `<strong>` do cabeçalho
 - Período de validade (datas e horários)
-- Regras por faixa de cápsulas (OL e VL separados)
-- Canais de compra, parcelamento, frete, substituição de brindes, etc.
+- Regras gerais (CPF, B2C, canais, parcelamento, frete, substituição de brindes, etc.)
+- Regras por faixa de cápsulas — **OL e VL em blocos separados**, do maior para o menor nível
 
 > Se o texto ainda não foi enviado, manter placeholder mas **não** deixar nome da campanha anterior nos identificadores de código.
+
+### Texto oficial — Coffee Boost Nespresso World
+
+Aplicado em todos os `accordion-*.js` da campanha Boost Vertuo World:
+
+- **Campanha:** Coffee Boost Nespresso World
+- **Período:** 01/07/2026 às 09h a 22/07/2026
+- **Parcelamento:** até 10x sem juros em pedidos a partir de R$100,00 (mín. R$50,00/parcela)
+- **Frete grátis:** modo standard, mínimo 70 cápsulas
+- **Canais:** Boutiques, 0800 7777 737, WhatsApp (11) 95578-4670, site e apps
+
+**Original (OL) — faixas de cápsulas:**
+
+| Faixa | Brinde |
+|-------|--------|
+| 70 a 99 | Tote Bag |
+| 100 a 149 | Copo de Drinks |
+| 150 a 199 | Porta Cápsula Médio |
+| 200 a 269 | Porta Cápsula Grande |
+| 270+ | Par de Xícara Barista Grande |
+
+Válido para pedidos com cápsulas exclusivamente Original **ou** Original + Vertuo combinadas.
+
+**Vertuo (VL) — faixas de cápsulas:**
+
+| Faixa | Brinde |
+|-------|--------|
+| 50 a 69 | Tote Bag |
+| 70 a 119 | Copo de Drinks |
+| 120 a 179 | Porta Cápsula Médio |
+| 180 a 209 | Porta Cápsula Grande |
+| 210+ | Par de Xícara Barista Grande |
+
+Válido apenas para pedidos com cápsulas **exclusivamente** Vertuo.
+
+> O texto completo (parágrafos legais + regras por faixa) está em `modal.conteudo` nos arquivos `accordion-*.js` — copiar de lá ao replicar a campanha.
 
 ---
 
@@ -290,4 +332,11 @@ Campanha configurada em `BoostVertuoWorld/` como exemplo vivo deste padrão.
 
 - Campanha: **Coffee Boost Nespresso World**
 - Período: **01/07/2026 às 09h a 22/07/2026**
-- Texto aplicado em todos os `accordion-*.js`
+- Texto oficial aplicado em todos os `accordion-*.js` (ver seção 5)
+
+### Régua — ajuste visual (feedback cliente)
+
+- Níveis **não atingidos:** cinza (`#f5f5f5` / `#cccccc` / `#999999`)
+- Níveis **atingidos:** fundo amarelo (`#fbeaa0`) + borda e linhas verdes (`#3d441e`)
+- Removido efeito shimmer no tier atual
+- Aplicado nos 7 arquivos `regua_minicart*.js`

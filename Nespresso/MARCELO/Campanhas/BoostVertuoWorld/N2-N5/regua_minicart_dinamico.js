@@ -126,15 +126,6 @@
                     .nespresso-component-enter {
                       animation: fadeInScale 0.5s ease-out forwards;
                     }
-                    
-                    .nespresso-shimmer-effect {
-                      background-color: transparent !important;
-                      border:3px solid #fbeaa0 !important;
-                      background-size: 200% 100%;
-                    }
-                    .nespresso-shimmer-effect p{
-                      color: #fff !important;
-                    }
                     .nespresso-tooltip {
                       position: relative;
                       display: inline-block;
@@ -411,25 +402,19 @@
           const justAchieved =
             crossedTier && crossedTier.threshold === tier.threshold;
           const achieved = totalCapsules >= tier.threshold;
-          const isCurrent =
-            achieved &&
-            (index === giftTiers.length - 1 ||
-              totalCapsules < giftTiers[index + 1].threshold);
 
           return (
             `
                     <div class="nespresso-tooltip" style="flex: 1; text-align: center; position: relative; min-width: 40px;">
                       <div class="` +
             (justAchieved ? "nespresso-gift-achieved" : "") +
-            " " +
-            (isCurrent ? "nespresso-shimmer-effect" : "") +
             `"
                            style="width: 60px; height: 60px; margin: 0 auto 4px auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
                            background-color: ` +
-            (achieved ? "#ffffff" : "#f8ecdf") +
+            (achieved ? "#fbeaa0" : "#f5f5f5") +
             `; 
                            border: 3px solid ` +
-            (achieved ? "#3d441e" : "#b3ca9a") +
+            (achieved ? "#3d441e" : "#cccccc") +
             `;
                            overflow: hidden;
                            transition: all 0.3s ease;
@@ -448,16 +433,16 @@
             tier.threshold +
             ` cápsulas)</span>
                       <div style="height: 3px; background-color: ` +
-            (achieved ? "#3d441e" : "#b3ca9a") +
+            (achieved ? "#3d441e" : "#cccccc") +
             `; position: absolute; top: 20px; ` +
             (index === 0 ? "left: 50%;" : "left: 0;") +
             " " +
             (index === giftTiers.length - 1 ? "right: 50%;" : "right: 0;") +
             ` z-index: 1;"></div>
                       <p style="font-size: 10px; line-height: 1.1; color: ` +
-            (isCurrent ? "#3d441e" : "#000") +
+            (achieved ? "#3d441e" : "#999999") +
             `; margin: 0; ` +
-            (isCurrent ? "font-weight: 600;" : "") +
+            (achieved ? "font-weight: 600;" : "") +
             `">
                         ` +
             tier.threshold +
