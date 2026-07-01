@@ -1,3 +1,15 @@
+window.dataLayer = window.dataLayer || [];
+window.dataLayer.push({
+  event:                 'insider_ab_test',
+  event_raised_by:       'insider',
+  experiment_id:         '2008',
+  experiment_type:       'AB',
+  experiment_name:       'Nova Hierarquia Visual | PDP | Cimento CP-II F32',// ← preencher com o nome real
+  experiment_variant_id: '36',
+  experiment_variant:    'Variant B',             // ← 'Variant B', 'Variant C' ou 'Control'
+  experiment_is_control: 'no'                // ← 'true' se for Control
+});
+
 (function () {
   'use strict';
 
