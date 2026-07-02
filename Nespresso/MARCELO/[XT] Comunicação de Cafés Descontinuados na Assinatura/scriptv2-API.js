@@ -25,12 +25,22 @@
     {
       id: 'original',
       title: 'Cafés Original',
-      skus: ['7886.90', '7892.90', '7880.90', '7894.90', '7871.90', '7877.90'],
+      skus: [
+        '7886.90', // Ethiopia
+        '7892.90', // Chiaro
+        '7880.90', // Rio de Janeiro
+        '7894.90', // Brazil Organic
+        '7871.90', // Corto
+        '7877.90', // Istanbul Espresso
+      ],
     },
     {
       id: 'vertuo',
       title: 'Cafés Vertuo',
-      skus: ['7002.80', '7017.80'],
+      skus: [
+        '7002.80', // Bianco Piccolo
+        '7017.80', // Ethiopia
+      ],
     },
   ];
 
