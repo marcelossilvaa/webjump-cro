@@ -12,10 +12,14 @@
   const BTN_ID = 'wj-my-subscriptions-btn';
   const LISTENER_ATTR = 'data-wj-delisted-subs-listener';
 
-  const STANDING_ORDERS_URL = 'https://www.nespresso.com/br/pt/myaccount/standing-orders';
+  const STANDING_ORDERS_URL =
+    'https://www.nespresso.com/br/pt/myaccount/standing-orders#/orders/list';
   const STANDING_ORDERS_EDIT_URL =
     'https://www.nespresso.com/br/pt/myaccount/standing-orders#/orders/list';
   const TRACKING_CATEGORY = 'cafes_descontinuados_assinatura_v2';
+  const DISMISS_STORAGE_KEY = 'wj-delisted-subs-modal-dismissed-at';
+  const SESSION_SHOWN_KEY = 'wj-delisted-subs-modal-shown';
+  const DISMISS_DAYS = 7;
 
   const DELISTED_CATEGORIES = [
     {
@@ -33,6 +37,8 @@
   let isProcessing = false;
   let debounceTimer = null;
   let modalOpen = false;
+  let isClosing = false;
+  let autoShowCompleted = false;
   let cachedFirstName = '';
   let cachedProductsHtml = '';
   let cachedSubscriptionSkus = null;
@@ -56,6 +62,49 @@
     } catch (error) {
       return null;
     }
+  }
+
+  function setSessionStorageFlag(key) {
+    try {
+      sessionStorage.setItem(key, '1');
+    } catch (error) {}
+  }
+
+  function wasShownThisSession() {
+    try {
+      return sessionStorage.getItem(SESSION_SHOWN_KEY) === '1';
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function wasDismissedRecently() {
+    try {
+      const dismissedAt = localStorage.getItem(DISMISS_STORAGE_KEY);
+      if (!dismissedAt) {
+        return false;
+      }
+
+      const dismissedDate = new Date(dismissedAt);
+      const diffDays = (Date.now() - dismissedDate.getTime()) / (1000 * 60 * 60 * 24);
+      return diffDays < DISMISS_DAYS;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function canShowModal() {
+    return !wasDismissedRecently() && !wasShownThisSession();
+  }
+
+  function markModalDismissed() {
+    try {
+      localStorage.setItem(DISMISS_STORAGE_KEY, new Date().toISOString());
+    } catch (error) {}
+  }
+
+  function markModalShownThisSession() {
+    setSessionStorageFlag(SESSION_SHOWN_KEY);
   }
 
   async function waitForAPI(maxAttempts, delay) {
@@ -194,6 +243,31 @@
     } catch (error) {
       return null;
     }
+  }
+
+  function isUserLoggedIn() {
+    const cached = getSessionStorageItem('customerInfo-br');
+    if (cached && (cached.firstName || cached.memberNumber)) {
+      return true;
+    }
+
+    return !!document.getElementById('ta-login-dropdown--logged');
+  }
+
+  async function isUserLoggedInAsync() {
+    if (isUserLoggedIn()) {
+      return true;
+    }
+
+    try {
+      const apiReady = await waitForAPI();
+      if (apiReady && window.napi.customer) {
+        const customerInfo = await window.napi.customer().read();
+        return !!(customerInfo && (customerInfo.firstName || customerInfo.memberNumber));
+      }
+    } catch (error) {}
+
+    return false;
   }
 
   async function getUserFirstName() {
@@ -357,6 +431,17 @@
       'justify-content: center;' +
       'padding: 16px;' +
       'box-sizing: border-box;' +
+      'opacity: 0;' +
+      '}' +
+      '#' +
+      OVERLAY_ID +
+      '.wj-delisted-subs-overlay--entering {' +
+      'animation: wj-delisted-subs-overlay-in 0.28s ease forwards;' +
+      '}' +
+      '#' +
+      OVERLAY_ID +
+      '.wj-delisted-subs-overlay--closing {' +
+      'animation: wj-delisted-subs-overlay-out 0.22s ease forwards;' +
       '}' +
       '#' +
       MODAL_ID +
@@ -372,6 +457,45 @@
       'flex-direction: column;' +
       'font-family: NespressoLucas, Helvetica, Arial, sans-serif;' +
       'box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);' +
+      'opacity: 0;' +
+      'transform: scale(0.95) translateY(12px);' +
+      '}' +
+      '#' +
+      MODAL_ID +
+      '.wj-delisted-subs-modal--entering {' +
+      'animation: wj-delisted-subs-modal-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;' +
+      '}' +
+      '#' +
+      MODAL_ID +
+      '.wj-delisted-subs-modal--closing {' +
+      'animation: wj-delisted-subs-modal-out 0.22s ease forwards;' +
+      '}' +
+      '@keyframes wj-delisted-subs-overlay-in {' +
+      'from { opacity: 0; }' +
+      'to { opacity: 1; }' +
+      '}' +
+      '@keyframes wj-delisted-subs-overlay-out {' +
+      'from { opacity: 1; }' +
+      'to { opacity: 0; }' +
+      '}' +
+      '@keyframes wj-delisted-subs-modal-in {' +
+      'from { opacity: 0; transform: scale(0.95) translateY(12px); }' +
+      'to { opacity: 1; transform: scale(1) translateY(0); }' +
+      '}' +
+      '@keyframes wj-delisted-subs-modal-out {' +
+      'from { opacity: 1; transform: scale(1) translateY(0); }' +
+      'to { opacity: 0; transform: scale(0.95) translateY(12px); }' +
+      '}' +
+      '@media (prefers-reduced-motion: reduce) {' +
+      '#' +
+      OVERLAY_ID +
+      ', #' +
+      MODAL_ID +
+      ' {' +
+      'animation: none !important;' +
+      'opacity: 1 !important;' +
+      'transform: none !important;' +
+      '}' +
       '}' +
       '#' +
       MODAL_ID +
@@ -711,16 +835,53 @@
     document.head.appendChild(style);
   }
 
-  function closeModal() {
-    const overlay = document.getElementById(OVERLAY_ID);
-    if (overlay) {
-      overlay.remove();
-    }
-    modalOpen = false;
-    document.body.style.overflow = '';
+  function playModalEnterAnimation(overlay, modal) {
+    requestAnimationFrame(function () {
+      overlay.classList.add('wj-delisted-subs-overlay--entering');
+      modal.classList.add('wj-delisted-subs-modal--entering');
+    });
   }
 
-  async function showModal() {
+  function closeModal() {
+    const overlay = document.getElementById(OVERLAY_ID);
+    const modal = document.getElementById(MODAL_ID);
+
+    if (!overlay || !modal || isClosing) {
+      return;
+    }
+
+    isClosing = true;
+    overlay.classList.remove('wj-delisted-subs-overlay--entering');
+    modal.classList.remove('wj-delisted-subs-modal--entering');
+    overlay.classList.add('wj-delisted-subs-overlay--closing');
+    modal.classList.add('wj-delisted-subs-modal--closing');
+
+    let finished = false;
+
+    function finishClose() {
+      if (finished) {
+        return;
+      }
+      finished = true;
+      overlay.remove();
+      modalOpen = false;
+      isClosing = false;
+      document.body.style.overflow = '';
+      markModalDismissed();
+    }
+
+    modal.addEventListener('animationend', function onCloseAnimationEnd(event) {
+      if (event.animationName !== 'wj-delisted-subs-modal-out') {
+        return;
+      }
+      modal.removeEventListener('animationend', onCloseAnimationEnd);
+      finishClose();
+    });
+
+    setTimeout(finishClose, 280);
+  }
+
+  async function showModal(viewLabel) {
     if (modalOpen || document.getElementById(MODAL_ID)) {
       return;
     }
@@ -779,8 +940,12 @@
 
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
+    markModalShownThisSession();
 
-    sendGAEvent('view', 'modal_descontinuados_exibido');
+    const modal = document.getElementById(MODAL_ID);
+    playModalEnterAnimation(overlay, modal);
+
+    sendGAEvent('view', viewLabel || 'modal_descontinuados_exibido');
 
     const closeBtn = overlay.querySelector('.wj-delisted-subs-close');
     closeBtn.addEventListener('click', function () {
@@ -807,6 +972,89 @@
     });
   }
 
+  async function showModalForDelistedSubscription(options) {
+    const redirectOnFailure = options && options.redirectOnFailure;
+    const redirectOnNoMatch = options && options.redirectOnNoMatch;
+    const redirectIfSuppressed = options && options.redirectIfSuppressed;
+
+    if (modalOpen || document.getElementById(MODAL_ID)) {
+      return true;
+    }
+
+    if (!canShowModal()) {
+      if (redirectIfSuppressed) {
+        navigateToStandingOrders();
+      }
+      return false;
+    }
+
+    const subscriptionSkus = await ensureSubscriptionSkus();
+
+    if (subscriptionSkus === null) {
+      if (redirectOnFailure) {
+        navigateToStandingOrders();
+      }
+      return false;
+    }
+
+    if (subscriptionSkus.length === 0) {
+      if (redirectOnNoMatch) {
+        sendGAEvent('click', 'sem_assinatura_na_conta');
+        navigateToStandingOrders();
+      }
+      return false;
+    }
+
+    const delistedInSubscription = getDelistedSkusInSubscription(subscriptionSkus);
+
+    if (delistedInSubscription.length === 0) {
+      if (redirectOnNoMatch) {
+        sendGAEvent('click', 'sem_cafes_descontinuados_na_assinatura');
+        navigateToStandingOrders();
+      }
+      return false;
+    }
+
+    await loadProductsForSkus(delistedInSubscription);
+    cachedProductsHtml = buildProductsListHtml(delistedInSubscription);
+
+    if (!cachedFirstName) {
+      cachedFirstName = await getUserFirstName();
+    }
+
+    const viewLabel =
+      options && options.viewLabel ? options.viewLabel : 'modal_descontinuados_exibido';
+    await showModal(viewLabel);
+    return true;
+  }
+
+  async function tryAutoShowModal() {
+    if (autoShowCompleted || modalOpen || document.getElementById(MODAL_ID)) {
+      return;
+    }
+
+    if (!canShowModal()) {
+      autoShowCompleted = true;
+      return;
+    }
+
+    const loggedIn = await isUserLoggedInAsync();
+    if (!loggedIn) {
+      return;
+    }
+
+    const subscriptionSkus = await ensureSubscriptionSkus();
+    if (subscriptionSkus === null) {
+      return;
+    }
+
+    autoShowCompleted = true;
+
+    await showModalForDelistedSubscription({
+      viewLabel: 'modal_descontinuados_auto_exibido',
+    });
+  }
+
   async function handleSubscriptionClick(event) {
     event.preventDefault();
     event.stopPropagation();
@@ -817,24 +1065,11 @@
 
     sendGAEvent('click', 'minhas_assinaturas_btn');
 
-    const subscriptionSkus = await ensureSubscriptionSkus();
-
-    if (subscriptionSkus === null) {
-      navigateToStandingOrders();
-      return;
-    }
-
-    const delistedInSubscription = getDelistedSkusInSubscription(subscriptionSkus);
-
-    if (delistedInSubscription.length === 0) {
-      sendGAEvent('click', 'sem_cafes_descontinuados_na_assinatura');
-      navigateToStandingOrders();
-      return;
-    }
-
-    await loadProductsForSkus(delistedInSubscription);
-    cachedProductsHtml = buildProductsListHtml(delistedInSubscription);
-    await showModal();
+    await showModalForDelistedSubscription({
+      redirectOnFailure: true,
+      redirectOnNoMatch: true,
+      redirectIfSuppressed: true,
+    });
   }
 
   function bindSubscriptionButton() {
@@ -873,6 +1108,15 @@
     preloadUserData();
     ensureSubscriptionSkus();
     run();
+
+    let autoShowAttempts = 0;
+    const autoShowTimer = setInterval(function () {
+      autoShowAttempts++;
+      tryAutoShowModal();
+      if (autoShowCompleted || autoShowAttempts > 40) {
+        clearInterval(autoShowTimer);
+      }
+    }, 200);
 
     if (!window.wjDelistedSubsObserver) {
       window.wjDelistedSubsObserver = new MutationObserver(function (mutations) {
