@@ -275,23 +275,6 @@
       return;
     }
 
-    for (let i = 0; i < slides.length; i += 1) {
-      const dot = document.createElement('button');
-      dot.type = 'button';
-      dot.className = ROOT_CLASS + '__dot';
-      dot.setAttribute('aria-label', 'Ir para item ' + (i + 1));
-      dot.setAttribute('role', 'tab');
-
-      (function (index) {
-        dot.addEventListener('click', function () {
-          goToSlide(index);
-          restartAutoplay();
-        });
-      })(i);
-
-      dots.appendChild(dot);
-    }
-
     function goToSlide(index) {
       if (index < 0) {
         currentIndex = slides.length - 1;
@@ -332,6 +315,37 @@
       stopAutoplay();
       startAutoplay();
     }
+
+    function handleDotClick(event) {
+      const target = event.target;
+
+      if (!target || !target.classList.contains(ROOT_CLASS + '__dot')) {
+        return;
+      }
+
+      const slideIndex = parseInt(target.getAttribute('data-slide-index'), 10);
+
+      if (isNaN(slideIndex)) {
+        return;
+      }
+
+      goToSlide(slideIndex);
+      restartAutoplay();
+    }
+
+    dots.innerHTML = '';
+
+    for (let i = 0; i < slides.length; i += 1) {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = ROOT_CLASS + '__dot';
+      dot.setAttribute('data-slide-index', String(i));
+      dot.setAttribute('aria-label', 'Ir para item ' + (i + 1));
+      dot.setAttribute('role', 'tab');
+      dots.appendChild(dot);
+    }
+
+    dots.addEventListener('click', handleDotClick);
 
     function handleResize() {
       if (isMobileView()) {
