@@ -8,8 +8,9 @@
   let sliderTouchDone = false;
   let customCarouselTouchDone = false;
 
-  const STYLE_ID = 'at-333-new-banner-style-v8';
+  const STYLE_ID = 'at-333-new-banner-style-v9';
   const BANNER_RADIUS = '25px';
+  const BANNER_RADIUS_MOBILE = '8px';
   const FLAG_DESKTOP = 'data-at-new-banner-desktop';
   const FLAG_MOBILE = 'data-at-new-banner-mobile';
   const MOBILE_TOUCH_FLAG = 'data-at-banner-touch-init';
@@ -259,6 +260,19 @@
       '  }',
       '  .banner.home .pagebuilder-lazyload-slider.slick-initialized .slick-list {',
       '    touch-action: pan-y !important;',
+      '    border-radius: ' + BANNER_RADIUS_MOBILE + ' !important;',
+      '  }',
+      '  .banner.home .custom-carousel .carousel-wrapper {',
+      '    border-radius: ' + BANNER_RADIUS_MOBILE + ' !important;',
+      '  }',
+      '  .banner.home .pagebuilder-lazyload-slider img[data-element="desktop_image"],',
+      '  .banner.home .pagebuilder-lazyload-slider img[data-element="mobile_image"],',
+      '  .banner.home .custom-carousel img.carousel-image-mobile {',
+      '    border-radius: ' + BANNER_RADIUS_MOBILE + ' !important;',
+      '  }',
+      '  .pagebuilder-lazyload-slider .slick-slide[' + FLAG_DESKTOP + '="true"] img[data-element="desktop_image"],',
+      '  ' + MOBILE_CAROUSEL_SELECTOR + ' .carousel-item[' + FLAG_MOBILE + '="true"] img.carousel-image-mobile {',
+      '    border-radius: ' + BANNER_RADIUS_MOBILE + ' !important;',
       '  }',
       '  .banner.home ' + MOBILE_CAROUSEL_SELECTOR + ' .carousel-wrapper,',
       '  .banner.home ' + MOBILE_CAROUSEL_SELECTOR + ' .carousel-items {',

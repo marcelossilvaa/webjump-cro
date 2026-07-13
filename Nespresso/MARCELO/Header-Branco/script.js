@@ -2,6 +2,35 @@
   'use strict';
 
   const STYLE_ID = 'at-header-branco-style';
+  let styleObserverStarted = false;
+
+  function hasMainElement() {
+    return !!document.getElementById('main');
+  }
+
+  function isStandingOrdersPage() {
+    return window.location.pathname.indexOf('/myaccount/standing-orders') !== -1;
+  }
+
+  function getPageBackgroundCss() {
+    const rules = [
+      'body {',
+      '  background-color: #fff !important;',
+    ];
+
+    if (isStandingOrdersPage()) {
+      rules.push('  color: #17171a !important;');
+    }
+
+    rules.push(
+      '}',
+      '#main-container {',
+      '  background-color: #fff;',
+      '}'
+    );
+
+    return rules.join('\n');
+  }
 
   function getHeaderBrancoCss() {
     return [
@@ -28,7 +57,8 @@
       '  margin-right: 4px;',
       '  width: 25px !important;',
       '}',
-      'span.text {',
+      '#header #search-bar-button span.text,',
+      '#header .search-bar-button span.text {',
       '  display: contents;',
       '}',
       '@media screen and (min-width: 996px) {',
@@ -37,7 +67,7 @@
       '  }',
       '}',
       '@media screen and (max-width: 995px) {',
-      '  .search-bar-button span.text {',
+      '  #header .search-bar-button span.text {',
       '    display: inline-block !important;',
       "    content: url('https://www.nespresso.com/shared_res/markets/it/b2c_b2b/icons/nespresso_icons/UI_ICONS_24px/24_SYMBOLS/24_symbols_action_search.svg');",
       '    margin-top: 20%;',
@@ -212,11 +242,7 @@
       '  color: #fff;',
       '  text-decoration: underline;',
       '}',
-      'body,',
-      '#main,',
-      '#main-container {',
-      '  background-color: #fff;',
-      '}',
+      getPageBackgroundCss(),
       '@media (max-width: 995px) {',
       '  .HeaderNavigationBar__nav {',
       '    bottom: 0;',
@@ -426,7 +452,7 @@
       '  }',
       '}',
       '@media screen and (min-width: 996px) {',
-      '  .site-width,',
+      '  #header .site-width,',
       '  .ResponsiveContainer,',
       '  .Header__top {',
       '    max-width: 72.5rem;',
@@ -446,17 +472,83 @@
     ].join('\n');
   }
 
+  function moveStyleToEnd() {
+    const style = document.getElementById(STYLE_ID);
+    if (style && style.parentNode) {
+      style.parentNode.appendChild(style);
+    }
+  }
+
   function injectStyles() {
-    if (document.getElementById(STYLE_ID)) return;
-    const style = document.createElement('style');
-    style.id = STYLE_ID;
+    let style = document.getElementById(STYLE_ID);
+    if (!style) {
+      style = document.createElement('style');
+      style.id = STYLE_ID;
+      document.head.appendChild(style);
+    }
     style.textContent = getHeaderBrancoCss();
-    document.head.appendChild(style);
+    moveStyleToEnd();
+  }
+
+  function watchEasyorderStylesheet() {
+    if (!isStandingOrdersPage() || !hasMainElement() || styleObserverStarted) {
+      return;
+    }
+    styleObserverStarted = true;
+
+    function hasEasyorderStylesheet(node) {
+      return (
+        node.nodeName === 'LINK' &&
+        node.rel === 'stylesheet' &&
+        node.href &&
+        node.href.indexOf('easyorder') !== -1
+      );
+    }
+
+    function handleMutations(mutations) {
+      let shouldReinject = false;
+      for (let i = 0; i < mutations.length; i++) {
+        const addedNodes = mutations[i].addedNodes;
+        for (let j = 0; j < addedNodes.length; j++) {
+          const node = addedNodes[j];
+          if (hasEasyorderStylesheet(node)) {
+            shouldReinject = true;
+            break;
+          }
+          if (node.querySelectorAll) {
+            const links = node.querySelectorAll('link[rel="stylesheet"][href*="easyorder"]');
+            if (links.length) {
+              shouldReinject = true;
+              break;
+            }
+          }
+        }
+        if (shouldReinject) break;
+      }
+      if (shouldReinject) {
+        injectStyles();
+      }
+    }
+
+    const observer = new MutationObserver(handleMutations);
+    const observeTarget = document.body || document.documentElement;
+    if (observeTarget) {
+      observer.observe(observeTarget, { childList: true, subtree: true });
+    }
+
+    if (document.querySelector('link[rel="stylesheet"][href*="easyorder"]')) {
+      injectStyles();
+    }
+  }
+
+  function init() {
+    injectStyles();
+    watchEasyorderStylesheet();
   }
 
   if (document.head) {
-    injectStyles();
+    init();
   } else {
-    document.addEventListener('DOMContentLoaded', injectStyles);
+    document.addEventListener('DOMContentLoaded', init);
   }
 })();
