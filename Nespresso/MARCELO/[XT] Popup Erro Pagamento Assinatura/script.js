@@ -9,10 +9,13 @@
   const STYLE_ID = 'wj-payment-issue-popover-style';
   const POPOVER_ID = 'wj-payment-issue-popover';
   const LISTENER_ATTR = 'data-wj-payment-issue-listener';
+  const ANCHOR_LISTENER_ATTR = 'data-wj-payment-issue-anchor-listener';
   const TRACKING_CATEGORY = 'erro_pagamento_assinatura';
   const DISMISS_STORAGE_KEY = 'wj-payment-issue-popover-dismissed-at';
   const SESSION_SHOWN_KEY = 'wj-payment-issue-popover-shown';
   const DISMISS_DAYS = 7;
+  const VIEWPORT_MARGIN_LEFT = 16;
+  const VIEWPORT_MARGIN_RIGHT = 24;
 
   const STANDING_ORDERS_URL =
     'https://www.nespresso.com/br/pt/myaccount/standing-orders#/orders/list';
@@ -20,7 +23,7 @@
   const SELECTORS = {
     header: '.cb-header-navigation',
     anchor:
-      'a.cb-header-navigation__nav-link[href="/br/pt/pedido-automatico"], a.cb-header-navigation__nav-link[data-qa="menu_sale"]',
+      'button.cb-header-navigation__action-btn[data-ref="accountBtn"], button.cb-header-navigation__action-btn[data-action="account"]',
   };
 
   let isProcessing = false;
@@ -304,7 +307,6 @@
       '.wj-payment-issue-popover__arrow {' +
       'position: absolute;' +
       'top: -8px;' +
-      'left: 50%;' +
       'width: 16px;' +
       'height: 16px;' +
       'background: #fff;' +
@@ -405,16 +407,22 @@
     const rect = anchor.getBoundingClientRect();
     const popoverWidth = popover.offsetWidth || 320;
     const gap = 12;
+    const anchorCenterX = rect.left + rect.width / 2;
+    const isRightSideAnchor = anchorCenterX > window.innerWidth * 0.55;
     let left = rect.left + rect.width / 2 - popoverWidth / 2;
     const top = rect.bottom + gap;
-    const minLeft = 12;
-    const maxLeft = window.innerWidth - popoverWidth - 12;
+    const minLeft = VIEWPORT_MARGIN_LEFT;
+    const maxLeft = window.innerWidth - popoverWidth - VIEWPORT_MARGIN_RIGHT;
 
-    if (left < minLeft) {
-      left = minLeft;
+    if (isRightSideAnchor) {
+      left = maxLeft;
     }
+
     if (left > maxLeft) {
       left = maxLeft;
+    }
+    if (left < minLeft) {
+      left = minLeft;
     }
 
     popover.style.top = top + 'px';
@@ -422,9 +430,16 @@
 
     const arrow = popover.querySelector('.wj-payment-issue-popover__arrow');
     if (arrow) {
-      const arrowLeft = rect.left + rect.width / 2 - left;
+      let arrowLeft = rect.left + rect.width / 2 - left;
+      const arrowPadding = 20;
+      if (arrowLeft < arrowPadding) {
+        arrowLeft = arrowPadding;
+      }
+      if (arrowLeft > popoverWidth - arrowPadding) {
+        arrowLeft = popoverWidth - arrowPadding;
+      }
       arrow.style.left = arrowLeft + 'px';
-      arrow.style.transform = 'rotate(45deg)';
+      arrow.style.transform = 'translateX(-50%) rotate(45deg)';
     }
   }
 
@@ -488,6 +503,23 @@
     });
   }
 
+  function bindAnchorCloseOnClick() {
+    const anchor = getAnchor();
+    if (!anchor || anchor.getAttribute(ANCHOR_LISTENER_ATTR) === '1') {
+      return;
+    }
+
+    anchor.setAttribute(ANCHOR_LISTENER_ATTR, '1');
+    anchor.addEventListener('click', function () {
+      if (!popoverVisible) {
+        return;
+      }
+
+      hidePopover();
+      sendGAEvent('click', 'fechar_perfil');
+    });
+  }
+
   function bindDocumentDismiss() {
     if (window.wjPaymentIssuePopoverDocBound) {
       return;
@@ -496,21 +528,12 @@
 
     document.addEventListener('click', function (event) {
       const popover = document.getElementById(POPOVER_ID);
-      const anchor = getAnchor();
       if (!popover || !popoverVisible) {
         return;
       }
 
       const target = event.target;
-      if (
-        popover.contains(target) ||
-        (anchor && anchor.contains(target)) ||
-        (target.closest &&
-          target.closest('.cb-header-navigation__submenu') &&
-          anchor &&
-          anchor.parentElement &&
-          anchor.parentElement.contains(target))
-      ) {
+      if (popover.contains(target)) {
         return;
       }
 
@@ -597,6 +620,7 @@
       }
 
       setupHeaderObserver();
+      bindAnchorCloseOnClick();
       await tryAutoShow();
     } finally {
       isProcessing = false;
@@ -636,7 +660,9 @@
               if (
                 node.nodeType === 1 &&
                 ((node.matches && node.matches(SELECTORS.header)) ||
-                  (node.querySelector && node.querySelector(SELECTORS.header)))
+                  (node.querySelector &&
+                    (node.querySelector(SELECTORS.header) ||
+                      node.querySelector(SELECTORS.anchor))))
               ) {
                 shouldRun = true;
                 break;
