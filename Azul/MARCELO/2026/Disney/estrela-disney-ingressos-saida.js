@@ -1,16 +1,19 @@
 (function () {
   var EXPERIMENT_NAME = 'AT_Disney_ingressos_saida';
   var BANNER_LINK = 'https://www.voeazul.com.br/br/pt/disney/promocoes-disney';
-  var STYLE_ID = 'at-disney-hoteis-style';
-  var OVERLAY_ID = 'at-disney-hoteis-overlay';
-  var BANNER_ID = 'at-disney-hoteis-banner';
+  var STYLE_ID = 'at-disney-ingressos-saida-style';
+  var OVERLAY_ID = 'at-disney-ingressos-saida-overlay';
+  var BANNER_ID = 'at-disney-ingressos-saida-banner';
   var EVAR84 = 'AT_Disney_campaign';
-  var UTM_SOURCE_ALLOWED = [
+  var UTM_CAMPAIGN_ALLOWED = [
     '202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOPESQUISAINGRESSOSDISNEY-D0',
     '202604-azv-b2c-emm-168h-viagem-abandonopesquisaingressosdisneyAZ-d2_tickets',
     '202603-AZV-B2C-EMM-168H-VIAGEM-ABANDONOCARRINHODISNEY-D0',
     '202603-azv-b2c-psh-168h-inter-abandonocarrinhoingressosdisney-d2_pac',
     'pmweb_azv_e-mail_banner_lf_azv_202603-azv-b2c-emm-168h-viagem-incentivohospedagemdisney-d7_hotel',
+    'pmweb_azv_e-mail_banner_lf_azv_202603-azv-b2c-emm-168h-viagem-abandonopesquisaingressosdisney-02_tickets',
+    'pmweb_azv_e-mail_banner_lf_azv_202604-azv-b2c-emm-168h-viagem-abandonopesquisaingressosdisneyAZ-d2_tickets',
+    'pmweb_azv_e-mail_banner_lf_azv_202603-azv-b2c-emm-168h-viagem-abandonocarrinhoingressosdisney-d0_tickets',
   ];
   var BANNER_ASSET_URLS = [
     'https://i.imgur.com/7dXE65l.png',
@@ -22,7 +25,6 @@
     'https://i.imgur.com/jSNMMjB.png',
     'https://i.imgur.com/noLA829.png',
   ];
-
   // ============================================
   // REGRAS DE EXIBIÇÃO DO MODAL
   // ============================================
@@ -45,23 +47,27 @@
   var oldBanner = document.getElementById(BANNER_ID);
   if (oldBanner) oldBanner.parentNode.removeChild(oldBanner);
 
-  function utmSourceMatches(source) {
-    if (!source) return false;
-    var s = String(source).toLowerCase();
-    for (var i = 0; i < UTM_SOURCE_ALLOWED.length; i++) {
-      var allowed = String(UTM_SOURCE_ALLOWED[i] || '').toLowerCase();
+  function utmCampaignMatches(campaign) {
+    if (!campaign) return false;
+    var c = String(campaign).toLowerCase();
+    for (var i = 0; i < UTM_CAMPAIGN_ALLOWED.length; i++) {
+      var allowed = String(UTM_CAMPAIGN_ALLOWED[i] || '').toLowerCase();
       if (!allowed) continue;
-      if (s === allowed) return true;
-      if (s.indexOf(allowed) !== -1) return true;
+      if (c === allowed) return true;
+      if (c.indexOf(allowed) !== -1) return true;
     }
     return false;
   }
 
   function hasRequiredUtm() {
     try {
-      var params = new URLSearchParams(window.location.search);
-      var source = params.get('utm_source') || '';
-      return utmSourceMatches(source);
+      var search = window.location.search || '';
+      if (search.indexOf('utm_campaign=') === -1 && search.indexOf('utm_campaing=') === -1) {
+        return false;
+      }
+      var params = new URLSearchParams(search);
+      var campaign = params.get('utm_campaign') || params.get('utm_campaing') || '';
+      return utmCampaignMatches(campaign);
     } catch (e) {
       return false;
     }
@@ -174,7 +180,10 @@
   }
 
   function injectStyles() {
-    if (document.getElementById(STYLE_ID)) return;
+    var existingStyle = document.getElementById(STYLE_ID);
+    if (existingStyle && existingStyle.parentNode) {
+      existingStyle.parentNode.removeChild(existingStyle);
+    }
     var css =
       '' +
       // ===== OVERLAY DA ANIMACAO =====
@@ -488,9 +497,22 @@
   }
 
   function createShootingStarAnimation(callback) {
+    injectStyles();
+
     var overlay = document.createElement('div');
     overlay.id = OVERLAY_ID;
+    overlay.style.cssText =
+      'position:fixed;top:0;left:0;width:100%;height:100%;' +
+      'background:rgba(0,10,40,0.92);z-index:999999;display:flex;align-items:center;' +
+      'justify-content:center;opacity:0;transition:opacity 0.5s ease;overflow:hidden;';
     document.body.appendChild(overlay);
+
+    var finished = false;
+    function finishAnimation() {
+      if (finished) return;
+      finished = true;
+      if (typeof callback === 'function') callback();
+    }
 
     var vw = window.innerWidth;
     var vh = window.innerHeight;
@@ -513,12 +535,26 @@
 
     requestAnimationFrame(function () {
       overlay.classList.add('at-disney-visible');
+      overlay.style.opacity = '1';
     });
 
     var startTime = null,
       duration = 2200,
       sCount = 0,
       maxS = 80;
+
+    function removeOverlayAndFinish() {
+      overlay.classList.add('at-disney-fade-out');
+      overlay.style.opacity = '0';
+      setTimeout(function () {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        finishAnimation();
+      }, 600);
+    }
+
+    setTimeout(function () {
+      if (!finished) removeOverlayAndFinish();
+    }, 6000);
 
     function animate(ts) {
       if (!startTime) startTime = ts;
@@ -559,11 +595,7 @@
         flash.classList.add('at-disney-animate-flash');
         for (var k = 0; k < 25; k++) createDust(overlay, pt.x, pt.y);
         setTimeout(function () {
-          overlay.classList.add('at-disney-fade-out');
-          setTimeout(function () {
-            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-            if (typeof callback === 'function') callback();
-          }, 600);
+          removeOverlayAndFinish();
         }, 800);
       }
     }
@@ -631,9 +663,9 @@
     }, 1800);
   }
 
-  // === BANNER HOTEIS DISNEY ===
-
   function createBanner() {
+    injectStyles();
+
     // Marca exibicao antes de qualquer tracking para garantir regra de 1x/sessao
     markShown();
 
@@ -642,8 +674,12 @@
 
     var bannerOverlay = document.createElement('div');
     bannerOverlay.id = BANNER_ID;
+    bannerOverlay.style.cssText =
+      'position:fixed;top:0;left:0;width:100%;height:100%;z-index:999998;' +
+      'display:flex;align-items:center;justify-content:center;' +
+      'background:rgba(0,0,0,0.7);opacity:0;transition:opacity 0.6s ease;';
 
-    // Container principal 720x386
+    // Container principal 800x400
     var container = document.createElement('div');
     container.className = 'at-dh-container';
 
@@ -827,6 +863,7 @@
 
     requestAnimationFrame(function () {
       bannerOverlay.classList.add('at-disney-banner-visible');
+      bannerOverlay.style.opacity = '1';
     });
 
     // Tracking
@@ -835,9 +872,9 @@
     // Eventos
     cta.addEventListener('click', function (e) {
       e.stopPropagation();
-        try {
-          localStorage.setItem(PROMO_AUTOCLOCK_KEY, String(Date.now()));
-        } catch (err) {}
+      try {
+        localStorage.setItem(PROMO_AUTOCLOCK_KEY, String(Date.now()));
+      } catch (err) {}
       analyticsEvent('banner_disney_ingressos_cta', 'click');
     });
 
@@ -959,6 +996,7 @@
       cleanups = [];
 
       console.log('[Disney Hoteis Saida] Gatilho disparado: ' + triggerSource);
+      injectStyles();
       createShootingStarAnimation(function () {
         createBanner();
       });

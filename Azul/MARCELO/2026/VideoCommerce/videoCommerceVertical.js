@@ -49,7 +49,7 @@
   ];
 
   const UTM_SESSION_KEY = '__wjVideoCommerceDisneyUtm';
-  const UTM_SOURCE_ALLOWED = [
+  const UTM_CAMPAIGN_ALLOWED = [
     '202512-AZV-B2C-EMM-168H-VIAGEM-INGRESSOSDISNEY-D16',
     '202604-azv-b2c-psh-168h-Inter-previagemhospedagemdisney-d0_tickets',
     '202603-AZV-B2C-EMM-168H-VIAGEM-INCENTIVOINGRESSOSDISNEY-D5',
@@ -62,29 +62,30 @@
     '202604-azv-b2c-emm-168h-viagem-abandonopesquisaingressosdisneyAZ-d2_tickets',
   ];
 
-  function utmSourceMatches(source) {
-    if (!source) return false;
-    const s = String(source).toLowerCase();
+  function utmCampaignMatches(campaign) {
+    if (!campaign) return false;
+    const c = String(campaign).toLowerCase();
     let i;
-    for (i = 0; i < UTM_SOURCE_ALLOWED.length; i++) {
-      const allowed = String(UTM_SOURCE_ALLOWED[i] || '').toLowerCase();
+    for (i = 0; i < UTM_CAMPAIGN_ALLOWED.length; i++) {
+      const allowed = String(UTM_CAMPAIGN_ALLOWED[i] || '').toLowerCase();
       if (!allowed) continue;
-      if (s === allowed) return true;
-      if (s.indexOf(allowed) !== -1) return true;
+      if (c === allowed) return true;
+      if (c.indexOf(allowed) !== -1) return true;
     }
     return false;
   }
 
-  function readUtmSourceFromUrl() {
+  function readUtmCampaignFromUrl() {
     try {
-      return new URLSearchParams(window.location.search).get('utm_source') || '';
+      const params = new URLSearchParams(window.location.search);
+      return params.get('utm_campaign') || params.get('utm_campaing') || '';
     } catch (e) {
       return '';
     }
   }
 
   function persistUtmSessionIfValid() {
-    if (!utmSourceMatches(readUtmSourceFromUrl())) return false;
+    if (!utmCampaignMatches(readUtmCampaignFromUrl())) return false;
     try {
       sessionStorage.setItem(UTM_SESSION_KEY, '1');
     } catch (e) {}
