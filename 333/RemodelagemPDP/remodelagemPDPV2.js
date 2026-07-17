@@ -319,7 +319,7 @@ window.dataLayer.push({
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] .product-info-price-container { width: 100% !important; margin-top: 20px !important; padding: 0 !important; }',
+        '="true"] .product-info-price-container { width: 100% !important; margin-top: 5px !important; padding: 0 !important; }',
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
