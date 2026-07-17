@@ -581,7 +581,7 @@ window.dataLayer.push({
       '.wj-bf-whatsapp__subtitle { font-size: 12px; font-weight: 400; color: #ffffff; }',
       '.catalog-product-view #buy-via-whatsapp.fixed-wspp-button { gap: 4px !important; }',
       '#text-1454703450633 { font-size: 14px !important; }',
-      '@media (max-width: 480px) { .wj-bf-whatsapp { right: 12px; bottom: 16px; } .wj-bf-whatsapp__pill-link { min-height: 48px; padding: 10px 14px 10px 12px; } .wj-bf-whatsapp__title { font-size: 13px; } .wj-bf-whatsapp__subtitle { font-size: 11px; } .wj-bf-whatsapp__avatar { width: 64px; height: 64px; } }',
+      '@media (max-width: 480px) { .wj-bf-whatsapp { right: 12px; bottom: 70px; } .wj-bf-whatsapp__pill-link { min-height: 48px; padding: 10px 14px 10px 12px; } .wj-bf-whatsapp__title { font-size: 13px; } .wj-bf-whatsapp__subtitle { font-size: 11px; } .wj-bf-whatsapp__avatar { width: 64px; height: 64px; } }',
       '@media (max-width: 1100px) and (min-width: 900px) { ' +
         ROOT_SELECTOR +
         '[' +
