@@ -17,6 +17,7 @@ window.dataLayer.push({
   let debounceTimer = null;
   let retryCount = 0;
   let viewTracked = false;
+  let floatingViewTracked = false;
   const sellerRatingCache = {};
 
   const STYLE_ID = 'wj-remodelagem-pdp-style';
@@ -29,6 +30,14 @@ window.dataLayer.push({
   const OBSERVER_DELAY = 200;
   const TRACKING_CATEGORY = 'remodelagem_pdp_333';
   const WHATSAPP_ICON_URL = 'https://i.imgur.com/k2z1wuj.png';
+  const BF_ROOT_CLASS = 'wj-bf-whatsapp';
+  const BF_ROOT_ATTR = 'data-wj-bf-done';
+  const BF_TRACKING_ATTR = 'data-wj-bf-tracking-added';
+  const BF_TRACKING_CATEGORY = 'botao_flutuante_333';
+  const WHATSAPP_PHONE = '+551145724545';
+  const NATIVE_WRAPPER_IDS = ['whatsapp-wrapper', 'whatsapp-wrapper-2'];
+  const MASCOT_SRC = 'https://i.imgur.com/PM4dYNf.png';
+  const CHAT_ICON_SRC = 'https://i.imgur.com/LIUCgm1.png';
 
   function getStyles() {
     return [
@@ -556,12 +565,23 @@ window.dataLayer.push({
         '[' +
         ROOT_ATTR +
         '="true"] .pdp-payment-methods li span { display: block !important; margin-top: 4px !important; color: #8b8f98 !important; font-size: 13px !important; font-weight: 500 !important; line-height: 1.25 !important; }',
-      '.wj-floating-whatsapp { position: fixed; right: 22px; bottom: 75px; z-index: 2147483000; display: inline-flex !important; align-items: center; justify-content: center; width: 52px !important; height: 52px !important; min-width: 52px !important; min-height: 52px !important; padding: 0 !important; border: 1px solid #24a944 !important; border-radius: 50% !important; background: #24a944 !important; color: #ffffff !important; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.22) !important; line-height: 1 !important; text-decoration: none !important; cursor: pointer; transform: scale(1); transition: transform 160ms ease, box-shadow 160ms ease; animation: wj-whatsapp-pulse 1.8s ease-in-out infinite; }',
-      '.wj-floating-whatsapp:hover { transform: scale(1.08); box-shadow: 0 10px 24px rgba(15, 23, 42, 0.28) !important; }',
-      '.wj-floating-whatsapp img, .wj-floating-whatsapp .buy-via-whatsapp-icon { width: 24px !important; height: 24px !important; min-width: 24px !important; margin: 0 !important; object-fit: contain !important; }',
+      '#whatsapp-wrapper, #whatsapp-wrapper-2, .whatsapp-wrapper-2 { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }',
+      '.wj-bf-whatsapp { position: fixed; right: 18px; bottom: 22px; z-index: 2147483000; display: flex; flex-direction: column; align-items: flex-end; gap: 14px; width: auto; pointer-events: none; }',
+      '.wj-bf-whatsapp * { box-sizing: border-box; }',
+      '.wj-bf-whatsapp__avatar-link, .wj-bf-whatsapp__pill-link { color: inherit; text-decoration: none; cursor: pointer; pointer-events: auto; }',
+      '.wj-bf-whatsapp__avatar-link { display: block; line-height: 0; border-radius: 50%; }',
+      '.wj-bf-whatsapp__avatar { position: relative; z-index: 2; display: block; width: 72px; height: 72px; margin: 0; border: 4px solid #ffffff; border-radius: 50%; object-fit: cover; background: #f6b26b; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.2); transition: transform 160ms ease, box-shadow 160ms ease; }',
+      '.wj-bf-whatsapp__avatar-link:hover .wj-bf-whatsapp__avatar { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(15, 23, 42, 0.24); }',
+      '.wj-bf-whatsapp__pill-link { position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 12px 18px 12px 14px; border: none; border-radius: 999px; background: #24a944; color: #ffffff; box-shadow: 0 8px 22px rgba(15, 23, 42, 0.24); transition: transform 160ms ease, box-shadow 160ms ease; }',
+      '.wj-bf-whatsapp__pill-link:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(15, 23, 42, 0.28); }',
+      '.wj-bf-whatsapp__icon { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; }',
+      '.wj-bf-whatsapp__icon-img { display: block; width: 24px; height: 24px; object-fit: contain; }',
+      '.wj-bf-whatsapp__text { display: flex; flex-direction: column; gap: 1px; min-width: 0; font-family: Ubuntu, Arial, Helvetica, sans-serif; line-height: 1.15; }',
+      '.wj-bf-whatsapp__title { font-size: 14px; font-weight: 700; color: #ffffff; }',
+      '.wj-bf-whatsapp__subtitle { font-size: 12px; font-weight: 400; color: #ffffff; }',
       '.catalog-product-view #buy-via-whatsapp.fixed-wspp-button { gap: 4px !important; }',
       '#text-1454703450633 { font-size: 14px !important; }',
-      '@keyframes wj-whatsapp-pulse { 0% { box-shadow: 0 0 0 0 rgba(36, 169, 68, 0.42), 0 8px 20px rgba(15, 23, 42, 0.22); } 70% { box-shadow: 0 0 0 12px rgba(36, 169, 68, 0), 0 8px 20px rgba(15, 23, 42, 0.22); } 100% { box-shadow: 0 0 0 0 rgba(36, 169, 68, 0), 0 8px 20px rgba(15, 23, 42, 0.22); } }',
+      '@media (max-width: 480px) { .wj-bf-whatsapp { right: 12px; bottom: 16px; } .wj-bf-whatsapp__pill-link { min-height: 48px; padding: 10px 14px 10px 12px; } .wj-bf-whatsapp__title { font-size: 13px; } .wj-bf-whatsapp__subtitle { font-size: 11px; } .wj-bf-whatsapp__avatar { width: 64px; height: 64px; } }',
       '@media (max-width: 1100px) and (min-width: 900px) { ' +
         ROOT_SELECTOR +
         '[' +
@@ -651,7 +671,7 @@ window.dataLayer.push({
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] .pdp-payment-methods { margin-top: 28px !important; } .wj-floating-whatsapp { right: 16px; bottom: 75px; width: 50px !important; height: 50px !important; min-width: 50px !important; min-height: 50px !important; padding: 0 !important; } }',
+        '="true"] .pdp-payment-methods { margin-top: 28px !important; } }',
     ].join('\n');
   }
 
@@ -1414,59 +1434,242 @@ window.dataLayer.push({
     setFirstTextNodeIfChanged(button, 'Falar com um especialista ');
   }
 
-  function ensureFloatingWhatsApp() {
-    const nativeButton = getMainButton('#buy-via-whatsapp');
-    let nativeIcon = null;
-    let button = document.querySelector('.wj-floating-whatsapp');
+  function sendFloatingTrackingEvent(label, action) {
+    const payload = {
+      event: 'local_event',
+      event_raised_by: 'br',
+      local_event_category: BF_TRACKING_CATEGORY,
+      local_event_action: action || 'click',
+      local_event_label: label,
+    };
 
-    if (nativeButton) {
-      nativeIcon = nativeButton.querySelector('img, .buy-via-whatsapp-icon');
-    }
-
-    if (!nativeButton) {
-      removeElements(
-        Array.prototype.slice.call(document.querySelectorAll('.wj-floating-whatsapp')),
-      );
+    if (window.gtmDataObject && typeof window.gtmDataObject.push === 'function') {
+      window.gtmDataObject.push(payload);
       return;
     }
 
-    if (!button) {
-      button = document.createElement('button');
-      button.className = 'wj-floating-whatsapp';
-      button.setAttribute('type', 'button');
-      button.setAttribute('aria-label', 'Comprar pelo WhatsApp');
-      button.setAttribute('data-wj-remodelagem-node', 'true');
-      document.body.appendChild(button);
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(payload);
+  }
+
+  function trackFloatingViewOnce() {
+    if (floatingViewTracked) return;
+
+    floatingViewTracked = true;
+    sendFloatingTrackingEvent('visualizou_botao_flutuante', 'view');
+  }
+
+  function hideNativeWhatsAppWrapper() {
+    NATIVE_WRAPPER_IDS.forEach(function (id) {
+      const wrapper = document.getElementById(id);
+
+      if (!wrapper) return;
+
+      wrapper.style.setProperty('display', 'none', 'important');
+      wrapper.style.setProperty('visibility', 'hidden', 'important');
+      wrapper.style.setProperty('opacity', '0', 'important');
+      wrapper.style.setProperty('pointer-events', 'none', 'important');
+    });
+  }
+
+  function getNativeWhatsAppLink() {
+    const mobileLink = document.getElementById('whatsapp-link-2');
+    const desktopLink = document.getElementById('whatsapp-link');
+
+    if (isMobileViewport()) {
+      if (mobileLink && mobileLink.href) return mobileLink;
+      if (desktopLink && desktopLink.href) return desktopLink;
+      return null;
     }
 
-    if (nativeIcon && !button.querySelector('img, .buy-via-whatsapp-icon')) {
-      const clonedIcon = nativeIcon.cloneNode(true);
-      const originalSrc = clonedIcon.getAttribute('data-wj-original-src');
+    if (desktopLink && desktopLink.href) return desktopLink;
+    if (mobileLink && mobileLink.href) return mobileLink;
+    return null;
+  }
 
-      if (originalSrc) {
-        clonedIcon.setAttribute('src', originalSrc);
-      }
+  function getDefaultWhatsAppText() {
+    const categoryTitle = document.querySelector('.page-title .base, h1.page-title, h1');
+    const categoryName = categoryTitle ? getText(categoryTitle) : '';
 
-      button.appendChild(clonedIcon);
+    if (categoryName) {
+      return 'Olá 333obra, estou na página ' + categoryName + ' e gostaria de ajuda!';
     }
 
-    removeElements(
-      Array.prototype.slice.call(button.querySelectorAll('.wj-floating-whatsapp-text')),
-    );
+    return 'Olá 333obra, gostaria de ajuda!';
+  }
 
-    if (button.getAttribute(TRACKING_ATTR) === 'true') return;
+  function getWhatsAppHref() {
+    const nativeLink = getNativeWhatsAppLink();
 
-    button.addEventListener('click', function () {
-      const currentNativeButton = getMainButton('#buy-via-whatsapp');
+    if (nativeLink && nativeLink.href) {
+      return nativeLink.href;
+    }
 
-      sendTrackingEvent('clicou_whatsapp_flutuante', 'click');
+    const text = encodeURIComponent(getDefaultWhatsAppText());
 
-      if (currentNativeButton) {
-        currentNativeButton.click();
-      }
+    if (window.matchMedia && window.matchMedia('(max-width: 480px)').matches) {
+      return 'https://wa.me/' + WHATSAPP_PHONE + '/?text=' + text;
+    }
+
+    return 'https://web.whatsapp.com/send?l=pt&phone=' + WHATSAPP_PHONE + '&text=' + text;
+  }
+
+  function createChatIcon() {
+    const icon = document.createElement('span');
+    const iconImg = document.createElement('img');
+
+    icon.className = BF_ROOT_CLASS + '__icon';
+    icon.setAttribute('data-wj-remodelagem-node', 'true');
+
+    iconImg.className = BF_ROOT_CLASS + '__icon-img';
+    iconImg.src = CHAT_ICON_SRC;
+    iconImg.alt = '';
+    iconImg.setAttribute('aria-hidden', 'true');
+    iconImg.setAttribute('data-wj-remodelagem-node', 'true');
+    iconImg.width = 24;
+    iconImg.height = 24;
+    icon.appendChild(iconImg);
+
+    return icon;
+  }
+
+  function ensureChatIcon(pillLink) {
+    if (!pillLink) return;
+
+    let icon = pillLink.querySelector('.' + BF_ROOT_CLASS + '__icon');
+    const iconImg = pillLink.querySelector('.' + BF_ROOT_CLASS + '__icon-img');
+
+    if (!icon) {
+      pillLink.insertBefore(createChatIcon(), pillLink.firstChild);
+      return;
+    }
+
+    if (!iconImg) {
+      icon.innerHTML = '';
+      icon.appendChild(createChatIcon().firstChild);
+      return;
+    }
+
+    if (iconImg.getAttribute('src') !== CHAT_ICON_SRC) {
+      iconImg.setAttribute('src', CHAT_ICON_SRC);
+    }
+  }
+
+  function bindFloatingTracking(link, label) {
+    if (!link || link.getAttribute(BF_TRACKING_ATTR) === 'true') return;
+
+    link.addEventListener('click', function () {
+      sendFloatingTrackingEvent(label || 'clicou_botao_flutuante_whatsapp', 'click');
     });
 
-    button.setAttribute(TRACKING_ATTR, 'true');
+    link.setAttribute(BF_TRACKING_ATTR, 'true');
+  }
+
+  function createWhatsAppLink(className, id, ariaLabel) {
+    const link = document.createElement('a');
+
+    link.className = className;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.href = getWhatsAppHref();
+    link.setAttribute('data-wj-remodelagem-node', 'true');
+
+    if (id) link.id = id;
+    if (ariaLabel) link.setAttribute('aria-label', ariaLabel);
+
+    return link;
+  }
+
+  function buildFloatingButton() {
+    const root = document.createElement('div');
+    const href = getWhatsAppHref();
+    const avatarLink = createWhatsAppLink(
+      BF_ROOT_CLASS + '__avatar-link',
+      '',
+      'Fale com um especialista pelo WhatsApp',
+    );
+    const avatar = document.createElement('img');
+    const pillLink = createWhatsAppLink(
+      BF_ROOT_CLASS + '__pill-link',
+      'wj-bf-whatsapp-link',
+      'Precisa de ajuda? Fale com um especialista pelo WhatsApp',
+    );
+    const icon = createChatIcon();
+    const textWrap = document.createElement('span');
+    const title = document.createElement('strong');
+    const subtitle = document.createElement('span');
+
+    root.className = BF_ROOT_CLASS;
+    root.setAttribute(BF_ROOT_ATTR, 'true');
+    root.setAttribute('data-wj-remodelagem-node', 'true');
+    root.setAttribute('data-wj-bf-node', 'true');
+
+    avatarLink.href = href;
+    avatar.className = BF_ROOT_CLASS + '__avatar';
+    avatar.src = MASCOT_SRC;
+    avatar.alt = '';
+    avatar.setAttribute('aria-hidden', 'true');
+    avatar.setAttribute('data-wj-remodelagem-node', 'true');
+    avatarLink.appendChild(avatar);
+
+    pillLink.href = href;
+    textWrap.className = BF_ROOT_CLASS + '__text';
+    textWrap.setAttribute('data-wj-remodelagem-node', 'true');
+    title.className = BF_ROOT_CLASS + '__title';
+    title.textContent = 'Precisa de ajuda?';
+    title.setAttribute('data-wj-remodelagem-node', 'true');
+    subtitle.className = BF_ROOT_CLASS + '__subtitle';
+    subtitle.textContent = 'Fale com um especialista';
+    subtitle.setAttribute('data-wj-remodelagem-node', 'true');
+
+    textWrap.appendChild(title);
+    textWrap.appendChild(subtitle);
+    pillLink.appendChild(icon);
+    pillLink.appendChild(textWrap);
+    root.appendChild(avatarLink);
+    root.appendChild(pillLink);
+
+    bindFloatingTracking(avatarLink, 'clicou_botao_flutuante_avatar');
+    bindFloatingTracking(pillLink, 'clicou_botao_flutuante_whatsapp');
+
+    return root;
+  }
+
+  function updateExistingFloatingButton(root) {
+    const href = getWhatsAppHref();
+    const links = root.querySelectorAll(
+      '.' + BF_ROOT_CLASS + '__avatar-link, .' + BF_ROOT_CLASS + '__pill-link',
+    );
+    const avatarLink = root.querySelector('.' + BF_ROOT_CLASS + '__avatar-link');
+    const pillLink = root.querySelector('.' + BF_ROOT_CLASS + '__pill-link');
+    let index;
+
+    for (index = 0; index < links.length; index += 1) {
+      links[index].href = href;
+    }
+
+    bindFloatingTracking(avatarLink, 'clicou_botao_flutuante_avatar');
+    bindFloatingTracking(pillLink, 'clicou_botao_flutuante_whatsapp');
+    ensureChatIcon(pillLink);
+  }
+
+  function ensureFloatingWhatsApp() {
+    hideNativeWhatsAppWrapper();
+    removeElements(
+      Array.prototype.slice.call(document.querySelectorAll('.wj-floating-whatsapp')),
+    );
+
+    let root = document.querySelector('.' + BF_ROOT_CLASS + '[' + BF_ROOT_ATTR + '="true"]');
+
+    if (!root) {
+      root = buildFloatingButton();
+      document.body.appendChild(root);
+      trackFloatingViewOnce();
+      return;
+    }
+
+    updateExistingFloatingButton(root);
+    trackFloatingViewOnce();
   }
 
   function organizeSellerRows() {
@@ -1705,7 +1908,12 @@ window.dataLayer.push({
         return (
           nodes.length > 0 &&
           nodes.every(function (node) {
-            return node.nodeType === 1 && node.getAttribute('data-wj-remodelagem-node') === 'true';
+            return (
+              node.nodeType === 1 &&
+              (node.getAttribute('data-wj-remodelagem-node') === 'true' ||
+                node.getAttribute('data-wj-bf-node') === 'true' ||
+                (node.classList && node.classList.contains(BF_ROOT_CLASS)))
+            );
           })
         );
       });
