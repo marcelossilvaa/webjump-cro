@@ -182,14 +182,12 @@
 
   function hasPaymentIssue(order) {
     const status = order && order.recurringOrderStatus;
-    if (!status) {
+    if (!status || !status.reason) {
       return false;
     }
 
-    return (
-      status.reason === 'PAYMENT_ISSUE' ||
-      (status.type === 'ON_HOLD' && status.reason === 'PAYMENT_ISSUE')
-    );
+    // Detecta qualquer motivo relacionado a pagamento (PAYMENT_ISSUE, OTHER_PAYMENT_ISSUE, etc.)
+    return String(status.reason).toUpperCase().indexOf('PAYMENT') !== -1;
   }
 
   async function userHasPaymentIssue() {
