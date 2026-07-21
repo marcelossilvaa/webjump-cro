@@ -19,7 +19,7 @@
   const TRACKING_CATEGORY = 'cafes_descontinuados_assinatura_v2';
   const DISMISS_STORAGE_KEY = 'wj-delisted-subs-modal-dismissed-at';
   const SESSION_SHOWN_KEY = 'wj-delisted-subs-modal-shown';
-  const DISMISS_DAYS = 7;
+  const DISMISS_DAYS = 3;
 
   const DELISTED_CATEGORIES = [
     {
