@@ -74,13 +74,16 @@
       local_event_label: label,
     };
 
-    if (window.gtmDataObject && typeof window.gtmDataObject.push === 'function') {
-      window.gtmDataObject.push(payload);
-      return;
-    }
-
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push(payload);
+
+    if (
+      window.gtmDataObject &&
+      typeof window.gtmDataObject.push === 'function' &&
+      window.gtmDataObject !== window.dataLayer
+    ) {
+      window.gtmDataObject.push(payload);
+    }
   }
 
   function trackViewOnce() {
@@ -628,13 +631,16 @@
       local_event_label: label,
     };
 
-    if (window.gtmDataObject && typeof window.gtmDataObject.push === 'function') {
-      window.gtmDataObject.push(payload);
-      return;
-    }
-
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push(payload);
+
+    if (
+      window.gtmDataObject &&
+      typeof window.gtmDataObject.push === 'function' &&
+      window.gtmDataObject !== window.dataLayer
+    ) {
+      window.gtmDataObject.push(payload);
+    }
   }
 
   function trackViewOnce() {
@@ -671,16 +677,93 @@
     return 'clicou_categoria_' + slugifyLabel(text || href);
   }
 
-  function addTrackedClick(element, label) {
-    if (!element || element.getAttribute(TRACKING_ATTR) === 'true') {
+  function closest(element, selector) {
+    let current = element;
+
+    if (current && current.nodeType === 3) {
+      current = current.parentElement;
+    }
+
+    if (!current) {
+      return null;
+    }
+
+    if (typeof current.closest === 'function') {
+      return current.closest(selector);
+    }
+
+    while (current && current.nodeType === 1) {
+      if (current.matches && current.matches(selector)) {
+        return current;
+      }
+
+      current = current.parentElement;
+    }
+
+    return null;
+  }
+
+  let lastClickKey = '';
+  let lastClickAt = 0;
+
+  function trackClickOnce(label) {
+    if (!label) {
       return;
     }
 
-    element.addEventListener('click', function () {
-      sendTrackingEvent(label, 'click');
-    });
+    const now = Date.now();
 
-    element.setAttribute(TRACKING_ATTR, 'true');
+    if (label === lastClickKey && now - lastClickAt < 400) {
+      return;
+    }
+
+    lastClickKey = label;
+    lastClickAt = now;
+    sendTrackingEvent(label, 'click');
+  }
+
+  function isTrackablePointerEvent(event) {
+    if (!event) {
+      return false;
+    }
+
+    const button = typeof event.button === 'number' ? event.button : 0;
+
+    // mousedown: so botao do scroll (nova aba), para nao duplicar com click
+    if (event.type === 'mousedown') {
+      return button === 1;
+    }
+
+    // click / auxclick: esquerdo e scroll
+    return button === 0 || button === 1;
+  }
+
+  function handleCategoriesClick(event) {
+    if (!isTrackablePointerEvent(event)) {
+      return;
+    }
+
+    const target = event.target;
+
+    if (!target) {
+      return;
+    }
+
+    const categoryItem = closest(target, '.category-item');
+
+    if (categoryItem && closest(categoryItem, WRAPPER_SELECTOR)) {
+      trackClickOnce(getCategoryLabel(categoryItem));
+      return;
+    }
+
+    if (closest(target, ARROW_PREV_SELECTOR) || closest(target, '#category-arrow-prev')) {
+      trackClickOnce('clicou_seta_categorias_anterior');
+      return;
+    }
+
+    if (closest(target, ARROW_NEXT_SELECTOR) || closest(target, '#category-arrow-next')) {
+      trackClickOnce('clicou_seta_categorias_proxima');
+    }
   }
 
   function bindCategoriesTracking() {
@@ -696,22 +779,17 @@
       return false;
     }
 
-    const items = wrapper.querySelectorAll(ITEM_SELECTOR);
+    const items = wrapper.querySelectorAll('.category-item');
 
     if (!items.length) {
       return false;
     }
 
-    for (let i = 0; i < items.length; i += 1) {
-      addTrackedClick(items[i], getCategoryLabel(items[i]));
-    }
-
-    if (prevArrow) {
-      addTrackedClick(prevArrow, 'clicou_seta_categorias_anterior');
-    }
-
-    if (nextArrow) {
-      addTrackedClick(nextArrow, 'clicou_seta_categorias_proxima');
+    if (document.documentElement.getAttribute(TRACKING_ATTR + '-categories') !== 'true') {
+      document.addEventListener('click', handleCategoriesClick, true);
+      document.addEventListener('auxclick', handleCategoriesClick, true);
+      document.addEventListener('mousedown', handleCategoriesClick, true);
+      document.documentElement.setAttribute(TRACKING_ATTR + '-categories', 'true');
     }
 
     trackViewOnce();
@@ -1038,13 +1116,16 @@
       local_event_label: label,
     };
 
-    if (window.gtmDataObject && typeof window.gtmDataObject.push === 'function') {
-      window.gtmDataObject.push(payload);
-      return;
-    }
-
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push(payload);
+
+    if (
+      window.gtmDataObject &&
+      typeof window.gtmDataObject.push === 'function' &&
+      window.gtmDataObject !== window.dataLayer
+    ) {
+      window.gtmDataObject.push(payload);
+    }
   }
 
   function trackViewOnce() {
@@ -1056,16 +1137,93 @@
     sendTrackingEvent('visualizou_banner_home', 'view');
   }
 
-  function addTrackedClick(element, label) {
-    if (!element || element.getAttribute(TRACKING_ATTR) === 'true') {
+  function closest(element, selector) {
+    let current = element;
+
+    if (current && current.nodeType === 3) {
+      current = current.parentElement;
+    }
+
+    if (!current) {
+      return null;
+    }
+
+    if (typeof current.closest === 'function') {
+      return current.closest(selector);
+    }
+
+    while (current && current.nodeType === 1) {
+      if (current.matches && current.matches(selector)) {
+        return current;
+      }
+
+      current = current.parentElement;
+    }
+
+    return null;
+  }
+
+  let lastBannerClickKey = '';
+  let lastBannerClickAt = 0;
+
+  function trackBannerClickOnce(label) {
+    if (!label) {
       return;
     }
 
-    element.addEventListener('click', function () {
-      sendTrackingEvent(label, 'click');
-    });
+    const now = Date.now();
 
-    element.setAttribute(TRACKING_ATTR, 'true');
+    if (label === lastBannerClickKey && now - lastBannerClickAt < 400) {
+      return;
+    }
+
+    lastBannerClickKey = label;
+    lastBannerClickAt = now;
+    sendTrackingEvent(label, 'click');
+  }
+
+  function isTrackablePointerEvent(event) {
+    if (!event) {
+      return false;
+    }
+
+    const button = typeof event.button === 'number' ? event.button : 0;
+
+    if (event.type === 'mousedown') {
+      return button === 1;
+    }
+
+    return button === 0 || button === 1;
+  }
+
+  function handleBannerClick(event) {
+    if (!isTrackablePointerEvent(event)) {
+      return;
+    }
+
+    const target = event.target;
+
+    if (!target) {
+      return;
+    }
+
+    const desktopSlide = closest(
+      target,
+      '.banner.home .pagebuilder-lazyload-slider .slick-slide[data-banner-position="1"]:not(.slick-cloned)'
+    );
+
+    if (desktopSlide && closest(target, 'a')) {
+      trackBannerClickOnce('clicou_banner_home_desktop');
+      return;
+    }
+
+    const mobileItem =
+      closest(target, '.banner.home .custom-carousel .carousel-item[' + FLAG_MOBILE + '="true"]') ||
+      closest(target, MOBILE_ITEM_SELECTOR);
+
+    if (mobileItem) {
+      trackBannerClickOnce('clicou_banner_home_mobile');
+    }
   }
 
   function bindBannerTracking() {
@@ -1073,37 +1231,26 @@
       return true;
     }
 
-    let bound = false;
-
     const desktopSlide = document.querySelector(
       '.pagebuilder-lazyload-slider .slick-slide[data-banner-position="1"]:not(.slick-cloned)[' +
         FLAG_DESKTOP +
         '="true"]'
     );
-
-    if (desktopSlide) {
-      const desktopLink =
-        desktopSlide.querySelector('a') ||
-        desktopSlide.querySelector('figure[data-content-type="image"]') ||
-        desktopSlide;
-      addTrackedClick(desktopLink, 'clicou_banner_home_desktop');
-      bound = true;
-    }
-
     const mobileItem =
       document.querySelector(MOBILE_ITEM_SELECTOR + '[' + FLAG_MOBILE + '="true"]') ||
       document.querySelector(
         MOBILE_CAROUSEL_SELECTOR + ' .carousel-item[' + FLAG_MOBILE + '="true"]'
       );
 
-    if (mobileItem) {
-      const mobileLink = mobileItem.querySelector('a') || mobileItem;
-      addTrackedClick(mobileLink, 'clicou_banner_home_mobile');
-      bound = true;
+    if (!desktopSlide && !mobileItem) {
+      return false;
     }
 
-    if (!bound) {
-      return false;
+    if (document.documentElement.getAttribute(TRACKING_ATTR + '-banner') !== 'true') {
+      document.addEventListener('click', handleBannerClick, true);
+      document.addEventListener('auxclick', handleBannerClick, true);
+      document.addEventListener('mousedown', handleBannerClick, true);
+      document.documentElement.setAttribute(TRACKING_ATTR + '-banner', 'true');
     }
 
     trackViewOnce();
@@ -1575,13 +1722,16 @@
       local_event_label: label,
     };
 
-    if (window.gtmDataObject && typeof window.gtmDataObject.push === 'function') {
-      window.gtmDataObject.push(payload);
-      return;
-    }
-
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push(payload);
+
+    if (
+      window.gtmDataObject &&
+      typeof window.gtmDataObject.push === 'function' &&
+      window.gtmDataObject !== window.dataLayer
+    ) {
+      window.gtmDataObject.push(payload);
+    }
   }
 
   function trackViewOnce() {
