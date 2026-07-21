@@ -276,7 +276,7 @@
       '  top: auto !important;' +
       '  margin: 15px 0 0 0 !important;' +
       '  padding: 0 !important;' +
-      '  background: #F3F3F0 !important;' +
+      '  background: #E5EFE0 !important;' +
       '  border-radius: 8px !important;' +
       '  overflow: hidden !important;' +
       '}' +
@@ -296,6 +296,39 @@
       '  cursor: pointer !important;' +
       '  text-align: left !important;' +
       '  color: #17171A !important;' +
+      '}' +
+      '#' +
+      COLUMN_ID +
+      '.' +
+      MOBILE_CLASS +
+      ' .at-bcc__toggle-left {' +
+      '  display: flex !important;' +
+      '  align-items: center !important;' +
+      '  gap: 10px !important;' +
+      '  min-width: 0 !important;' +
+      '  flex: 1 1 auto !important;' +
+      '}' +
+      '#' +
+      COLUMN_ID +
+      '.' +
+      MOBILE_CLASS +
+      ' .at-bcc__toggle-subscription {' +
+      '  flex: 0 0 24px !important;' +
+      '  width: 24px !important;' +
+      '  height: 24px !important;' +
+      '  color: #257A57 !important;' +
+      '  display: inline-flex !important;' +
+      '  align-items: center !important;' +
+      '  justify-content: center !important;' +
+      '}' +
+      '#' +
+      COLUMN_ID +
+      '.' +
+      MOBILE_CLASS +
+      ' .at-bcc__toggle-subscription svg {' +
+      '  width: 24px !important;' +
+      '  height: 24px !important;' +
+      '  display: block !important;' +
       '}' +
       '#' +
       COLUMN_ID +
@@ -321,6 +354,7 @@
       '  align-items: center !important;' +
       '  justify-content: center !important;' +
       '  transition: transform 0.2s ease !important;' +
+      '  animation: at-bcc-chevron-bounce 1.5s ease-in-out infinite !important;' +
       '}' +
       '#' +
       COLUMN_ID +
@@ -336,7 +370,21 @@
       '.' +
       MOBILE_CLASS +
       '.at-bcc--open .at-bcc__toggle-icon {' +
+      '  animation: none !important;' +
       '  transform: rotate(180deg) !important;' +
+      '}' +
+      '@keyframes at-bcc-chevron-bounce {' +
+      '  0%, 100% { transform: translateY(0); }' +
+      '  50% { transform: translateY(3px); }' +
+      '}' +
+      '@media (prefers-reduced-motion: reduce) {' +
+      '#' +
+      COLUMN_ID +
+      '.' +
+      MOBILE_CLASS +
+      ' .at-bcc__toggle-icon {' +
+      '  animation: none !important;' +
+      '}' +
       '}' +
       '#' +
       COLUMN_ID +
@@ -478,6 +526,16 @@
     );
   }
 
+  function iconSubscriptionSvg() {
+    return (
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">' +
+      '<path d="M19 4.8v1.02c5.18 1 8 4.7 8 10.72 0 7.1-3.9 11-11 11s-11-3.9-11-11c0-5.8 2.6-9.45 7.42-10.6l-1.36 2.44 1.4-.46L14 5.15l-3.05-1.69-1.3.42 2.15 1.2C6.8 6.44 4 10.44 4 16.53c0 7.63 4.37 12 12 12s12-4.37 12-12c0-6.56-3.24-10.7-9-11.74Z"/>' +
+      '<path d="M19.15 16.69 17 18.83l-1.15-1.14-.7.7L17 20.25l2.85-2.86-.7-.7Z"/>' +
+      '<path d="M13 10.54v1h-3v11h12v-11h-3v-1h-1v1h-4v-1h-1Zm8 11H11v-6h10v6Zm-3-9v1h1v-1h2v2H11v-2h2v1h1v-1h4Z"/>' +
+      '</svg>'
+    );
+  }
+
   function getBenefitItems() {
     return [
       {
@@ -546,7 +604,12 @@
   function buildMobilePanelHtml() {
     return (
       '<button type="button" class="at-bcc__toggle" data-at-bcc-toggle aria-expanded="false" aria-controls="at-bcc-panel-body">' +
+      '<span class="at-bcc__toggle-left">' +
+      '<span class="at-bcc__toggle-subscription">' +
+      iconSubscriptionSvg() +
+      '</span>' +
       '<span class="at-bcc__toggle-label">Benefícios da Assinatura</span>' +
+      '</span>' +
       '<span class="at-bcc__toggle-icon">' +
       iconChevronSvg() +
       '</span>' +
