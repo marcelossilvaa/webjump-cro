@@ -354,7 +354,8 @@
       '  align-items: center !important;' +
       '  justify-content: center !important;' +
       '  transition: transform 0.2s ease !important;' +
-      '  animation: at-bcc-chevron-bounce 1.5s ease-in-out infinite !important;' +
+      '  animation: at-bcc-chevron-bounce 1.4s ease-in-out infinite !important;' +
+      '  transform-origin: center center !important;' +
       '}' +
       '#' +
       COLUMN_ID +
@@ -374,9 +375,10 @@
       '  transform: rotate(180deg) !important;' +
       '}' +
       '@keyframes at-bcc-chevron-bounce {' +
-      '  0%, 100% { transform: translateY(0); }' +
-      '  50% { transform: translateY(3px); }' +
+      '  0%, 100% { transform: translateY(0) scale(1); }' +
+      '  50% { transform: translateY(3px) scale(1.25); }' +
       '}' +
+
       '@media (prefers-reduced-motion: reduce) {' +
       '#' +
       COLUMN_ID +
