@@ -299,6 +299,47 @@ Seguir o padrão em @Nespresso/MARCELO/Campanhas/PADRAO-ATUALIZACAO-CAMPANHAS.md
 
 ---
 
+## Referência: Boost Dia dos Pais
+
+Campanha configurada em `BoostDiaDosPais/` (a partir do KV / Playbook 2026).
+
+### Ofertas aplicadas
+
+| Nível | OL | Brinde | VL | Brinde |
+|-------|-----|--------|-----|--------|
+| N1 | 70 | 10 Cápsulas Viena | 50 | 10 Cápsulas Intenso |
+| N2 | 100 | Porta-Cápsulas Pequeno | 70 | Porta-Cápsulas Pequeno |
+| N3 | 150 | Par de Xícaras Barista | 120 | Par de Xícaras Barista |
+| N4 | 200 | Caneca Térmica Média | 180 | Caneca Térmica Média |
+| N5 | 270 | Caneca Térmica Grande | 210 | Caneca Térmica Grande |
+
+### Cores (Playbook — Passion Red)
+
+- Principal: `#ab2418`
+- Secundária: `#ffa29a`
+- Terciária: `#f9f3e6`
+- Quaternária: `#660e06`
+
+### Identificadores
+
+- `window.acordeaoBoostDiaDosPais`
+- `window.boostDiaDosPaisProgressBar`
+- `linkCondicoesOfertaBoostDiaDosPais`
+- `modalTermosECondicoesBoostDiaDosPais`
+- `nespresso-boost-dia-dos-pais-offers`
+
+### Termos e Condições
+
+- Campanha: **Boost Dia dos Pais**
+- Período: **27/07/2026 às 09h a 13/08/2026**
+- Texto das faixas OL/VL já aplicado
+
+### Pendências de assets
+
+- Ícones N1–N5 e banners PLP com placeholders `PENDENTE_URL_*` (N1 OL/VL são assets distintos: Viena vs Intenso)
+
+---
+
 ## Referência: Boost Vertuo World
 
 Campanha configurada em `BoostVertuoWorld/` como exemplo vivo deste padrão.
