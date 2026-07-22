@@ -152,7 +152,7 @@
             
                     /* Style for the current info box */
                     .nespresso-current-gift {
-                      background-color: #f9f3e6;
+                      background-color: #ffffff;
                       border-radius: 6px;
                       padding: 8px 12px;
                       margin: 8px 0;
@@ -319,7 +319,7 @@
           <div style="display: flex; align-items: center; justify-content: space-between; padding: 0px 25px; gap: 12px;">
             <div style="flex: 1; text-align: left;">
               <p style="font-size: 13px; color: #ab2418; margin: 0 0 6px 0; font-weight: 600;">
-                Adicione mais <span style="background-color: #ffa29a; padding: 2px 6px; border-radius: 4px; font-weight: 700;">` +
+                Adicione mais <span style="background-color: #ab2418; color: #ffffff; padding: 2px 6px; border-radius: 4px; font-weight: 700;">` +
           tierInfo.capsulesToNextTier +
           ` cápsulas</span>
               </p>
@@ -395,7 +395,7 @@
             `"
                            style="width: 60px; height: 60px; margin: 0 auto 4px auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
                            background-color: ` +
-            (achieved ? "#ffa29a" : "#f5f5f5") +
+            (achieved ? "#ffffff" : "#f5f5f5") +
             `; 
                            border: 3px solid ` +
             (achieved ? "#ab2418" : "#cccccc") +
@@ -450,7 +450,7 @@
                   <div style="display: flex; align-items: center; justify-content: space-between; border-radius: 6px; padding: 2px 8px;">
                     <div style="flex: 1; display:flex; align-items:center;justify-content:space-evenly;">
                       <p style="font-size: 12px; color: #ab2418; margin: 0 0 2px 0;text-align:center">
-                        <strong>Adicione mais <span style="background-color: #ffa29a; padding: 2px 4px;border-radius: 4px;">` +
+                        <strong>Adicione mais <span style="background-color: #ab2418; color: #ffffff; padding: 2px 4px;border-radius: 4px;">` +
         tierInfo.capsulesToNextTier +
         ` cápsulas</span></strong> para ganhar: <span style="font-size: 13px; color: #ab2418; font-weight: 700; margin: 0;">` +
         tierInfo.nextTier.gift +

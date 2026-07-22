@@ -247,7 +247,7 @@ Na compra de 50 a 69 cápsulas, durante o período supramencionado, o consumidor
 
       .nespresso-accordion .new-badge {
         display: inline-block;
-        background-color: #ffa29a;
+        background-color: #ffffff;
         color:#ab2418;
         font-size: 10px;
         padding: 2px 6px;
@@ -273,7 +273,7 @@ Na compra de 50 a 69 cápsulas, durante o período supramencionado, o consumidor
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #ffa29a;
+        color: #ffffff;
         animation: wiggle 2.5s ease infinite;
         transform-origin: center;
       }
@@ -299,14 +299,14 @@ Na compra de 50 a 69 cápsulas, durante o período supramencionado, o consumidor
       .nespresso-accordion .gift-icon svg {
         width: 20px;
         height: 20px;
-        stroke:#ffa29a;
+        stroke:#ffffff;
       }
 
       .nespresso-accordion .subtitle {
         font-size: 12px;
         margin-top: 3px;
         position: relative;
-        color:#f9f3e6;
+        color:#ffffff;
       }
       
       @keyframes fadeInOut {
@@ -332,11 +332,11 @@ Na compra de 50 a 69 cápsulas, durante o período supramencionado, o consumidor
       .nespresso-accordion .title-text h2 {
         font-size: 16px;
         font-weight: 700;
-        color: #ffa29a;
+        color: #ffffff;
       }
       
       .nespresso-accordion .arrow {
-        color: #ffa29a;
+        color: #ffffff;
         width: 20px;
         height: 20px;
         transition: transform 0.3s ease;
@@ -350,7 +350,7 @@ Na compra de 50 a 69 cápsulas, durante o período supramencionado, o consumidor
         height: 0;
         overflow: hidden;
         transition: height 0.3s ease;
-        background-color: #f9f3e6;
+        background-color: #ffffff;
       }
       
       .nespresso-accordion .accordion-body {
@@ -360,7 +360,7 @@ Na compra de 50 a 69 cápsulas, durante o período supramencionado, o consumidor
       .nespresso-accordion .offer-item {
         display: flex;
         padding: 15px;
-        border-top: 1px solid #660e06;
+        border-top: 1px solid #000000;
         align-items: center;
       }
       
