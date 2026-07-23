@@ -47,7 +47,7 @@ Ao receber uma nova campanha, atualizar **nesta ordem**:
 
 1. [ ] **Ofertas** — quantidades, títulos, `alt`, `gift`, `shortName`, `displayName`
 2. [ ] **Ícones / imagens** — URLs dos brindes por nível (N1 a N5)
-3. [ ] **Cores** — paleta da campanha (accordion + régua do minicart)
+3. [ ] **Cores** — paleta **desta** campanha no playbook/KV (os 4 papéis são fixos; os hex mudam — não reusar da campanha anterior)
 4. [ ] **Identificadores técnicos** — flags `window`, classes CSS, IDs de container
 5. [ ] **Termos e Condições** — texto completo do modal (`modal.conteudo`)
 6. [ ] **Banners PLP** — URLs das imagens de cabeçalho (se houver novas)
@@ -124,46 +124,56 @@ N5: ...
 
 ## 3. Cores da campanha
 
-Definir 4 cores e aplicar em accordion e régua:
+> **Importante:** os **papéis** (principal, secundária, terciária, quaternária) são fixos neste padrão. Os **hexadecimais mudam a cada campanha** — sempre pegar do playbook / KV / branding da campanha atual. Nunca reutilizar a paleta da campanha anterior só porque “já estava no código”.
 
-| Papel | Exemplo (Boost Vertuo World) | Uso sugerido |
-|-------|------------------------------|--------------|
-| **Principal** | `#3d441e` | Cabeçalho accordion, textos de destaque, bordas/linhas de níveis atingidos na régua |
-| **Secundária** | `#fbeaa0` | Título/ícones no header escuro, badge, highlights de cápsulas, fundo dos tiers atingidos |
-| **Terciária** | `#f8ecdf` | Fundo do conteúdo expandido do accordion |
-| **Quaternária** | `#b3ca9a` | Divisores entre ofertas no accordion |
+Definir as 4 cores da campanha e aplicar em accordion e régua:
+
+| Papel | O que é | Uso sugerido |
+|-------|---------|--------------|
+| **Principal** | Cor dominante da marca na campanha | Cabeçalho accordion, textos de destaque, bordas/linhas de níveis atingidos na régua |
+| **Secundária** | Contraste no header / destaque leve | Título/ícones no header, badge, highlights de cápsulas, fundo dos tiers atingidos |
+| **Terciária** | Fundo de conteúdo | Fundo do conteúdo expandido do accordion |
+| **Quaternária** | Detalhe / divisor | Divisores entre ofertas no accordion |
+
+Exemplos (só referência — **não copiar sem conferir o material da campanha**):
+
+| Campanha | Principal | Secundária | Terciária | Quaternária |
+|----------|-----------|------------|-----------|-------------|
+| Boost Vertuo World | `#3d441e` | `#fbeaa0` | `#f8ecdf` | `#b3ca9a` |
+| Boost Dia dos Pais | `#ab2418` | `#ffffff` | `#ffffff` | `#000000` |
 
 ### Accordion — composição recomendada
 
-- **Header:** fundo principal (`#3d441e`), título e ícones na secundária (`#fbeaa0`)
-- **Subtítulo:** terciária (`#f8ecdf`)
+- **Header:** fundo **principal**, título e ícones na **secundária**
+- **Subtítulo:** **terciária** (ou secundária, se o playbook tiver só 2–3 cores)
 - **Badge:** fundo secundária + texto principal
 - **Conteúdo expandido:** fundo terciária
 - **Itens de oferta:** borda superior quaternária, título na cor principal
 
 ### Régua — composição recomendada (estados binários)
 
-A régua usa **apenas dois estados visuais** — atingido ou não atingido. Não misturar amarelo, verde e cinza no mesmo nó.
+A régua usa **apenas dois estados visuais** — atingido ou não atingido. Não misturar várias cores de destaque no mesmo nó.
 
 | Estado | Círculo do brinde | Borda do círculo | Linha entre nós | Label (ex.: "70 cafés") |
 |--------|-------------------|------------------|-----------------|-------------------------|
-| **Nível atingido** | Fundo secundária (`#fbeaa0`) | Principal (`#3d441e`) | Principal (`#3d441e`) | Principal (`#3d441e`) |
+| **Nível atingido** | Fundo **secundária** | **Principal** | **Principal** | **Principal** |
 | **Nível não atingido** | Cinza claro (`#f5f5f5`) | Cinza (`#cccccc`) | Cinza (`#cccccc`) | Cinza médio (`#999999`) |
 
 Demais elementos:
 
-- Highlight de cápsulas no texto: fundo secundária (`#fbeaa0`)
-- Tooltip: fundo principal (`#3d441e`)
-- **Não usar** efeito shimmer (`nespresso-shimmer-effect`) no tier atual — todos os níveis atingidos seguem o mesmo visual amarelo + borda verde
+- Highlight de cápsulas no texto: fundo **secundária** (se secundária for branco/claro e o fundo também for claro, usar **principal** + texto branco para contraste)
+- Tooltip: fundo **principal**
+- **Não usar** efeito shimmer (`nespresso-shimmer-effect`) no tier atual — todos os níveis atingidos seguem o mesmo visual (secundária + borda principal)
 
-### Cores antigas a substituir (campanhas vermelhas/rosa)
+### Cores antigas a substituir
 
-| Antiga | Substituir por |
-|--------|----------------|
-| `#660e06`, `#ab2417` | Cor **principal** |
-| `#ffa29a`, `#ffa29a33` | Cor **secundária** / **terciária** |
-| `#f9f3e6`, `#f5f5f5` | Cor **terciária** |
-| `#8d3577`, `#8d8d8d`, `#e2e2e2` | Cor **quaternária** ou **principal** |
+Ao migrar de uma campanha para outra, substituir **todos** os hex da paleta anterior pelos da nova — não deixar resíduos.
+
+| Exemplo de hex antigo | Substituir por |
+|-----------------------|----------------|
+| Hex da campanha anterior no papel principal | Nova cor **principal** |
+| Hex da campanha anterior no papel secundário / terciário | Novas cores **secundária** / **terciária** |
+| Hex da campanha anterior em divisores | Nova cor **quaternária** (ou principal, se o playbook não tiver 4ª cor) |
 
 ---
 
@@ -273,7 +283,7 @@ Seguir o padrão em @Nespresso/MARCELO/Campanhas/PADRAO-ATUALIZACAO-CAMPANHAS.md
 - N2-N5: [se aplicável]
 - Ofertas abertas (N3-N5): [se aplicável]
 
-## Cores
+## Cores (do playbook desta campanha — NÃO reusar hex de campanha anterior)
 - Principal: #______
 - Secundária: #______
 - Terciária: #______
@@ -299,6 +309,52 @@ Seguir o padrão em @Nespresso/MARCELO/Campanhas/PADRAO-ATUALIZACAO-CAMPANHAS.md
 
 ---
 
+## Referência: Boost Dia dos Pais
+
+Campanha configurada em `BoostDiaDosPais/` (a partir do KV / Playbook 2026).
+
+### Ofertas aplicadas
+
+| Nível | OL | Brinde | VL | Brinde |
+|-------|-----|--------|-----|--------|
+| N1 | 70 | 10 Cápsulas Viena | 50 | 10 Cápsulas Intenso |
+| N2 | 100 | Porta-Cápsulas Pequeno | 70 | Porta-Cápsulas Pequeno |
+| N3 | 150 | Par de Xícaras Barista | 120 | Par de Xícaras Barista |
+| N4 | 200 | Caneca Térmica Média | 180 | Caneca Térmica Média |
+| N5 | 270 | Caneca Térmica Grande | 210 | Caneca Térmica Grande |
+
+### Cores desta campanha (Playbook — Passion Red / Branco / Preto)
+
+> Hex específicos desta campanha. Próxima campanha = novo playbook = nova paleta.
+
+- Principal: `#ab2418` (Passion Red)
+- Secundária: `#ffffff` (Branco)
+- Terciária: `#ffffff` (Branco — conteúdo expandido)
+- Quaternária: `#000000` (Preto)
+
+> Highlight de cápsulas na régua: fundo Passion Red (`#ab2418`) + texto branco (secundária branca não contrastava no fundo claro).
+
+### Identificadores
+
+- `window.acordeaoBoostDiaDosPais`
+- `window.boostDiaDosPaisProgressBar`
+- `linkCondicoesOfertaBoostDiaDosPais`
+- `modalTermosECondicoesBoostDiaDosPais`
+- `nespresso-boost-dia-dos-pais-offers`
+
+### Termos e Condições
+
+- Campanha: **Boost Dia dos Pais**
+- Período: **27/07/2026 às 09h a 13/08/2026**
+- Texto das faixas OL/VL já aplicado
+
+### Ícones e banners
+
+- Ícones accordion/régua N1–N5 aplicados (N1 OL e N1 VL distintos)
+- Banners PLP N1–N5 e N2–N5 (OL/VL) aplicados
+
+---
+
 ## Referência: Boost Vertuo World
 
 Campanha configurada em `BoostVertuoWorld/` como exemplo vivo deste padrão.
@@ -313,7 +369,9 @@ Campanha configurada em `BoostVertuoWorld/` como exemplo vivo deste padrão.
 | N4 | 200 | Porta Cápsula Grande | 180 | Porta Cápsula Grande |
 | N5 | 270 | Par de Xícara Barista Grande | 210 | Par de Xícara Barista Grande |
 
-### Cores
+### Cores desta campanha
+
+> Hex específicos desta campanha. Próxima campanha = novo playbook = nova paleta.
 
 - Principal: `#3d441e`
 - Secundária: `#fbeaa0`
