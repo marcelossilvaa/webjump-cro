@@ -108,10 +108,6 @@ window.dataLayer.push({
         ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] .show-modal-product, ' +
-        ROOT_SELECTOR +
-        '[' +
-        ROOT_ATTR +
         '="true"] .product.attribute.overview, ' +
         ROOT_SELECTOR +
         '[' +
@@ -1295,12 +1291,36 @@ window.dataLayer.push({
     fieldset.setAttribute('data-wj-purchase-organized', 'true');
   }
 
+  function hasShippingContent() {
+    return Boolean(
+      document.querySelector(
+        '.pdp-shipping-title, .product-info-shipping, .shipping-actions, .pdp-shipping-information',
+      ),
+    );
+  }
+
   function ensureShippingTitle() {
     const mobileSlot = document.querySelector('.wj-mobile-shipping-slot');
     const desktopWrapper = document.querySelector('.product-info-additional-wrapper');
     let targetParent = null;
     let insertBeforeNode = null;
     let scope = null;
+
+    if (!hasShippingContent()) {
+      removeElements(
+        Array.prototype.slice.call(document.querySelectorAll('.wj-shipping-title')),
+      );
+
+      if (desktopWrapper) {
+        desktopWrapper.style.setProperty('display', 'none', 'important');
+      }
+
+      return;
+    }
+
+    if (desktopWrapper && desktopWrapper.style) {
+      desktopWrapper.style.removeProperty('display');
+    }
 
     if (isMobileViewport()) {
       let shippingContent = null;
