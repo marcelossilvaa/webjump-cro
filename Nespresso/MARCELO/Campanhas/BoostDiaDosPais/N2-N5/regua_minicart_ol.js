@@ -31,7 +31,7 @@
       shortName: "1 Porta-Cápsulas Pequeno",
       displayName: "GANHE 1 PORTA-CÁPSULAS PEQUENO",
       imageUrl:
-        "PENDENTE_URL_N2_PORTA_CAPSULAS_PEQUENO",
+        "https://www.nespresso.com/ecom/medias/sys_master/public/51710197825566/Acordeao-N2.png?attachment=true&cimgnr=TLJ7j",
     },
     {
       threshold: 150,
@@ -39,7 +39,7 @@
       shortName: "1 Par de Xícaras Barista",
       displayName: "GANHE 1 PAR DE XÍCARAS BARISTA",
       imageUrl:
-        "PENDENTE_URL_N3_PAR_XICARAS_BARISTA",
+        "https://www.nespresso.com/ecom/medias/sys_master/public/51710198120478/Acordeao-N3.png?attachment=true&cimgnr=1zEDn",
     },
     {
       threshold: 200,
@@ -47,7 +47,7 @@
       shortName: "1 Caneca Térmica Média",
       displayName: "GANHE 1 CANECA TÉRMICA MÉDIA",
       imageUrl:
-        "PENDENTE_URL_N4_CANECA_TERMICA_MEDIA",
+        "https://www.nespresso.com/ecom/medias/sys_master/public/51710197891102/Acorde-o-N4.png?attachment=true&cimgnr=qfPHh",
     },
     {
       threshold: 270,
@@ -55,7 +55,7 @@
       shortName: "1 Caneca Térmica Grande",
       displayName: "GANHE 1 CANECA TÉRMICA GRANDE",
       imageUrl:
-        "PENDENTE_URL_N5_CANECA_TERMICA_GRANDE",
+        "https://www.nespresso.com/ecom/medias/sys_master/public/51710198186014/Acordeao-N5.png?attachment=true&cimgnr=yM8t1",
     }
   ];
 

@@ -22,35 +22,35 @@
         {
           quantidadeCafes: 70,
           imagem:
-            "PENDENTE_URL_N1_OL_10_CAPSULAS_VIENA",
+            "https://www.nespresso.com/ecom/medias/sys_master/public/51710197530654/Acordeao-N1-OL.png?attachment=true&cimgnr=0VWYF",
           titulo: "Ganhe 10 Cápsulas Viena",
           alt: "10 Cápsulas Viena",
         },
         {
           quantidadeCafes: 100,
           imagem:
-            "PENDENTE_URL_N2_PORTA_CAPSULAS_PEQUENO",
+            "https://www.nespresso.com/ecom/medias/sys_master/public/51710197825566/Acordeao-N2.png?attachment=true&cimgnr=TLJ7j",
           titulo: "Ganhe 1 Porta-Cápsulas Pequeno",
           alt: "Porta-Cápsulas Pequeno",
         },
         {
           quantidadeCafes: 150,
           imagem:
-            "PENDENTE_URL_N3_PAR_XICARAS_BARISTA",
+            "https://www.nespresso.com/ecom/medias/sys_master/public/51710198120478/Acordeao-N3.png?attachment=true&cimgnr=1zEDn",
           titulo: "Ganhe 1 Par de Xícaras Barista",
           alt: "Par de Xícaras Barista",
         },
         {
           quantidadeCafes: 200,
           imagem:
-            "PENDENTE_URL_N4_CANECA_TERMICA_MEDIA",
+            "https://www.nespresso.com/ecom/medias/sys_master/public/51710197891102/Acorde-o-N4.png?attachment=true&cimgnr=qfPHh",
           titulo: "Ganhe 1 Caneca Térmica Média",
           alt: "Caneca Térmica Média",
         },
         {
           quantidadeCafes: 270,
           imagem:
-            "PENDENTE_URL_N5_CANECA_TERMICA_GRANDE",
+            "https://www.nespresso.com/ecom/medias/sys_master/public/51710198186014/Acordeao-N5.png?attachment=true&cimgnr=yM8t1",
           titulo: "Ganhe 1 Caneca Térmica Grande",
           alt: "Caneca Térmica Grande",
         }
@@ -60,35 +60,35 @@
           {
           quantidadeCafes: 50,
           imagem:
-            "PENDENTE_URL_N1_VL_10_CAPSULAS_INTENSO",
+            "https://www.nespresso.com/ecom/medias/sys_master/public/51710197760030/Acordeao-N1-VL.png?attachment=true&cimgnr=LEiTT",
           titulo: "Ganhe 10 Cápsulas Intenso",
           alt: "10 Cápsulas Intenso",
         },
           {
           quantidadeCafes: 70,
           imagem:
-            "PENDENTE_URL_N2_PORTA_CAPSULAS_PEQUENO",
+            "https://www.nespresso.com/ecom/medias/sys_master/public/51710197825566/Acordeao-N2.png?attachment=true&cimgnr=TLJ7j",
           titulo: "Ganhe 1 Porta-Cápsulas Pequeno",
           alt: "Porta-Cápsulas Pequeno",
         },
           {
           quantidadeCafes: 120,
           imagem:
-            "PENDENTE_URL_N3_PAR_XICARAS_BARISTA",
+            "https://www.nespresso.com/ecom/medias/sys_master/public/51710198120478/Acordeao-N3.png?attachment=true&cimgnr=1zEDn",
           titulo: "Ganhe 1 Par de Xícaras Barista",
           alt: "Par de Xícaras Barista",
         },
           {
           quantidadeCafes: 180,
           imagem:
-            "PENDENTE_URL_N4_CANECA_TERMICA_MEDIA",
+            "https://www.nespresso.com/ecom/medias/sys_master/public/51710197891102/Acorde-o-N4.png?attachment=true&cimgnr=qfPHh",
           titulo: "Ganhe 1 Caneca Térmica Média",
           alt: "Caneca Térmica Média",
         },
           {
           quantidadeCafes: 210,
           imagem:
-            "PENDENTE_URL_N5_CANECA_TERMICA_GRANDE",
+            "https://www.nespresso.com/ecom/medias/sys_master/public/51710198186014/Acordeao-N5.png?attachment=true&cimgnr=yM8t1",
           titulo: "Ganhe 1 Caneca Térmica Grande",
           alt: "Caneca Térmica Grande",
         }
