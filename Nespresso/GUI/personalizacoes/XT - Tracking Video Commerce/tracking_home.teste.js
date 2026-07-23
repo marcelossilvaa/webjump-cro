@@ -1,15 +1,18 @@
+// versao para colar no console e testar sem enviar nada pro GTM/GA4 real.
+// unica diferenca do arquivo de producao: sendGAEvent grava em
+// window.__testeGtmDataObject em vez de window.gtmDataObject, entao o
+// container de GTM real (que so escuta gtmDataObject) nunca ve esses eventos.
+// pra conferir os eventos gerados, digite no console: window.__testeGtmDataObject
 (function () {
   "use strict";
-  // evita registrar tudo de novo (ouvintes duplicados) se o Target rodar
-  // esse script mais de uma vez na mesma pagina (ex: triggerView em SPA)
-  if (window.__videoCommerceTrackingInit) return;
-  window.__videoCommerceTrackingInit = true;
+  if (window.__videoCommerceTrackingInitTeste) return;
+  window.__videoCommerceTrackingInitTeste = true;
 
   let lastProductName = null;
 
   function sendGAEvent(label, action) {
-    window.gtmDataObject = window.gtmDataObject || [];
-    gtmDataObject.push({
+    window.__testeGtmDataObject = window.__testeGtmDataObject || [];
+    __testeGtmDataObject.push({
       event: "local_event", //as is, do not change!!
       event_raised_by: "br", //please put the country code ex: us, ch, it
       local_event_category: "video_commerce_home", //free to fill field, please use lower case
@@ -54,13 +57,13 @@
 
   function attachExpandListener() {
     let buttons = document.querySelectorAll(
-      "#liveshop-sdk-close-btn:not([data-close-tracked])",
+      "#liveshop-sdk-close-btn:not([data-close-tracked-teste])",
     );
     if (!buttons.length) return false;
 
     let attached = false;
     buttons.forEach(function (btn) {
-      btn.setAttribute("data-close-tracked", "true");
+      btn.setAttribute("data-close-tracked-teste", "true");
 
       // o botao de tela cheia tem um svg interno; o de fechar nao (os dois
       // compartilham o mesmo id, e o fechar ja e trackeado via postMessage)
