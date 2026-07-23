@@ -348,9 +348,10 @@ Campanha configurada em `BoostDiaDosPais/` (a partir do KV / Playbook 2026).
 - Período: **27/07/2026 às 09h a 13/08/2026**
 - Texto das faixas OL/VL já aplicado
 
-### Pendências de assets
+### Ícones e banners
 
-- Ícones N1–N5 e banners PLP com placeholders `PENDENTE_URL_*` (N1 OL/VL são assets distintos: Viena vs Intenso)
+- Ícones accordion/régua N1–N5 aplicados (N1 OL e N1 VL distintos)
+- Banners PLP N1–N5 e N2–N5 (OL/VL) aplicados
 
 ---
 
