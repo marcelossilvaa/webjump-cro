@@ -27,9 +27,9 @@
   const giftTiersOL = [
     {
       threshold: 150,
-      gift: "1 Par de Xícaras Barista",
-      shortName: "1 Par de Xícaras Barista",
-      displayName: "GANHE 1 PAR DE XÍCARAS BARISTA",
+      gift: "1 Par de Xícaras Cappuccino Médio",
+      shortName: "1 Par de Xícaras Cappuccino Médio",
+      displayName: "GANHE PAR DE XÍCARAS CAPPUCCINO MÉDIO",
       imageUrl:
         "https://www.nespresso.com/ecom/medias/sys_master/public/51710198120478/Acordeao-N3.png?attachment=true&cimgnr=1zEDn",
     },
@@ -54,9 +54,9 @@
   const giftTiersVL = [
     {
       threshold: 120,
-      gift: "1 Par de Xícaras Barista",
-      shortName: "1 Par de Xícaras Barista",
-      displayName: "GANHE 1 PAR DE XÍCARAS BARISTA",
+      gift: "1 Par de Xícaras Cappuccino Médio",
+      shortName: "1 Par de Xícaras Cappuccino Médio",
+      displayName: "GANHE PAR DE XÍCARAS CAPPUCCINO MÉDIO",
       imageUrl:
         "https://www.nespresso.com/ecom/medias/sys_master/public/51710198120478/Acordeao-N3.png?attachment=true&cimgnr=1zEDn",
     },

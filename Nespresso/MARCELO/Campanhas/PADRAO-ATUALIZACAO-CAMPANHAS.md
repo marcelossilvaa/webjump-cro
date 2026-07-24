@@ -317,9 +317,9 @@ Campanha configurada em `BoostDiaDosPais/` (a partir do KV / Playbook 2026).
 
 | Nível | OL | Brinde | VL | Brinde |
 |-------|-----|--------|-----|--------|
-| N1 | 70 | 10 Cápsulas Viena | 50 | 10 Cápsulas Intenso |
+| N1 | 70 | 10 Cápsulas de Café | 50 | 10 Cápsulas de Café |
 | N2 | 100 | Porta-Cápsulas Pequeno | 70 | Porta-Cápsulas Pequeno |
-| N3 | 150 | Par de Xícaras Barista | 120 | Par de Xícaras Barista |
+| N3 | 150 | Par de Xícaras Cappuccino Médio | 120 | Par de Xícaras Cappuccino Médio |
 | N4 | 200 | Caneca Térmica Média | 180 | Caneca Térmica Média |
 | N5 | 270 | Caneca Térmica Grande | 210 | Caneca Térmica Grande |
 
