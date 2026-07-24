@@ -1,7 +1,5 @@
 (function () {
   "use strict";
-  // evita registrar tudo de novo (ouvintes duplicados) se o Target rodar
-  // esse script mais de uma vez na mesma pagina (ex: triggerView em SPA)
   if (window.__videoCommerceTrackingInit) return;
   window.__videoCommerceTrackingInit = true;
 
@@ -22,10 +20,6 @@
     return name.toLowerCase().replaceAll(" ", "_");
   }
 
-  // o carrossel de video/produtos roda dentro de um iframe de outra origem
-  // (lite.streamshop.com.br), entao nao da pra ler o DOM dele. o proprio
-  // widget avisa a pagina via postMessage quando o video muda e quando o
-  // modal fecha, entao usamos isso em vez de tentar acessar o iframe
   window.addEventListener("message", function (event) {
     let data = event.data;
     if (!data || data.from !== "STREAMSHOP") return;
@@ -62,8 +56,6 @@
     buttons.forEach(function (btn) {
       btn.setAttribute("data-close-tracked", "true");
 
-      // o botao de tela cheia tem um svg interno; o de fechar nao (os dois
-      // compartilham o mesmo id, e o fechar ja e trackeado via postMessage)
       let isExpandBtn = !!btn.querySelector("svg");
       if (!isExpandBtn) return;
 
@@ -95,28 +87,17 @@
     }, 300);
   }
 
-  // no carrossel da home, varios cards ficam visiveis ao mesmo tempo mas so
-  // um fica "em destaque" (maior, colorido) por vez - os demais ficam ao lado,
-  // ofuscados. So contamos "visualizado" o que esta em destaque, e exigimos
-  // que fique assim por pelo menos 2s seguidos antes de confirmar a view
   const VIEW_FEATURED_MS = 2000;
   const VIEW_CHECK_INTERVAL_MS = 250;
 
-  // o carrossel duplica os videos no DOM pra fazer a rolagem parecer infinita,
-  // entao controlamos "ja visualizado" por nome de produto, nao por elemento
-  // (senao cada copia duplicada do mesmo video contaria como uma view nova)
   let viewedProducts = {};
   let viewedWithoutProduct = false;
 
-  // o carrossel e feito com Swiper.js, que ja marca o slide em destaque com
-  // a classe "swiper-slide-active" - usamos isso em vez de calcular posicao
   function isFeaturedVideo(video) {
     let slide = video.closest(".swiper-slide");
     return !!slide && slide.classList.contains("swiper-slide-active");
   }
 
-  // o swiper continua trocando o slide ativo mesmo com o carrossel fora da
-  // tela (usuario ainda nao rolou ate ele), entao checamos visibilidade real
   function isSubstantiallyVisible(el) {
     let rect = el.getBoundingClientRect();
     let viewportHeight =
