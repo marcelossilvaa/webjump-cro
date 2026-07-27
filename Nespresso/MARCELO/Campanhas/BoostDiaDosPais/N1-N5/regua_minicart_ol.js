@@ -27,9 +27,9 @@
   const giftTiers = [
     {
       threshold: 70,
-      gift: "10 Cápsulas Viena",
-      shortName: "10 Cápsulas Viena",
-      displayName: "GANHE 10 CÁPSULAS VIENA",
+      gift: "10 Cápsulas de Café",
+      shortName: "10 Cápsulas de Café",
+      displayName: "GANHE 10 CÁPSULAS DE CAFÉ",
       imageUrl:
         "https://www.nespresso.com/ecom/medias/sys_master/public/51710197530654/Acordeao-N1-OL.png?attachment=true&cimgnr=0VWYF",
     },
@@ -43,9 +43,9 @@
     },
     {
       threshold: 150,
-      gift: "1 Par de Xícaras Barista",
-      shortName: "1 Par de Xícaras Barista",
-      displayName: "GANHE 1 PAR DE XÍCARAS BARISTA",
+      gift: "1 Par de Xícaras Cappuccino Médio",
+      shortName: "1 Par de Xícaras Cappuccino Médio",
+      displayName: "GANHE PAR DE XÍCARAS CAPPUCCINO MÉDIO",
       imageUrl:
         "https://www.nespresso.com/ecom/medias/sys_master/public/51710198120478/Acordeao-N3.png?attachment=true&cimgnr=1zEDn",
     },
