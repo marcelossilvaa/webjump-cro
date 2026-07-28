@@ -1,15 +1,14 @@
 // Fonte combinado: preSelectPagamento.js + ResumoCompra/resumoCompra.js
 // Colar no Insider: preSelectPagamentoResumoCompra.min.js
 // Regenerar min: npm install && node build-insider.js
-// Substituir experiment_id / experiment_variant_id pelos IDs reais da variation.
 window.dataLayer = window.dataLayer || [];
 window.dataLayer.push({
   event: 'insider_ab_test',
   event_raised_by: 'insider',
-  experiment_id: 'XXXX', // ← id real
+  experiment_id: 'XXXX',
   experiment_type: 'AB',
   experiment_name: 'PreSelect Pagamento + Resumo Compra | Checkout | 333',
-  experiment_variant_id: 'XX', // ← id real da variant
+  experiment_variant_id: 'XX',
   experiment_variant: 'Variant B',
   experiment_is_control: 'no'
 });
@@ -1415,23 +1414,25 @@ window.dataLayer.push({
       return true;
     }
 
+    function onPaymentMethodChange(event) {
+      const target = event.target;
+      const code = target && (target.id || target.value);
+      if (!code) return;
+
+      if (preSelectDone && code !== PRESELECT_CODE) {
+        userChangedPayment = true;
+      }
+
+      sendGAEvent('select_' + code, 'click');
+      syncMobilePlaceOrder();
+    }
+
     function bindTracking(root) {
       if (root.getAttribute(TRACKING_ATTR) === 'true') return;
 
       const radios = root.querySelectorAll('input[name="payment[method]"]');
       for (let i = 0; i < radios.length; i++) {
-        radios[i].addEventListener('change', function (event) {
-          const target = event.target;
-          const code = target && (target.id || target.value);
-          if (!code) return;
-
-          if (preSelectDone && code !== PRESELECT_CODE) {
-            userChangedPayment = true;
-          }
-
-          sendGAEvent('select_' + code, 'click');
-          syncMobilePlaceOrder();
-        });
+        radios[i].addEventListener('change', onPaymentMethodChange);
       }
 
       root.setAttribute(TRACKING_ATTR, 'true');

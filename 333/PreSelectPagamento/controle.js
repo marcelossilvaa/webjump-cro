@@ -68,17 +68,19 @@ window.dataLayer.push({
     );
   }
 
+  function onPaymentMethodChange(event) {
+    const target = event.target;
+    const code = target && (target.id || target.value);
+    if (!code) return;
+    sendGAEvent('select_' + code, 'click');
+  }
+
   function bindPaymentSelectTracking(root) {
     if (root.getAttribute(TRACKING_ATTR) === 'true') return;
 
     const radios = root.querySelectorAll('input[name="payment[method]"]');
     for (let i = 0; i < radios.length; i++) {
-      radios[i].addEventListener('change', function (event) {
-        const target = event.target;
-        const code = target && (target.id || target.value);
-        if (!code) return;
-        sendGAEvent('select_' + code, 'click');
-      });
+      radios[i].addEventListener('change', onPaymentMethodChange);
     }
 
     root.setAttribute(TRACKING_ATTR, 'true');

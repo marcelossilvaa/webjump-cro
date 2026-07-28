@@ -45,10 +45,36 @@ O modal **Edit JS** usa um validador fraco (estilo **JSHint**). Ele mostra *"Syn
 |--------|----------|-------------|
 | **W014** | Linha comecando com `,` ou `+` ("Misleading line break…") | **Nunca** quebrar linha *antes* de `,` ou `+`. Se precisar quebrar concatenacao, deixe o `+` no **fim** da linha anterior, ou use `_c.push(...)` por regra CSS (uma por linha) |
 | **W002** | `catch (t)` sombreando parametro `t` da funcao (IE8) | Usar `catch (_wjErr)` e reservar o nome no mangle, ou pos-processar `catch(...)` → `catch(_wjErr)` |
+| **W033** | "Missing semicolon" — tipico em min **compacto** (`break}`, `continue}`) | Minificar com `format.beautify: true` + `semicolons: true`. Nao colar saida `beautify: false` / uma linha so |
+| **W083** | Funcao **anonima dentro de `for`/`while`** que referencia variaveis do escopo externo (`addEventListener(..., function () { ... })` no loop) | Extrair o handler para uma **funcao nomeada fora do loop** e passar a referencia: `el.addEventListener('change', onPaymentChange)` |
+| **W030** | "Expected an assignment or function call…" — expressoes tipo `a && fn()`, `flag = true` em forma minificada que o JSHint le mal | Preferivel, mas o Insider costuma **aceitar** W030 (mesmo padrao em scripts ja em producao). Priorizar corrigir W014 / W002 / W033 / W083 |
 | — | `const` / `let` | Colar so ES5 (`var`) |
 | — | Arrow `=>`, template literals, optional chaining | Nao usar no minificado Insider |
 | — | `try { } finally { }` sem `catch` | Preferir sem `finally`, ou `try/catch` + limpeza no fim |
 | — | IIFE unida ao `dataLayer` com virgula (`}),(function…`) | Manter **statements separados**: `dataLayer.push({...});` depois `!(function(){...})();` |
+
+#### Exemplo — corrigir W083
+
+```javascript
+// Ruim (W083 no Insider)
+for (var i = 0; i < radios.length; i++) {
+  radios[i].addEventListener('change', function (event) {
+    sendGAEvent('select_' + event.target.id, 'click');
+  });
+}
+
+// Bom
+function onPaymentMethodChange(event) {
+  var target = event.target;
+  var code = target && (target.id || target.value);
+  if (!code) return;
+  sendGAEvent('select_' + code, 'click');
+}
+
+for (var i = 0; i < radios.length; i++) {
+  radios[i].addEventListener('change', onPaymentMethodChange);
+}
+```
 
 ### Formato de IIFE que funciona
 
@@ -77,7 +103,8 @@ Evitar formatos que o minifier una com virgula ao push anterior.
 - [ ] Nenhuma linha comeca com `,` ou `+`
 - [ ] Nenhum `catch (t)` (ou outro nome que colida com parametro da funcao)
 - [ ] `dataLayer` e IIFE em statements separados
-- [ ] JSHint: **0** erros relevantes (W014 / W002)
+- [ ] JSHint: **0** erros bloqueantes (W014 / W002 / W033 / W083). W030 e aviso frequente e em geral tolerado
+- [ ] Sem `function () { ... }` **dentro** de `for`/`while` que use vars externas (usar handler nomeado)
 - [ ] Parse OK (`new Function(codigo)` ou Esprima)
 - [ ] Campo do Insider limpo antes de colar (sem resto de versao antiga)
 
@@ -90,11 +117,12 @@ Pipeline que tem funcionado neste repo:
 1. **Babel** `@babel/preset-env` com target IE11 → ES5
 2. **Terser** com:
    - `compress.sequences: false`, `join_vars: false` (evita juntar statements)
-   - `format.beautify: true`, `semicolons: true`, `ascii_only: true`
+   - `format.beautify: true`, `semicolons: true`, `ascii_only: true` (**obrigatorio** — sem beautify o Insider estoura W033 em `break`/`continue`)
    - `wrap_iife: true` → saida `!(function(){...})();`
 3. **CSS**: expandir `return [ regra1, regra2, ... ].join("\n")` em varios `_c.push(regra);` (evita linha monstro e W014)
 4. **catch**: forcar `catch(_wjErr)` pos-mangle
-5. Conferir: sem linhas com leading `,`/`+`; JSHint limpo; chars abaixo de 65535
+5. **Handlers**: nao deixar funcoes anonimas dentro de loops (W083) — extrair antes do `for`
+6. Conferir: sem linhas com leading `,`/`+`; JSHint limpo nos bloqueantes; chars abaixo de 65535
 
 ---
 
@@ -151,6 +179,8 @@ Alinhado a padronizacao Webjump, com cuidado Magento/Insider:
 |--------------------|----------------|------|
 | "Syntax error… check lines" + linha vermelha em `,` ou `+` | W014 | Regenerar min sem quebra antes de `,`/`+`; preferir `_c.push` |
 | Mesmo toast + `catch (t)` | W002 | `catch(_wjErr)` |
+| "Missing semicolon" / vermelho em `break` | W033 | Regenerar com `beautify: true` + `semicolons: true` |
+| "Functions declared within loops…" | W083 | Extrair handler nomeado para fora do `for` |
 | Contador acima de 65.535 | Arquivo grande demais | Cortar CSS / logica |
 | Colou e salvou, mas UI some / KO quebra | Timing ou move de scope | Aguardar DOM; mover wrapper com scope |
 | Qty some / vira texto vermelho | Moveu `input.mage-error` | Mover so `div.mage-error` |

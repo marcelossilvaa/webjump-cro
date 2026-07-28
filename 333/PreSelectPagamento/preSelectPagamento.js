@@ -1399,23 +1399,25 @@
       return true;
     }
 
+    function onPaymentMethodChange(event) {
+      const target = event.target;
+      const code = target && (target.id || target.value);
+      if (!code) return;
+
+      if (preSelectDone && code !== PRESELECT_CODE) {
+        userChangedPayment = true;
+      }
+
+      sendGAEvent('select_' + code, 'click');
+      syncMobilePlaceOrder();
+    }
+
     function bindTracking(root) {
       if (root.getAttribute(TRACKING_ATTR) === 'true') return;
 
       const radios = root.querySelectorAll('input[name="payment[method]"]');
       for (let i = 0; i < radios.length; i++) {
-        radios[i].addEventListener('change', function (event) {
-          const target = event.target;
-          const code = target && (target.id || target.value);
-          if (!code) return;
-
-          if (preSelectDone && code !== PRESELECT_CODE) {
-            userChangedPayment = true;
-          }
-
-          sendGAEvent('select_' + code, 'click');
-          syncMobilePlaceOrder();
-        });
+        radios[i].addEventListener('change', onPaymentMethodChange);
       }
 
       root.setAttribute(TRACKING_ATTR, 'true');
