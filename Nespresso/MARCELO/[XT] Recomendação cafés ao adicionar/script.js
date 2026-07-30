@@ -15,33 +15,51 @@
   const RECOMMENDATION_MAP = {
     // OL
     "7885.90": "7990.90", // Ristretto → Florian
-    "7857.90": "7051.90", // Ristretto Decaf → Vienna Decaff
+    "7857.90": "7859.90", // Inspirazione Ristretto Italiano Decaffeinato → Cioccolatino
     "7888.90": "7887.90", // Arpeggio → Cape Town
-    "7862.90": "7051.90", // Arpeggio Decaf → Vienna Decaff
+    "7862.90": "7859.90", // Inspirazione Firenze Arpeggio Decaffeinato → Cioccolatino
     "7865.90": "7893.90", // Volluto → Buenos Aires
     "7864.90": "7051.90", // Volluto Decaf → Vienna Decaff
     "7866.90": "7882.90", // Capriccio → Paris
-    "7863.90": "7878.90", // Cosi → Shanghai
+    "7863.90": "7933.90", // Cosi → Vaniglia
     "7855.90": "7893.90", // Livanto → Buenos Aires
     "7890.90": "7877.90", // Venezia → Istanbul Espresso
     "7895.90": "7887.90", // Napoli → Cape Town
+    "7961.90": "7964.90", // Capriccio → Caramello
+    "7983.90": "7933.90", // Volluto → Vaniglia
+    "7932.90": "7988.90", // Volluto Decaffeinato → Vaniglia Decaffeinato
+    "7972.90": "7859.90", // Inspirazione Palermo Kazaar → Cioccolatino
+    "7987.90": "7859.90", // Inspirazione Ristretto Italiano → Cioccolatino
+    "7928.90": "7859.90", // Inspirazione Firenze Arpeggio → Cioccolatino
+    "7985.90": "7859.90", // Inspirazione Roma → Cioccolatino
+    "7979.90": "7964.90", // Inspirazione Genova Livanto → Caramello
+    "7984.90": "7859.90", // Inspirazione Napoli → Cioccolatino
+    "7986.90": "7964.90", // Inspirazione Venezia → Caramello
+    "7891.90": "7933.90", // Scuro → Vaniglia
     // OL Delisted 2026
     "7886.90": "7889.90", // Ethiopia → Colombia
     "7892.90": "7865.90", // Chiaro → Volluto
     "7880.90": "7884.90", // Rio de Janeiro → India
     "7894.90": "7856.90", // Brazil Organic → Nicaragua
-    "7871.90": "7890.90", // Corto → Venezia
+    "7871.90": "7937.90", // Corto → Nocciola
     "7877.90": "7882.90", // Istanbul → Paris
     // VL
     "7011.80": "7026.80", // Ristretto Intenso → Mexico
-    "7010.80": "7026.80", // Ristretto Clássico → Mexico
-    "7047.80": "7017.80", // Voltesso → Ethiopia
-    "7048.80": "7026.80", // Altissio → Mexico
+    "7010.80": "7296.80", // Ristretto Clássico → Rich Chocolate
+    "7084.80": "7296.80", // Ristretto Intenso → Rich Chocolate
+    "7047.80": "7292.80", // Voltesso → Sweet Vanilla
+    "7036.80": "7294.80", // Orafio → Roasted Hazelnut
+    "7048.80": "7292.80", // Altissio → Sweet Vanilla
+    "7000.80": "7292.80", // Altissio Decaffeinato → Sweet Vanilla
     "7058.80": "7026.80", // Scuro → Mexico
-    "7060.80": "7026.80", // Il Caffè → Mexico
-    "7085.80": "7043.80", // Dolce → Costa Rica
-    "7049.80": "7026.80", // Diavolito → Mexico
-    "7279.80": "7043.80", // Chiaro Decaffeinato → Costa Rica
+    "7060.80": "7292.80", // Il Caffè → Sweet Vanilla
+    "7049.80": "7294.80", // Diavolitto → Roasted Hazelnut
+    "7298.80": "7296.80", // Double Espresso Scuro → Rich Chocolate
+    "7085.80": "7295.80", // Double Espresso Dolce → Golden Caramel
+    "7279.80": "7294.80", // Double Espresso Chiaro Decaffeinato → Roasted Hazelnut
+    "7045.80": "7294.80", // Double Espresso Chiaro → Roasted Hazelnut
+    "7016.80": "7294.80", // Bianco Doppio → Roasted Hazelnut
+    "7030.80": "7292.80", // Bianco Forte → Sweet Vanilla
     // VL Delisted 2026
     "7002.80": "7085.80", // Bianco Piccolo → Dolce
     "7017.80": "7028.80", // Ethiopia → Colombia
