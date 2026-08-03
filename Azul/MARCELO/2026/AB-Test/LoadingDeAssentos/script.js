@@ -45,6 +45,7 @@
   const PROGRESS_TICK_MS = 200;
   const LOADER_POLL_MS = 100;
   const LOADER_HIDE_DEBOUNCE_MS = 300;
+  const ENTRY_LOADING_DURATION_MS = 10000;
 
   let observer = null;
   let loaderObserver = null;
@@ -64,14 +65,16 @@
   let seatConfirmationInterval = null;
   let nativeModalObserver = null;
   let initialLoadAutoClosed = false;
+  let entryLoadingCompleted = false;
   let pendingLoaderActivation = false;
   let loadingSessionActive = false;
   let changeSegmentSeen = false;
   let originalLoader = null;
   let isSyncingNativeModals = false;
   let isProcessingLoader = false;
-  let sessionSafetyTimeout = null;
-  const SESSION_SAFETY_MS = 20000;
+  let entryLoadingStartedAt = 0;
+  let entryDurationTimeout = null;
+  let entryNativeLoadingDone = false;
 
   function createStyles() {
       if (document.getElementById(STYLE_ID)) {
@@ -559,8 +562,8 @@ flex-direction: row;
 align-items: flex-start;
 gap: 16px;
 width: 100%;
-height: 96px;
-padding: 40px 16px 24px 16px;
+height: auto;
+padding: 16px;
 background: #FFFFFF;
 border-bottom: 1px solid #EAEAEA;
 }
@@ -592,9 +595,9 @@ display: flex;
 flex-direction: row;
 justify-content: center;
 align-items: center;
-gap: 24px;
+gap: 16px;
 width: 100%;
-padding: 24px;
+padding: 16px;
 }
 .at-seatmap-skip-modal__image-container {
 box-sizing: border-box;
@@ -691,10 +694,10 @@ display: flex;
 flex-direction: row;
 justify-content: center;
 align-items: center;
-gap: 32px;
+gap: 16px;
 width: 100%;
-height: 96px;
-padding: 24px;
+height: auto;
+padding: 16px;
 border-top: 1px solid #EAEAEA;
 }
 .at-seatmap-skip-modal__primary {
@@ -735,11 +738,12 @@ outline-offset: 2px;
 @media (max-width: 720px) {
 .at-seatmap-skip-modal__header {
 height: auto;
-padding: 24px 16px;
+padding: 16px;
 }
 .at-seatmap-skip-modal__body {
 flex-direction: column;
 align-items: stretch;
+padding: 16px;
 }
 .at-seatmap-skip-modal__image-container {
 width: 100%;
@@ -752,6 +756,7 @@ width: 100%;
 flex-direction: column;
 height: auto;
 gap: 16px;
+padding: 16px;
 }
 .at-seatmap-skip-modal__primary {
 width: 100%;
@@ -1123,25 +1128,65 @@ width: 100%;
       loadingSessionActive = false;
       pendingLoaderActivation = false;
       changeSegmentSeen = false;
-      clearSessionSafetyTimeout();
+      entryNativeLoadingDone = false;
+      clearEntryDurationTimeout();
   }
 
-  function clearSessionSafetyTimeout() {
-      if (sessionSafetyTimeout) {
-          window.clearTimeout(sessionSafetyTimeout);
-          sessionSafetyTimeout = null;
+  function clearEntryDurationTimeout() {
+      if (entryDurationTimeout) {
+          window.clearTimeout(entryDurationTimeout);
+          entryDurationTimeout = null;
       }
   }
 
-  function armSessionSafetyTimeout() {
-      clearSessionSafetyTimeout();
-      sessionSafetyTimeout = window.setTimeout(function() {
-          sessionSafetyTimeout = null;
-          if (modalVisible && !seatSelectionActive) {
-              console.warn('[AT] safety timeout: fechando modal de loading');
-              hidePanel();
-          }
-      }, SESSION_SAFETY_MS);
+  function getEntryElapsedMs() {
+      if (!entryLoadingStartedAt) {
+          return 0;
+      }
+      return Date.now() - entryLoadingStartedAt;
+  }
+
+  function hasEntryMinDurationElapsed() {
+      return getEntryElapsedMs() >= ENTRY_LOADING_DURATION_MS;
+  }
+
+  function armEntryLoadingDuration() {
+      if (entryLoadingStartedAt) {
+          return;
+      }
+
+      entryLoadingStartedAt = Date.now();
+      entryNativeLoadingDone = false;
+      clearEntryDurationTimeout();
+
+      entryDurationTimeout = window.setTimeout(function() {
+          entryDurationTimeout = null;
+          tryCloseEntryLoading();
+      }, ENTRY_LOADING_DURATION_MS);
+  }
+
+  function tryCloseEntryLoading() {
+      if (!modalVisible || seatSelectionActive) {
+          return;
+      }
+
+      // Primeiro loading: fecha ao completar os 10s
+      hidePanel();
+  }
+
+  function requestHideEntryPanel() {
+      entryNativeLoadingDone = true;
+
+      if (!modalVisible || seatSelectionActive) {
+          return;
+      }
+
+      // Se o nativo acabou antes dos 10s, espera o tempo minimo
+      if (!hasEntryMinDurationElapsed()) {
+          return;
+      }
+
+      hidePanel();
   }
 
   function hideOriginalLoader() {
@@ -1188,16 +1233,20 @@ width: 100%;
       startLoaderMonitoring();
   }
 
+  function canShowEntryLoading() {
+      return !entryLoadingCompleted && !initialLoadAutoClosed && !seatSelectionActive;
+  }
+
   function handleLoaderAppear(loaderElement) {
       if (!loaderElement || loaderElement.nodeType !== 1) {
           return;
       }
 
-      if (!loadingSessionActive && !pendingLoaderActivation && !isTargetPage()) {
+      if (!canShowEntryLoading()) {
           return;
       }
 
-      if (seatSelectionActive || initialLoadAutoClosed) {
+      if (!loadingSessionActive && !pendingLoaderActivation && !isTargetPage()) {
           return;
       }
 
@@ -1212,7 +1261,7 @@ width: 100%;
       showPanel(false);
       bindNativeLoader(loaderElement);
       pendingLoaderActivation = false;
-      armSessionSafetyTimeout();
+      armEntryLoadingDuration();
   }
 
   function clearLoaderMonitoring() {
@@ -1250,9 +1299,9 @@ width: 100%;
               return;
           }
 
-          // change-segment saiu (ou seatmap ja pronto) = encerra
+          // change-segment saiu: so fecha se ja passou o minimo de 10s
           if (!seatSelectionActive && modalVisible) {
-              hidePanel();
+              requestHideEntryPanel();
           }
       }, LOADER_HIDE_DEBOUNCE_MS);
   }
@@ -1442,12 +1491,28 @@ width: 100%;
       setupModalInteractionListeners();
       startNativeModalObserver();
       startProgressMonitor();
+      armEntryLoadingDuration();
       if (!seatSelectionActive) {
           startLoaderMonitoring();
       }
       if (!viewTracked) {
           trackAnalytics('view');
           viewTracked = true;
+      }
+  }
+
+  function restoreNativeChangeSegment() {
+      var boundOverlays = document.querySelectorAll('.' + CHANGE_SEGMENT_OVERLAY_CLASS);
+      for (var i = 0; i < boundOverlays.length; i += 1) {
+          boundOverlays[i].classList.remove(CHANGE_SEGMENT_OVERLAY_CLASS);
+      }
+
+      var segment = getChangeSegment();
+      if (segment && segment.getAttribute(DATA_INJECTED) === 'true') {
+          segment.removeAttribute(DATA_INJECTED);
+          if (segment.style.display === 'none') {
+              segment.style.removeProperty('display');
+          }
       }
   }
 
@@ -1461,53 +1526,24 @@ width: 100%;
       stopSeatConfirmationWatch();
       stopNativeModalObserver();
       seatSelectionActive = false;
+      restoreNativeChangeSegment();
       endLoadingSession();
       originalLoader = null;
+      entryLoadingStartedAt = 0;
       overlay.parentNode.removeChild(overlay);
       modalVisible = false;
-      if (isTargetPage()) {
-          initialLoadAutoClosed = true;
-      }
+      // Apenas o primeiro loading de entrada: depois disso nao reabre mais
+      entryLoadingCompleted = true;
+      initialLoadAutoClosed = true;
   }
 
   function setupSeatSelectionListener() {
-      if (seatClickHandler) {
-          return;
-      }
-
-      seatClickHandler = function(event) {
-          if (!isTargetPage() || !event.target || !event.target.closest) {
-              return;
-          }
-
-          const seat = event.target.closest(SEAT_BUTTON_SELECTOR);
-          if (!seat || seat.disabled || seat.getAttribute('data-seat-available') !== 'true') {
-              return;
-          }
-
-          handleSeatSelection(seat.getAttribute('data-seat-designator'));
-      };
-
-      document.addEventListener('click', seatClickHandler, true);
+      // Modal de loading customizado so no primeiro carregamento de entrada.
+      // Selecao de assento e confirmacoes usam o loading nativo da Azul.
   }
 
-  function handleSeatSelection(designator) {
-      console.log('[AT] assento selecionado: ' + (designator || 'sem designador'));
-
-      if (hasBlockingNativeModal()) {
-          console.log('[AT] painel nao aberto, ha um modal nativo em exibicao');
-          return;
-      }
-
-      seatSelectionActive = true;
-
-      if (!modalVisible) {
-          createPanel(false);
-          showPanel(false);
-          trackAnalytics('click_seat');
-      }
-
-      startSeatConfirmationWatch(designator);
+  function handleSeatSelection() {
+      return;
   }
 
   function syncNativeModalState() {
@@ -1558,7 +1594,7 @@ width: 100%;
               }
           }
 
-          if (changeSegmentNode && !seatSelectionActive && !initialLoadAutoClosed) {
+          if (changeSegmentNode && canShowEntryLoading()) {
               if (!modalVisible && (loadingSessionActive || pendingLoaderActivation || isTargetPage())) {
                   handleLoaderAppear(changeSegmentNode);
               } else if (modalVisible) {
@@ -1746,34 +1782,18 @@ width: 100%;
           return;
       }
 
-      var baseValue = 30;
-      setProgressValue(baseValue);
+      setProgressValue(0);
 
       progressMonitorInterval = window.setInterval(function() {
-          var loader = getLoader(true) || (originalLoader && document.contains(originalLoader) ? originalLoader : null);
-          var loaderProgress = getLoaderProgress(loader);
-
-          if (loaderProgress !== null) {
-              setProgressValue(Math.min(loaderProgress, loadingSessionActive ? 95 : 100));
-              return;
+          if (!entryLoadingStartedAt) {
+              armEntryLoadingDuration();
           }
 
-          if (loader || seatSelectionActive || loadingSessionActive) {
-              var fillEl = document.querySelector('.at-seatmap-progress-fill');
-              var current = (fillEl && parseInt(fillEl.style.width, 10)) || baseValue;
-              var nextValue = Math.min(95, current + (seatSelectionActive ? 4 : 1));
-              setProgressValue(nextValue);
-              return;
-          }
+          var elapsed = getEntryElapsedMs();
+          var progress = Math.min(100, (elapsed / ENTRY_LOADING_DURATION_MS) * 100);
+          setProgressValue(progress);
 
-          var fillFinal = document.querySelector('.at-seatmap-progress-fill');
-          var finalValue = (fillFinal && parseInt(fillFinal.style.width, 10)) || baseValue;
-          finalValue = Math.min(100, finalValue + 8);
-          setProgressValue(finalValue);
-
-          // Nao fecha o modal aqui: o fechamento fica so no monitoramento do loader
-          // (evita abrir/fechar duplo quando a SPA troca de .loader)
-          if (finalValue >= 100) {
+          if (progress >= 100) {
               stopProgressMonitor();
           }
       }, PROGRESS_TICK_MS);
@@ -1823,17 +1843,19 @@ width: 100%;
   }
 
   function activateForSeatmapTransition() {
+      if (entryLoadingCompleted || initialLoadAutoClosed) {
+          return;
+      }
+
       if (loadingSessionActive && modalVisible) {
           return;
       }
 
       loadingSessionActive = true;
       pendingLoaderActivation = true;
-      initialLoadAutoClosed = false;
       createPanel(false);
       showPanel(false);
       startLoaderMonitoring();
-      armSessionSafetyTimeout();
       trackAnalytics('click_responsavel_primary_button');
   }
 
@@ -1890,20 +1912,18 @@ width: 100%;
               if (modalVisible && !shouldKeepModalDuringTransition()) {
                   hidePanel();
               }
-              if (!loadingSessionActive && !pendingLoaderActivation) {
-                  initialLoadAutoClosed = false;
-              }
               return;
           }
 
-          var changeSegment = getChangeSegment();
-          if (changeSegment && !initialLoadAutoClosed && !seatSelectionActive) {
-              handleLoaderAppear(changeSegment);
-          } else if ((pendingLoaderActivation || loadingSessionActive) && !modalVisible && !initialLoadAutoClosed) {
-              // Mantem modal so se a sessao veio do clique; nao reabre sozinho
-              createPanel(false);
-              showPanel(false);
-              startLoaderMonitoring();
+          if (canShowEntryLoading()) {
+              var changeSegment = getChangeSegment();
+              if (changeSegment) {
+                  handleLoaderAppear(changeSegment);
+              } else if ((pendingLoaderActivation || loadingSessionActive) && !modalVisible) {
+                  createPanel(false);
+                  showPanel(false);
+                  startLoaderMonitoring();
+              }
           }
 
           monitorSkipButtonInjection();
