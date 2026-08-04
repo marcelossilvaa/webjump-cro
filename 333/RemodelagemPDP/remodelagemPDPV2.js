@@ -509,11 +509,7 @@ window.dataLayer.push({
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
-        '="true"] .pdp-shipping-information .shipping-item { display: flex !important; align-items: center !important; gap: 8px !important; margin: 8px 0 !important; padding: 0 !important; color: #394150 !important; line-height: 1.25 !important; }',
-      ROOT_SELECTOR +
-        '[' +
-        ROOT_ATTR +
-        '="true"] .pdp-shipping-information .shipping-item[style*="display: none"] { display: flex !important; }',
+        '="true"] .pdp-shipping-information .shipping-item:not([style*="display: none"]) { display: flex !important; align-items: center !important; gap: 8px !important; margin: 8px 0 !important; padding: 0 !important; color: #394150 !important; line-height: 1.25 !important; }',
       ROOT_SELECTOR +
         '[' +
         ROOT_ATTR +
