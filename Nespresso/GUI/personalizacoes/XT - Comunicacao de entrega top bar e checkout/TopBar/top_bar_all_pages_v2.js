@@ -14,22 +14,36 @@
     return;
   }
 
-  const STYLE_ID = "at-mensagem-entrega-topbar-style";
-  const BAR_CLASS = "mensagemEntregaTopBar";
-  const BAR_SELECTOR = "." + BAR_CLASS;
-  // Header novo: inserir imediatamente ANTES de header.cb-header-navigation.
-  const ANCHOR_SELECTORS = [
+  if (window.topBarMessageV2) {
+    return;
+  }
+
+  const STYLE_ID = "at-mensagem-entrega-topbar-v2-style";
+  const SLIDE_ATTR = "data-at-frete-topbar-v2";
+  const BANNER_MOVED_ATTR = "data-at-frete-banner-moved";
+  const SLIDER_SELECTOR = ".top-message-slider";
+  const BANNER_SELECTORS = [
+    "#topMessageBannerMob",
+    "#topMessageBanner",
+    "div[id*='topMessageBanner']",
+  ];
+  // Header novo fica em <main> antes do #topMessageBanner.
+  // Sempre inserir imediatamente ANTES de header.cb-header-navigation.
+  const HEADER_SELECTORS = [
     "header.cb-header-navigation",
     "nb-header-navigation",
     "header#header",
-    "#top",
-    "#main-container",
   ];
-  const LEGACY_SLIDER_SELECTOR = "div[id*='topMessageBanner'] .top-message-slider";
   const MAX_RETRIES = 40;
   const RETRY_MS = 250;
+  const GUARD_MS = 250;
+  const GUARD_TICKS = 60; // ~15s cobrindo hidratação do header
   let retryCount = 0;
   let retryTimer = null;
+  let positionObserver = null;
+  let guardTimer = null;
+  let repositioning = false;
+  let guardRaf = null;
 
   // Prazos oficiais (dias uteis) — valor da chave = capital; interior = capital + 3
   // 1/4: PE, RJ, SP
@@ -78,71 +92,6 @@
     ],
   };
 
-  function isBarVisible(el) {
-    if (!el) return false;
-    const style = window.getComputedStyle(el);
-    if (
-      style.display === "none" ||
-      style.visibility === "hidden" ||
-      style.opacity === "0"
-    ) {
-      return false;
-    }
-    const rect = el.getBoundingClientRect();
-    return rect.width > 0 && rect.height > 0;
-  }
-
-  function getOurVisibleBar() {
-    const bars = document.querySelectorAll(
-      BAR_SELECTOR + '[data-at-frete-topbar="true"]'
-    );
-    for (let i = 0; i < bars.length; i++) {
-      if (isBarVisible(bars[i])) {
-        return bars[i];
-      }
-    }
-    return null;
-  }
-
-  function removeHiddenBars() {
-    const bars = document.querySelectorAll(
-      BAR_SELECTOR + '[data-at-frete-topbar="true"]'
-    );
-    for (let i = 0; i < bars.length; i++) {
-      const bar = bars[i];
-      if (!isBarVisible(bar) && bar.parentNode) {
-        bar.parentNode.removeChild(bar);
-      }
-    }
-  }
-
-  // Se a barra ja esta visivel, nao duplica
-  if (getOurVisibleBar()) {
-    return;
-  }
-
-  // Limpa flag presa de execucao anterior que falhou
-  if (window.topBarMessageRunning && !getOurVisibleBar()) {
-    window.topBarMessageRunning = false;
-  }
-
-  if (window.topBarMessageRunning) {
-    return;
-  }
-
-  window.topBarMessageRunning = true;
-
-  window.gtmDataObject = window.gtmDataObject || [];
-  gtmDataObject.push({
-    event: "adobe_target",
-    event_raised_by: "adobe target",
-    experiment_id: "${campaign.id}",
-    experiment_type: "AB",
-    experiment_name: "${campaign.name}",
-    experiment_variant_id: "${campaign.recipe.id}",
-    experiment_variant: "${campaign.recipe.name}",
-  });
-
   const mapaEstadoParaUF = {
     acre: "AC",
     alagoas: "AL",
@@ -173,6 +122,22 @@
     tocantins: "TO",
   };
 
+  if (window.topBarMessageV2Running) {
+    return;
+  }
+  window.topBarMessageV2Running = true;
+
+  window.gtmDataObject = window.gtmDataObject || [];
+  gtmDataObject.push({
+    event: "adobe_target",
+    event_raised_by: "adobe target",
+    experiment_id: "${campaign.id}",
+    experiment_type: "AB",
+    experiment_name: "${campaign.name}",
+    experiment_variant_id: "${campaign.recipe.id}",
+    experiment_variant: "${campaign.recipe.name}",
+  });
+
   function normalizarTexto(valor) {
     return String(valor || "")
       .trim()
@@ -185,7 +150,6 @@
     let normalizada = normalizarTexto(cidade);
     if (!normalizada) return "";
 
-    // Prioriza nomes oficiais das capitais (com acento)
     for (let dias in diasEntregasUF) {
       if (Object.prototype.hasOwnProperty.call(diasEntregasUF, dias)) {
         let estados = diasEntregasUF[dias];
@@ -197,7 +161,6 @@
       }
     }
 
-    // Cidades comuns que o geo costuma devolver sem acento
     let mapaCidades = {
       "sao paulo": "São Paulo",
       "sao luis": "São Luís",
@@ -213,9 +176,9 @@
       "joao pessoa": "João Pessoa",
       "macapa": "Macapá",
       "belem": "Belém",
-      "cuiaba": "Cuiabá",
-      "goiania": "Goiânia",
-      "vitoria": "Vitória",
+      cuiaba: "Cuiabá",
+      goiania: "Goiânia",
+      vitoria: "Vitória",
       "vitoria da conquista": "Vitória da Conquista",
       brasilia: "Brasília",
       maceio: "Maceió",
@@ -319,10 +282,7 @@
     return ufPorNome || "";
   }
 
-  // Regra antiga de localizacao:
-  // 1) sessionStorage.address (city/state)
-  // 2) customerAddressesCache-br value[0] (city + region.id)
-  // 3) cookies cidadeAB / ufAB
+  // Regra antiga: address -> conta value[0] -> cookies
   function searchAddressAndSetCookie() {
     const adressDataFrete = getSessionStorageItem("address");
     const adressAccountLogged = getSessionStorageItem(
@@ -403,7 +363,6 @@
       return null;
     }
 
-    // Interior: capital + 3 dias uteis
     if (normalizarTexto(capitalUF) !== normalizarTexto(cidade)) {
       diasEntrega += 3;
     }
@@ -412,7 +371,6 @@
     let horaAtual = dataAtual.getHours();
     let diaSemanaAtual = dataAtual.getDay();
 
-    // Apos 12h, fim de semana: +1 dia util
     if (horaAtual >= 12 || diaSemanaAtual === 0 || diaSemanaAtual === 6) {
       diasEntrega += 1;
     }
@@ -461,7 +419,6 @@
   }
 
   function montarMensagem() {
-    // Regra antiga: address -> conta value[0] -> cookies -> copy padrao
     searchAddressAndSetCookie();
 
     let cookieCidade = getCookieAB("cidadeAB");
@@ -479,7 +436,6 @@
           tipo: "personalizada",
           cidade: cidadeFormatada,
           uf: cookieUF,
-          fonte: "session_cookie",
         };
       }
     }
@@ -489,46 +445,77 @@
       tipo: "generica",
       cidade: "",
       uf: "",
-      fonte: "generica",
     };
   }
 
   function getStyles() {
     return [
-      "." + BAR_CLASS + " {",
+      "/* Banner unificado no topo - desktop + mobile */",
+      "#topMessageBanner.at-frete-banner-unified,",
+      "#topMessageBannerMob.at-frete-banner-unified,",
+      "div[id*='topMessageBanner'].at-frete-banner-unified {",
       "  display: block !important;",
       "  visibility: visible !important;",
       "  opacity: 1 !important;",
-      "  position: relative !important;",
-      "  background-color: #590100 !important;",
-      "  color: #fff !important;",
       "  width: 100% !important;",
       "  max-width: 100% !important;",
-      "  box-sizing: border-box !important;",
-      "  padding: 10px 16px !important;",
-      "  text-align: center !important;",
-      "  font-family: NespressoLucas, Arial, sans-serif !important;",
-      "  z-index: 10001 !important;",
+      "  background-color: #590100 !important;",
+      "  color: #fff !important;",
+      "  z-index: 10002 !important;",
+      "  position: relative !important;",
+      "  order: -1 !important;",
       "  margin: 0 !important;",
       "  height: auto !important;",
-      "  min-height: 40px !important;",
+      "  overflow: visible !important;",
       "}",
-      "." + BAR_CLASS + " .message-content {",
-      "  margin: 0 !important;",
-      "  font-size: 14px !important;",
-      "  line-height: 1.2 !important;",
+      "@media (min-width: 768px) {",
+      "  #topMessageBanner.at-frete-banner-unified,",
+      "  #topMessageBannerMob.at-frete-banner-unified,",
+      "  div[id*='topMessageBanner'].at-frete-banner-unified,",
+      "  #topMessageBanner.at-frete-banner-unified .top-message-slider,",
+      "  #topMessageBannerMob.at-frete-banner-unified .top-message-slider {",
+      "    display: block !important;",
+      "    visibility: visible !important;",
+      "    opacity: 1 !important;",
+      "  }",
+      "}",
+      ".at-frete-banner-unified *,",
+      ".at-frete-banner-unified .message-content,",
+      ".at-frete-banner-unified .message-content a {",
       "  color: #fff !important;",
       "}",
-      "." + BAR_CLASS + " .message-content a {",
+      ".at-frete-banner-unified .top-message-slider {",
+      "  display: block !important;",
+      "  visibility: visible !important;",
+      "  background-color: #590100 !important;",
+      "}",
+      ".at-frete-banner-unified .message-content,",
+      ".at-frete-banner-unified .message-content a {",
       "  color: #fff !important;",
       "  text-decoration: none !important;",
+      "  font-size: 14px !important;",
+      "  line-height: 1.2 !important;",
       "}",
-      "." + BAR_CLASS + " .message-content strong {",
+      ".at-frete-banner-unified .message-content strong {",
       "  color: #fff !important;",
       "  font-weight: 700 !important;",
       "}",
-      "." + BAR_CLASS + " .at-frete-underline {",
+      ".at-frete-banner-unified .at-frete-underline {",
       "  text-decoration: underline !important;",
+      "}",
+      ".at-frete-banner-unified .slick-arrow,",
+      ".at-frete-banner-unified .slick-message-prev,",
+      ".at-frete-banner-unified .slick-message-next,",
+      ".at-frete-banner-unified .Glyph {",
+      "  display: block !important;",
+      "  color: #fff !important;",
+      "}",
+      "div[id*='topMessageBanner'][data-at-frete-banner-hidden='true'] {",
+      "  display: none !important;",
+      "}",
+      "/* Remove barra standalone da v1, se existir */",
+      ".mensagemEntregaTopBar[data-at-frete-topbar='true'] {",
+      "  display: none !important;",
       "}",
     ].join("\n");
   }
@@ -544,9 +531,7 @@
   }
 
   function getDeliveryLink() {
-    return (
-      "https://www.nespresso.com/br/pt/servicos#/delivery/delivery-standard"
-    );
+    return "https://www.nespresso.com/br/pt/servicos#/delivery/delivery-standard";
   }
 
   function sendImpressionEvent(tipo, uf) {
@@ -557,69 +542,218 @@
       local_event_category: "user engagement",
       local_event_action: "view",
       local_event_label:
-        "xt_adobe_target_mensagem_frete_topbar_" +
+        "xt_adobe_target_mensagem_frete_topbar_v2_" +
         tipo +
         (uf ? "_" + uf : ""),
     });
   }
 
-  function getAnchor() {
-    for (let i = 0; i < ANCHOR_SELECTORS.length; i++) {
-      const el = document.querySelector(ANCHOR_SELECTORS[i]);
-      if (el) {
-        return { el: el, selector: ANCHOR_SELECTORS[i] };
+  function getAllBannerContainers() {
+    const found = [];
+    const seen = [];
+
+    function pushUnique(el) {
+      if (!el) return;
+      if (seen.indexOf(el) !== -1) return;
+      seen.push(el);
+      found.push(el);
+    }
+
+    for (let i = 0; i < BANNER_SELECTORS.length; i++) {
+      const nodes = document.querySelectorAll(BANNER_SELECTORS[i]);
+      for (let j = 0; j < nodes.length; j++) {
+        pushUnique(nodes[j]);
       }
+    }
+
+    if (!found.length) {
+      const slider = document.querySelector(SLIDER_SELECTOR);
+      if (slider) {
+        pushUnique(
+          slider.closest("div[id*='topMessageBanner']") || slider.parentElement
+        );
+      }
+    }
+
+    return found;
+  }
+
+  function pickPrimaryBanner(banners) {
+    if (!banners.length) return null;
+
+    // Prioriza o que ja tem slick inicializado
+    for (let i = 0; i < banners.length; i++) {
+      if (banners[i].querySelector(SLIDER_SELECTOR + ".slick-initialized")) {
+        return banners[i];
+      }
+    }
+
+    for (let i = 0; i < banners.length; i++) {
+      if (banners[i].querySelector(SLIDER_SELECTOR)) {
+        return banners[i];
+      }
+    }
+
+    return banners[0];
+  }
+
+  function getHeaderEl() {
+    for (let i = 0; i < HEADER_SELECTORS.length; i++) {
+      const el = document.querySelector(HEADER_SELECTORS[i]);
+      if (el) return el;
     }
     return null;
   }
 
-  function createBar(mensagemHtml) {
-    const bar = document.createElement("div");
-    bar.className =
-      BAR_CLASS + " track-promotion-impression track-promotion-click";
-    bar.setAttribute("data-at-frete-topbar", "true");
-    bar.setAttribute("data-promotion-creative", "site-stickymessage");
-    bar.setAttribute("data-promotion-position", "site-stickymessage");
-    bar.setAttribute("data-link-creative", "site-stickymessage");
-    bar.setAttribute("data-link-position", "site-stickymessage");
-    bar.setAttribute("data-promotion-item-id", "mensagem_frete_header");
-    bar.setAttribute("data-promotion-name", "mensagem_frete_header");
-    bar.setAttribute("data-link-item-id", "mensagem_frete_header");
-    bar.setAttribute("data-link-name", "mensagem_frete_header");
+  function hideSecondaryBanners(primary, banners) {
+    for (let i = 0; i < banners.length; i++) {
+      if (banners[i] !== primary) {
+        banners[i].style.setProperty("display", "none", "important");
+        banners[i].setAttribute("data-at-frete-banner-hidden", "true");
+      }
+    }
+  }
 
-    bar.innerHTML =
+  function isBannerAboveHeader(banner, header) {
+    return !!banner && !!header && banner.nextElementSibling === header;
+  }
+
+  function getPrimaryVisibleBanner() {
+    const banners = getAllBannerContainers();
+    if (!banners.length) return null;
+
+    const visible = banners.filter(function (banner) {
+      return banner.getAttribute("data-at-frete-banner-hidden") !== "true";
+    });
+
+    const primary = pickPrimaryBanner(visible.length ? visible : banners);
+    if (primary) {
+      hideSecondaryBanners(primary, banners);
+    }
+    return primary;
+  }
+
+  function ensureBannerAboveHeader() {
+    if (repositioning) return false;
+
+    const banner = getPrimaryVisibleBanner();
+    const header = getHeaderEl();
+    if (!banner || !header) return false;
+
+    banner.classList.add("at-frete-banner-unified");
+    banner.setAttribute(BANNER_MOVED_ATTR, "true");
+
+    if (isBannerAboveHeader(banner, header)) {
+      return true;
+    }
+
+    // Site remonta o header e joga o banner para baixo — recoloca acima
+    repositioning = true;
+    try {
+      header.insertAdjacentElement("beforebegin", banner);
+    } finally {
+      repositioning = false;
+    }
+
+    return isBannerAboveHeader(banner, header);
+  }
+
+  function moveBannerToTop() {
+    return ensureBannerAboveHeader();
+  }
+
+  function schedulePositionCheck() {
+    if (guardRaf) return;
+    guardRaf = window.requestAnimationFrame(function () {
+      guardRaf = null;
+      ensureBannerAboveHeader();
+    });
+  }
+
+  function startPositionGuard() {
+    if (!positionObserver) {
+      positionObserver = new MutationObserver(function () {
+        if (repositioning) return;
+        schedulePositionCheck();
+      });
+      positionObserver.observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+      });
+    }
+
+    if (guardTimer) return;
+
+    let ticks = 0;
+    guardTimer = setInterval(function () {
+      ensureBannerAboveHeader();
+      ticks += 1;
+      if (ticks >= GUARD_TICKS) {
+        clearInterval(guardTimer);
+        guardTimer = null;
+      }
+    }, GUARD_MS);
+  }
+
+  function buildFreteSlideHtml(mensagemHtml) {
+    return (
+      '<div class="slide-message mensagemEntregaTopBar track-promotion-impression track-promotion-click" ' +
+      SLIDE_ATTR +
+      '="true" data-promotion-creative="site-stickymessage" data-promotion-position="site-stickymessage" data-link-creative="site-stickymessage" data-link-position="site-stickymessage" data-promotion-item-id="mensagem_frete_header" data-promotion-name="mensagem_frete_header" data-link-item-id="mensagem_frete_header" data-link-name="mensagem_frete_header">' +
       '<p class="message-content"><a href="' +
       getDeliveryLink() +
-      '">' +
+      '" style="text-decoration: none;">' +
       mensagemHtml +
-      "</a></p>";
-
-    return bar;
+      "</a></p></div>"
+    );
   }
 
-  function insertIntoNewHeader(mensagemHtml) {
-    const anchor = getAnchor();
-    if (!anchor) {
+  function getSliderEl() {
+    const unified = document.querySelector(
+      "div[id*='topMessageBanner'].at-frete-banner-unified " + SLIDER_SELECTOR
+    );
+    if (unified) return unified;
+
+    const banners = getAllBannerContainers().filter(function (banner) {
+      return banner.getAttribute("data-at-frete-banner-hidden") !== "true";
+    });
+    const primary = pickPrimaryBanner(banners);
+    if (primary) {
+      const nested = primary.querySelector(SLIDER_SELECTOR);
+      if (nested) return nested;
+    }
+    return document.querySelector(SLIDER_SELECTOR);
+  }
+
+  function initSlickIfNeeded($slider) {
+    if (!$slider || !$slider.length) return false;
+    if ($slider.hasClass("slick-initialized")) {
+      return true;
+    }
+
+    try {
+      $slider.slick({
+        infinite: true,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        autoplay: true,
+        autoplaySpeed: 4000,
+        arrows: true,
+        dots: false,
+        centerMode: true,
+        centerPadding: "0px",
+        prevArrow:
+          '<div class="slick-message-prev slick-arrow"><span class="Glyph Glyph--arrow-left"></span></div>',
+        nextArrow:
+          '<div class="slick-message-next slick-arrow"><span class="Glyph Glyph--arrow-right"></span></div>',
+      });
+      return $slider.hasClass("slick-initialized");
+    } catch (err) {
       return false;
     }
-
-    injectStyles();
-    const bar = createBar(mensagemHtml);
-
-    if (anchor.selector === "#main-container") {
-      anchor.el.insertAdjacentElement("afterbegin", bar);
-    } else if (anchor.selector === "#top") {
-      // Fallback legado: primeiro filho do #top
-      anchor.el.insertAdjacentElement("afterbegin", bar);
-    } else {
-      // Antes do header (cb-header-navigation / nb / header#header)
-      anchor.el.insertAdjacentElement("beforebegin", bar);
-    }
-
-    return true;
   }
 
-  function insertIntoLegacySlider(mensagemHtml) {
+  function addFreteSlideAsFirst(mensagemHtml) {
     if (
       typeof window.jQuery === "undefined" ||
       !window.jQuery.fn ||
@@ -629,22 +763,29 @@
     }
 
     const $ = window.jQuery;
-    const $slider = $(LEGACY_SLIDER_SELECTOR);
-    if (!$slider.length) return false;
+    const sliderEl = getSliderEl();
+    if (!sliderEl) return false;
 
-    injectStyles();
+    const $slider = $(sliderEl);
+    if (!initSlickIfNeeded($slider)) {
+      return false;
+    }
 
-    let slickSlide =
-      '<div class="slide-message ' +
-      BAR_CLASS +
-      ' track-promotion-impression track-promotion-click slick-slide" data-at-frete-topbar="true" data-promotion-creative="site-stickymessage" data-promotion-position="site-stickymessage" data-link-creative="site-stickymessage" data-link-position="site-stickymessage" data-promotion-item-id="mensagem_frete_header" data-promotion-name="mensagem_frete_header" data-link-item-id="mensagem_frete_header" data-link-name="mensagem_frete_header" data-slick-index="4" aria-hidden="true" tabindex="-1"><p class="message-content"><a href="' +
-      getDeliveryLink() +
-      '">' +
-      mensagemHtml +
-      "</a></p></div>";
+    // Evita duplicar o slide de frete
+    if ($slider.find("[" + SLIDE_ATTR + '="true"]').length) {
+      try {
+        $slider.slick("setPosition");
+        $slider.slick("slickGoTo", 0, true);
+      } catch (err) {
+        // ignore
+      }
+      return true;
+    }
 
     try {
-      $slider.slick("slickAdd", slickSlide, 0);
+      $slider.slick("slickAdd", buildFreteSlideHtml(mensagemHtml), 0);
+      $slider.slick("slickGoTo", 0, true);
+      $slider.slick("setPosition");
       return true;
     } catch (err) {
       return false;
@@ -653,7 +794,7 @@
 
   function scheduleRetry() {
     if (retryCount >= MAX_RETRIES) {
-      window.topBarMessageRunning = false;
+      window.topBarMessageV2Running = false;
       return;
     }
     if (retryTimer) return;
@@ -661,34 +802,32 @@
     retryTimer = setTimeout(function () {
       retryTimer = null;
       retryCount += 1;
-      setMessagesTopBar();
+      runV2();
     }, RETRY_MS);
   }
 
-  function setMessagesTopBar() {
-    removeHiddenBars();
+  function runV2() {
+    injectStyles();
 
-    const visibleBar = document.querySelector(BAR_SELECTOR);
-    if (visibleBar && isBarVisible(visibleBar)) {
-      window.topBarMessageRunning = false;
+    const moved = moveBannerToTop();
+    if (!moved) {
+      scheduleRetry();
       return;
     }
 
-    let dadosMensagem = montarMensagem();
+    const dadosMensagem = montarMensagem();
+    const slideOk = addFreteSlideAsFirst(dadosMensagem.html);
 
-    let inserted =
-      insertIntoNewHeader(dadosMensagem.html) ||
-      insertIntoLegacySlider(dadosMensagem.html);
-
-    if (inserted) {
-      window.topBarMessage = "true";
-      window.topBarMessageRunning = false;
-      sendImpressionEvent(dadosMensagem.tipo, dadosMensagem.uf);
+    if (!slideOk) {
+      scheduleRetry();
       return;
     }
 
-    scheduleRetry();
+    startPositionGuard();
+    window.topBarMessageV2 = "true";
+    window.topBarMessageV2Running = false;
+    sendImpressionEvent(dadosMensagem.tipo, dadosMensagem.uf);
   }
 
-  setMessagesTopBar();
+  runV2();
 })();
