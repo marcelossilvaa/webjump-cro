@@ -82,8 +82,22 @@
     return rect.width > 0 && rect.height > 0;
   }
 
+  function getOurVisibleBar() {
+    const bars = document.querySelectorAll(
+      BAR_SELECTOR + '[data-at-frete-topbar="true"]'
+    );
+    for (let i = 0; i < bars.length; i++) {
+      if (isBarVisible(bars[i])) {
+        return bars[i];
+      }
+    }
+    return null;
+  }
+
   function removeHiddenBars() {
-    const bars = document.querySelectorAll(BAR_SELECTOR);
+    const bars = document.querySelectorAll(
+      BAR_SELECTOR + '[data-at-frete-topbar="true"]'
+    );
     for (let i = 0; i < bars.length; i++) {
       const bar = bars[i];
       if (!isBarVisible(bar) && bar.parentNode) {
@@ -92,12 +106,15 @@
     }
   }
 
-  const existingVisible = document.querySelector(BAR_SELECTOR);
-  if (existingVisible && isBarVisible(existingVisible)) {
+  // Se a barra ja esta visivel, nao duplica
+  if (getOurVisibleBar()) {
     return;
   }
 
-  removeHiddenBars();
+  // Limpa flag presa de execucao anterior que falhou
+  if (window.topBarMessageRunning && !getOurVisibleBar()) {
+    window.topBarMessageRunning = false;
+  }
 
   if (window.topBarMessageRunning) {
     return;
@@ -155,6 +172,49 @@
   }
 
   function formatarNomeCidade(cidade) {
+    let normalizada = normalizarTexto(cidade);
+    if (!normalizada) return "";
+
+    // Prioriza nomes oficiais das capitais (com acento)
+    for (let dias in diasEntregasUF) {
+      if (Object.prototype.hasOwnProperty.call(diasEntregasUF, dias)) {
+        let estados = diasEntregasUF[dias];
+        for (let i = 0; i < estados.length; i++) {
+          if (normalizarTexto(estados[i].capital) === normalizada) {
+            return estados[i].capital;
+          }
+        }
+      }
+    }
+
+    // Cidades comuns que o geo costuma devolver sem acento
+    let mapaCidades = {
+      "sao paulo": "São Paulo",
+      "sao luis": "São Luís",
+      "sao jose dos campos": "São José dos Campos",
+      "sao bernardo do campo": "São Bernardo do Campo",
+      "sao goncalo": "São Gonçalo",
+      "ribeirao preto": "Ribeirão Preto",
+      "feira de santana": "Feira de Santana",
+      "juiz de fora": "Juiz de Fora",
+      "porto alegre": "Porto Alegre",
+      "belo horizonte": "Belo Horizonte",
+      "campo grande": "Campo Grande",
+      "joao pessoa": "João Pessoa",
+      "macapa": "Macapá",
+      "belem": "Belém",
+      "cuiaba": "Cuiabá",
+      "goiania": "Goiânia",
+      "vitoria": "Vitória",
+      brasilia: "Brasília",
+      maceio: "Maceió",
+      florianopolis: "Florianópolis",
+    };
+
+    if (mapaCidades[normalizada]) {
+      return mapaCidades[normalizada];
+    }
+
     return String(cidade || "")
       .trim()
       .split(/\s+/)
@@ -480,7 +540,7 @@
       "  visibility: visible !important;",
       "  opacity: 1 !important;",
       "  position: relative !important;",
-      "  background-color: #47233A !important;",
+      "  background-color: #590100 !important;",
       "  color: #fff !important;",
       "  width: 100% !important;",
       "  max-width: 100% !important;",
