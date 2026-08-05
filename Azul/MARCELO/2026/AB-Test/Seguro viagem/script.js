@@ -3,12 +3,13 @@
           const experienceAlreadyExecuted = window[experienceName] || false;
 
           const onExperienceTargetPage = () => {
+              const isStageEnv = window.location.href.includes("stage");
               const currentUrl = window.location.pathname;
               const queryParams = window.location.search;
               const isReviewPage = currentUrl.includes("/review");
               const isLegacyCheckoutFlow = currentUrl.includes("/selecao-voo") && queryParams.includes("cc=BRL");
 
-              return isReviewPage || isLegacyCheckoutFlow;
+              return isStageEnv && (isReviewPage || isLegacyCheckoutFlow);
           }
 
           const initExperienceWhenReady = () => {
