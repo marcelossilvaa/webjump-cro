@@ -138,8 +138,17 @@
         if (!isExpandBtn) return;
 
         attached = true;
+        // mantemos "click" e "touchend" (o click sozinho nao disparou de
+        // forma confiavel em teste real no video da home, ento mantemos os
+        // dois aqui tambem por seguranca) - com debounce de 500ms pra contar
+        // so uma vez quando os dois disparam pro mesmo toque no mobile
+        let lastExpandTrackedAt = 0;
         ["click", "touchend"].forEach(function (eventType) {
           btn.addEventListener(eventType, function () {
+            let now = Date.now();
+            if (now - lastExpandTrackedAt < 500) return;
+            lastExpandTrackedAt = now;
+
             sendGAEventWithProduct(prefix + "_expandiu");
           });
         });
@@ -206,8 +215,18 @@
     // posicao do mouse entre o mousedown e o click - se moveu mais que alguns
     // pixels, foi arraste, nao clique, e ignoramos o "abriu". o "descartou"
     // nao precisa dessa checagem, pois so depende do mousedown mesmo
+    //
+    // no mobile, esse mesmo verificador NAO funciona: o "mousedown" sintetico
+    // so nasce DEPOIS do touchend (junto com o click sintetico), ou seja, as
+    // duas posicoes comparadas ja sao quase o mesmo ponto (o fim do toque),
+    // nao capturam o inicio real do dedo na tela - um arraste de dedo passaria
+    // batido. por isso guardamos TAMBEM a posicao real via "touchstart" (que
+    // nao e sintetizado, dispara no toque real), e priorizamos ela na
+    // comparacao sempre que existir - o mousedown fica so como reserva pra
+    // quando a interacao for realmente por mouse (sem toque envolvido)
     const DRAG_THRESHOLD_PX = 5;
     let widgetMouseDownPos = null;
+    let widgetTouchStartPos = null;
 
     function attachListeners() {
       let widget = document.querySelector("#streamshop-widget");
@@ -221,9 +240,19 @@
         widgetMouseDownPos = { x: e.clientX, y: e.clientY };
       });
 
+      widget.addEventListener("touchstart", function (e) {
+        if (e.touches && e.touches[0]) {
+          widgetTouchStartPos = {
+            x: e.touches[0].clientX,
+            y: e.touches[0].clientY,
+          };
+        }
+      });
+
       widget.addEventListener("click", function (e) {
-        let start = widgetMouseDownPos;
+        let start = widgetTouchStartPos || widgetMouseDownPos;
         widgetMouseDownPos = null;
+        widgetTouchStartPos = null;
         if (start) {
           let dx = e.clientX - start.x;
           let dy = e.clientY - start.y;

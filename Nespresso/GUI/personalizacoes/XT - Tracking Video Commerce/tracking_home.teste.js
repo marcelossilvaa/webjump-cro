@@ -8,7 +8,34 @@
   if (window.__videoCommerceTrackingInitTeste) return;
   window.__videoCommerceTrackingInitTeste = true;
 
+  // o Swiper (biblioteca do carrossel) monitora touchstart/touchmove e chama
+  // preventDefault() pra controlar o gesto de arrastar - isso as vezes
+  // cancela a sintetizacao do "click" pelo navegador, por isso precisamos do
+  // "touchend" tambem. mas o touchend dispara em QUALQUER toque que termina
+  // ali, incluindo quando a pessoa estava arrastando o carrossel pra ver o
+  // proximo video - por isso comparamos a posicao do dedo entre o inicio e o
+  // fim do toque, e ignoramos se moveu mais que alguns pixels (foi arraste)
+  const TOUCH_DRAG_THRESHOLD_PX = 10;
   let lastProductName = null;
+  // quando o usuario clica num video, ele "pula" pro canto da tela (e depois,
+  // se expandir, pro centro) - nos dois casos o carrossel de fundo continua
+  // tecnicamente visivel/ativo, mas a atencao do usuario nao esta mais nele.
+  // liveshopAdsOpened dispara ja na primeira transicao (canto) e continua
+  // "aberto" durante o modal expandido tambem, entao usamos essa flag pra
+  // pausar a contagem de visualizacao do carrossel enquanto isso acontece
+  let isVideoOpen = false;
+  // enquanto o video esta aberto (canto ou expandido), o usuario pode rolar
+  // verticalmente pra ver OUTROS produtos ali dentro (tipo um feed de
+  // stories) - cada rolagem dispara um novo "videoLoaded". agendamos um
+  // timer de 2s pro produto atual; se um novo videoLoaded chegar antes disso
+  // (rolou rapido, nao ficou olhando), cancelamos e comecamos de novo pro
+  // produto seguinte - mesma regra dos 2s que usamos no carrossel da home
+  let pendingInnerViewTimeout = null;
+  // o primeiro videoLoaded que chega depois de abrir e so a confirmacao do
+  // video que a pessoa acabou de clicar - nao conta como "navegou pra outro
+  // video la dentro". so a partir do segundo videoLoaded em diante e que
+  // consideramos visualizacao interna de verdade
+  let hasSeenInitialInnerVideo = false;
 
   function sendGAEvent(label, action) {
     window.__testeGtmDataObject = window.__testeGtmDataObject || [];
@@ -40,7 +67,28 @@
       data.data.scheduledProducts[0]
     ) {
       lastProductName = data.data.scheduledProducts[0].name;
+      // so agenda a visualizacao "interna" se o video ja estiver aberto, E
+      // ja tivermos visto o videoLoaded inicial (o do video que a pessoa
+      // acabou de clicar - esse nao conta, ja e coberto pelo abriu/pelo
+      // watchFeaturedVideo). do segundo videoLoaded em diante e que
+      // representa navegacao de verdade pra outro video la dentro
+      if (isVideoOpen) {
+        if (!hasSeenInitialInnerVideo) {
+          hasSeenInitialInnerVideo = true;
+        } else {
+          scheduleInnerVideoView(lastProductName);
+        }
+      }
+    } else if (data.action === "liveshopAdsOpened") {
+      isVideoOpen = true;
+      hasSeenInitialInnerVideo = false;
     } else if (data.action === "liveshopAdsClosed") {
+      isVideoOpen = false;
+      hasSeenInitialInnerVideo = false;
+      if (pendingInnerViewTimeout) {
+        clearTimeout(pendingInnerViewTimeout);
+        pendingInnerViewTimeout = null;
+      }
       sendGAEvent("video_commerce_home_fechar");
       if (lastProductName) {
         sendGAEvent(
@@ -71,8 +119,16 @@
       if (!isExpandBtn) return;
 
       attached = true;
+      // mantemos "click" e "touchend" (o clique sozinho nao disparou de forma
+      // confiavel em teste real) - mas com um debounce de 500ms, pra contar
+      // so uma vez quando os dois disparam pro mesmo toque no mobile
+      let lastExpandTrackedAt = 0;
       ["click", "touchend"].forEach(function (eventType) {
         btn.addEventListener(eventType, function () {
+          let now = Date.now();
+          if (now - lastExpandTrackedAt < 500) return;
+          lastExpandTrackedAt = now;
+
           sendGAEvent("video_commerce_home_expandir");
           if (lastProductName) {
             sendGAEvent(
@@ -105,11 +161,17 @@
   const VIEW_FEATURED_MS = 2000;
   const VIEW_CHECK_INTERVAL_MS = 250;
 
-  // o carrossel duplica os videos no DOM pra fazer a rolagem parecer infinita,
-  // entao controlamos "ja visualizado" por nome de produto, nao por elemento
-  // (senao cada copia duplicada do mesmo video contaria como uma view nova)
+  // o carrossel duplica os videos no DOM pra fazer a rolagem parecer infinita
+  // (o swiper cria copias extras dos slides pra rolagem nunca "acabar"), entao
+  // controlamos "ja visualizado" por nome de produto, nao por elemento (senao
+  // cada copia duplicada do mesmo video contaria como uma view nova)
   let viewedProducts = {};
   let viewedWithoutProduct = false;
+  // dicionario separado do viewedProducts (do carrossel) - visualizacao
+  // "interna" e uma pergunta de negocio diferente (profundidade de
+  // engajamento pos-clique, nao exposicao pre-clique), entao um produto ja
+  // visto no carrossel ainda pode disparar aqui dentro, e vice-versa
+  let viewedProductsInner = {};
 
   // o carrossel e feito com Swiper.js, que ja marca o slide em destaque com
   // a classe "swiper-slide-active" - usamos isso em vez de calcular posicao
@@ -155,30 +217,73 @@
     }
   }
 
+  // versao do trackVideoView pra visualizacoes dentro do video ja aberto -
+  // nao temos acesso ao DOM interno (conteudo de outra origem), so o nome do
+  // produto via postMessage, entao a deduplicacao usa o mesmo viewedProducts
+  function scheduleInnerVideoView(productName) {
+    if (pendingInnerViewTimeout) {
+      clearTimeout(pendingInnerViewTimeout);
+    }
+    pendingInnerViewTimeout = setTimeout(function () {
+      pendingInnerViewTimeout = null;
+      // se o video fechou ou o usuario ja rolou pra outro produto nesse
+      // meio tempo, lastProductName mudou e esse "view" fica invalido
+      if (!isVideoOpen || lastProductName !== productName) return;
+
+      let productKey = normalizeProductName(productName);
+      if (!viewedProductsInner[productKey]) {
+        viewedProductsInner[productKey] = true;
+        // label diferente de proposito ("interno"), pra nao entrar na mesma
+        // metrica de "visualizado" do carrossel - essa acontece so depois
+        // de um "abriu" ja ter ocorrido, entao misturar com a outra
+        // inflaria o denominador do CTR sem contrapartida no numerador
+        sendGAEvent("video_commerce_home_visualizado_interno", "view");
+        sendGAEvent(
+          "video_commerce_home_visualizado_interno_" + productKey,
+          "view",
+        );
+      }
+    }, VIEW_FEATURED_MS);
+  }
+
   function watchFeaturedVideo(carouselEl, videos) {
     let visibleMs = new Map();
+    let triggeredWhileFeatured = new Set();
 
     let interval = setInterval(function () {
-      let pending = false;
+      // o carrossel duplica elementos pra rolagem infinita, e o swiper vai
+      // reciclando esses mesmos elementos pra mostrar produtos diferentes com
+      // o tempo - entao nao existe um "ja verifiquei todo mundo, terminei"
+      // valido aqui. so paramos quando o carrossel de fato sai da pagina
+      // (isConnected fica false, ex: usuario navegou pra outra rota da SPA)
+      if (!carouselEl.isConnected) {
+        clearInterval(interval);
+        return;
+      }
+
       let carouselVisible = isSubstantiallyVisible(carouselEl);
 
       videos.forEach(function (video) {
-        if (video.hasAttribute("data-view-counted")) return;
-        pending = true;
-
-        if (carouselVisible && isFeaturedVideo(video)) {
+        // isVideoOpen pausa a contagem enquanto o card esta no canto ou
+        // expandido (ver comentario no topo do arquivo)
+        if (carouselVisible && !isVideoOpen && isFeaturedVideo(video)) {
           let elapsed = (visibleMs.get(video) || 0) + VIEW_CHECK_INTERVAL_MS;
           visibleMs.set(video, elapsed);
-          if (elapsed >= VIEW_FEATURED_MS) {
-            video.setAttribute("data-view-counted", "true");
+          // triggeredWhileFeatured evita reenviar o evento repetidamente
+          // enquanto o mesmo elemento continua em destaque por muito tempo -
+          // mas reseta assim que ele deixa de estar em destaque, entao se o
+          // swiper reciclar esse elemento pra um produto novo depois, ele
+          // ganha uma chance nova de ser contado (a deduplicacao real, por
+          // produto e nao por elemento, continua sendo o viewedProducts)
+          if (elapsed >= VIEW_FEATURED_MS && !triggeredWhileFeatured.has(video)) {
+            triggeredWhileFeatured.add(video);
             trackVideoView(video);
           }
         } else {
           visibleMs.set(video, 0);
+          triggeredWhileFeatured.delete(video);
         }
       });
-
-      if (!pending) clearInterval(interval);
     }, VIEW_CHECK_INTERVAL_MS);
   }
 
@@ -194,21 +299,52 @@
       watchFeaturedVideo(videoCommerceContainer, videos);
     }
 
+    // mantemos "click" e "touchend" (o click sozinho nao disparou de forma
+    // confiavel nesse elemento em teste real, culpa do Swiper interceptando
+    // o touch - ver comentario no topo do arquivo). o debounce de 500ms evita
+    // contar o mesmo toque 2x, e o touchstart guarda a posicao inicial do
+    // dedo pra comparar com o touchend e descartar arrastos de carrossel
     videos.forEach((video) => {
+      let lastOpenTrackedAt = 0;
+      let touchStartPos = null;
+
+      video.addEventListener("touchstart", function (e) {
+        if (e.touches && e.touches[0]) {
+          touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
+      });
+
+      function handleOpen(e) {
+        // se foi touchend e o dedo se moveu mais que o limite, foi arraste
+        // do carrossel pra ver o proximo video, nao um toque pra abrir
+        if (
+          e.type === "touchend" &&
+          touchStartPos &&
+          e.changedTouches &&
+          e.changedTouches[0]
+        ) {
+          let dx = e.changedTouches[0].clientX - touchStartPos.x;
+          let dy = e.changedTouches[0].clientY - touchStartPos.y;
+          touchStartPos = null;
+          if (Math.sqrt(dx * dx + dy * dy) > TOUCH_DRAG_THRESHOLD_PX) return;
+        }
+
+        let now = Date.now();
+        if (now - lastOpenTrackedAt < 500) return;
+        lastOpenTrackedAt = now;
+
+        let productVideo = video.shadowRoot.querySelector(".lav-product-name");
+        if (productVideo) {
+          let productName = productVideo.textContent.trim();
+          sendGAEvent("video_commerce_" + normalizeProductName(productName));
+        } else {
+          sendGAEvent("video_commerce_video_sem_produto");
+        }
+        waitForExpandButton();
+      }
+
       ["click", "touchend"].forEach(function (eventType) {
-        video.addEventListener(eventType, function () {
-          let productVideo =
-            video.shadowRoot.querySelector(".lav-product-name");
-          if (productVideo) {
-            let productName = productVideo.textContent.trim();
-            sendGAEvent(
-              "video_commerce_" + normalizeProductName(productName),
-            );
-          } else {
-            sendGAEvent("video_commerce_video_sem_produto");
-          }
-          waitForExpandButton();
-        });
+        video.addEventListener(eventType, handleOpen);
       });
     });
     return videos.length > 0;

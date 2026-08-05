@@ -103,8 +103,13 @@
         if (!isExpandBtn) return;
 
         attached = true;
+        let lastExpandTrackedAt = 0;
         ["click", "touchend"].forEach(function (eventType) {
           btn.addEventListener(eventType, function () {
+            let now = Date.now();
+            if (now - lastExpandTrackedAt < 500) return;
+            lastExpandTrackedAt = now;
+
             sendGAEventWithProduct(prefix + "_expandiu");
           });
         });
@@ -162,6 +167,7 @@
 
     const DRAG_THRESHOLD_PX = 5;
     let widgetMouseDownPos = null;
+    let widgetTouchStartPos = null;
 
     function attachListeners() {
       let widget = document.querySelector("#streamshop-widget");
@@ -173,9 +179,19 @@
         widgetMouseDownPos = { x: e.clientX, y: e.clientY };
       });
 
+      widget.addEventListener("touchstart", function (e) {
+        if (e.touches && e.touches[0]) {
+          widgetTouchStartPos = {
+            x: e.touches[0].clientX,
+            y: e.touches[0].clientY,
+          };
+        }
+      });
+
       widget.addEventListener("click", function (e) {
-        let start = widgetMouseDownPos;
+        let start = widgetTouchStartPos || widgetMouseDownPos;
         widgetMouseDownPos = null;
+        widgetTouchStartPos = null;
         if (start) {
           let dx = e.clientX - start.x;
           let dy = e.clientY - start.y;
