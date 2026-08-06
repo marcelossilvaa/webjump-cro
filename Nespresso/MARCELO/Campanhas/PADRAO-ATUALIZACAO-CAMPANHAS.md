@@ -101,6 +101,8 @@ Sempre existem dois segmentos com quantidades diferentes:
 - **N2-N5:** incluir apenas N2, N3, N4 e N5
 - **Ofertas abertas:** incluir apenas N3, N4 e N5
 
+> **Padrão = até 3 níveis em Ofertas abertas (N3–N5).** Quatro brindes / “oferta surpresa” (ex.: nível 300) **não é o comum** — só aplicar quando o cliente pedir explicitamente e, em geral, **só na pasta Ofertas abertas** (não espalhar para N1–N5 / N2–N5 sem briefing). Tratar como **exceção de campanha**, não como regra do template.
+
 ---
 
 ## 2. Ícones / imagens dos brindes
@@ -323,6 +325,17 @@ Campanha configurada em `BoostDiaDosPais/` (a partir do KV / Playbook 2026).
 | N4 | 200 | Caneca Térmica Média | 180 | Caneca Térmica Média |
 | N5 | 270 | Caneca Térmica Grande | 210 | Caneca Térmica Grande |
 
+### Exceção — Oferta Surpresa (só Ofertas abertas)
+
+> **Não faz parte do padrão N1–N5.** Foi pedida à parte para a régua/accordion de `Ofertas abertas/` enquanto os banners segmentados N1–N5 / N2–N5 seguem a grade normal.
+
+| Nível | Threshold OL / VL | Brinde |
+|-------|-------------------|--------|
+| Surpresa | 300 / 300 | Par de Origin Espresso + Porta Cápsulas Médio |
+
+- Label no accordion: `OFERTA SURPRESA`
+- Ícone: `https://i.imgur.com/CVOp6bj.png` (provisório até URL DAM)
+
 ### Cores desta campanha (Playbook — Passion Red / Branco / Preto)
 
 > Hex específicos desta campanha. Próxima campanha = novo playbook = nova paleta.
@@ -351,7 +364,8 @@ Campanha configurada em `BoostDiaDosPais/` (a partir do KV / Playbook 2026).
 ### Ícones e banners
 
 - Ícones accordion/régua N1–N5 aplicados (N1 OL e N1 VL distintos)
-- Banners PLP N1–N5 e N2–N5 (OL/VL) aplicados
+- Banners PLP atuais (versão `-Pais`): N1–N5, N2–N5 e Ofertas abertas (OL/VL)
+- Banners/ícones N1–N5 e Ofertas abertas alinhados; surpresa 300 documentada na seção de exceção acima
 
 ---
 
