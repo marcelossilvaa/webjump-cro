@@ -17,9 +17,9 @@
     description: 'As melhores condições de pagamento para você viajar.',
     cta: 'Comprar agora',
     ctaUrl: 'https://passagens.voeazul.com.br/pt/voos-de-cuiab%C3%A1',
-    imgDesktop: 'https://i.imgur.com/HQW0Mlc.png',
+    imgDesktop: 'https://i.imgur.com/c8TLgow.png',
     imgMobile: 'https://i.imgur.com/KqpyOpK.png',
-    imgPreview: 'https://i.imgur.com/HQW0Mlc.png',
+    imgPreview: 'https://i.imgur.com/c8TLgow.png',
     altText: 'Voe de Cuiabá para onde quiser',
     tagBg: '#9a4e9e',
   };
@@ -35,7 +35,33 @@
     style.textContent =
       '.at-cba-tag-pill {' +
       '  background-color: ' + CONFIG.tagBg + ' !important;' +
+      '}' +
+
+      '@media (min-width: 1024px) and (max-width: 1200px) {' +
+      '  [' + DATA_APPLIED + '="true"] img,' +
+      '  [' + DATA_APPLIED + '="true"] img[class] {' +
+      '    object-position: 50% 50% !important;' +
+      '  }' +
       '}';
+  }
+
+  function isObjectPositionBreakpoint() {
+    const width = window.innerWidth;
+    return width >= 1024 && width <= 1200;
+  }
+
+  function syncCuiabaObjectPosition() {
+    const slides = document.querySelectorAll('[' + DATA_APPLIED + '="true"]');
+    for (let i = 0; i < slides.length; i++) {
+      const img = slides[i].querySelector('img');
+      if (!img) continue;
+
+      if (isObjectPositionBreakpoint()) {
+        img.style.setProperty('object-position', '50% 50%', 'important');
+      } else {
+        img.style.removeProperty('object-position');
+      }
+    }
   }
 
   function markTagPill(span) {
@@ -163,6 +189,7 @@
 
     applyCta(slide.querySelector('a[type="button"]'), trackLabel);
     slide.setAttribute(DATA_APPLIED, 'true');
+    syncCuiabaObjectPosition();
   }
 
   function applyBanner() {
@@ -256,10 +283,12 @@
 
   let attempts = 0;
   const maxAttempts = 20;
+  let resizeTimer = null;
 
   function tryApply() {
     attempts++;
     if (applyBanner()) {
+      syncCuiabaObjectPosition();
       return;
     }
     if (attempts < maxAttempts) {
@@ -268,6 +297,11 @@
       console.warn('[Cuiabá] Nao foi possivel localizar o banner apos timeout');
     }
   }
+
+  window.addEventListener('resize', function () {
+    if (resizeTimer) clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(syncCuiabaObjectPosition, 100);
+  });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', tryApply);
