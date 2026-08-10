@@ -35,11 +35,11 @@
     },
     {
       threshold: 150,
-      gift: "1 Par de Xícaras Cappuccino Médio",
-      shortName: "1 Par de Xícaras Cappuccino Médio",
-      displayName: "GANHE PAR DE XÍCARAS CAPPUCCINO MÉDIO",
+      gift: "1 Porta-Cápsulas Grande",
+      shortName: "1 Porta-Cápsulas Grande",
+      displayName: "GANHE PORTA CÁPSULAS GRANDE",
       imageUrl:
-        "https://www.nespresso.com/ecom/medias/sys_master/public/51710198120478/Acordeao-N3.png?attachment=true&cimgnr=1zEDn",
+        "https://www.nespresso.com/ecom/medias/sys_master/public/51829506736158/Dinamic-Banner-N3-3.jpg",
     },
     {
       threshold: 200,
@@ -56,6 +56,14 @@
       displayName: "GANHE 1 CANECA TÉRMICA GRANDE",
       imageUrl:
         "https://www.nespresso.com/ecom/medias/sys_master/public/51710198186014/Acordeao-N5.png?attachment=true&cimgnr=yM8t1",
+    },
+    {
+      threshold: 300,
+      gift: "1 Par de Origin Espresso + Porta Cápsulas Médio",
+      shortName: "1 Par de Origin Espresso + Porta Cápsulas Médio",
+      displayName: "GANHE PAR DE ORIGIN ESPRESSO + PORTA CÁPSULAS MÉDIO",
+      imageUrl:
+        "https://i.imgur.com/CVOp6bj.png",
     }
   ];
 
