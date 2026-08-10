@@ -321,20 +321,20 @@ Campanha configurada em `BoostDiaDosPais/` (a partir do KV / Playbook 2026).
 |-------|-----|--------|-----|--------|
 | N1 | 70 | 10 Cápsulas de Café | 50 | 10 Cápsulas de Café |
 | N2 | 100 | Porta-Cápsulas Pequeno | 70 | Porta-Cápsulas Pequeno |
-| N3 | 150 | Par de Xícaras Cappuccino Médio | 120 | Par de Xícaras Cappuccino Médio |
+| N3 | 150 | Porta-Cápsulas Grande | 120 | Porta-Cápsulas Grande |
 | N4 | 200 | Caneca Térmica Média | 180 | Caneca Térmica Média |
 | N5 | 270 | Caneca Térmica Grande | 210 | Caneca Térmica Grande |
+| Surpresa (N6) | 300 | Par de Origin Espresso + Porta Cápsulas Médio | 300 | Par de Origin Espresso + Porta Cápsulas Médio |
 
-### Exceção — Oferta Surpresa (só Ofertas abertas)
-
-> **Não faz parte do padrão N1–N5.** Foi pedida à parte para a régua/accordion de `Ofertas abertas/` enquanto os banners segmentados N1–N5 / N2–N5 seguem a grade normal.
+### Oferta Surpresa (N6) — N1–N5, N2–N5 e Ofertas abertas
 
 | Nível | Threshold OL / VL | Brinde |
 |-------|-------------------|--------|
 | Surpresa | 300 / 300 | Par de Origin Espresso + Porta Cápsulas Médio |
 
 - Label no accordion: `OFERTA SURPRESA`
-- Ícone: `https://i.imgur.com/CVOp6bj.png` (provisório até URL DAM)
+- Ícone surpresa: `https://i.imgur.com/CVOp6bj.png` (provisório até URL DAM)
+- Ícone N3 (Porta Grande): `https://www.nespresso.com/ecom/medias/sys_master/public/51829506736158/Dinamic-Banner-N3-3.jpg`
 
 ### Cores desta campanha (Playbook — Passion Red / Branco / Preto)
 
@@ -363,9 +363,9 @@ Campanha configurada em `BoostDiaDosPais/` (a partir do KV / Playbook 2026).
 
 ### Ícones e banners
 
-- Ícones accordion/régua N1–N5 aplicados (N1 OL e N1 VL distintos)
-- Banners PLP atuais (versão `-Pais`): N1–N5, N2–N5 e Ofertas abertas (OL/VL)
-- Banners/ícones N1–N5 e Ofertas abertas alinhados; surpresa 300 documentada na seção de exceção acima
+- Ícones accordion/régua N1–N5 + N3 Porta Grande (DAM) + surpresa 300 (Imgur provisório)
+- Banners PLP N1–N5 / N2–N5 com Oferta Surpresa (`…-N1-…-N6-…` / `…-N2-…-N6-…`)
+- Ofertas abertas: banners atualizados manualmente no Target
 
 ---
 

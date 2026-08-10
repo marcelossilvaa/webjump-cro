@@ -30,9 +30,9 @@
         {
           quantidadeCafes: 150,
           imagem:
-            "https://www.nespresso.com/ecom/medias/sys_master/public/51710198120478/Acordeao-N3.png?attachment=true&cimgnr=1zEDn",
-          titulo: "Ganhe 1 Par de Xícaras Cappuccino Médio",
-          alt: "Par de Xícaras Cappuccino Médio",
+            "https://www.nespresso.com/ecom/medias/sys_master/public/51829506736158/Dinamic-Banner-N3-3.jpg",
+          titulo: "Ganhe 1 Porta-Cápsulas Grande",
+          alt: "Porta-Cápsulas Grande",
         },
         {
           quantidadeCafes: 200,
@@ -47,6 +47,13 @@
             "https://www.nespresso.com/ecom/medias/sys_master/public/51710198186014/Acordeao-N5.png?attachment=true&cimgnr=yM8t1",
           titulo: "Ganhe 1 Caneca Térmica Grande",
           alt: "Caneca Térmica Grande",
+        },
+        {
+          quantidadeCafes: 300,
+          imagem:
+            "https://i.imgur.com/CVOp6bj.png",
+          titulo: "Ganhe 1 Par de Origin Espresso + Porta Cápsulas Médio",
+          alt: "Par de Origin Espresso + Porta Cápsulas Médio",
         }
       ],
 
@@ -68,11 +75,13 @@ Em caso de dúvidas ou necessidade de informações adicionais, entre em contato
 
 <strong>Para pedidos que contenham cápsulas exclusivamente da linha Original ou que incluam, de forma combinada, cápsulas das linhas Original e Vertuo:</strong><br><br>
 
-Na compra a partir de 270 cápsulas, durante o período supramencionado, o consumidor ganhará Caneca Térmica Grande Nespresso, concedido apenas em pedidos que (i) contenham cápsulas exclusivamente da linha Original ou, (ii) que contenham, de forma combinada, cápsulas das linhas Original e Vertuo dentro de um mesmo pedido. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
+Na compra a partir de 300 cápsulas, durante o período supramencionado, o consumidor ganhará Par de Origin Espresso + Porta Cápsulas Médio Nespresso (Oferta Surpresa), concedido apenas em pedidos que (i) contenham cápsulas exclusivamente da linha Original ou, (ii) que contenham, de forma combinada, cápsulas das linhas Original e Vertuo dentro de um mesmo pedido. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
+
+Na compra de 270 a 299 cápsulas, durante o período supramencionado, o consumidor ganhará Caneca Térmica Grande Nespresso, concedido apenas em pedidos que (i) contenham cápsulas exclusivamente da linha Original ou, (ii) que contenham, de forma combinada, cápsulas das linhas Original e Vertuo dentro de um mesmo pedido. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
 
 Na compra de 200 a 269 cápsulas, durante o período supramencionado, o consumidor ganhará Caneca Térmica Média Nespresso, concedido apenas em pedidos que (i) contenham cápsulas exclusivamente da linha Original ou, (ii) que contenham, de forma combinada, cápsulas das linhas Original e Vertuo dentro de um mesmo pedido. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
 
-Na compra de 150 a 199 cápsulas, durante o período supramencionado, o consumidor ganhará Par de Xícaras Cappuccino Médio Nespresso, concedido apenas em pedidos que (i) contenham cápsulas exclusivamente da linha Original ou, (ii) que contenham, de forma combinada, cápsulas das linhas Original e Vertuo dentro de um mesmo pedido. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
+Na compra de 150 a 199 cápsulas, durante o período supramencionado, o consumidor ganhará Porta-Cápsulas Grande Nespresso, concedido apenas em pedidos que (i) contenham cápsulas exclusivamente da linha Original ou, (ii) que contenham, de forma combinada, cápsulas das linhas Original e Vertuo dentro de um mesmo pedido. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
 
 Na compra de 100 a 149 cápsulas, durante o período supramencionado, o consumidor ganhará Porta-Cápsulas Pequeno Nespresso, concedido apenas em pedidos que (i) contenham cápsulas exclusivamente da linha Original ou, (ii) que contenham, de forma combinada, cápsulas das linhas Original e Vertuo dentro de um mesmo pedido. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
 
@@ -80,11 +89,13 @@ Na compra de 70 a 99 cápsulas, durante o período supramencionado, o consumidor
 
 <strong>Para pedidos que contenham exclusivamente cápsulas da linha Vertuo:</strong><br><br>
 
-Na compra a partir de 210 cápsulas, durante o período supramencionado, o consumidor ganhará Caneca Térmica Grande Nespresso, concedido apenas em pedidos que contenham exclusivamente cápsulas da linha Vertuo. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
+Na compra a partir de 300 cápsulas, durante o período supramencionado, o consumidor ganhará Par de Origin Espresso + Porta Cápsulas Médio Nespresso (Oferta Surpresa), concedido apenas em pedidos que contenham exclusivamente cápsulas da linha Vertuo. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
+
+Na compra de 210 a 299 cápsulas, durante o período supramencionado, o consumidor ganhará Caneca Térmica Grande Nespresso, concedido apenas em pedidos que contenham exclusivamente cápsulas da linha Vertuo. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
 
 Na compra de 180 a 209 cápsulas, durante o período supramencionado, o consumidor ganhará Caneca Térmica Média Nespresso, concedido apenas em pedidos que contenham exclusivamente cápsulas da linha Vertuo. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
 
-Na compra de 120 a 179 cápsulas, durante o período supramencionado, o consumidor ganhará Par de Xícaras Cappuccino Médio Nespresso, concedido apenas em pedidos que contenham exclusivamente cápsulas da linha Vertuo. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
+Na compra de 120 a 179 cápsulas, durante o período supramencionado, o consumidor ganhará Porta-Cápsulas Grande Nespresso, concedido apenas em pedidos que contenham exclusivamente cápsulas da linha Vertuo. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
 
 Na compra de 70 a 119 cápsulas, durante o período supramencionado, o consumidor ganhará Porta-Cápsulas Pequeno Nespresso, concedido apenas em pedidos que contenham exclusivamente cápsulas da linha Vertuo. Essa oferta estará disponível para todos os canais oficiais Nespresso: Boutiques Nespresso, telefone 0800 7777 737, WhatsApp (11) 95578-4670, site www.Nespresso.com ou aplicativos para iPhone, iPad e Android.<br><br>
 
@@ -118,6 +129,11 @@ Na compra de 50 a 69 cápsulas, durante o período supramencionado, o consumidor
           `">
         </div>
         <div class="offer-text">
+          ` +
+          (oferta.quantidadeCafes === 300
+            ? '<span class="oferta-surpresa-label">OFERTA SURPRESA</span>'
+            : "") +
+          `
           <h3>` +
           oferta.titulo +
           `</h3>
@@ -391,6 +407,17 @@ Na compra de 50 a 69 cápsulas, durante o período supramencionado, o consumidor
         font-size: 13px;
         color: #666;
         line-height: 1.2;
+      }
+
+      .nespresso-accordion .oferta-surpresa-label {
+        display: inline-block;
+        background-color: #000000;
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 20px;
+        margin-bottom: 5px;
       }
       
       .nespresso-accordion .linkCondicoesOfertaBoostDiaDosPais{

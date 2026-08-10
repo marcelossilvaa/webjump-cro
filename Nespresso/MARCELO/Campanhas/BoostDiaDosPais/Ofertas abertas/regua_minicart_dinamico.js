@@ -27,11 +27,11 @@
   const giftTiersOL = [
     {
       threshold: 150,
-      gift: "1 Par de Xícaras Cappuccino Médio",
-      shortName: "1 Par de Xícaras Cappuccino Médio",
-      displayName: "GANHE PAR DE XÍCARAS CAPPUCCINO MÉDIO",
+      gift: "1 Porta-Cápsulas Grande",
+      shortName: "1 Porta-Cápsulas Grande",
+      displayName: "GANHE PORTA CÁPSULAS GRANDE",
       imageUrl:
-        "https://www.nespresso.com/ecom/medias/sys_master/public/51710198120478/Acordeao-N3.png?attachment=true&cimgnr=1zEDn",
+        "https://www.nespresso.com/ecom/medias/sys_master/public/51829506736158/Dinamic-Banner-N3-3.jpg",
     },
     {
       threshold: 200,
@@ -62,11 +62,11 @@
   const giftTiersVL = [
     {
       threshold: 120,
-      gift: "1 Par de Xícaras Cappuccino Médio",
-      shortName: "1 Par de Xícaras Cappuccino Médio",
-      displayName: "GANHE PAR DE XÍCARAS CAPPUCCINO MÉDIO",
+      gift: "1 Porta-Cápsulas Grande",
+      shortName: "1 Porta-Cápsulas Grande",
+      displayName: "GANHE PORTA CÁPSULAS GRANDE",
       imageUrl:
-        "https://www.nespresso.com/ecom/medias/sys_master/public/51710198120478/Acordeao-N3.png?attachment=true&cimgnr=1zEDn",
+        "https://www.nespresso.com/ecom/medias/sys_master/public/51829506736158/Dinamic-Banner-N3-3.jpg",
     },
     {
       threshold: 180,
