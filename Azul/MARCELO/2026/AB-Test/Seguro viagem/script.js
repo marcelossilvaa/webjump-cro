@@ -91,28 +91,32 @@
                 coverageLabel: "Coberturas Brasil",
                 currencyNote: "",
                 description: "Viajar pelo Brasil com segurança é essencial. O seguro viagem cobre despesas médicas fora da sua cidade, além de oferecer proteção para imprevistos como roubo ou furto de celular e notebook e reembolso de medicamentos. Tranquilidade em cada destino.",
-                link: "https://www.voeazul.com.br/br/pt/sobreazul/para-a-sua-viagem/seguros?topic=Nacional",
+                link: "https://www.voeazul.com.br/br/pt/sua-viagem/seguro-viagem",
+                saibaMaisLink: "https://www.voeazul.com.br/assistencia-viagem/nacional/assistencias",
             },
             americaDoSul: {
                 label: "Seguro Viagem América do Sul",
                 coverageLabel: "Coberturas América do Sul",
                 currencyNote: "Valores de cobertura expressos em dólares americanos (US$).",
-                description: "Para viagens pela América do Sul, o seguro viagem garante atendimento médico e hospitalar no exterior, assistência em caso de imprevistos com bagagem e documentos, além de suporte jurídico e cobertura para o seu pet.",
-                link: "https://www.voeazul.com.br/br/pt/sobreazul/para-a-sua-viagem/seguros?topic=Internacional",
+                description: "Aventure-se pela América do Sul com tranquilidade e proteção. O seguro viagem oferece cobertura médica fora do seu país, reembolso de despesas com medicamentos, assistência em casos de imprevistos e proteção contra roubo ou furto de celular e notebook. Segurança essencial para aproveitar ao máximo cada destino sul-americano.",
+                link: "https://www.voeazul.com.br/br/pt/sua-viagem/seguro-viagem/america-do-sul",
+                saibaMaisLink: "https://www.voeazul.com.br/assistencia-viagem/internacional/assistencias",
             },
             estadosUnidos: {
                 label: "Seguro Viagem Estados Unidos",
                 coverageLabel: "Coberturas Estados Unidos",
                 currencyNote: "Valores de cobertura expressos em dólares americanos (US$) — plano Gold 25.",
-                description: "Atendimento médico nos Estados Unidos é caro e o seguro viagem garante cobertura para despesas médicas, hospitalares e odontológicas, além de assistência para bagagem, documentos, suporte jurídico e cobertura para o seu pet.",
-                link: "https://www.voeazul.com.br/br/pt/sobreazul/para-a-sua-viagem/seguros?topic=Internacional",
+                description: "Explore os Estados Unidos com toda a segurança que sua viagem merece. O seguro viagem garante assistência médica fora do Brasil, reembolso de despesas com medicamentos, suporte em imprevistos e proteção contra roubo ou furto de celular e notebook. Tranquilidade para você viver o melhor de cada destino americano.",
+                link: "https://www.voeazul.com.br/br/pt/sua-viagem/seguro-viagem/estados-unidos",
+                saibaMaisLink: "https://www.voeazul.com.br/assistencia-viagem/internacional/assistencias",
             },
             europa: {
                 label: "Seguro Viagem Europa",
                 coverageLabel: "Coberturas Europa",
                 currencyNote: "Valores de cobertura expressos em euros (€).",
-                description: "Vários países da Europa exigem seguro viagem na entrada. Além de atender a essa exigência, o seguro garante cobertura médica e hospitalar, assistência com bagagem e documentos, suporte jurídico e cobertura para o seu pet.",
-                link: "https://www.voeazul.com.br/br/pt/sobreazul/para-a-sua-viagem/seguros?topic=Internacional",
+                description: "Viajar pela Europa exige seguro com cobertura mínima de 30 mil euros para despesas médicas, conforme o Tratado de Schengen. O seguro viagem garante assistência médica, reembolso de medicamentos e proteção contra roubo ou furto de celular e notebook. Segurança essencial para circular com tranquilidade pelo continente europeu.",
+                link: "https://www.voeazul.com.br/br/pt/sua-viagem/seguro-viagem/europa",
+                saibaMaisLink: "https://www.voeazul.com.br/assistencia-viagem/internacional/assistencias",
             },
         };
 
@@ -522,7 +526,6 @@
             insuranceBanner.insertAdjacentElement("afterend", insuranceElement);
             insuranceBanner.style.display = "none";
 
-            createAndAppendInsuranceModal();
             addListenersToInjections();
 
             // Reconnect observers
@@ -561,8 +564,16 @@
             return elements.find(element => normalizeText(element.textContent).includes(normalizedExpected)) || null;
         }
 
+        /**
+         * Localiza o accordion nativo do seguro ("Seguro Viagem Nacional:", por exemplo).
+         * A busca fica restrita ao main para não capturar links do header do site.
+         * @returns {HTMLElement|null}
+         */
         function getNativeInsuranceAccordionButton() {
-            return findElementByText("button", "seguro viagem");
+            const scope = document.querySelector("main") || document;
+            const buttons = Array.from(scope.querySelectorAll("button"));
+
+            return buttons.find(button => normalizeText(button.textContent).startsWith("seguro viagem")) || null;
         }
 
         /**
@@ -618,6 +629,7 @@
                 );
 
                 if (matcher) {
+                    console.log("[AT] Região identificada por:", normalizedSource.slice(0, 80));
                     return matcher.region;
                 }
             }
@@ -933,9 +945,12 @@
         `;
         }
 
-        function createLegalContent() {
+        function createLegalContent(context) {
+            const saibaMaisLink = context?.regionConfig?.saibaMaisLink ||
+                "https://www.voeazul.com.br/assistencia-viagem/nacional/assistencias";
+
             return `
-            <p>Após a compra você receberá o certificado/bilhete de seguro que será encaminhado via e-mail no momento da confirmação do pagamento do seguro. <b>Atenção!</b> Seguro viagem não é seguro saúde. <a href="https://www.voeazul.com.br/assistencia-viagem/nacional/assistencias" target="_blank" rel="noopener noreferrer">Saiba mais</a>.</p>
+            <p>Após a compra você receberá o certificado/bilhete de seguro que será encaminhado via email no momento da confirmação do pagamento do seguro. <b>Atenção!</b> Seguro viagem não é seguro saúde. <a href="${saibaMaisLink}" target="_blank" rel="noopener noreferrer">Saiba mais</a>.</p>
             <p>Ao continuar com a contratação, você confirma que leu, compreendeu e concorda com os <a href="https://www.voeazul.com.br/br/pt/sua-viagem/seguro-viagem/regulamento-seguros/chubb-seguros" target="_blank" rel="noopener noreferrer">Termos e Condições do Seguro Viagem</a> <b>(Processo SUSEP nº. 15414.900439/2015-34)</b>.</p>
         `;
         }
@@ -976,8 +991,8 @@
                         ${currencyNote}
                         ${createCoverageAccordions(context)}
                     </div>
-                    ${createAccordion("Informações importantes", createLegalContent(), { trackingId: "informacoes_importantes" })}
-                    <a href="https://www.voeazul.com.br/br/pt/sua-viagem/seguro-viagem" target="_blank" class="injectedInsuranceModal__benefits__cta">Confira os tipos de cobertura</a>
+                    ${createAccordion("Informações importantes", createLegalContent(context), { trackingId: "informacoes_importantes" })}
+                    <a href="${context.regionConfig.link}" target="_blank" class="injectedInsuranceModal__benefits__cta">Confira os tipos de cobertura</a>
                 </div>
             </div>
         `;
@@ -1322,12 +1337,7 @@
 
             /* ============ MODAL ============ */
 
-            .injectedInsuranceModal__unusedIconRule::before {
-                content: url('data:image/svg+xml,<svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(%23clip0_3095_34436)"><g clip-path="url(%23clip1_3095_34436)"><path fill-rule="evenodd" clip-rule="evenodd" d="M17.0544 8.98408H14.2783V8.27517C14.2783 7.69753 13.8114 7.22491 13.2406 7.22491H12.592H10.1791V4.36296H11.8136C11.9693 4.36296 12.073 4.46799 12.073 4.62553V7.19866H12.592V4.62553C12.592 4.17917 12.2547 3.83783 11.8136 3.83783H10.1791H9.66016H9.55641V3.60153C9.55641 3.02389 9.08936 2.55127 8.51856 2.55127H6.57273C6.00195 2.55127 5.53493 3.02389 5.53493 3.60153V3.83783H3.32961C2.88855 3.83783 2.55127 4.17917 2.55127 4.62553V17.0711C2.55127 17.5174 2.88855 17.8588 3.32961 17.8588H6.00195H11.8395H17.0804C17.5215 17.8588 17.8588 17.5174 17.8588 17.0711V9.77182C17.8328 9.32543 17.4956 8.98408 17.0544 8.98408ZM13.2406 7.75004C13.526 7.75004 13.7595 7.98635 13.7595 8.27517V8.85277H9.29695V8.27517C9.29695 7.98635 9.53047 7.75004 9.81587 7.75004H13.2406ZM6.10572 3.60153C6.10572 3.31271 6.33923 3.0764 6.62462 3.0764H8.57052C8.85592 3.0764 9.08936 3.31271 9.08936 3.60153V3.81158H6.10572V3.60153ZM9.6861 4.36296V7.19866C9.16726 7.25117 8.75208 7.69753 8.75208 8.22266V8.93161H6.00195C5.79438 8.93161 5.61277 9.01035 5.48305 9.14166V4.36296H9.6861ZM4.96415 17.3336H3.32961C3.17394 17.3336 3.07017 17.2286 3.07017 17.0711V4.62553C3.07017 4.46799 3.17394 4.36296 3.32961 4.36296H4.96415V17.3336ZM6.00195 17.3336C5.84628 17.3336 5.74249 17.2286 5.74249 17.0711V9.77182C5.74249 9.61423 5.84628 9.50921 6.00195 9.50921H7.63647V17.3599H6.00195V17.3336ZM14.927 17.3336H12.2028C12.0212 17.3336 11.8395 17.3336 11.8136 17.3336H10.1791H10.1272H9.66016H9.60828H8.10348V9.50921H14.8751V17.3336H14.927ZM17.3139 17.0711C17.3139 17.2286 17.2102 17.3336 17.0544 17.3336H15.4199V9.50921H17.0544C17.2102 9.50921 17.3139 9.61423 17.3139 9.77182V17.0711Z" fill="%23041E42"/></g></g><defs><clipPath id="clip0_3095_34436"><rect width="20.41" height="20.41" fill="white"/></clipPath><clipPath id="clip1_3095_34436"><rect width="20.41" height="20.41" fill="white"/></clipPath></defs></svg>');
-                font-size: 0px;
-            }
-
-            .injectedInsuranceModal__benefits__item.injectedInsuranceModal__benefits__item--highlight::before {
+            .injectedInsuranceModal__context__region::before {
                 content: url('data:image/svg+xml,<svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(%23clip0_3095_34408)"><g clip-path="url(%23clip1_3095_34408)"><path d="M14.6544 10.2025C13.7269 10.2025 12.8921 9.92427 12.2429 9.73877C11.9646 9.64602 11.5936 9.55327 11.4081 9.55327C11.2226 9.55327 10.7589 9.73877 10.5734 9.73877C9.92412 9.92427 9.08938 10.2025 8.16188 10.2025C7.97637 10.2025 7.79087 10.2025 7.60537 10.2025C7.51262 10.2025 7.41987 10.1098 7.32712 10.017C7.23437 9.92427 7.23438 9.83152 7.23438 9.64602C7.23438 9.46052 7.41987 9.27502 7.69813 9.27502C7.88363 9.27502 8.06912 9.27502 8.25462 9.27502C8.99662 9.27502 9.83137 8.99677 10.3879 8.81127C10.8516 8.62577 11.2226 8.53302 11.4081 8.53302C11.7791 8.53302 12.0574 8.62577 12.5211 8.71852C13.1704 8.99677 13.9124 9.27502 14.6544 9.27502C14.8399 9.27502 14.9326 9.27502 15.1181 9.27502C15.3964 9.27502 15.5819 9.46052 15.6746 9.64602C15.6746 9.73877 15.6746 9.92427 15.5819 10.017C15.4891 10.1098 15.3964 10.2025 15.3036 10.2025C15.1181 10.2025 14.8399 10.2025 14.6544 10.2025Z" fill="white"/><path d="M11.4081 12.7995C11.1298 12.7995 10.7588 12.7068 10.2951 12.5213C9.64583 12.3358 8.90383 12.0575 8.06908 12.0575C7.88358 12.0575 7.79083 12.0575 7.60533 12.0575C7.32708 12.0575 7.14158 11.872 7.04883 11.6865C7.04883 11.5938 7.04883 11.4083 7.14158 11.3155C7.23433 11.2228 7.32708 11.13 7.41983 11.13C7.60533 11.13 7.79083 11.13 7.97633 11.13C8.90383 11.13 9.73858 11.4083 10.3878 11.5938C10.6661 11.6865 11.0371 11.7793 11.2226 11.7793C11.4081 11.7793 11.7791 11.6865 12.0573 11.5938C12.7066 11.4083 13.6341 11.13 14.5616 11.13C14.7471 11.13 14.9326 11.13 15.1181 11.13C15.3963 11.13 15.5818 11.4083 15.4891 11.6865C15.4891 11.872 15.3036 12.0575 15.0253 12.0575C14.8398 12.0575 14.6543 12.0575 14.4688 12.0575C13.7268 12.0575 12.5211 12.5213 12.3356 12.614C12.0573 12.7068 11.6863 12.7995 11.4081 12.7995Z" fill="white"/><path d="M11.3156 17.437C9.27514 17.1587 5.65789 14.0052 5.19414 11.501C2.87539 9.18225 2.31889 6.95625 2.78264 5.65775C2.96814 5.10125 3.43189 4.823 3.89564 4.823C4.63764 4.823 5.37964 5.47225 5.93614 6.58525C6.02889 6.58525 6.12164 6.58525 6.21439 6.58525C7.51289 6.58525 8.44039 6.21425 9.55339 5.65775C10.2954 5.28675 10.8519 5.194 11.4084 5.194C11.9649 5.194 12.6141 5.3795 13.2634 5.65775C14.2836 6.1215 15.2111 6.58525 16.6024 6.58525C16.6951 6.58525 16.7879 6.58525 16.8806 6.58525C17.4371 5.3795 18.1791 4.823 18.8284 4.823C19.3849 4.823 19.9414 5.10125 20.1269 5.65775C20.5906 6.8635 19.8486 9.18225 17.5299 11.501C17.0661 14.0052 13.4489 17.1587 11.3156 17.437ZM6.02889 11.0372C6.02889 12.985 9.55339 16.2312 11.4084 16.5095C13.2634 16.2312 16.6951 12.985 16.6951 11.0372V7.6055H16.6024C15.0256 7.6055 13.9126 7.14175 12.8924 6.58525C12.3359 6.307 11.8721 6.21425 11.4084 6.21425C10.9446 6.21425 10.4809 6.307 9.92439 6.58525C8.81139 7.14175 7.69839 7.6055 6.21439 7.6055H6.12164L6.02889 11.0372ZM18.9211 5.7505C16.9734 5.7505 17.7154 10.1097 17.7154 10.1097C19.2921 8.25475 20.1269 5.7505 18.9211 5.7505ZM3.89564 5.7505C3.71014 5.7505 3.71014 5.936 3.61739 6.02875C3.33914 6.678 3.61739 8.25475 5.10139 10.1097V7.14175C4.63764 6.02875 4.08114 5.7505 3.89564 5.7505Z" fill="white"/></g></g><defs><clipPath id="clip0_3095_34408"><rect width="22.26" height="22.26" fill="white"/></clipPath><clipPath id="clip1_3095_34408"><rect width="22.26" height="22.26" fill="white"/></clipPath></defs></svg>')
             }
             
@@ -1357,7 +1367,11 @@
             .injectedInsuranceModal__wrapper {
                 background-color: #FFFFFF;
                 border: solid 1px #C0C0C0;
+                border-radius: 4px;
                 width: 523px;
+                max-height: 90vh;
+                display: flex;
+                flex-direction: column;
             }
 
             .injectedInsuranceModal__header {
@@ -1366,6 +1380,7 @@
                 display: flex;
                 gap: 16px;
                 align-items: center;
+                flex-shrink: 0;
             }
 
             .injectedInsuranceModal__close {
@@ -1385,57 +1400,13 @@
 
             .injectedInsuranceModal__content {
                 padding: 16px;
-            }
-
-            .injectedInsuranceModal__info {
-                border: 1px solid #EBEBEB;
-                box-shadow: 0px 1px 4px 0px #041E4229;
-                border-radius: 4px;
-                padding: 16px 24px;
-                margin-bottom: 30px;
-            }
-
-            .injectedInsuranceModal__info p {
-                font-size: 13px;
-                color: #041E42;
-                margin: 0;
-            }
-
-            .injectedInsuranceModal__info p:last-child {
-                margin-top: 14px;
+                overflow-y: auto;
             }
 
             .injectedInsuranceModal__benefits_title {
                 color: #606060;
                 font-size: 14px;
-                margin-bottom: 16px;
-            }
-
-            .injectedInsuranceModal__benefits {
-                list-style: none;
-                margin: 0;
-                padding: 0;
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-                margin-bottom: 30px;
-            }
-
-            .injectedInsuranceModal__benefits__item {
-                border: 1px solid #C0C0C0;
-                border-radius: 4px;
-                width: calc(50% - 5px);
-                padding: 8px 16px;
-                display: flex;
-                align-items: center;
-                gap: 20px;
-                font-size: 14px;
-                color: #041E42;
-            }
-
-            .injectedInsuranceModal__benefits__item.injectedInsuranceModal__benefits__item--highlight {
-                background-color: #014E84;
-                color: #FFFFFF;
+                margin-bottom: 8px;
             }
 
             .injectedInsuranceModal__benefits__cta {
@@ -1444,6 +1415,186 @@
                 text-decoration: none;
                 cursor: pointer;
                 font-size: 14px;
+                display: inline-block;
+                margin-top: 20px;
+            }
+
+            .injectedInsuranceModal__context {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+                margin-bottom: 16px;
+            }
+
+            .injectedInsuranceModal__context__region {
+                background-color: #014E84;
+                border-radius: 4px;
+                color: #FFFFFF;
+                font-size: 13px;
+                font-weight: 700;
+                padding: 6px 12px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .injectedInsuranceModal__context__trip {
+                border: 1px solid #C0C0C0;
+                border-radius: 4px;
+                color: #041E42;
+                font-size: 13px;
+                padding: 6px 12px;
+            }
+
+            .injectedInsuranceModal__price {
+                border: 1px solid #EBEBEB;
+                box-shadow: 0px 1px 4px 0px #041E4229;
+                border-radius: 4px;
+                padding: 16px;
+                margin-bottom: 16px;
+            }
+
+            .injectedInsuranceModal__price__label {
+                color: #606060;
+                font-size: 13px;
+                font-weight: 400;
+                margin: 0 0 6px;
+            }
+
+            .injectedInsuranceModal__price__value {
+                color: #041E42;
+                font-size: 20px;
+                font-weight: 700;
+                margin: 0;
+            }
+
+            .injectedInsuranceModal__price__detail {
+                color: #606060;
+                font-size: 13px;
+                font-weight: 400;
+            }
+
+            .injectedInsuranceModal__note {
+                color: #606060;
+                font-size: 12px;
+                margin: 0 0 12px;
+            }
+
+            .injectedInsuranceModal__coverageWrapper {
+                margin-top: 24px;
+            }
+
+            .injectedInsuranceModal__accordion {
+                border: 1px solid #C0C0C0;
+                border-radius: 4px;
+                margin-bottom: 8px;
+                overflow: hidden;
+            }
+
+            .injectedInsuranceModal__accordion__trigger {
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                width: 100%;
+                padding: 14px 16px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                text-align: left;
+            }
+
+            .injectedInsuranceModal__accordion.is-open .injectedInsuranceModal__accordion__trigger {
+                border-bottom: 1px solid #EBEBEB;
+            }
+
+            .injectedInsuranceModal__accordion__title {
+                color: #041E42;
+                font-size: 14px;
+                font-weight: 700;
+                flex-grow: 1;
+            }
+
+            .injectedInsuranceModal__accordion__tag {
+                background-color: #BAEAF2;
+                border-radius: 330px;
+                color: #041E42;
+                font-size: 11px;
+                font-weight: 700;
+                padding: 2px 10px;
+            }
+
+            .injectedInsuranceModal__accordion__icon {
+                display: flex;
+                align-items: center;
+                flex-shrink: 0;
+                transform: rotate(180deg);
+                transition: transform 0.3s ease;
+            }
+
+            .injectedInsuranceModal__accordion.is-open .injectedInsuranceModal__accordion__icon {
+                transform: rotate(0deg);
+            }
+
+            .injectedInsuranceModal__accordion__panel {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+            }
+
+            .injectedInsuranceModal__accordion__panelContent {
+                padding: 14px 16px;
+            }
+
+            .injectedInsuranceModal__accordion__panelContent p {
+                color: #041E42;
+                font-size: 13px;
+                margin: 0 0 10px;
+            }
+
+            .injectedInsuranceModal__accordion__panelContent p:last-child {
+                margin-bottom: 0;
+            }
+
+            .injectedInsuranceModal__accordion__panelContent a {
+                color: #026CB6;
+            }
+
+            .injectedInsuranceModal__link {
+                font-size: 13px;
+                color: #026CB6;
+            }
+
+            .injectedInsuranceModal__coverage {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .injectedInsuranceModal__coverage__item {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                gap: 16px;
+                font-size: 13px;
+            }
+
+            .injectedInsuranceModal__coverage__item + .injectedInsuranceModal__coverage__item {
+                border-top: 1px solid #EBEBEB;
+                padding-top: 10px;
+            }
+
+            .injectedInsuranceModal__coverage__label {
+                color: #606060;
+            }
+
+            .injectedInsuranceModal__coverage__value {
+                color: #041E42;
+                font-weight: 700;
+                white-space: nowrap;
             }
         `;
 
