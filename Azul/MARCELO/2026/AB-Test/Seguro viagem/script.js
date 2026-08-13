@@ -66,6 +66,9 @@
 
         const ACCORDION_ICON = '<svg width="18" height="10" viewBox="0 0 18 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 0.5C11.9924 3.18702 14.9989 5.85847 18 8.53572L17.16 9.5L9 2.22768L0.860033 9.5L-3.51252e-07 8.53572C2.98684 5.84247 6.02364 3.20495 9 0.5Z" fill="#026CB6"></path></svg>';
 
+        const TERMS_URL = "https://www.voeazul.com.br/br/pt/sua-viagem/seguro-viagem/regulamento-seguros/chubb-seguros";
+        const TERMS_LINK_HTML = '<a href="' + TERMS_URL + '" target="_blank" rel="noopener noreferrer">Termos e Condições do Seguro Viagem (Processo SUSEP nº. 15414.900439/2015-34)</a>';
+
         const TRIP_TYPES = {
             goAndBack: "goAndBack",
             oneWay: "oneWay",
@@ -978,8 +981,16 @@
             return ''
                 + '<p>Após a compra você receberá o certificado/bilhete de seguro que será encaminhado via email no momento da confirmação do pagamento do seguro. <b>Atenção!</b> Seguro viagem não é seguro saúde. <a href="'
                 + saibaMaisLink
-                + '" target="_blank" rel="noopener noreferrer">Saiba mais</a>.</p>'
-                + '<p>Ao continuar com a contratação, você confirma que leu, compreendeu e concorda com os <a href="https://www.voeazul.com.br/br/pt/sua-viagem/seguro-viagem/regulamento-seguros/chubb-seguros" target="_blank" rel="noopener noreferrer">Termos e Condições do Seguro Viagem</a> <b>(Processo SUSEP nº. 15414.900439/2015-34)</b>.</p>';
+                + '" target="_blank" rel="noopener noreferrer">Saiba mais</a>.</p>';
+        }
+
+        function createRegulatoryItem() {
+            return ''
+                + '<p class="injectedInsuranceModal__regulatory">'
+                + 'Ao continuar com a contratação, você confirma que leu, compreendeu e concorda com os '
+                + TERMS_LINK_HTML
+                + '.'
+                + '</p>';
         }
 
         function createAndAppendInsuranceModal() {
@@ -1032,7 +1043,7 @@
                 + createCoverageAccordions(context)
                 + '</div>'
                 + createAccordion("Informações importantes", createLegalContent(context), { trackingId: "informacoes_importantes" })
-                + '<a href="' + context.regionConfig.link + '" target="_blank" class="injectedInsuranceModal__benefits__cta">Confira os tipos de cobertura</a>'
+                + createRegulatoryItem()
                 + '</div>'
                 + '</div>';
 
@@ -1465,14 +1476,15 @@
                 '                margin-bottom: 8px;',
                 '            }',
                 '',
-                '            .injectedInsuranceModal__benefits__cta {',
+                '            .injectedInsuranceModal__regulatory {',
+                '                color: #606060;',
+                '                font-size: 12px;',
+                '                line-height: 1.45;',
+                '                margin: 20px 0 0;',
+                '            }',
+                '',
+                '            .injectedInsuranceModal__regulatory a {',
                 '                color: #026CB6;',
-                '                font-weight: 400;',
-                '                text-decoration: none;',
-                '                cursor: pointer;',
-                '                font-size: 14px;',
-                '                display: inline-block;',
-                '                margin-top: 20px;',
                 '            }',
                 '',
                 '            .injectedInsuranceModal__context {',
