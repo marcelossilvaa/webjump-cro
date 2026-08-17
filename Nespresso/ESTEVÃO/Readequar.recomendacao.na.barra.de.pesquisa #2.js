@@ -102,12 +102,12 @@
       '  background-color: #f6f7f9;',
       '}',
       '.at-recomendacoes-busca .flag {',
-      '  background: #19171c !important;',
-      '  border-radius: 4px;',
+      '  background: #6B4423 !important;',
+      '  border-radius: 10px;',
       '  color: #fff;',
       '  font-size: 12px;',
       '  font-weight: 600;',
-      '  padding: 2px 6px;',
+      '  padding: 3px 8px;',
       '}',
       '.at-recomendacoes-busca .imagemSugestaoResultado {',
       '  align-items: center;',
@@ -139,7 +139,7 @@
   function getDesktopStyles() {
     return [
       '.at-recomendacoes-busca--desktop {',
-      '  gap: 32px;',
+      '  gap: 4px;',
       '  width: 100%;',
       '}',
       '.at-recomendacoes-busca--desktop .colunaTexto {',
@@ -304,7 +304,7 @@
     const colunaImagens = box.querySelector('.colunaImagens');
     if (colunaTexto) {
       colunaTexto.style.marginLeft = (inputRect.left - containerRect.left) + 'px';
-      colunaTexto.style.width = inputRect.width + 'px';
+      colunaTexto.style.width = '260px';
       colunaTexto.style.flex = '0 0 auto';
     }
     if (colunaImagens) {
