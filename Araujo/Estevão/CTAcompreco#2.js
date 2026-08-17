@@ -25,6 +25,10 @@
   const OLD_PRICE_SELECTOR = '.productPrice__lineThrough';
   const DISCOUNT_SELECTOR = '.productPrice__discount';
   const CURRENT_PRICE_SELECTOR = '.productPrice__price';
+  const PBM_CONTAINER_SELECTOR = '.pbmDiscount.pbmDiscount__dermaclub';
+  const PBM_OLD_PRICE_SELECTOR = '.pbmDiscount-price .referenciaPbm';
+  const PBM_CURRENT_PRICE_SELECTOR = '.pbmDiscount-price .pbmDiscount-h-price';
+  const PBM_DISCOUNT_SELECTOR = '.pbmDiscount-price .until';
   const QUANTITY_SELECTOR = '.productDetails__quantity';
   const BUY_BUTTON_CONTAINER_SELECTOR = '.productDetails__buyButton';
   const PRIMARY_BUTTON_SELECTOR = '.primaryButton';
@@ -176,13 +180,38 @@
     return el ? el.textContent.trim() : '';
   }
 
+  function extractPbmPriceData() {
+    const pbmContainer = document.querySelector(PBM_CONTAINER_SELECTOR);
+    if (!pbmContainer) return null;
+
+    const currentPriceText = extractText(pbmContainer, PBM_CURRENT_PRICE_SELECTOR);
+    if (!currentPriceText) return null;
+
+    const oldPriceRaw = extractText(pbmContainer, PBM_OLD_PRICE_SELECTOR);
+
+    return {
+      oldPriceText: oldPriceRaw.replace(/\s*por\s*$/i, '').trim(),
+      discountText: extractText(pbmContainer, PBM_DISCOUNT_SELECTOR),
+      currentPriceText: currentPriceText,
+    };
+  }
+
+  function extractPriceData(priceContainer) {
+    return extractPbmPriceData() || {
+      oldPriceText: extractText(priceContainer, OLD_PRICE_SELECTOR),
+      discountText: extractText(priceContainer, DISCOUNT_SELECTOR),
+      currentPriceText: extractText(priceContainer, CURRENT_PRICE_SELECTOR),
+    };
+  }
+
   function buildInfoBlock(priceContainer) {
     const info = document.createElement('div');
     info.className = INFO_CLASS;
 
-    const oldPriceText = extractText(priceContainer, OLD_PRICE_SELECTOR);
-    const discountText = extractText(priceContainer, DISCOUNT_SELECTOR);
-    const currentPriceText = extractText(priceContainer, CURRENT_PRICE_SELECTOR);
+    const priceData = extractPriceData(priceContainer);
+    const oldPriceText = priceData.oldPriceText;
+    const discountText = priceData.discountText;
+    const currentPriceText = priceData.currentPriceText;
 
     if (oldPriceText || discountText) {
       const row = document.createElement('div');
@@ -275,6 +304,24 @@
     });
   }
 
+  function watchPbmContainer(priceContainer) {
+    const pbmContainer = document.querySelector(PBM_CONTAINER_SELECTOR);
+    if (!pbmContainer) return;
+
+    const observer = new MutationObserver(function () {
+      clearTimeout(priceDebounceTimer);
+      priceDebounceTimer = setTimeout(function () {
+        refreshPriceInfo(priceContainer);
+      }, 100);
+    });
+
+    observer.observe(pbmContainer, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+  }
+
   function syncBodyPadding(buyButtonContainer) {
     const height = buyButtonContainer.getBoundingClientRect().height;
     document.body.style.setProperty('padding-bottom', (height + 12) + 'px', 'important');
@@ -300,8 +347,8 @@
 
     if (buyButtonContainer.hasAttribute(DATA_ATTR)) return true;
 
-    const currentPriceText = extractText(priceContainer, CURRENT_PRICE_SELECTOR);
-    if (!currentPriceText) return false;
+    const priceData = extractPriceData(priceContainer);
+    if (!priceData.currentPriceText) return false;
 
     const existingInfo = document.querySelector('.' + INFO_CLASS);
     if (existingInfo) existingInfo.remove();
@@ -312,6 +359,7 @@
     const info = buildInfoBlock(priceContainer);
     document.body.appendChild(info);
     watchPriceContainer(priceContainer);
+    watchPbmContainer(priceContainer);
 
     refreshBuyButtonContent(buyButtonContainer);
     watchBuyButtonContent(buyButtonContainer);

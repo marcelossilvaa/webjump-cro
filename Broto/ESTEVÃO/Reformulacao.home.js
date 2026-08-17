@@ -63,9 +63,12 @@
     },
   ];
 
+  const LEVEL0_SELECTOR = '[data-type="level0"]';
+
   const CARDS_CIDADE_CLIMA = [
     {
       href: '#',
+      acao: 'definir-cidade',
       titulo: 'Defina uma cidade',
       descricao: 'Veja as oportunidades específicas da sua região.',
       icone:
@@ -78,7 +81,7 @@
         + '</svg>',
     },
     {
-      href: '#',
+      href: '/dados-climaticos',
       titulo: 'Dados climáticos',
       descricao: 'Veja clima e soluções adaptadas à sua localidade.',
       icone:
@@ -127,8 +130,9 @@
   }
 
   function buildCardCidadeClimaHtml(card) {
+    const acaoAttr = card.acao ? ' data-at-cc-action="' + card.acao + '"' : '';
     return (
-      '<a class="at-cc-card" href="' + card.href + '">'
+      '<a class="at-cc-card" href="' + card.href + '"' + acaoAttr + '>'
       + '<div class="at-cc-header">'
       + '<span class="at-cc-icon">' + card.icone + '</span>'
       + '<strong class="at-cc-titulo">' + card.titulo + '</strong>'
@@ -148,10 +152,38 @@
     return (
       '<section id="' + SECTION_ID_2 + '" class="at-cc-section">'
       + '<div class="at-cc-container">'
+      + '<h2 class="at-cc-titulo-secao">Sua localização, suas soluções</h2>'
       + '<div class="at-cc-scroll">' + cardsHtml + '</div>'
       + '</div>'
       + '</section>'
     );
+  }
+
+  function triggerHeaderNavByLabel(label) {
+    const candidates = document.querySelectorAll(LEVEL0_SELECTOR);
+    let matchedText = '';
+    for (let i = 0; i < candidates.length; i++) {
+      const el = candidates[i];
+      if (el.textContent && el.textContent.trim().indexOf(label) !== -1) {
+        matchedText = el.textContent.trim();
+        el.click();
+        alert('[DEBUG] Encontrado e clicado: "' + matchedText + '" (de ' + candidates.length + ' candidatos [data-type="level0"])');
+        return true;
+      }
+    }
+    alert('[DEBUG] NAO encontrado. Total de elementos [data-type="level0"] no DOM agora: ' + candidates.length);
+    return false;
+  }
+
+  function wireCidadeClimaActions() {
+    const cidadeCard = document.querySelector('#' + SECTION_ID_2 + ' [data-at-cc-action="definir-cidade"]');
+    if (!cidadeCard || cidadeCard.hasAttribute('data-at-cc-wired')) return;
+
+    cidadeCard.setAttribute('data-at-cc-wired', 'true');
+    cidadeCard.addEventListener('click', function (event) {
+      event.preventDefault();
+      triggerHeaderNavByLabel('Defina uma cidade');
+    });
   }
 
   function getStyles() {
@@ -247,6 +279,12 @@
       '  margin: 0 auto;',
       '  padding: 0 16px;',
       '}',
+      '#' + SECTION_ID_2 + ' .at-cc-titulo-secao {',
+      '  font-size: 16px;',
+      '  font-weight: 700 !important;',
+      '  color: #1A1A1A;',
+      '  margin: 0 0 16px 0;',
+      '}',
       '#' + SECTION_ID_2 + ' .at-cc-scroll {',
       '  display: flex;',
       '  gap: 12px;',
@@ -339,13 +377,17 @@
   }
 
   function addSectionCidadeClima() {
-    if (document.getElementById(SECTION_ID_2)) return true;
+    if (document.getElementById(SECTION_ID_2)) {
+      wireCidadeClimaActions();
+      return true;
+    }
 
     const anchor = document.getElementById(SECTION_ID);
     if (!anchor) return false;
 
     injectStyles();
     anchor.insertAdjacentHTML('afterend', buildSectionCidadeClimaHtml());
+    wireCidadeClimaActions();
     return true;
   }
 
