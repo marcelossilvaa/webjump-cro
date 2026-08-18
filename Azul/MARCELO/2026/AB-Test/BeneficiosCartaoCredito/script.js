@@ -8,6 +8,7 @@
   const DATA_VIEW = 'data-at-beneficios-cc-view';
   const ACTIVITY = EXPERIMENT_NAME;
   const CONTEXT = 'tela_pagamento';
+  const DESKTOP_MIN_WIDTH = 1024;
 
   const SELECTORS = {
     creditCardContainer: '[data-test-id="fop-credit-card-container"]',
@@ -37,6 +38,7 @@
   let isProcessing = false;
   let debounceTimer = null;
   let observerStarted = false;
+  let resizeListenerAdded = false;
   let lastDetectionLogKey = '';
   let flightDetection = null;
 
@@ -51,6 +53,10 @@
       path.indexOf('/payment') !== -1 ||
       !!document.querySelector(SELECTORS.creditCardContainer)
     );
+  }
+
+  function isDesktopViewport() {
+    return window.innerWidth >= DESKTOP_MIN_WIDTH;
   }
 
   function injectStyles() {
@@ -828,8 +834,36 @@
     return true;
   }
 
+  function teardown() {
+    const component = document.getElementById(COMPONENT_ID);
+    if (component) {
+      const parent = component.parentElement;
+      if (parent) {
+        parent.removeAttribute(DATA_INJECTED);
+      }
+      if (component.parentNode) {
+        component.parentNode.removeChild(component);
+      }
+    }
+
+    const hiddenNodes = document.querySelectorAll('.at-beneficios-cc-original-hidden');
+    for (let i = 0; i < hiddenNodes.length; i++) {
+      hiddenNodes[i].classList.remove('at-beneficios-cc-original-hidden');
+    }
+
+    if (window._atBeneficiosCcObserver) {
+      window._atBeneficiosCcObserver.disconnect();
+      window._atBeneficiosCcObserver = null;
+    }
+    observerStarted = false;
+  }
+
   function run() {
     if (isProcessing) return;
+    if (!isDesktopViewport()) {
+      teardown();
+      return;
+    }
     if (!isTargetPage()) return;
 
     isProcessing = true;
@@ -844,14 +878,19 @@
   function scheduleRun() {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(function () {
-      run();
+      syncByViewport();
     }, 300);
   }
 
   function startObserver() {
+    if (!isDesktopViewport()) return;
     if (observerStarted || window._atBeneficiosCcObserver) return;
 
     const observer = new MutationObserver(function () {
+      if (!isDesktopViewport()) {
+        teardown();
+        return;
+      }
       if (document.getElementById(COMPONENT_ID) && flightDetection && flightDetection.confident) {
         return;
       }
@@ -872,9 +911,23 @@
     observerStarted = true;
   }
 
-  function init() {
+  function syncByViewport() {
+    if (!isDesktopViewport()) {
+      teardown();
+      return;
+    }
+
     run();
     startObserver();
+  }
+
+  function init() {
+    syncByViewport();
+
+    if (!resizeListenerAdded) {
+      window.addEventListener('resize', scheduleRun);
+      resizeListenerAdded = true;
+    }
   }
 
   if (document.readyState === 'loading') {
