@@ -460,23 +460,6 @@
     return { img: img, button: button, wrapper: wrapper };
   }
 
-  function findRegulamentoUrl() {
-    if (CONFIG.regulamentoUrl) return CONFIG.regulamentoUrl;
-
-    const links = document.querySelectorAll('a[href]');
-    for (let i = 0; i < links.length; i++) {
-      const link = links[i];
-      if (link.closest && link.closest('#' + COMPONENT_ID)) continue;
-      const text = (link.textContent || '').toLowerCase();
-      const href = (link.getAttribute('href') || '').toLowerCase();
-      if (text.indexOf('regulamento') !== -1 || href.indexOf('regulamento') !== -1) {
-        return link.href;
-      }
-    }
-
-    return CONFIG.ctaUrl;
-  }
-
   function findCardsSection() {
     const headings = document.querySelectorAll('h1, h2');
     for (let i = 0; i < headings.length; i++) {
@@ -493,6 +476,152 @@
       return target;
     }
     return document.getElementById('at-itau-escolha-cartao');
+  }
+
+  function findRegulamentoHeading() {
+    const headings = document.querySelectorAll('h3, h2, h1');
+    for (let i = 0; i < headings.length; i++) {
+      const text = (headings[i].textContent || '').toLowerCase();
+      if (text.indexOf('regulamento da campanha') !== -1) return headings[i];
+    }
+    return null;
+  }
+
+  function isElementVisible(el) {
+    if (!el) return false;
+    const style = window.getComputedStyle(el);
+    if (style.display === 'none' || style.visibility === 'hidden') return false;
+    const rect = el.getBoundingClientRect();
+    return rect.width > 1 && rect.height > 1;
+  }
+
+  function findRegulamentoAccordionButton() {
+    const marked = document.getElementById('at-itau-regulamento');
+    if (marked) {
+      const markedBtn = marked.querySelector('button.variant-color, button');
+      if (markedBtn && isElementVisible(markedBtn)) return markedBtn;
+    }
+
+    const buttons = document.querySelectorAll('button.variant-color, button');
+    let fallback = null;
+    for (let i = 0; i < buttons.length; i++) {
+      const btn = buttons[i];
+      if (btn.closest && btn.closest('#' + COMPONENT_ID)) continue;
+
+      const span = btn.querySelector('span');
+      const spanText = span ? (span.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase() : '';
+      if (spanText !== 'regulamento') continue;
+      if (isElementVisible(btn)) return btn;
+      if (!fallback) fallback = btn;
+    }
+    return fallback;
+  }
+
+  function findRegulamentoSection() {
+    const btn = findRegulamentoAccordionButton();
+    if (btn) {
+      const wrap = btn.closest('.container-capsule') || btn.parentElement || btn;
+      if (!wrap.id) wrap.id = 'at-itau-regulamento';
+      return wrap;
+    }
+
+    const heading = findRegulamentoHeading();
+    if (heading) {
+      const capsule = heading.closest('.container-capsule');
+      const target = capsule || heading;
+      if (!target.id) target.id = 'at-itau-regulamento';
+      return target;
+    }
+
+    return document.getElementById('at-itau-regulamento');
+  }
+
+  function isRegulamentoOpen(button) {
+    return !!(button && button.classList.contains('accordion-active'));
+  }
+
+  function invokeReactClickOnNode(el) {
+    if (!el) return false;
+    const keys = Object.keys(el);
+
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      if (key.indexOf('__reactProps$') === 0 || key.indexOf('__reactEventHandlers$') === 0) {
+        const props = el[key];
+        if (props && typeof props.onClick === 'function') {
+          props.onClick({
+            currentTarget: el,
+            target: el,
+            preventDefault: function () {},
+            stopPropagation: function () {},
+            nativeEvent: { target: el },
+          });
+          return true;
+        }
+      }
+
+      if (key.indexOf('__reactFiber$') === 0 || key.indexOf('__reactInternalInstance$') === 0) {
+        let fiber = el[key];
+        let hops = 0;
+        while (fiber && hops < 12) {
+          const props = fiber.memoizedProps || fiber.pendingProps;
+          if (props && typeof props.onClick === 'function') {
+            props.onClick({
+              currentTarget: el,
+              target: el,
+              preventDefault: function () {},
+              stopPropagation: function () {},
+              nativeEvent: { target: el },
+            });
+            return true;
+          }
+          fiber = fiber.return;
+          hops++;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  function invokeReactClick(el) {
+    let node = el;
+    let depth = 0;
+    while (node && depth < 5) {
+      if (invokeReactClickOnNode(node)) return true;
+      node = node.parentElement;
+      depth++;
+    }
+    return false;
+  }
+
+  function openRegulamentoAccordion(button) {
+    if (!button || isRegulamentoOpen(button)) return;
+
+    console.log('[AT] Abrindo accordion de regulamento.');
+    if (invokeReactClick(button)) return;
+    HTMLElement.prototype.click.call(button);
+  }
+
+  function scrollToRegulamento() {
+    const target = findRegulamentoSection();
+    const button = findRegulamentoAccordionButton();
+
+    if (target) {
+      const offset = 24;
+      const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({
+        top: top,
+        behavior: 'smooth',
+      });
+    } else {
+      console.log('[AT] Secao de regulamento nao encontrada.');
+    }
+
+    setTimeout(function () {
+      const btn = findRegulamentoAccordionButton() || button;
+      openRegulamentoAccordion(btn);
+    }, 450);
   }
 
   function scrollToCards() {
@@ -669,9 +798,7 @@
 
     const footer = createEl('div', 'at-itau-carousel__footer');
     const rules = createEl('a', 'at-itau-carousel__rules');
-    rules.href = findRegulamentoUrl();
-    rules.target = '_blank';
-    rules.rel = 'noopener noreferrer';
+    rules.href = '#at-itau-regulamento';
     rules.textContent = 'Confira o regulamento';
     footer.appendChild(rules);
 
@@ -790,8 +917,10 @@
     const rules = root.querySelector('.at-itau-carousel__rules');
     if (rules) {
       rules.addEventListener('click', function (event) {
+        event.preventDefault();
         event.stopPropagation();
         analyticsEvent('regulamento', 'click');
+        scrollToRegulamento();
       });
     }
 
