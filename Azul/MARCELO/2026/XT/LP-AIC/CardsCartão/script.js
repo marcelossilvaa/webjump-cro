@@ -12,7 +12,16 @@
   const IMG_SKYLINE = 'cartao-skyline';
   const IMG_PLATINUM = 'carta-platinum';
   const IMG_BANDEIRA = 'lp-de-ofertas/2026/17-08/botao.png';
-  const CTA_URL = 'https://www.voeazul.com.br/br/pt/programa-fidelidade/azul-itau';
+  const CARD_CTA = {
+    skyline:
+      'https://www.itau.com.br/cartoes/escolha/g/azul-mastercard-skyline?s_afili=afiliados_az_af_click-site_banner_lf_niverfaic_aic_n_ctr_bnr_lp_sky&utm_source=click-site&utm_medium=ctr&utm_campaign=az_af_click-site_banner_lf_niverfaic_aic&utm_term=niverfaic_sky',
+    mastercardPlatinum:
+      'https://www.itau.com.br/cartoes/escolha/g/azul-mastercard-platinum?s_afili=afiliados_az_af_click-site_banner_lf_niverfaic_aic_n_ctr_bnr_lp_mp&utm_source=click-site&utm_medium=ctr&utm_campaign=az_af_click-site_banner_lf_niverfaic_aic&utm_term=niverfaic_mp',
+    visaInfinite:
+      'https://www.itau.com.br/cartoes/escolha/g/azul-visa-infinite?s_afili=afiliados_az_af_click-site_banner_lf_niverfaic_aic_n_ctr_bnr_lp_inf&utm_source=click-site&utm_medium=ctr&utm_campaign=az_af_click-site_banner_lf_niverfaic_aic&utm_term=niverfaic_inf',
+    visaPlatinum:
+      'https://www.itau.com.br/cartoes/escolha/g/azul-visa-platinum?s_afili=afiliados_az_af_click-site_banner_lf_niverfaic_aic_n_ctr_bnr_lp_vplat&utm_source=click-site&utm_medium=ctr&utm_campaign=az_af_click-site_banner_lf_niverfaic_aic&utm_term=niverfaic_vplat',
+  };
 
   const TARGET_URLS = ['ofertas/azul-itau-teste', 'ofertas/azul-itau'];
 
@@ -274,7 +283,7 @@
       '<li>Bagagens despachadas grátis</li>' +
       '</ul>' +
       '<a href="' +
-      CTA_URL +
+      CARD_CTA.skyline +
       '" target="_blank" rel="noopener noreferrer" class="atCartaoPerfil__cartao__ctaPedir" data-cartao="mastercard-skyline">Pedir cartão</a>' +
       '<a href="#" class="atCartaoPerfil__cartao__ctaDetalhes" data-cartao="mastercard-skyline">Conferir detalhes</a>' +
       '</article>' +
@@ -288,7 +297,7 @@
       '<li>Nível Safira no Azul Fidelidade</li>' +
       '</ul>' +
       '<a href="' +
-      CTA_URL +
+      CARD_CTA.mastercardPlatinum +
       '" target="_blank" rel="noopener noreferrer" class="atCartaoPerfil__cartao__ctaPedir" data-cartao="mastercard-platinum">Pedir cartão</a>' +
       '<a href="#" class="atCartaoPerfil__cartao__ctaDetalhes" data-cartao="mastercard-platinum">Conferir detalhes</a>' +
       '</article>' +
@@ -304,7 +313,7 @@
       '<li>Bagagens despachadas grátis</li>' +
       '</ul>' +
       '<a href="' +
-      CTA_URL +
+      CARD_CTA.visaInfinite +
       '" target="_blank" rel="noopener noreferrer" class="atCartaoPerfil__cartao__ctaPedir" data-cartao="visa-infinite">Pedir cartão</a>' +
       '<a href="#" class="atCartaoPerfil__cartao__ctaDetalhes" data-cartao="visa-infinite">Conferir detalhes</a>' +
       '</article>' +
@@ -318,7 +327,7 @@
       '<li>Nível Safira no Azul Fidelidade</li>' +
       '</ul>' +
       '<a href="' +
-      CTA_URL +
+      CARD_CTA.visaPlatinum +
       '" target="_blank" rel="noopener noreferrer" class="atCartaoPerfil__cartao__ctaPedir" data-cartao="visa-platinum">Pedir cartão</a>' +
       '<a href="#" class="atCartaoPerfil__cartao__ctaDetalhes" data-cartao="visa-platinum">Conferir detalhes</a>' +
       '</article>' +
