@@ -599,8 +599,8 @@
       ) +
       row(
         '<p class="at-cc-label">20% de desconto na Unidas</p>',
-        '<p class="at-cc-value">20% no hotsite pagando com AIC</p>',
-        '<p class="at-cc-value">20% no hotsite pagando com AIC</p>'
+        '<p class="at-cc-value">20% no hotsite pagando com o Cartão Azul Itaú</p>',
+        '<p class="at-cc-value">20% no hotsite pagando com o Cartão Azul Itaú</p>'
       ) +
       row(
         '<p class="at-cc-label">Diárias na Unidas</p>',
