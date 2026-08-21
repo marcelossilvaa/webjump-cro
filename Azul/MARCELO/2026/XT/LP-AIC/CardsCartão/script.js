@@ -14,13 +14,13 @@
   const IMG_BANDEIRA = 'lp-de-ofertas/2026/17-08/botao.png';
   const CARD_CTA = {
     skyline:
-      'https://www.itau.com.br/cartoes/escolha/g/azul-mastercard-skyline?s_afili=afiliados_az_af_click-site_banner_lf_niverfaic_aic_n_ctr_bnr_lp_sky&utm_source=click-site&utm_medium=ctr&utm_campaign=az_af_click-site_banner_lf_niverfaic_aic&utm_term=niverfaic_sky',
+      'https://www.itau.com.br/cartoes/escolha/g/azul-mastercard-skyline?s_afili=afiliados_az_af_click-site_banner_lf_niverfaic_aic_n_ctr_bnr_lp_sky&utm_source=azul&utm_medium=ctr&utm_campaign=az_af_click-site_banner_lf_niverfaic_aic&utm_term=niverfaic_sky',
     mastercardPlatinum:
-      'https://www.itau.com.br/cartoes/escolha/g/azul-mastercard-platinum?s_afili=afiliados_az_af_click-site_banner_lf_niverfaic_aic_n_ctr_bnr_lp_mp&utm_source=click-site&utm_medium=ctr&utm_campaign=az_af_click-site_banner_lf_niverfaic_aic&utm_term=niverfaic_mp',
+      'https://www.itau.com.br/cartoes/escolha/g/azul-mastercard-platinum?s_afili=afiliados_az_af_click-site_banner_lf_niverfaic_aic_n_ctr_bnr_lp_mp&utm_source=azul&utm_medium=ctr&utm_campaign=az_af_click-site_banner_lf_niverfaic_aic&utm_term=niverfaic_mp',
     visaInfinite:
-      'https://www.itau.com.br/cartoes/escolha/g/azul-visa-infinite?s_afili=afiliados_az_af_click-site_banner_lf_niverfaic_aic_n_ctr_bnr_lp_inf&utm_source=click-site&utm_medium=ctr&utm_campaign=az_af_click-site_banner_lf_niverfaic_aic&utm_term=niverfaic_inf',
+      'https://www.itau.com.br/cartoes/escolha/g/azul-visa-infinite?s_afili=afiliados_az_af_click-site_banner_lf_niverfaic_aic_n_ctr_bnr_lp_inf&utm_source=azul&utm_medium=ctr&utm_campaign=az_af_click-site_banner_lf_niverfaic_aic&utm_term=niverfaic_inf',
     visaPlatinum:
-      'https://www.itau.com.br/cartoes/escolha/g/azul-visa-platinum?s_afili=afiliados_az_af_click-site_banner_lf_niverfaic_aic_n_ctr_bnr_lp_vplat&utm_source=click-site&utm_medium=ctr&utm_campaign=az_af_click-site_banner_lf_niverfaic_aic&utm_term=niverfaic_vplat',
+      'https://www.itau.com.br/cartoes/escolha/g/azul-visa-platinum?s_afili=afiliados_az_af_click-site_banner_lf_niverfaic_aic_n_ctr_bnr_lp_vplat&utm_source=azul&utm_medium=ctr&utm_campaign=az_af_click-site_banner_lf_niverfaic_aic&utm_term=niverfaic_vplat',
   };
 
   const TARGET_URLS = ['ofertas/azul-itau-teste', 'ofertas/azul-itau'];

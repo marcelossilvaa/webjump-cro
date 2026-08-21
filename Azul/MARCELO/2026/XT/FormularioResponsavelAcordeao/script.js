@@ -213,20 +213,15 @@
       '  height: 44px;',
       '  padding: 0 20px;',
       '  border-radius: 4px;',
-      '  border: 1px solid #c5ced8;',
+      '  border: 1px solid #026cb6;',
       '  background: #fff;',
-      '  color: #9aa5b1;',
+      '  color: #026cb6;',
       '  font-size: 14px;',
       '  font-weight: 700;',
-      '  cursor: not-allowed;',
+      '  cursor: pointer;',
       '  font-family: inherit;',
       '}',
-      '[' + ROOT_ATTR + '] .at-resp-confirm-btn.is-enabled {',
-      '  border-color: #026cb6;',
-      '  color: #026cb6;',
-      '  cursor: pointer;',
-      '}',
-      '[' + ROOT_ATTR + '] .at-resp-confirm-btn.is-enabled:hover {',
+      '[' + ROOT_ATTR + '] .at-resp-confirm-btn:hover {',
       '  background: #e8f4fb;',
       '}',
       '[' + ROOT_ATTR + '] .at-resp-missing {',
@@ -240,13 +235,31 @@
       '[' + ROOT_ATTR + '] .at-resp-missing.is-hidden {',
       '  display: none;',
       '}',
+      /* Erros no padrao nativo Azul */
+      '[' + ROOT_ATTR + '] .at-resp-field-invalid .form-group-container,',
+      '[' + ROOT_ATTR + '] .at-resp-field-invalid [class*="form-group-container"] {',
+      '  border-color: #d32f2f !important;',
+      '}',
+      '[' + ROOT_ATTR + '] .at-resp-field-invalid input,',
+      '[' + ROOT_ATTR + '] .at-resp-field-invalid .react-select__control,',
+      '[' + ROOT_ATTR + '] .at-resp-field-invalid [class*="react-select__control"] {',
+      '  border-color: #d32f2f !important;',
+      '  box-shadow: none !important;',
+      '}',
+      '[' + ROOT_ATTR + '] .at-resp-field-error {',
+      '  display: block;',
+      '  margin-top: 4px;',
+      '  color: #d32f2f;',
+      '  font-size: 12px;',
+      '  line-height: 1.3;',
+      '}',
       '[' + ROOT_ATTR + '] .at-resp-native-header,',
       '.at-resp-shell .at-resp-native-header,',
       '[' + ROOT_ATTR + '] .at-resp-native-separator,',
       '[' + ROOT_ATTR + '] .at-resp-native-address-title {',
       '  display: none !important;',
       '}',
-      /* CTA principal no estilo do Figma */
+      /* CTA principal sempre habilitado (comportamento nativo) */
       '.at-resp-shell button[form="responsibleForm"],',
       '.at-resp-shell button[aria-label="Ir para escolha de assentos"] {',
       '  width: 100% !important;',
@@ -255,19 +268,9 @@
       '  border-radius: 4px !important;',
       '  border: 0 !important;',
       '  box-shadow: none !important;',
-      '}',
-      '.at-resp-shell button[form="responsibleForm"].at-resp-submit-disabled,',
-      '.at-resp-shell button[aria-label="Ir para escolha de assentos"].at-resp-submit-disabled,',
-      '.at-resp-shell button[form="responsibleForm"][disabled],',
-      '.at-resp-shell button[aria-label="Ir para escolha de assentos"][disabled] {',
-      '  pointer-events: none !important;',
-      '  cursor: not-allowed !important;',
+      '  pointer-events: auto !important;',
+      '  cursor: pointer !important;',
       '  opacity: 1 !important;',
-      '  background: #d7dde5 !important;',
-      '  color: #7b8794 !important;',
-      '}',
-      '.at-resp-shell button[form="responsibleForm"]:not(.at-resp-submit-disabled):not([disabled]),',
-      '.at-resp-shell button[aria-label="Ir para escolha de assentos"]:not(.at-resp-submit-disabled):not([disabled]) {',
       '  background: #26a65b !important;',
       '  color: #fff !important;',
       '}',
@@ -578,6 +581,146 @@
     return document.querySelector(SELECTORS.submitButton);
   }
 
+  function getFieldGroup(form, field) {
+    if (field.isSelect) {
+      const input = form.querySelector('input[name="' + field.name + '"]');
+      if (input) {
+        return (
+          input.closest('.form-group-select') ||
+          input.closest('[class*="form-group"]') ||
+          input.parentElement
+        );
+      }
+
+      const labelNeedle = normalizeText(field.label);
+      const labels = form.querySelectorAll('label, span');
+      for (let i = 0; i < labels.length; i++) {
+        const text = normalizeText(labels[i].textContent || '');
+        if (text.indexOf(labelNeedle) === -1) continue;
+        if (labels[i].closest('.at-resp-panel__header')) continue;
+        return (
+          labels[i].closest('.form-group-select') ||
+          labels[i].closest('[class*="form-group"]') ||
+          labels[i].parentElement
+        );
+      }
+      return null;
+    }
+
+    const input = form.querySelector('[name="' + field.name + '"], #' + field.name);
+    if (!input) return null;
+    return (
+      input.closest('.form-group') ||
+      input.closest('[class*="form-group"]') ||
+      input.parentElement
+    );
+  }
+
+  function getFocusableInGroup(group, field) {
+    if (!group) return null;
+    if (field && field.isSelect) {
+      const selectInput = group.querySelector('.react-select__input input, input[type="text"]');
+      if (selectInput) return selectInput;
+      const control = group.querySelector('.react-select__control, [class*="react-select__control"]');
+      if (control) return control;
+    }
+    return group.querySelector('input:not([type="hidden"]), select, textarea');
+  }
+
+  function clearFieldError(group) {
+    if (!group) return;
+    group.classList.remove('at-resp-field-invalid');
+    const error = group.querySelector('.at-resp-field-error');
+    if (error && error.parentNode) error.parentNode.removeChild(error);
+  }
+
+  function clearAllFieldErrors(form) {
+    const invalids = form.querySelectorAll('.at-resp-field-invalid');
+    for (let i = 0; i < invalids.length; i++) {
+      clearFieldError(invalids[i]);
+    }
+  }
+
+  function setFieldError(group, message) {
+    if (!group) return;
+    group.classList.add('at-resp-field-invalid');
+    let error = group.querySelector('.at-resp-field-error');
+    if (!error) {
+      error = document.createElement('span');
+      error.className = 'at-resp-field-error';
+      group.appendChild(error);
+    }
+    error.textContent = message;
+  }
+
+  function showFieldsValidation(form, fields) {
+    const missing = getMissingFields(form, fields);
+    let firstFocus = null;
+
+    for (let i = 0; i < fields.length; i++) {
+      const field = fields[i];
+      const group = getFieldGroup(form, field);
+      if (!group) continue;
+
+      const isMissing = missing.some(function (item) {
+        return item.name === field.name;
+      });
+
+      if (isMissing) {
+        setFieldError(group, field.label + ' obrigatório');
+        if (!firstFocus) firstFocus = getFocusableInGroup(group, field) || group;
+      } else {
+        clearFieldError(group);
+      }
+    }
+
+    if (firstFocus) {
+      try {
+        if (typeof firstFocus.focus === 'function') firstFocus.focus();
+        if (typeof firstFocus.scrollIntoView === 'function') {
+          firstFocus.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } catch (err) {
+        // ignore focus errors em elementos nao focaveis
+      }
+    }
+
+    return missing;
+  }
+
+  function syncFieldErrorsAfterChange(form) {
+    const marked = form.querySelectorAll('.at-resp-field-invalid');
+    for (let i = 0; i < marked.length; i++) {
+      const group = marked[i];
+      const allFields = STEP1_FIELDS.concat(STEP2_FIELDS);
+      for (let j = 0; j < allFields.length; j++) {
+        const field = allFields[j];
+        const fieldGroup = getFieldGroup(form, field);
+        if (fieldGroup !== group) continue;
+        if (getFieldValue(form, field)) {
+          clearFieldError(group);
+        } else if (group.querySelector('.at-resp-field-error')) {
+          // mantem erro se ainda vazio apos tentativa de validacao
+        }
+        break;
+      }
+    }
+  }
+
+  function formatMissingCounter(count) {
+    if (count <= 0) return '';
+    if (count === 1) return '<strong>1 campo</strong> não preenchido';
+    return '<strong>' + count + ' campos</strong> não preenchidos';
+  }
+
+  function ensureSubmitEnabled() {
+    const submitBtn = getSubmitButton();
+    if (!submitBtn) return;
+    submitBtn.classList.remove('at-resp-submit-disabled');
+    submitBtn.removeAttribute('disabled');
+    submitBtn.setAttribute('aria-disabled', 'false');
+  }
+
   function refreshStatusUi() {
     const form = document.querySelector(SELECTORS.form);
     if (!form || !form.hasAttribute(ROOT_ATTR)) return;
@@ -589,7 +732,7 @@
 
     if (!step1Complete) step1Confirmed = false;
     if (!step2Complete) step2Confirmed = false;
-    if (step2Complete) step2Confirmed = true;
+    if (step2Complete && step1Confirmed) step2Confirmed = true;
 
     const panel1 = document.querySelector('.at-resp-panel[data-at-step="1"]');
     const panel2 = document.querySelector('.at-resp-panel[data-at-step="2"]');
@@ -623,38 +766,22 @@
     const confirmBtn = form.querySelector('.at-resp-confirm-btn');
     const missingText = form.querySelector('.at-resp-missing');
     if (confirmBtn) {
-      const canConfirm = step1Complete;
-      confirmBtn.classList.toggle('is-enabled', canConfirm);
-      confirmBtn.disabled = !canConfirm;
-      confirmBtn.setAttribute('aria-disabled', canConfirm ? 'false' : 'true');
+      confirmBtn.disabled = false;
+      confirmBtn.removeAttribute('disabled');
+      confirmBtn.setAttribute('aria-disabled', 'false');
     }
     if (missingText) {
       if (missing1.length > 0) {
         missingText.classList.remove('is-hidden');
-        missingText.innerHTML =
-          'Faltam <strong>' +
-          missing1.length +
-          ' campo' +
-          (missing1.length > 1 ? 's' : '') +
-          '</strong> obrigatório' +
-          (missing1.length > 1 ? 's' : '');
+        missingText.innerHTML = formatMissingCounter(missing1.length);
       } else {
         missingText.classList.add('is-hidden');
         missingText.textContent = '';
       }
     }
 
-    const submitBtn = getSubmitButton();
-    if (submitBtn) {
-      const canSubmit = step1Confirmed && step1Complete && step2Complete;
-      submitBtn.classList.toggle('at-resp-submit-disabled', !canSubmit);
-      submitBtn.setAttribute('aria-disabled', canSubmit ? 'false' : 'true');
-      if (canSubmit) {
-        submitBtn.removeAttribute('disabled');
-      } else {
-        submitBtn.setAttribute('disabled', 'disabled');
-      }
-    }
+    ensureSubmitEnabled();
+    syncFieldErrorsAfterChange(form);
   }
 
   function bindFieldListeners(form) {
@@ -687,13 +814,15 @@
   }
 
   function confirmStep1(form) {
-    const missing = getMissingFields(form, STEP1_FIELDS);
+    const missing = showFieldsValidation(form, STEP1_FIELDS);
+    refreshStatusUi();
+
     if (missing.length) {
-      refreshStatusUi();
-      analyticsEvent('confirmar_bloqueado_faltam_' + missing.length, 'click');
+      analyticsEvent('confirmar_validacao_faltam_' + missing.length, 'click');
       return;
     }
 
+    clearAllFieldErrors(form);
     step1Confirmed = true;
     setActiveStep(2, true);
     analyticsEvent('confirmar_dados_step1', 'click');
@@ -717,7 +846,8 @@
     confirmBtn.type = 'button';
     confirmBtn.className = 'at-resp-confirm-btn';
     confirmBtn.textContent = 'Confirmar dados';
-    confirmBtn.disabled = true;
+    confirmBtn.disabled = false;
+    confirmBtn.setAttribute('aria-disabled', 'false');
     confirmBtn.setAttribute(LISTENER_ATTR, 'true');
     confirmBtn.addEventListener('click', function (event) {
       event.preventDefault();
@@ -784,32 +914,47 @@
     const submitBtn = getSubmitButton();
     if (!submitBtn || submitBtn.getAttribute(LISTENER_ATTR) === 'submit') return;
     submitBtn.setAttribute(LISTENER_ATTR, 'submit');
+    ensureSubmitEnabled();
 
-    submitBtn.addEventListener('click', function (event) {
-      const form = document.querySelector(SELECTORS.form);
-      if (!form) return;
+    submitBtn.addEventListener(
+      'click',
+      function (event) {
+        const form = document.querySelector(SELECTORS.form);
+        if (!form) return;
 
-      const missing1 = getMissingFields(form, STEP1_FIELDS);
-      const missing2 = getMissingFields(form, STEP2_FIELDS);
-      const canSubmit = step1Confirmed && missing1.length === 0 && missing2.length === 0;
+        ensureSubmitEnabled();
 
-      if (!canSubmit) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (missing1.length || !step1Confirmed) {
+        const missing1 = getMissingFields(form, STEP1_FIELDS);
+        if (missing1.length) {
+          event.preventDefault();
+          event.stopPropagation();
           setActiveStep(1, true);
-        } else if (missing2.length) {
-          setActiveStep(2, true);
+          showFieldsValidation(form, STEP1_FIELDS);
+          refreshStatusUi();
+          analyticsEvent('submit_validacao_step1_faltam_' + missing1.length, 'click');
+          return;
         }
 
-        refreshStatusUi();
-        analyticsEvent('submit_bloqueado', 'click');
-        return;
-      }
+        step1Confirmed = true;
 
-      analyticsEvent('ir_escolha_assentos', 'click');
-    }, true);
+        const missing2 = getMissingFields(form, STEP2_FIELDS);
+        if (missing2.length) {
+          event.preventDefault();
+          event.stopPropagation();
+          setActiveStep(2, true);
+          showFieldsValidation(form, STEP2_FIELDS);
+          refreshStatusUi();
+          analyticsEvent('submit_validacao_step2_faltam_' + missing2.length, 'click');
+          return;
+        }
+
+        clearAllFieldErrors(form);
+        step2Confirmed = true;
+        refreshStatusUi();
+        analyticsEvent('ir_escolha_assentos', 'click');
+      },
+      true
+    );
   }
 
   function transformForm(form) {
