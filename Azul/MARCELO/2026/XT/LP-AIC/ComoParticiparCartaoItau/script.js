@@ -691,15 +691,8 @@
     slide0.appendChild(
       createEl(
         'p',
-        'at-itau-carousel__text at-itau-carousel__desk',
+        'at-itau-carousel__text',
         'Escolha entre o Cartão Azul Itaú Platinum, Skyline ou Infinite até o dia 31/08.'
-      )
-    );
-    slide0.appendChild(
-      createEl(
-        'p',
-        'at-itau-carousel__text at-itau-carousel__mobi',
-        'Peça o cartão entre 19 a 31/08 para participar da promoção e começar a acumular seus pontos bônus.'
       )
     );
     slides.appendChild(slide0);
@@ -722,14 +715,14 @@
     slide1.appendChild(
       createEl(
         'p',
-        'at-itau-carousel__text at-itau-carousel__desk',
+        'at-itau-carousel__text',
         '<strong>Skyline e Infinite:</strong> média de R$ 20 mil por fatura.'
       )
     );
     slide1.appendChild(
       createEl(
         'p',
-        'at-itau-carousel__text at-itau-carousel__desk',
+        'at-itau-carousel__text',
         '<strong>Platinum:</strong> média de R$ 4 mil por fatura.'
       )
     );
@@ -744,22 +737,15 @@
     slide2.appendChild(
       createEl(
         'p',
-        'at-itau-carousel__text at-itau-carousel__desk',
+        'at-itau-carousel__text',
         '<strong>Azul Itaú Skyline ou Infinite:</strong> 40 mil pontos bônus ao atingir a meta de gastos + 40 mil pela ativação no Clube Azul, totalizando 80 mil pontos bônus.'
       )
     );
     slide2.appendChild(
       createEl(
         'p',
-        'at-itau-carousel__text at-itau-carousel__desk',
+        'at-itau-carousel__text',
         '<strong>Azul Itaú Platinum:</strong> 16 mil pontos bônus ao atingir a meta de gastos + 24 mil pela ativação no Clube Azul, totalizando 40 mil pontos bônus.'
-      )
-    );
-    slide2.appendChild(
-      createEl(
-        'p',
-        'at-itau-carousel__text at-itau-carousel__mobi',
-        'Ganhe até 80 mil pontos bônus no Skyline ou Infinite e até 40 mil no Platinum. Confira as regras.'
       )
     );
     slides.appendChild(slide2);

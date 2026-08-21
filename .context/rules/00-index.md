@@ -12,7 +12,7 @@ Fonte canônica: **`.context/rules/`**. As pastas `.cursor/rules/`, `.github/rul
 
 - `01-estrutura.md`: IIFE, organização e variáveis no escopo.
 - `02-convencoes.md`: proibições e padrões (ex: sem template literals, sem emojis, sem `var`).
-- `03-dom.md`: seletores, estilos, `data-*` e boas práticas de DOM.
+- `03-dom.md`: seletores, estilos, `data-*`, Azul SPA (anti-loop + injetar cedo / UI só na página alvo).
 - `04-eventos-e-observers.md`: event listeners e MutationObserver (debounce, anti-loop).
 - `05-inicializacao.md`: DOM ready, retry, polling.
 - `06-tracking.md`: padrão de tracking (Adobe Analytics), nomenclatura e listeners.

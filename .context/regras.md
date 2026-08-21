@@ -10,7 +10,7 @@
 
 - `.context/rules/01-estrutura.md` — IIFE, organização e variáveis
 - `.context/rules/02-convencoes.md` — proibições e padrões (sem backticks, sem `var`, sem emojis)
-- `.context/rules/03-dom.md` — seletores, estilos, `data-*`
+- `.context/rules/03-dom.md` — seletores, estilos, `data-*`, Azul SPA (anti-loop + injetar cedo / UI só na página alvo)
 - `.context/rules/04-eventos-e-observers.md` — listeners e MutationObserver
 - `.context/rules/05-inicializacao.md` — DOM ready, retry, polling
 - `.context/rules/06-tracking.md` — tracking por projeto (Azul, Nespresso, etc.)
@@ -33,4 +33,4 @@
 
 ---
 
-**Última atualização:** 2026-05-21
+**Última atualização:** 2026-08-21

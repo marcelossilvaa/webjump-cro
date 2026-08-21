@@ -93,6 +93,7 @@ description: >-
 - [ ] DOM ready + retry/polling se DOM dinâmico
 - [ ] Tracking (se UI nova)
 - [ ] Guard de página (pathname/query) se o teste for específico
+- [ ] **Azul SPA / checkout**: Target em etapas anteriores; UI só na página alvo; ver `.context/rules/03-dom.md` §3.5
 
 ## Referência no repositório
 

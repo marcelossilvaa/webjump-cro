@@ -110,3 +110,73 @@ function observeWrapper(wrapper, onMutate) {
 }
 ```
 
+### 3.5. Azul (SPA / checkout): injetar cedo, modificar só na página alvo (obrigatório)
+
+No checkout da **Azul** a navegação é **SPA** (sem reload). Se o Adobe Target injetar o script **somente** na URL final, a oferta pode chegar tarde ou nem disparar.
+
+#### Regra
+
+| Camada | O que fazer |
+|--------|-------------|
+| **Target** | Incluir o script em **etapas anteriores** do fluxo (ex.: `selecao-voo`, `passageiros`, `responsavel`, `review`) |
+| **Script** | **Modificar / injetar UI só na página correta** (ex.: `/br/pt/home/review` ou review + query `seatmap`) |
+| **Etapas anteriores** | Apenas observar a SPA (URL / `main`); **não** coletar, **não** injetar DOM da experiência |
+| **Saída do fluxo** | Cleanup da UI injetada e, se necessário, disconnect dos observers |
+
+Referência de implementação: `Azul/MARCELO/2026/AB-Test/Seguro viagem/script.js` e `Azul/MARCELO/2026/AB-Test/LoadingDeAssentos/script.js`.
+
+#### Template recomendado
+
+```javascript
+const experienceName = 'AT_EXEMPLO';
+const experienceAlreadyExecuted = window[experienceName] || false;
+const CHECKOUT_URL_STEPS = ['selecao-voo', 'passageiros', 'responsavel', 'review'];
+const TARGET_PATH = '/home/review';
+
+function getURLPath() {
+  return window.location.pathname.toLowerCase();
+}
+
+function onCheckoutFlowPage() {
+  const path = getURLPath();
+  return CHECKOUT_URL_STEPS.some(function (step) {
+    return path.indexOf(step) !== -1;
+  });
+}
+
+function isTargetPage() {
+  // Ajuste: pathname e/ou query específica do teste (ex.: seatmap).
+  return getURLPath().indexOf(TARGET_PATH) !== -1;
+}
+
+if (experienceAlreadyExecuted || !onCheckoutFlowPage()) {
+  console.log('[AT] Fora do checkout OU script ja executado.');
+  return;
+}
+
+window[experienceName] = true;
+
+function handleCheckoutStepChange() {
+  if (!onCheckoutFlowPage()) {
+    cleanupInjectedExperience();
+    disconnectObservers();
+    return;
+  }
+
+  if (!isTargetPage()) {
+    // Etapas anteriores: so observa a SPA.
+    cleanupInjectedExperience();
+    return;
+  }
+
+  tryInjectExperience();
+}
+```
+
+#### Checklist rápido
+
+- [ ] Target cobre etapas anteriores do checkout (não só a URL final)
+- [ ] `isTargetPage()` (pathname e/ou query) impede injeção fora da página correta
+- [ ] Em etapas anteriores: zero UI da experiência (no máximo pré-hooks de transição, se o teste exigir)
+- [ ] Cleanup ao sair da página alvo / do checkout
+

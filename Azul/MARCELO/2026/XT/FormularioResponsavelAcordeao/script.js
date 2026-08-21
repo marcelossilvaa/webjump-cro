@@ -25,7 +25,7 @@
     { name: 'documentNumber', label: 'Documento' },
     { name: 'cellphoneNumber', label: 'Celular' },
     { name: 'email', label: 'E-mail' },
-    { name: 'country', label: 'Pais de residência', isSelect: true },
+    { name: 'country', label: 'País de residência', isSelect: true },
   ];
 
   const STEP2_FIELDS = [
@@ -82,24 +82,57 @@
 
   function getCss() {
     return [
+      /* Remove o card branco nativo para os paineis ficarem como no Figma */
+      '.at-resp-shell {',
+      '  background: transparent !important;',
+      '  box-shadow: none !important;',
+      '  border: 0 !important;',
+      '  padding: 0 !important;',
+      '  margin: 0 !important;',
+      '}',
+      '.at-resp-shell .styles__Wrapper-sc-b3wwec-0,',
+      '.at-resp-shell [class*="Wrapper-sc-"] {',
+      '  background: transparent !important;',
+      '  box-shadow: none !important;',
+      '  border: 0 !important;',
+      '  padding: 0 !important;',
+      '}',
+      '.at-resp-shell .styles__FormContainer-sc-b3wwec-1,',
+      '.at-resp-shell [class*="FormContainer"] {',
+      '  background: transparent !important;',
+      '  box-shadow: none !important;',
+      '  border: 0 !important;',
+      '  padding: 0 !important;',
+      '  margin: 0 !important;',
+      '  gap: 0 !important;',
+      '}',
+      '[' + ROOT_ATTR + '] {',
+      '  display: block !important;',
+      '  width: 100%;',
+      '  background: transparent !important;',
+      '  padding: 0 !important;',
+      '  margin: 0 !important;',
+      '}',
       '[' + ROOT_ATTR + '] .at-resp-accordion {',
       '  display: flex;',
       '  flex-direction: column;',
-      '  gap: 16px;',
+      '  gap: 12px;',
       '  width: 100%;',
       '}',
       '[' + ROOT_ATTR + '] .at-resp-panel {',
       '  background: #fff;',
-      '  border: 1px solid #d6dde5;',
+      '  border: 1px solid #cfd8e3;',
       '  border-radius: 8px;',
-      '  overflow: hidden;',
+      '  overflow: visible;',
+      '  box-shadow: none;',
       '}',
       '[' + ROOT_ATTR + '] .at-resp-panel__header {',
       '  display: flex;',
       '  align-items: center;',
       '  gap: 12px;',
       '  width: 100%;',
-      '  padding: 16px 20px;',
+      '  min-height: 56px;',
+      '  padding: 14px 20px;',
       '  margin: 0;',
       '  border: 0;',
       '  background: #fff;',
@@ -109,21 +142,21 @@
       '  font-family: inherit;',
       '}',
       '[' + ROOT_ATTR + '] .at-resp-panel__header:hover {',
-      '  background: #f7fafc;',
+      '  background: #f8fbfe;',
       '}',
       '[' + ROOT_ATTR + '] .at-resp-panel__badge {',
-      '  flex: 0 0 28px;',
-      '  width: 28px;',
-      '  height: 28px;',
+      '  flex: 0 0 24px;',
+      '  width: 24px;',
+      '  height: 24px;',
       '  border-radius: 50%;',
       '  display: inline-flex;',
       '  align-items: center;',
       '  justify-content: center;',
-      '  font-size: 14px;',
+      '  font-size: 13px;',
       '  font-weight: 700;',
       '  line-height: 1;',
       '  color: #026cb6;',
-      '  background: #e8f4fb;',
+      '  background: #d7eef9;',
       '}',
       '[' + ROOT_ATTR + '] .at-resp-panel__badge.is-complete {',
       '  color: #fff;',
@@ -158,20 +191,21 @@
       '}',
       '[' + ROOT_ATTR + '] .at-resp-panel__body {',
       '  display: none;',
-      '  padding: 0 20px 20px;',
+      '  padding: 4px 20px 20px;',
       '}',
       '[' + ROOT_ATTR + '] .at-resp-panel.is-open .at-resp-panel__body {',
       '  display: block;',
       '}',
       '[' + ROOT_ATTR + '] .at-resp-panel__body .styles__FormPart-sc-b3wwec-7,',
       '[' + ROOT_ATTR + '] .at-resp-panel__body [class*="FormPart"] {',
-      '  margin: 0;',
+      '  margin: 0 !important;',
+      '  padding: 0 !important;',
       '}',
       '[' + ROOT_ATTR + '] .at-resp-confirm-row {',
       '  display: flex;',
       '  align-items: center;',
       '  gap: 16px;',
-      '  margin-top: 20px;',
+      '  margin-top: 24px;',
       '  flex-wrap: wrap;',
       '}',
       '[' + ROOT_ATTR + '] .at-resp-confirm-btn {',
@@ -201,19 +235,41 @@
       '}',
       '[' + ROOT_ATTR + '] .at-resp-missing strong {',
       '  color: #041e42;',
+      '  font-weight: 700;',
       '}',
       '[' + ROOT_ATTR + '] .at-resp-missing.is-hidden {',
       '  display: none;',
       '}',
       '[' + ROOT_ATTR + '] .at-resp-native-header,',
+      '.at-resp-shell .at-resp-native-header,',
       '[' + ROOT_ATTR + '] .at-resp-native-separator,',
       '[' + ROOT_ATTR + '] .at-resp-native-address-title {',
       '  display: none !important;',
       '}',
-      '[' + ROOT_ATTR + '] .at-resp-submit-disabled {',
+      /* CTA principal no estilo do Figma */
+      '.at-resp-shell button[form="responsibleForm"],',
+      '.at-resp-shell button[aria-label="Ir para escolha de assentos"] {',
+      '  width: 100% !important;',
+      '  margin-top: 16px !important;',
+      '  min-height: 48px !important;',
+      '  border-radius: 4px !important;',
+      '  border: 0 !important;',
+      '  box-shadow: none !important;',
+      '}',
+      '.at-resp-shell button[form="responsibleForm"].at-resp-submit-disabled,',
+      '.at-resp-shell button[aria-label="Ir para escolha de assentos"].at-resp-submit-disabled,',
+      '.at-resp-shell button[form="responsibleForm"][disabled],',
+      '.at-resp-shell button[aria-label="Ir para escolha de assentos"][disabled] {',
       '  pointer-events: none !important;',
-      '  opacity: 0.55 !important;',
       '  cursor: not-allowed !important;',
+      '  opacity: 1 !important;',
+      '  background: #d7dde5 !important;',
+      '  color: #7b8794 !important;',
+      '}',
+      '.at-resp-shell button[form="responsibleForm"]:not(.at-resp-submit-disabled):not([disabled]),',
+      '.at-resp-shell button[aria-label="Ir para escolha de assentos"]:not(.at-resp-submit-disabled):not([disabled]) {',
+      '  background: #26a65b !important;',
+      '  color: #fff !important;',
       '}',
       '@media (max-width: 767px) {',
       '  [' + ROOT_ATTR + '] .at-resp-panel__header {',
@@ -237,43 +293,122 @@
   }
 
   function injectStyles() {
-    if (document.getElementById(STYLE_ID)) return;
-    const style = document.createElement('style');
-    style.id = STYLE_ID;
+    let style = document.getElementById(STYLE_ID);
+    if (!style) {
+      style = document.createElement('style');
+      style.id = STYLE_ID;
+      document.head.appendChild(style);
+    }
     style.textContent = getCss();
-    document.head.appendChild(style);
+  }
+
+  function normalizeText(value) {
+    return String(value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function isBlankValue(raw) {
+    if (raw == null) return true;
+    const value = String(raw).replace(/\s+/g, ' ').trim();
+    if (!value) return true;
+    if (value === '[object Object]') return true;
+    if (normalizeText(value) === 'selecione') return true;
+    return false;
+  }
+
+  function getReactSelectText(root) {
+    if (!root || !root.querySelector) return '';
+
+    const single = root.querySelector(
+      '.react-select__single-value, [class*="single-value"], [class*="singleValue"]'
+    );
+    if (single) {
+      const text = String(single.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!isBlankValue(text)) return text;
+    }
+
+    if (root.querySelector('.react-select__value-container--has-value')) {
+      return 'selected';
+    }
+
+    return '';
+  }
+
+  function getSelectValueByName(form, fieldName) {
+    const inputs = form.querySelectorAll('input[name="' + fieldName + '"]');
+    for (let i = 0; i < inputs.length; i++) {
+      const input = inputs[i];
+      const raw = input.value;
+      if (!isBlankValue(raw)) return String(raw).trim();
+
+      let node = input;
+      for (let depth = 0; depth < 7 && node; depth++) {
+        const visible = getReactSelectText(node);
+        if (visible) return visible;
+        node = node.parentElement;
+      }
+    }
+
+    return '';
+  }
+
+  function getSelectValueByLabel(form, labelText) {
+    if (!labelText) return '';
+    const labelNeedle = normalizeText(labelText);
+    const candidates = form.querySelectorAll('label, span');
+
+    for (let i = 0; i < candidates.length; i++) {
+      const el = candidates[i];
+      const text = normalizeText(el.textContent || '');
+      if (!text || text.indexOf(labelNeedle) === -1) continue;
+      if (el.closest('.at-resp-panel__header')) continue;
+
+      let node = el.parentElement;
+      for (let depth = 0; depth < 6 && node; depth++) {
+        const visible = getReactSelectText(node);
+        if (visible) return visible;
+        node = node.parentElement;
+      }
+    }
+
+    return '';
+  }
+
+  function getInputValueByName(form, fieldName) {
+    const nodes = form.querySelectorAll('[name="' + fieldName + '"], #' + fieldName);
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+      if (!node || node.type === 'checkbox' || node.type === 'radio') continue;
+
+      const propValue = node.value != null ? String(node.value) : '';
+      if (!isBlankValue(propValue) && propValue !== '[object Object]') {
+        return propValue.trim();
+      }
+
+      const attrValue = node.getAttribute('value');
+      if (!isBlankValue(attrValue) && attrValue !== '[object Object]') {
+        return String(attrValue).trim();
+      }
+    }
+    return '';
   }
 
   function getFieldValue(form, field) {
     if (field.isSelect) {
-      const hidden = form.querySelector('input[name="' + field.name + '"][type="hidden"]');
-      if (hidden) {
-        const raw = String(hidden.value || '').trim();
-        if (raw && raw !== '[object Object]') return raw;
-      }
+      const byName = getSelectValueByName(form, field.name);
+      if (byName) return byName;
 
-      const namedInput = form.querySelector('input[name="' + field.name + '"]');
-      if (namedInput) {
-        const group = namedInput.closest('.form-group-select, [class*="form-group"]') || namedInput.parentElement;
-        if (group) {
-          const singleValue = group.querySelector('.react-select__single-value');
-          if (singleValue && singleValue.textContent) {
-            const text = singleValue.textContent.trim();
-            if (text && text.toLowerCase() !== 'selecione') return text;
-          }
-        }
-
-        if (namedInput.value && namedInput.value !== '[object Object]') {
-          return String(namedInput.value).trim();
-        }
-      }
+      const byLabel = getSelectValueByLabel(form, field.label);
+      if (byLabel) return byLabel;
 
       return '';
     }
 
-    const input = form.querySelector('[name="' + field.name + '"], #' + field.name);
-    if (!input) return '';
-    return String(input.value || '').trim();
+    return getInputValueByName(form, field.name);
   }
 
   function getMissingFields(form, fields) {
@@ -614,14 +749,28 @@
     return accordion;
   }
 
-  function markNativeHeader() {
-    const wrappers = document.querySelectorAll(SELECTORS.formWrapper);
-    for (let i = 0; i < wrappers.length; i++) {
-      const header = wrappers[i].querySelector(SELECTORS.headerTitle);
-      if (header) header.classList.add('at-resp-native-header');
+  function markNativeShell(form) {
+    const container =
+      form.closest('.styles__FormContainer-sc-b3wwec-1') ||
+      form.closest('[class*="FormContainer"]') ||
+      form.parentElement;
+    if (container) container.classList.add('at-resp-shell');
+
+    const wrapper =
+      (container && (container.closest('.styles__Wrapper-sc-b3wwec-0') || container.closest('[class*="Wrapper-sc-"]'))) ||
+      form.closest('.styles__Wrapper-sc-b3wwec-0') ||
+      form.closest('[class*="Wrapper-sc-"]');
+    if (wrapper) wrapper.classList.add('at-resp-shell');
+
+    const headers = document.querySelectorAll(SELECTORS.headerTitle);
+    for (let i = 0; i < headers.length; i++) {
+      const header = headers[i];
+      if (header.closest('.at-resp-panel')) continue;
+      if ((header.textContent || '').indexOf('Informações do responsável') !== -1) {
+        header.classList.add('at-resp-native-header');
+      }
     }
 
-    // Fallback por texto
     const spans = document.querySelectorAll('span');
     for (let j = 0; j < spans.length; j++) {
       const text = (spans[j].textContent || '').trim();
@@ -671,7 +820,7 @@
 
     form.setAttribute(ROOT_ATTR, 'true');
     buildAccordion(form, parts);
-    markNativeHeader();
+    markNativeShell(form);
     bindFieldListeners(form);
     guardSubmitButton();
     setActiveStep(1, false);

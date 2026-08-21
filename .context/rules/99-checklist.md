@@ -12,4 +12,5 @@
 - [ ] MutationObserver com proteção anti-loop (flag + debounce e/ou filtro)
 - [ ] DOM ready + retry/polling quando o DOM é dinâmico
 - [ ] Tracking implementado quando aplicável (view + actions)
+- [ ] **Azul SPA / checkout**: Target em etapas anteriores; UI só na página alvo (`isTargetPage`); cleanup ao sair
 
