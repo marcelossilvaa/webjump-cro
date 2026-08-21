@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Preview — Pilares Estratégicos Azul</title>
+    <style>
+      body {
+        margin: 0;
+        background: rgb(244, 248, 251);
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+      }
+
+      .previewHeader {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 24px;
+        color: rgb(1, 78, 132);
+      }
+
+      .previewBanners,
+      .previewVamos {
+        max-width: 1280px;
+        margin: 0 auto 8px;
+        padding: 24px;
+        border: 1px dashed rgba(1, 78, 132, 0.35);
+        border-radius: 16px;
+        color: rgba(1, 78, 132, 0.7);
+        font-size: 14px;
+      }
+
+      .previewBanners img {
+        display: none;
+      }
+
+      .previewVamos h2 {
+        margin: 0 0 8px;
+        color: rgb(1, 78, 132);
+        font-size: 22px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="previewHeader">
+        <strong>Preview local</strong> — pilares entram entre os banners e “Vamos viajar juntos”.
+      </div>
+
+      <div class="previewBanners" data-preview-banners="true">
+        banners home (passagens / pontos / AZV / Clube Azul)
+        <img src="https://www.voeazul.com.br/content/dam/voe-azul/cross/banners-home/13-08/bnr-passagens-preview.png" alt="" />
+        <img src="https://www.voeazul.com.br/content/dam/voe-azul/cross/banners-home/12-08/bnr-multibancos-preview.png" alt="" />
+        <img src="https://www.voeazul.com.br/content/dam/voe-azul/cross/banners-home/12-08/bnr-azv-preview-2.png" alt="" />
+        <img src="https://www.voeazul.com.br/content/dam/voe-azul/cross/banners-home/10-08/bnr-adesao-preview.png" alt="" />
+      </div>
+
+      <section class="previewVamos">
+        <h2>Vamos viajar juntos nessa?</h2>
+        <p>Encontre o que você precisa para uma experiência ainda mais Azul</p>
+      </section>
+    </main>
+
+    <script>
+      window.AT_PILARES_FORCE = true;
+    </script>
+    <script src="./script.js"></script>
+  </body>
+</html>

@@ -69,6 +69,26 @@ function sendGAEvent(action, label) {
 - Menus/botoes: usar o `id` do elemento ou nome descritivo
 - Tudo em **lowercase** separado por `_`
 
+## Debug no site Nespresso (obrigatorio)
+
+No front da Nespresso **nao e possivel ver o retorno de `console.log`**. A saida nao aparece no DevTools. Nao use `console.log` para inspecionar dados, APIs ou falhas.
+
+Alternativas oficiais:
+
+1. **`window.alert(texto)`** — unico log nativo visivel. Use para resumo curto.
+2. **Modal / UI criada pelo script** — dump completo (JSON, campos do cliente, pedidos). Preferivel para coleta.
+3. **Botao Copiar** (`navigator.clipboard.writeText`) — enviar o dump para o chat. Se o clipboard falhar, cair em `window.alert`.
+
+```javascript
+// ERRADO — nao aparece no site Nespresso
+console.log(customer);
+
+// CORRETO — visivel
+window.alert('linha=' + linha + ' ticket=' + ticketMedio);
+```
+
+Script pronto de inspecao (modal + copiar + alert): `Nespresso/MARCELO/debug-audiencia/inspecionar-audiencia.js`.
+
 # Nespresso API
 
 ## Verificar informações de um SKU específico
@@ -518,6 +538,16 @@ Exemplo de resultado:
     }
 }
 ```
+
+Campos uteis para segmentar audiencias de campanha (OL/VL x N1/N2) sem Target:
+
+- `preferredTechnology` / `enabledTechnologies` — resumo da linha no cadastro
+- `napi.customer().getMachines()` — maquinas **registradas** no clube (fonte principal de OL/VL)
+- `userGroups.userGroups` e `selectionIDs` — conferir se o CRM ja manda N1/N2 / SELID
+- Ticket medio: calcular a partir de `napi.checkout().getMyOrders()` (pedidos `DELIVERED`)
+- `napi.subscription().getSubscriptions()` / `napi.promotion().getClubAction()` — ainda em mapeamento
+
+Detalhes, limiares e script de inspecao: `Nespresso/GUIA-CRO.md` (secoes 5 e 6) e `Nespresso/MARCELO/debug-audiencia/`.
 
 ## Últimas compras do usuário logado
 

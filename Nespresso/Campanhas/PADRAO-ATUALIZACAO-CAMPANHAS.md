@@ -143,6 +143,7 @@ Exemplos (só referência — **não copiar sem conferir o material da campanha*
 |----------|-----------|------------|-----------|-------------|
 | Boost Vertuo World | `#3d441e` | `#fbeaa0` | `#f8ecdf` | `#b3ca9a` |
 | Boost Dia dos Pais | `#ab2418` | `#ffffff` | `#ffffff` | `#000000` |
+| Boost Setembro | `#1a1a1a` | `#ffffff` | `#ffffff` | `#666666` (provisório — aguardando playbook) |
 
 ### Accordion — composição recomendada
 
@@ -308,6 +309,52 @@ Seguir o padrão em @Nespresso/MARCELO/Campanhas/PADRAO-ATUALIZACAO-CAMPANHAS.md
 - OL: [URL]
 - VL: [URL]
 ```
+
+---
+
+## Referência: Boost Setembro (em configuração)
+
+Pasta: `BoostSetembro/`. Esqueleto adiantado **sem playbook** — preencher brindes, paleta, imagens e T&C quando o material chegar.
+
+### Ofertas (faixas padrão, brindes placeholder)
+
+| Nível | OL | Brinde | VL | Brinde |
+|-------|-----|--------|-----|--------|
+| N1 | 70 | Brinde N1 | 50 | Brinde N1 |
+| N2 | 100 | Brinde N2 | 70 | Brinde N2 |
+| N3 | 150 | Brinde N3 | 120 | Brinde N3 |
+| N4 | 200 | Brinde N4 | 180 | Brinde N4 |
+| N5 | 270 | Brinde N5 | 210 | Brinde N5 |
+
+- **N1-N5:** N1 a N5
+- **N2-N5:** N2 a N5
+- **Ofertas abertas:** N3 a N5
+- Sem oferta surpresa (N6) até o cliente pedir
+
+### Cores (provisórias — escala de cinza, não usar em produção)
+
+- Principal: `#1a1a1a`
+- Secundária: `#ffffff`
+- Terciária: `#ffffff`
+- Quaternária: `#666666`
+
+### Identificadores
+
+- `window.acordeaoBoostSetembro`
+- `window.boostSetembroProgressBar`
+- `linkCondicoesOfertaBoostSetembro`
+- `modalTermosECondicoesBoostSetembro`
+- `nespresso-boost-setembro-offers`
+- `window.ocultarTopMessageBannerMobBoostSetembro`
+
+### Pendências do playbook
+
+- [ ] Nome dos brindes N1–N5
+- [ ] URLs dos ícones (`TODO_URL_N1_OL` … `TODO_URL_N5`)
+- [ ] Paleta oficial (substituir hex provisórios)
+- [ ] Período e texto oficial de T&C
+- [ ] Banners PLP (`TODO_URL_BANNER_PLP_*`)
+- [ ] Oferta surpresa / N6, se o cliente pedir
 
 ---
 

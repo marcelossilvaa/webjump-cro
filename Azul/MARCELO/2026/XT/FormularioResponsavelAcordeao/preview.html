@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Preview — Formulário Responsável Acordeão</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: #eef3f7;
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        color: #041e42;
+      }
+
+      .preview-shell {
+        max-width: 720px;
+        margin: 24px auto;
+        padding: 0 16px 48px;
+      }
+
+      .preview-note {
+        margin-bottom: 16px;
+        padding: 12px 14px;
+        border-radius: 8px;
+        background: #fff;
+        border: 1px dashed rgba(2, 108, 182, 0.35);
+        font-size: 13px;
+        color: #4b5563;
+      }
+
+      .page-title {
+        margin: 0 0 8px;
+        font-size: 28px;
+        font-weight: 700;
+      }
+
+      .page-subtitle {
+        margin: 0 0 20px;
+        font-size: 14px;
+        color: #4b5563;
+      }
+
+      .styles__FormContainer-sc-b3wwec-1 {
+        background: transparent;
+      }
+
+      .styles__Header-sc-b3wwec-2 {
+        display: block;
+        margin-bottom: 12px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      #responsibleForm {
+        display: block;
+      }
+
+      .styles__FormPart-sc-b3wwec-7 {
+        display: block;
+      }
+
+      .checkbox-container {
+        margin-bottom: 16px;
+      }
+
+      .styles__Row-sc-b3wwec-12 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .styles__Row-sc-b3wwec-12.full {
+        grid-template-columns: 1fr;
+      }
+
+      .form-group,
+      .form-group-select {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      label {
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      input[type='text'],
+      input[type='tel'],
+      input[type='email'],
+      select {
+        width: 100%;
+        height: 44px;
+        padding: 0 12px;
+        border: 1px solid #c5ced8;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: inherit;
+        color: #041e42;
+        background: #fff;
+      }
+
+      input:focus,
+      select:focus {
+        outline: 2px solid #026cb6;
+        outline-offset: 1px;
+      }
+
+      .styles__PhoneGroupFormik-sc-1kk05bt-5 {
+        display: grid;
+        grid-template-columns: 88px 1fr;
+        gap: 8px;
+      }
+
+      .styles__Separator-sc-b3wwec-6 {
+        margin: 24px 0;
+        border: 0;
+        border-top: 1px solid #d6dde5;
+      }
+
+      .styles__AddressTitle-sc-b3wwec-4 {
+        display: block;
+        margin-bottom: 12px;
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .styles__ZipcodeContainer-sc-b3wwec-11 {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 12px;
+        align-items: end;
+        margin-bottom: 12px;
+      }
+
+      .styles__Link-sc-b3wwec-10 {
+        color: #026cb6;
+        font-size: 13px;
+        text-decoration: underline;
+      }
+
+      .styles__StyledButton-sc-b3wwec-8 {
+        display: block;
+        width: 100%;
+        margin-top: 20px;
+        height: 48px;
+        border: 0;
+        border-radius: 4px;
+        background: #26a65b;
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+      }
+
+      .styles__StyledButton-sc-b3wwec-8:disabled,
+      .styles__StyledButton-sc-b3wwec-8.at-resp-submit-disabled {
+        background: #d3d9e0;
+        color: #7b8794;
+      }
+
+      @media (max-width: 640px) {
+        .styles__Row-sc-b3wwec-12,
+        .styles__ZipcodeContainer-sc-b3wwec-11,
+        .styles__PhoneGroupFormik-sc-1kk05bt-5 {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="preview-shell">
+      <div class="preview-note">
+        Preview local do XT de acordeão no formulário de responsável. Preencha a etapa 1,
+        clique em <strong>Confirmar dados</strong> e avance para o endereço.
+      </div>
+
+      <h1 class="page-title">Dados do responsável pela compra</h1>
+      <p class="page-subtitle">Informe os dados do responsável pela compra</p>
+
+      <div class="styles__FormContainer-sc-b3wwec-1">
+        <span class="styles__Header-sc-b3wwec-2">
+          <span>Informações do responsável pela compra</span>
+        </span>
+
+        <form id="responsibleForm">
+          <div class="styles__FormPart-sc-b3wwec-7">
+            <div class="checkbox-container">
+              <label>
+                <input
+                  type="checkbox"
+                  data-testid="payment-conditions-checkbox"
+                  aria-label="Utilizar os dados do passageiro principal"
+                />
+                Utilizar os dados do passageiro principal
+              </label>
+            </div>
+
+            <div class="styles__Row-sc-b3wwec-12">
+              <div class="form-group">
+                <label for="firstName">Nome</label>
+                <input id="firstName" name="firstName" type="text" maxlength="32" placeholder="Informe seu nome" />
+              </div>
+              <div class="form-group">
+                <label for="lastName">Sobrenome</label>
+                <input id="lastName" name="lastName" type="text" maxlength="32" placeholder="Informe seu sobrenome" />
+              </div>
+            </div>
+
+            <div class="styles__Row-sc-b3wwec-12">
+              <div class="form-group-select">
+                <label>Documento</label>
+                <select id="documentTypeSelect">
+                  <option value="CPF" selected>CPF</option>
+                  <option value="PASSAPORTE">Passaporte</option>
+                </select>
+                <input type="hidden" name="documentType" value="CPF" />
+              </div>
+              <div class="form-group">
+                <label for="documentNumber">CPF</label>
+                <input id="documentNumber" name="documentNumber" type="text" placeholder="Informe o número" />
+              </div>
+            </div>
+
+            <div class="styles__Row-sc-b3wwec-12">
+              <div class="styles__PhoneGroupFormik-sc-1kk05bt-5">
+                <div class="form-group-select">
+                  <label>DDI</label>
+                  <select>
+                    <option selected>BR</option>
+                  </select>
+                  <input type="hidden" name="cellphonePrefix" value="55" />
+                </div>
+                <div class="form-group">
+                  <label for="cellphoneNumber">Celular (Código de área + Número)</label>
+                  <input
+                    id="cellphoneNumber"
+                    name="cellphoneNumber"
+                    type="tel"
+                    placeholder="Digite código + Nº"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="email">E-mail (Receberá a confirmação da compra)</label>
+                <input id="email" name="email" type="email" placeholder="Informe o e-mail" />
+              </div>
+            </div>
+
+            <div class="styles__Row-sc-b3wwec-12">
+              <div class="form-group-select">
+                <label>País de residência</label>
+                <select id="countrySelect">
+                  <option value="">Selecione</option>
+                  <option value="BR">Brasil</option>
+                  <option value="US">Estados Unidos</option>
+                </select>
+                <input type="hidden" name="country" id="country" value="" />
+              </div>
+            </div>
+          </div>
+
+          <hr class="styles__Separator-sc-b3wwec-6" />
+          <span class="styles__AddressTitle-sc-b3wwec-4">Endereço de cobrança</span>
+
+          <div class="styles__FormPart-sc-b3wwec-7">
+            <div class="styles__ZipcodeContainer-sc-b3wwec-11">
+              <div class="form-group">
+                <label for="zipcode">CEP</label>
+                <input id="zipcode" name="zipcode" type="text" placeholder="Informe o CEP" />
+              </div>
+              <span>
+                <a
+                  class="styles__Link-sc-b3wwec-10"
+                  href="https://www2.correios.com.br/sistemas/buscacep/buscaCep.cfm"
+                  target="_blank"
+                  rel="noreferrer"
+                  >Não sei meu CEP</a
+                >
+              </span>
+            </div>
+
+            <div class="styles__Row-sc-b3wwec-12 full">
+              <div class="form-group">
+                <label for="address">Endereço</label>
+                <input id="address" name="address" type="text" placeholder="Informe o endereço" />
+              </div>
+            </div>
+
+            <div class="styles__Row-sc-b3wwec-12">
+              <div class="form-group">
+                <label for="addressNumber">Número</label>
+                <input id="addressNumber" name="addressNumber" type="text" placeholder="Informe o número" />
+              </div>
+              <div class="form-group">
+                <label for="complement">Complemento (Opcional)</label>
+                <input id="complement" name="complement" type="text" placeholder="Informe o complemento" />
+              </div>
+            </div>
+
+            <div class="styles__Row-sc-b3wwec-12">
+              <div class="form-group">
+                <label for="neighborhood">Bairro</label>
+                <input id="neighborhood" name="neighborhood" type="text" placeholder="Informe o bairro" />
+              </div>
+              <div class="form-group">
+                <label for="city">Cidade</label>
+                <input id="city" name="city" type="text" placeholder="Informe a cidade" />
+              </div>
+            </div>
+
+            <div class="styles__Row-sc-b3wwec-12">
+              <div class="form-group-select">
+                <label>Estado</label>
+                <select id="stateSelect">
+                  <option value="">Selecione</option>
+                  <option value="SP">São Paulo</option>
+                  <option value="MG">Minas Gerais</option>
+                  <option value="RJ">Rio de Janeiro</option>
+                </select>
+                <input type="hidden" name="state" id="state" value="" />
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <button
+          type="submit"
+          class="button styles__StyledButton-sc-b3wwec-8"
+          form="responsibleForm"
+          aria-label="Ir para escolha de assentos"
+        >
+          Ir para escolha de assentos
+        </button>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const countrySelect = document.getElementById('countrySelect');
+        const countryHidden = document.getElementById('country');
+        const stateSelect = document.getElementById('stateSelect');
+        const stateHidden = document.getElementById('state');
+        const checkbox = document.querySelector(
+          'input[aria-label="Utilizar os dados do passageiro principal"]'
+        );
+
+        countrySelect.addEventListener('change', function () {
+          countryHidden.value = countrySelect.value;
+          countryHidden.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+
+        stateSelect.addEventListener('change', function () {
+          stateHidden.value = stateSelect.value;
+          stateHidden.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+
+        checkbox.addEventListener('change', function () {
+          if (!checkbox.checked) return;
+          document.getElementById('firstName').value = 'MARIA';
+          document.getElementById('lastName').value = 'SILVA';
+          document.getElementById('documentNumber').value = '123.456.789-00';
+          document.getElementById('firstName').dispatchEvent(new Event('input', { bubbles: true }));
+          document.getElementById('lastName').dispatchEvent(new Event('input', { bubbles: true }));
+          document.getElementById('documentNumber').dispatchEvent(new Event('input', { bubbles: true }));
+        });
+
+        document.getElementById('responsibleForm').addEventListener('submit', function (event) {
+          event.preventDefault();
+          alert('Submit liberado — iria para escolha de assentos.');
+        });
+      })();
+    </script>
+    <script src="./script.js"></script>
+  </body>
+</html>

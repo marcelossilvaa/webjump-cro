@@ -8,25 +8,29 @@
   const DATA_VIEW = 'data-at-beneficios-cc-view';
   const ACTIVITY = EXPERIMENT_NAME;
   const CONTEXT = 'tela_pagamento';
+  const DESKTOP_MIN_WIDTH = 1024;
 
   const SELECTORS = {
     creditCardContainer: '[data-test-id="fop-credit-card-container"]',
+    creditCardSelect: '[data-test-id="fop-credit-card-select"]',
+    hideContent: '[data-test-id="fop-cc-hide-content"]',
+    showContent: '[data-test-id="fop-cc-show-content"]',
     cardListContent: '[data-test-id="fop-cc-card-list-content"]',
     addNewCard: '[data-test-id="fop-credit-card-add-new-card"]',
   };
 
   const ICON_TAG =
     '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-    '<path d="M13.78 7.22L8.28 1.72A.75.75 0 007.75 1.5H2.5A1 1 0 001.5 2.5v5.25a.75.75 0 00.22.53l5.5 5.5a.75.75 0 001.06 0l5.5-5.5a.75.75 0 000-1.06z" fill="#1A1A1A"/>' +
-    '<circle cx="4.25" cy="4.25" r="1" fill="#FFFFFF"/>' +
+    '<path d="M13.78 7.22L8.28 1.72A.75.75 0 007.75 1.5H2.5A1 1 0 001.5 2.5v5.25a.75.75 0 00.22.53l5.5 5.5a.75.75 0 001.06 0l5.5-5.5a.75.75 0 000-1.06z" fill="#FFFFFF"/>' +
+    '<circle cx="4.25" cy="4.25" r="1" fill="rgb(4, 30, 66)"/>' +
     '</svg>';
 
   const ICON_CARDS =
     '<svg width="16" height="14" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-    '<rect x="0.5" y="2.5" width="13" height="9" rx="1.2" fill="#1A1A1A"/>' +
-    '<path d="M0.5 5h13" stroke="#FFFFFF" stroke-width="1.2"/>' +
-    '<rect x="4" y="4.5" width="13" height="9" rx="1.2" fill="#1A1A1A"/>' +
-    '<path d="M4 7h13" stroke="#FFFFFF" stroke-width="1.2"/>' +
+    '<rect x="0.5" y="2.5" width="13" height="9" rx="1.2" fill="#FFFFFF"/>' +
+    '<path d="M0.5 5h13" stroke="rgb(4, 30, 66)" stroke-width="1.2"/>' +
+    '<rect x="4" y="4.5" width="13" height="9" rx="1.2" fill="#FFFFFF"/>' +
+    '<path d="M4 7h13" stroke="rgb(4, 30, 66)" stroke-width="1.2"/>' +
     '</svg>';
 
   const BRAZIL_COUNTRY = { BR: 1, BRA: 1, BRASIL: 1, BRAZIL: 1 };
@@ -34,6 +38,7 @@
   let isProcessing = false;
   let debounceTimer = null;
   let observerStarted = false;
+  let resizeListenerAdded = false;
   let lastDetectionLogKey = '';
   let flightDetection = null;
 
@@ -50,6 +55,10 @@
     );
   }
 
+  function isDesktopViewport() {
+    return window.innerWidth >= DESKTOP_MIN_WIDTH;
+  }
+
   function injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
 
@@ -59,10 +68,8 @@
       '[' +
       DATA_INJECTED +
       '="true"]{' +
-      'height:auto !important;' +
-      'min-height:0 !important;' +
-      'padding:0 !important;' +
-      'margin:0 !important;' +
+      'display:flex !important;' +
+      'align-items:center !important;' +
       '}' +
       '.at-beneficios-cc-original-hidden{' +
       'display:none !important;' +
@@ -70,15 +77,18 @@
       '#' +
       COMPONENT_ID +
       '{' +
-      'display:flex;' +
+      'display:inline-flex;' +
       'align-items:center;' +
-      'justify-content:flex-start;' +
+      'justify-content:center;' +
       'flex-wrap:nowrap;' +
-      'gap:8px 16px;' +
-      'width:100%;' +
+      'flex:0 0 auto;' +
+      'gap:8px;' +
       'box-sizing:border-box;' +
-      'padding:10px 30px 10px;' +
-      'margin:0;' +
+      'margin-left:auto;' +
+      'margin-right:8px;' +
+      'padding:6px 12px;' +
+      'background:rgb(4, 30, 66);' +
+      'border-radius:4px;' +
       'line-height:1.2;' +
       'font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;' +
       '}' +
@@ -88,7 +98,7 @@
       'display:inline-flex;' +
       'align-items:center;' +
       'gap:6px;' +
-      'color:rgb(4, 30, 66);' +
+      'color:#FFFFFF;' +
       'line-height:1.2;' +
       '}' +
       '#' +
@@ -96,8 +106,8 @@
       ' .at-beneficios-cc__divider{' +
       'flex-shrink:0;' +
       'width:1px;' +
-      'height:14px;' +
-      'background:#D0D5DD;' +
+      'height:12px;' +
+      'background:rgba(255, 255, 255, 0.45);' +
       'align-self:center;' +
       '}' +
       '#' +
@@ -107,8 +117,8 @@
       'align-items:center;' +
       'justify-content:center;' +
       'flex-shrink:0;' +
-      'width:14px;' +
-      'height:14px;' +
+      'width:12px;' +
+      'height:12px;' +
       '}' +
       '#' +
       COMPONENT_ID +
@@ -120,10 +130,11 @@
       '#' +
       COMPONENT_ID +
       ' .at-beneficios-cc__label{' +
-      'font-size:14px;' +
+      'font-size:12px;' +
       'font-weight:400;' +
       'letter-spacing:0;' +
       'white-space:nowrap;' +
+      'color:#FFFFFF;' +
       '}';
 
     document.head.appendChild(style);
@@ -737,33 +748,57 @@
     }
   }
 
-  function findInsertTarget(container) {
+  function findHeaderSlot(container) {
     if (!container) return null;
 
-    const cardList = container.querySelector(SELECTORS.cardListContent);
-    if (cardList) return cardList;
+    const chevron = container.querySelector(SELECTORS.hideContent) || container.querySelector(SELECTORS.showContent);
+    if (chevron && chevron.parentElement) {
+      return { parent: chevron.parentElement, before: chevron };
+    }
 
-    const addCard = container.querySelector(SELECTORS.addNewCard);
-    if (addCard && addCard.parentElement) {
-      return addCard.parentElement;
+    const select = container.querySelector(SELECTORS.creditCardSelect);
+    if (select && select.parentElement) {
+      return { parent: select.parentElement, before: select.nextElementSibling };
     }
 
     return null;
   }
 
-  function hideOriginalInstruction(target) {
-    if (!target) return;
+  function hideOriginalCopy(container) {
+    if (!container) return;
 
-    const children = target.children;
-    for (let i = 0; i < children.length; i++) {
-      const child = children[i];
-      if (child.id === COMPONENT_ID) continue;
-      if (child.getAttribute && child.getAttribute('data-test-id') === 'fop-credit-card-add-new-card') continue;
-      if (child.querySelector && child.querySelector('[data-test-id="fop-credit-card-add-new-card"]')) continue;
+    const ourPill = document.getElementById(COMPONENT_ID);
+    const wronglyHidden = container.querySelectorAll('div.at-beneficios-cc-original-hidden');
+    for (let i = 0; i < wronglyHidden.length; i++) {
+      wronglyHidden[i].classList.remove('at-beneficios-cc-original-hidden');
+    }
 
-      const text = (child.textContent || '').toLowerCase();
+    const paragraphs = container.querySelectorAll('p');
+    for (let i = 0; i < paragraphs.length; i++) {
+      const node = paragraphs[i];
+      if (node.closest && node.closest('#' + COMPONENT_ID)) continue;
+      if (ourPill && node.contains(ourPill)) continue;
+
+      const text = (node.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
       if (text.indexOf('escolha') !== -1 && text.indexOf('cart') !== -1) {
-        child.classList.add('at-beneficios-cc-original-hidden');
+        node.classList.add('at-beneficios-cc-original-hidden');
+      }
+    }
+
+    const nativeBadges = container.querySelectorAll('span');
+    for (let i = 0; i < nativeBadges.length; i++) {
+      const node = nativeBadges[i];
+      if (node.closest && node.closest('#' + COMPONENT_ID)) continue;
+      if (ourPill && (node.contains(ourPill) || ourPill.contains(node))) continue;
+
+      const text = (node.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+      if (
+        text.indexOf('até') !== -1 &&
+        text.indexOf('sem juro') !== -1 &&
+        text.indexOf('2 cart') !== -1 &&
+        text.length < 80
+      ) {
+        node.classList.add('at-beneficios-cc-original-hidden');
       }
     }
   }
@@ -772,37 +807,63 @@
     const container = document.querySelector(SELECTORS.creditCardContainer);
     if (!container) return false;
 
-    const target = findInsertTarget(container);
-    if (!target) return false;
+    hideOriginalCopy(container);
+
+    const slot = findHeaderSlot(container);
+    if (!slot) return false;
 
     const flightType = getCachedFlightType();
 
     if (document.getElementById(COMPONENT_ID)) {
-      hideOriginalInstruction(target);
       syncInstallmentLabel(flightType);
       trackViewOnce(document.getElementById(COMPONENT_ID));
       return true;
     }
 
-    target.setAttribute(DATA_INJECTED, 'true');
-    hideOriginalInstruction(target);
+    slot.parent.setAttribute(DATA_INJECTED, 'true');
 
     const component = createBenefitsComponent(flightType);
-    const firstChild = target.firstElementChild;
-
-    if (firstChild) {
-      target.insertBefore(component, firstChild);
+    if (slot.before) {
+      slot.parent.insertBefore(component, slot.before);
     } else {
-      target.appendChild(component);
+      slot.parent.appendChild(component);
     }
 
     trackViewOnce(component);
-    console.log('[AT] Benefícios do cartão injetados:', flightType, getInstallmentLabel(flightType));
+    console.log('[AT] Benefícios do cartão injetados no header:', flightType, getInstallmentLabel(flightType));
     return true;
+  }
+
+  function teardown() {
+    const component = document.getElementById(COMPONENT_ID);
+    if (component) {
+      const parent = component.parentElement;
+      if (parent) {
+        parent.removeAttribute(DATA_INJECTED);
+      }
+      if (component.parentNode) {
+        component.parentNode.removeChild(component);
+      }
+    }
+
+    const hiddenNodes = document.querySelectorAll('.at-beneficios-cc-original-hidden');
+    for (let i = 0; i < hiddenNodes.length; i++) {
+      hiddenNodes[i].classList.remove('at-beneficios-cc-original-hidden');
+    }
+
+    if (window._atBeneficiosCcObserver) {
+      window._atBeneficiosCcObserver.disconnect();
+      window._atBeneficiosCcObserver = null;
+    }
+    observerStarted = false;
   }
 
   function run() {
     if (isProcessing) return;
+    if (!isDesktopViewport()) {
+      teardown();
+      return;
+    }
     if (!isTargetPage()) return;
 
     isProcessing = true;
@@ -817,14 +878,19 @@
   function scheduleRun() {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(function () {
-      run();
+      syncByViewport();
     }, 300);
   }
 
   function startObserver() {
+    if (!isDesktopViewport()) return;
     if (observerStarted || window._atBeneficiosCcObserver) return;
 
     const observer = new MutationObserver(function () {
+      if (!isDesktopViewport()) {
+        teardown();
+        return;
+      }
       if (document.getElementById(COMPONENT_ID) && flightDetection && flightDetection.confident) {
         return;
       }
@@ -845,9 +911,23 @@
     observerStarted = true;
   }
 
-  function init() {
+  function syncByViewport() {
+    if (!isDesktopViewport()) {
+      teardown();
+      return;
+    }
+
     run();
     startObserver();
+  }
+
+  function init() {
+    syncByViewport();
+
+    if (!resizeListenerAdded) {
+      window.addEventListener('resize', scheduleRun);
+      resizeListenerAdded = true;
+    }
   }
 
   if (document.readyState === 'loading') {
